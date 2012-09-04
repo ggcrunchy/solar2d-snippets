@@ -1,0 +1,17 @@
+settings =
+{
+        android =
+        {
+        --        versionCode = "3"
+        },
+    
+        androidPermissions =
+        {
+			"android.permission.INTERNET"
+        },
+    
+        orientation =
+        {
+                default = "landscape"
+        }
+}
