@@ -1,4 +1,6 @@
 --- Marching squares operations.
+--
+-- Currently follows the approach of [Better Know An Algorithm](http://devblog.phillipspiess.com/2010/02/23/better-know-an-algorithm-1-marching-squares/).
 
 --
 -- Permission is hereby granted, free of charge, to any person obtaining
@@ -22,57 +24,26 @@
 --
 -- [ MIT license: http://www.opensource.org/licenses/mit-license.php ]
 --
+   
+-- TODO?:
+-- Interpolation... isolevels...
+-- Isobands?
+-- Holes, more generic formations
+
+-- Standard library imports --
+local abs = math.abs
 
 -- Exports --
 local M = {}
 
---
-local function Index (area, x, y)
-	return area.mid + y * area.pitch + x
-end
-
-local function XY (x, y)
-	return display.contentCenterX + x * 30, display.contentCenterY + y * 30
-end
-
-local function Rect (group, x, y, fr, fg, fb)
-	local r = display.newRect(group, 0, 0, 30, 30)
-
-	r:setFillColor(fr, fg, fb)
-	r:setStrokeColor(0, 0, 255)
-
-	r.strokeWidth = 3
-
-	r.x, r.y = XY(x, y)
-
-	return r
-end
-
-local RGROUP = display.newGroup()
-
---
-local function FindEdge (area)
-	local index = 1
-
-	for y = -area.halfh, area.halfh do
-		for x = -area.halfw, area.halfw do
-			if area[index] then
-				return x, y, index
-			end
-
-			index = index + 1
-		end
-	end
-end
-
--- --
+-- Direction deltas, plus info to build state -> direction LUT --
 local None = { 0, 0 }
 local Up = { 0, -1, 1, 5, 13 }
 local Right = { 1, 0, 2, 3, 7 }
 local Left = { -1, 0, 4, 12, 14 }
 local Down = { 0, 1, 8, 10, 11 }
 
--- --
+-- Lookup table for deltas from flags --
 local StateToDir = {}
 
 for _, dir in ipairs{ Up, Right, Left, Down } do
@@ -81,7 +52,12 @@ for _, dir in ipairs{ Up, Right, Left, Down } do
 	end
 end
 
---
+-- Helper to get index of square
+local function Index (area, x, y)
+	return area.mid + y * area.pitch + x
+end
+
+-- A step along the march
 local function Step (area, x, y, prev)
 	local state, hw = 0, area.halfw
 
@@ -118,63 +94,50 @@ local function Step (area, x, y, prev)
 	end
 end
 
-local GGROUP
+-- Finds a starting square
+local function FindEdge (area)
+	local index = 1
 
-local LINE
-local PX, PY
+	for y = -area.halfh, area.halfh do
+		for x = -area.halfw, area.halfw do
+			if area[index] then
+				return x, y, index
+			end
 
-local function AddElem (x, y)
-	x, y = XY(x, y)
-
-	if LINE then
-		LINE:append(x, y)
-	elseif PX then
-		LINE = display.newLine(GGROUP, PX, PY, x, y)
-		LINE:setColor(0, 255, 0)
-		LINE.width = 5
-	else
-		PX, PY = x, y
+			index = index + 1
+		end
 	end
 end
 
---
-local function UpdateArea (area)
+-- March body
+local function March (area, func, always)
 	local x0, y0 = FindEdge(area)
-if GGROUP then
-	GGROUP:removeSelf()
-end
-
-	PX, PY, GGROUP, LINE = nil
 
 	if x0 then
 		local x, y, step = x0, y0, None
-GGROUP = display.newGroup()
 
 		repeat
 			step = Step(area, x, y, step)
 
-			if true or area[Index(area, x, y)] then
-				AddElem(x, y)
+			if always or area[Index(area, x, y)] then
+				func(x, y)
 			end
 
 			x, y = x + step[1], y + step[2]
 		until x == x0 and y == y0
 
-		AddElem(x0, y0)
+		func(x0, y0)
 	end
 end
 
-local circle = require("fill.Circle")
-local timers = require("game.Timers")
-
---
+-- Checks if either of two neighbors is marked
 local function Check (area, index, delta)
 	return area[index - delta] or area[index + delta]
 end
 
---
-local function ComputeTemps (area)
-	local index, pitch, ntemps, offset = 1, area.pitch, 0, area.offset
+-- Marks where to put temporary squares
+local function ComputeTemps (area, offset)
+	local index, pitch, ntemps = 1, area.pitch, 0
 
 	for _ = -area.halfh, area.halfh do
 		local is_inner = false
@@ -190,71 +153,74 @@ local function ComputeTemps (area)
 		end
 	end
 
-	area.ntemps = ntemps
+	return ntemps
 end
 
+--- Builds a routine to do marching squares around a region boundary.
+-- @uint halfx Half-width of target region. The total square-wise width is 2 * _halfx_ + 1
+-- (left and right sides, plus the center).
+-- @uint halfy Half-height, as per _halfx_.
+-- @callable func Visitor, called as `func(x, y)` on each marched-over boundary square, where
+-- _x_ and _y_ are integer offsets from the center square.
+-- @string how If absent, **"perimeter"**. If this is **"inside"**, the march will proceed
+-- along the boundary squares. Otherwise, the march goes around this boundary, **"outside"**
+-- being slightly tighter than **"perimeter"**.
+-- @treturn function Setter function, called as `setter(x, y, value)`, for some integer x, y.
+-- If _value_ is **nil**, the square's value is cleared; otherwise, assigns the value.
 --
-local function SetTempsTo (area, value)
-	local offset = area.offset
-
-	for i = 1, area.ntemps do
-		local index = area[offset + i]
-
-		area[index] = value
-	end
-end
-
--- TO WORK OUT:
--- Submit(x, y)
--- Outline or internal?
--- Interpolation... isolevels...
--- Isobands?
--- Holes, more generic formations
-
-function DoMarch ()
-	local halfx, halfy = 10, 10
-
-	--
-	local area = { halfw = halfx, halfh = halfy, pitch = halfx * 2 + 1, ntemps = 0 }
+-- This is a no-op if either _x_ or _y_ is outside the target region.
+--
+-- **TODO**: Currently _value_ itself isn't important, i.e. it's binary / there's no interpolation.
+-- @treturn function Called as `march(how, value)`. Drives the march around the boundary,
+-- calling _func_ at visited squares.
+--
+-- If _how_ is **"inside"**, the march will visit the boundary squares themselves.
+--
+-- Otherwise, the boundary is temporarily padded with squares, each of which is assigned
+-- _value_ (if absent, **true**) and then visited according to _how_: all options traverse
+-- the temporary boundary, but **"outside"** is tighter than **"perimeter"** (the default).
+function M.Boundary (halfx, halfy, func)
+	local area = { halfw = halfx, halfh = halfy, pitch = halfx * 2 + 1 }
 
 	area.mid = halfy * area.pitch + halfx + 1
 
-	--
-	area.offset = Index(area, 0, halfy + 2)
-
-	local spread = circle.SpreadOut(halfx, halfy, function(x, y, radius)
-		local index = Index(area, x, y)
-
-		local r = Rect(RGROUP, x, y, 255, 0, 0)
-
-		area[index] = radius
-
-		local t = display.newText(RGROUP, ("%i"):format(radius), 0, 0, native.systemFontBold, 20)
-
-		t:setTextColor(0, 255)
-
-		t.x, t.y = r.x, r.y
-	end)
-
-	timers.RepeatEx(function(event)
-		local radius = math.floor(event.m_elapsed / 900)
-
-		spread(radius)
-
-		ComputeTemps(area)
-
-		if radius >= 5 then
-			return "cancel"
+	-- Setter --
+	return function(x, y, value)
+		if abs(x) <= halfx and abs(y) <= halfy then
+			area[Index(area, x, y)] = value
 		end
-	end, 50)
+	end,
 
-	timer.performWithDelay(350, function()
-		SetTempsTo(area, 99)
+	-- Update --
+	function(how, value)
+		-- By default, march around the perimeter. If not marching inside,
+		-- get an offset to add temporary padding during marches.
+		if how ~= "inside" and how ~= "outside" then
+			how = "perimeter"
+		end
 
-		UpdateArea(area)
+		local offset = how ~= "inside" and Index(area, 0, halfy + 2)
+		local ntemps = offset and ComputeTemps(area, offset) or 0
 
-		SetTempsTo(area, nil)
-	end, 0)
+		-- Assign any temporary squares to pad the boundary.
+		value = value or true
+
+		for i = 1, ntemps do
+			local index = area[offset + i]
+
+			area[index] = value
+		end
+
+		-- March the boundary.
+		March(area, func, how == "perimeter")
+
+		-- Clear any temporary squares.
+		for i = 1, ntemps do
+			local index = area[offset + i]
+
+			area[index] = nil
+		end
+	end
 end
 
 -- Export the module.

@@ -1,4 +1,4 @@
---- The main functionality behind our heroic squirrel.
+--- The main functionality behind our heroic player.
 
 --
 -- Permission is hereby granted, free of charge, to any person obtaining
@@ -55,14 +55,14 @@ local transition = transition
 -- Exports --
 local M = {}
 
--- Helper to point our squirrel in a given direction
+-- Helper to point our player in a given direction
 local function Face (player, dir)
 	if player.m_facing ~= dir then
 		player.m_facing = dir
 	end
 end
 
--- Places our squirrel somewhere
+-- Places our player somewhere
 local function Place (player, x, y)
 	player.m_body.x = x
 	player.m_body.y = y
@@ -84,7 +84,7 @@ local Body = { filter = { categoryBits = collision.FilterBits("player"), maskBit
 local Player
 
 --- Adds our heroic protagonist to a new level.
--- @pgroup group Display group that will hold the squirrel parts.
+-- @pgroup group Display group that will hold the player parts.
 -- @uint col Column of starting tile.
 -- @uint row Row of starting tile.
 function M.AddPlayer (group, col, row)
@@ -180,7 +180,7 @@ local function AuxMove (x, y, dist, dir)
 	return x, y
 end
 
---- Attempts to move the player in a given direction, at some average squirrel velocity.
+--- Attempts to move the player in a given direction, at some average player velocity.
 -- @string dir Direction in which to move.
 -- @see game.Movement.NextDirection
 function M.MovePlayer (dir)

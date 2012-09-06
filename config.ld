@@ -1,8 +1,8 @@
 -- ldoc configuration file
 file = { ".", "class", "dot", "effect", "enemy", "event", "fill", "game", "ui", exclude = { "scene", "tiles" } }
 output = "api"
-title = "So So Squirrel documentation"
-project = "So So Squirrel"
+title = "Snippets documentation"
+project = "Corona SDK snippets"
 -- readme = "readme.md"
 --one = true
 -- no_summary = true
