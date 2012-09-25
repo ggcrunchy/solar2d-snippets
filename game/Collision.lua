@@ -173,6 +173,18 @@ function M.MakeSensor (object, body_type, props)
 	object.isSensor = true
 end
 
+---@number dx Incident vector x-component...
+-- @number dy ...and y-component.
+-- @number nx Normal x-component...
+-- @number ny ...and y-component.
+-- @treturn number Reflected vector x-component...
+-- @treturn number ...and y-component.
+function M.Reflect (dx, dy, nx, ny)
+	local scale = 2 * (dx * nx + dy * ny) / (nx * nx + ny * ny)
+
+	return dx - scale * nx, dy - scale * ny
+end
+
 --- Associates a collision type with _object_. This is used to choose _object_'s handler in
 -- the event of a collision, and will also be provided (as a convenience) to the other
 -- object's handler.

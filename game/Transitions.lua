@@ -63,7 +63,9 @@ function M.DoAndWait (name, target, params, update)
 		target[name] = handle
 	end
 
-	M.WaitForTransition(handle, update)
+	if not M.WaitForTransition(handle, update) then
+		transition.cancel(handle)
+	end
 
 	if name then
 		target[name] = nil
@@ -81,8 +83,9 @@ end
 -- This must be called within a coroutine.
 -- @tparam TransitionHandle handle As returned by the `transition` functions.
 -- @callable update Optional update routine, cf. @{flow_ops.WaitWhile}.
+-- @treturn boolean Did the transition finish?
 function M.WaitForTransition (handle, update)
-	flow_ops.WaitWhile(DoingTransition, update, handle)
+	return flow_ops.WaitWhile(DoingTransition, update, handle)
 end
 
 -- Export the module.

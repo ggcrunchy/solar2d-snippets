@@ -65,6 +65,11 @@ local function HexToNum (file)
 	return sum
 end
 
+-- Tries to open a file
+local function Open (name, base_dir)
+	return open(system.pathForFile(name, base_dir), "rb")
+end
+
 --- Generates a rectangular mask, for use with `graphics.setMask`.
 -- @uint w Mask width...
 -- @uint h ...and height.
@@ -74,29 +79,40 @@ end
 -- @treturn number xscale Scale to apply to mask to fit _w_...
 -- @treturn number yscale ...and to fit _h_.
 function M.NewMask (w, h, name, base_dir)
-	local group = display.newGroup()
-	local xpad, ew = Extra(w)
-	local ypad, eh = Extra(h)
-
-	display.newRect(group, xpad, ypad, w + ew, h + eh)
-
-	local tedge = display.newRect(group, 0, 0, w + xpad * 2, ypad)
-	local ledge = display.newRect(group, 0, ypad, xpad, h)
-	local redge = display.newRect(group, w + xpad + ew, ypad, xpad, h)
-	local bedge = display.newRect(group, 0, h + ypad + eh, w + xpad * 2, ypad)
-
-	tedge:setFillColor(0)
-	ledge:setFillColor(0)
-	redge:setFillColor(0)
-	bedge:setFillColor(0)
-
 	base_dir = base_dir or system.TemporaryDirectory
-	name = name or utils.NewName() .. ".png"
 
-	display.save(group, name, base_dir)
+	-- If the mask exists, reuse it.
+	local file = name and Open(name, base_dir)
 
-	group:removeSelf()
+	if file then
+		file:close()
 
+	-- Otherwise, build the mask.
+	else
+		local group = display.newGroup()
+		local xpad, ew = Extra(w)
+		local ypad, eh = Extra(h)
+
+		display.newRect(group, xpad, ypad, w + ew, h + eh)
+
+		local tedge = display.newRect(group, 0, 0, w + xpad * 2, ypad)
+		local ledge = display.newRect(group, 0, ypad, xpad, h)
+		local redge = display.newRect(group, w + xpad + ew, ypad, xpad, h)
+		local bedge = display.newRect(group, 0, h + ypad + eh, w + xpad * 2, ypad)
+
+		tedge:setFillColor(0)
+		ledge:setFillColor(0)
+		redge:setFillColor(0)
+		bedge:setFillColor(0)
+
+		name = name or utils.NewName() .. ".png"
+
+		display.save(group, name, base_dir)
+
+		group:removeSelf()
+	end
+
+	-- In the simulator, figure out the scaling.
 	local xscale, yscale
 
 	if system.getInfo("platformName") == "Win" then

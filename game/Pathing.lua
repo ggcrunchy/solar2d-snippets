@@ -25,8 +25,8 @@
 --
 
 -- Standard library imports --
-local ipairs = ipairs
 local insert = table.insert
+local ipairs = ipairs
 
 -- Modules --
 local array_ops = require("array_ops")

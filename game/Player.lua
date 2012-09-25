@@ -29,6 +29,7 @@ local min = math.min
 local pairs = pairs
 
 -- Modules --
+local ai = require("game.AI")
 local audio = require("game.Audio")
 local collision = require("game.Collision")
 local dispatch_list = require("game.DispatchList")
@@ -93,6 +94,10 @@ function M.AddPlayer (group, col, row)
 	-- Add the body "sprite"
 	Player.m_body = display.newCircle(group, 0, 0, Radius)
 
+	Player.m_body:setStrokeColor(255, 0, 0)
+
+	Player.m_body.strokeWidth = 3
+
 	-- Put the player on the starting tile.
 	PutAtStart(Player)
 
@@ -140,57 +145,48 @@ function M.IsFollowingPath ()
 	return Goal ~= nil
 end
 
+---@treturn number Goal's x coordinate, or **nil** if no goal exists...
+-- @treturn number ...and y coordinate.
+-- @treturn int Goal's tile, or **nil** if no goal exists (or tile has not been found).
+function M.GoalPos ()
+	if Goal then
+		return Goal.x, Goal.y, Goal.tile
+	else
+		return nil
+	end
+end
+
 -- Distance that player can travel per second --
 local Speed = 95
 
--- Helper to time-slice long movements
-local function AuxMove (x, y, dist, dir)
-	local near = min(tile_maps.GetSizes()) / 3
-	local acc, step = 0, min(near, dist)
+-- Updates the player on tile movement
+local function UpdateOnMove (dir, tile)
+	Cur = path_utils.Advance(Cur, "facing", dir)
 
-	while acc < dist do
-		acc, x, y = acc + step, movement.MoveFrom(x, y, min(step, dist - acc), dir)
+	Goal.tile = tile
 
-		-- If the player is following a path, stop if it reaches the goal.
-		if M.IsFollowingPath() then
-			if abs(Goal.x - x) < near and abs(Goal.y - y) < near then
-				M.CancelPath()
-
-				break
-			end
-
-			-- If the player steps onto the center of a non-corner / junction tile for the
-			-- first time during a path, update the pathing state.
-			local tile = tile_maps.GetTileIndex_XY(x, y)
-			local tx, ty = tile_maps.GetTilePos(tile)
-
-			if not tile_flags.IsStraight(tile) and Goal.tile ~= tile and abs(tx - x) < near and abs(ty - y) < near then
-				Cur = path_utils.Advance(Cur, "facing", dir)
-				dir = Cur[Cur.index + 1]
-
-				Goal.tile = tile
-			end
-		end
-	end
-
-	if dir ~= Player.m_facing then
-		Face(Player, dir)
-	end
-	
-	return x, y
+	return Cur[Cur.index + 1] 
 end
 
---- Attempts to move the player in a given direction, at some average player velocity.
+-- Near goal distance --
+local NearGoal
+
+--- Attempts to move the player in a given direction, at some average squirrel velocity.
 -- @string dir Direction in which to move.
 -- @see game.Movement.NextDirection
 function M.MovePlayer (dir)
-	-- At the very least, face the direction we want to move.
-	Face(Player, dir)
-
 	-- Try to walk a bit.
-	local body = Player.m_body
-	local x, y = body.x, body.y
-	local x2, y2 = AuxMove(x, y, Speed * frames.DiffTime(), dir)
+	local moved, x2, y2, dir2 = ai.TryToMove(Player.m_body, Speed * frames.DiffTime(), dir, NearGoal, M, UpdateOnMove)
+
+	-- Face the direction we at least tried to move.
+	Face(Player, dir2)
+
+	-- If we did move, update the animation.
+	if moved then
+		FramesLeft = 2
+
+--		Player.m_body:play()
+	end
 
 	-- Finally, put the body and tail relative to the feet.
 	Place(Player, x2, y2)
@@ -231,6 +227,7 @@ dispatch_list.AddToMultipleLists{
 	enter_level = function(level)
 		MarkersLayer = level.markers_layer
 		FramesLeft = 0
+		NearGoal = min(level.w, level.h) / 3
 
 --		Sounds:Load()
 
@@ -283,8 +280,7 @@ dispatch_list.AddToMultipleLists{
 		if tile_flags.IsOnPath(tile) then
 			M.CancelPath()
 
-			local body = Player.m_body
-			local ftile = tile_maps.GetTileIndex_XY(body.x, body.y)
+			local ftile = tile_maps.GetTileIndex_XY(M.GetPos())
 			local paths = pathing.FindPath(ftile, tile)
 
 			if paths then

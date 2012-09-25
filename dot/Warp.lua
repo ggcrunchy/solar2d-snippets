@@ -223,7 +223,7 @@ function Warp:Use (func)
 end
 
 -- Add warp-OBJECT collision handler.
-collision.AddHandler("warp", function(phase, warp, _, other_type)
+collision.AddHandler("warp", function(phase, warp, other, other_type)
 	-- Player touched warp: signal it as the dot of interest.
 	if other_type == "player" then
 		dispatch_list.CallList("touching_dot", warp, phase == "began")
@@ -241,6 +241,10 @@ collision.AddHandler("warp", function(phase, warp, _, other_type)
 				warp.m_line = nil
 			end
 		end
+
+	-- Enemy touched warp: react.
+	elseif other_type == "enemy" then
+		other:ReactTo("touched_warp", warp, phase == "began")
 	end
 end)
 

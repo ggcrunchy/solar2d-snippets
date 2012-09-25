@@ -147,6 +147,9 @@ dispatch_list.AddToMultipleLists{
 		end
 	end,
 
+	-- Leave Menus --
+	leave_menus = "leave_level",
+
 	-- Reset Level --
 	reset_level = function()
 		for _, group in ipairs(Groups) do

@@ -26,7 +26,6 @@
 -- Standard library imports --
 local ipairs = ipairs
 local max = math.max
-local pairs = pairs
 local tonumber = tonumber
 
 -- Modules --
@@ -136,56 +135,33 @@ function M.SetSpriteSetImageFrame (image, frame)
 	image:setSequence(FrameName(frame))
 end
 
+-- --
+local Factories = {}
+
 --- DOCMAYBE
 -- @param sheet_image
 -- @param sheet
 -- @treturn function X
-function M.SpriteHelper (sheet_image, sheet)
-	local isheet
+function M.NewSpriteFactory (sheet_image, sheet)
+	local factory = {}
 
-	--
-	local function Enter (sure)
-		if (sure or not sheet.m_maybe) and not isheet then
-			isheet = graphics.newImageSheet(sheet_image, sheet)
-		end
+	--- DOCME
+	function factory:Load ()
+		self.m_isheet = self.m_isheet or graphics.newImageSheet(sheet_image, sheet)
 	end
 
-	--
-	local function Leave ()
-		isheet = nil
+	--- DOCME
+	-- @pgroup group
+	-- @treturn DisplayObject X
+	function factory:NewSprite (group)
+		self:Load()
+
+		return display.newSprite(group, self.m_isheet, sheet.m_sprites)
 	end
 
-	--
-	dispatch_list.AddToMultipleLists{
-		-- Enter Level --
-		enter_level = Enter,
+	Factories[#Factories + 1] = factory
 
-		-- Enter Menus --
-		enter_menus = Enter,
-
-		-- Leave Level --
-		leave_level = function()
-			if not sheet.m_used_in_menus then
-				Leave()
-			end
-		end,
-
-		-- Leave Menus --
-		leave_menus = function()
-			if sheet.m_used_in_menus == "only" then
-				Leave()
-			end
-		end
-	}
-
-	--
-	return function(group, ...)
-		if sheet.m_maybe then
-			Enter(true)
-		end
-
-		return display.newSprite(group, isheet, sheet.m_sprites)
-	end
+	return factory
 end
 
 -- Widths of each column (same for each row; may be 0) during tiling --
@@ -271,6 +247,19 @@ function M.TileImage (name, ncols, nrows, x1, y1, x2, y2)
 	-- Finally, make the sheet.
 	return graphics.newImageSheet(name, { frames = frames })
 end
+
+-- Listen to events.
+dispatch_list.AddToMultipleLists{
+	-- Leave Level --
+	leave_level = function()
+		for _, factory in ipairs(Factories) do
+			factory.m_isheet = nil
+		end
+	end,
+
+	-- Leave Menus --
+	leave_menus = "leave_level"
+}
 
 -- Export the module.
 return M

@@ -26,11 +26,13 @@
 --
 
 -- Standard library imports --
-local assert = assert
+local abs = math.abs
+local ipairs = ipairs
 
 -- Modules --
 local button = require("ui.Button")
 local colors = require("ui.Color")
+local generators = require("effect.Generators")
 local index_ops = require("index_ops")
 local sheet = require("ui.Sheet")
 local skins = require("ui.Skin")
@@ -40,6 +42,8 @@ local touch = require("ui.Touch")
 local display = display
 local graphics = graphics
 local native = native
+local system = system
+local transition = transition
 
 -- Imports --
 local GetColor = colors.GetColor
@@ -74,6 +78,62 @@ local function AdjustButton (button, skin, dx)
 		button.y = button.y + button.height / 2
 	end
 end
+
+--
+local function CancelTransitions (tlist)
+	for i = #tlist, 1, -1 do
+		transition.cancel(tlist[i])
+
+		tlist[i] = nil
+	end
+end
+
+--
+local function X (i, dw)
+	return (i - .5) * dw
+end
+
+-- Roll transition --
+local RollParams = { time = 550, transition = easing.inOutExpo }
+
+-- --
+local ScaleTo = { 1, .75, .5, .75 }
+
+--
+local function SetScale (object, index)
+	local scale = ScaleTo[abs(index - 2) + 1]
+
+	object.xScale = scale
+	object.yScale = scale
+end
+
+--
+local function Roll (transitions, parts, oindex, dw)
+	local other = parts[4]
+
+	other.x = X(dw < 0 and 4 or 0, abs(dw))
+
+	other.m_to_left = dw < 0
+
+	sheet.SetSpriteSetImageFrame(other, oindex)
+
+	local add = dw < 0 and -1 or 1
+
+	for i, part in ipairs(parts) do
+		SetScale(RollParams, i + add)
+
+		RollParams.x = part.x + dw
+		RollParams.onComplete = part == other and transitions.onComplete or nil
+
+		transitions[i] = transition.to(part, RollParams)
+	end
+end
+
+--
+local function NoOp () return true end
+
+-- --
+local Name = (...) .. "_%ix%i.png"
 
 ---
 -- @pgroup group
@@ -116,6 +176,7 @@ function M.OptionsHGrid (group, skin, x, y, w, h, text)
 
 	-- 
 	bar:addEventListener("touch", BarTouch)
+	backdrop:addEventListener("touch", NoOp)
 
 	--
 	local x2, y2 = dw * 2, dh * 2 - 1
@@ -125,20 +186,41 @@ function M.OptionsHGrid (group, skin, x, y, w, h, text)
 	--
 	local sprite_count, sprite_index
 
-	local function Rotate (to_left)
-		return index_ops.RotateIndex(sprite_index, sprite_count, to_left)
+	local function Rotate (to_left, i)
+		return index_ops.RotateIndex(i or sprite_index, sprite_count, to_left)
+	end
+
+	--
+	local parts, trans = {}, {}
+
+	function trans.onComplete (other)
+		--
+		for i = #trans, 1, -1 do
+			trans[i] = nil
+		end
+
+		--
+		if other.m_to_left then
+			parts[4], parts[1], parts[2], parts[3] = parts[1], parts[2], parts[3], parts[4]
+		else
+			parts[1], parts[2], parts[3], parts[4] = parts[4], parts[1], parts[2], parts[3]
+		end
 	end
 
 	--
 	local lscroll = button.Button(ggroup, skin.optiongrid_lscrollskin, 0, y, dw, dh, function()
-		if sprite_index then
-			ggroup:SetCurrent(Rotate(true))
+		if sprite_index and #trans == 0 then
+			sprite_index = Rotate(false)
+
+			Roll(trans, parts, Rotate(false), -dw)
 		end
 	end)
 
 	local rscroll = button.Button(ggroup, skin.optiongrid_rscrollskin, w, y, dw, dh, function()
-		if sprite_index then
-			ggroup:SetCurrent(Rotate(false))
+		if sprite_index and #trans == 0 then
+			sprite_index = Rotate(true)
+
+			Roll(trans, parts, Rotate(true), dw)
 		end
 	end)
 
@@ -146,17 +228,39 @@ function M.OptionsHGrid (group, skin, x, y, w, h, text)
 	AdjustButton(rscroll, skin.optiongrid_rscrollskin, 0)
 
 	--
-	local left_image, middle_image, right_image
+	local pgroup = display.newGroup()
+
+	pgroup.y = dh
+
+	ggroup:insert(pgroup)
+
+	local name, xscale, yscale = generators.NewMask(w, dh, Name:format(w, dh))
+	local mask = graphics.newMask(name, system.TemporaryDirectory)
+
+	pgroup:setMask(mask)
+
+	pgroup.maskScaleX = xscale
+	pgroup.maskScaleY = yscale
+	pgroup.maskX = w / 2
+	pgroup.maskY = dh / 2
 
 	--- DOCME
 	-- @param images
 	-- @int count
 	-- @int index
 	function ggroup:Bind (images, count, index)
+		--
+		for i = #parts, 1, -1 do
+			parts[i]:removeSelf()
+
+			parts[i] = nil
+		end
+
+		--
 		if images then
-			left_image = sheet.NewImage(ggroup, images, 0, dh, dw, dh)
-			middle_image = sheet.NewImage(ggroup, images, dw, dh, dw, dh)
-			right_image = sheet.NewImage(ggroup, images, dw * 2, dh, dw, dh)
+			for i = 1, 4 do
+				parts[i] = sheet.NewImage(pgroup, images, 0, 0, dw, dh)
+			end
 
 			--
 			sprite_count = count
@@ -169,11 +273,9 @@ function M.OptionsHGrid (group, skin, x, y, w, h, text)
 
 		--
 		else
-			display.remove(left_image)
-			display.remove(middle_image)
-			display.remove(right_image)
-		
-			left_image, middle_image, right_image, sprite_index = nil
+			CancelTransitions(trans)
+
+			sprite_index = nil
 		end
 	end
 
@@ -186,11 +288,19 @@ function M.OptionsHGrid (group, skin, x, y, w, h, text)
 	--- DOCME
 	-- @uint current
 	function ggroup:SetCurrent (current)
+		CancelTransitions(trans)
+
 		sprite_index = current
 
-		sheet.SetSpriteSetImageFrame(left_image, Rotate(true))
-		sheet.SetSpriteSetImageFrame(middle_image, sprite_index)
-		sheet.SetSpriteSetImageFrame(right_image, Rotate(false))
+		sheet.SetSpriteSetImageFrame(parts[1], Rotate(true))
+		sheet.SetSpriteSetImageFrame(parts[2], sprite_index)
+		sheet.SetSpriteSetImageFrame(parts[3], Rotate(false))
+
+		for i, part in ipairs(parts) do
+			part.x = X(i, dw)
+
+			SetScale(part, i)
+		end
 	end
 
 	--

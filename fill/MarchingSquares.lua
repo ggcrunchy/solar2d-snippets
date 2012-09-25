@@ -162,9 +162,6 @@ end
 -- @uint halfy Half-height, as per _halfx_.
 -- @callable func Visitor, called as `func(x, y)` on each marched-over boundary square, where
 -- _x_ and _y_ are integer offsets from the center square.
--- @string how If absent, **"perimeter"**. If this is **"inside"**, the march will proceed
--- along the boundary squares. Otherwise, the march goes around this boundary, **"outside"**
--- being slightly tighter than **"perimeter"**.
 -- @treturn function Setter function, called as `setter(x, y, value)`, for some integer x, y.
 -- If _value_ is **nil**, the square's value is cleared; otherwise, assigns the value.
 --

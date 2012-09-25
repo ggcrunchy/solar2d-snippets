@@ -24,12 +24,19 @@
 --
 
 -- Modules --
-local buttons = require("ui.Button")
+local button = require("ui.Button")
+local checkbox = require("ui.Checkbox")
 local dispatch_list = require("game.DispatchList")
 local index_ops = require("index_ops")
+local iterators = require("iterators")
+local level_map = require("game.LevelMap")
 local markers = require("effect.Markers")
 local movement = require("game.Movement")
+local player = require("game.Player")
 local tile_maps = require("game.TileMaps")
+
+-- Corona globals --
+local display = display
 
 -- Corona modules --
 local physics = require("physics")
@@ -45,6 +52,9 @@ local Options = { "NONE", "PHYSICS", "GRID", "TILE_FLAGS" }
 
 -- --
 local Index = 1
+
+-- --
+local ButtonsToAdd = {}
 
 -- --
 local GameGroup, DebugLayer
@@ -110,6 +120,21 @@ dispatch_list.AddToMultipleLists{
 	things_loaded = function(level)
 		GameGroup = level.game_group
 
+		local y = 20
+
+		for _, key, func in iterators.ArgsByN(2,
+--			"KillP", player.Kill,
+			"Win", function()
+				level_map.UnloadLevel("won")
+			end
+		) do
+			if ButtonsToAdd[key] then
+				button.Button(level.hud_group, nil, display.contentWidth - 220, y, 200, 50, func, key)
+
+				y = y + 70
+			end
+		end
+
 		local choice = Options[Index]
 
 		if choice == "NONE" then
@@ -148,10 +173,25 @@ return function(what, arg_)
 	if what == "options" then -- arg_: data group
 		local message = display.newText(arg_, Options[Index], 400, 200, native.systemFont, 50)
 
-		buttons.Button(arg_, nil, 20, 200, 200, 50, function()
+		button.Button(arg_, nil, 20, 200, 200, 50, function()
 			Index = index_ops.RotateIndex(Index, #Options)
 
 			message.text = Options[Index]
 		end, "Debug...")
+
+		for i, key, text in iterators.ArgsByN(2,
+--			"KillP", "Add 'Kill player' button?",
+			"Win", "Add 'Win' button?"
+		) do
+			local y = 230 + i * 50
+
+			local cb = checkbox.Checkbox(arg_, nil, 10, y, 30, 30, function(_, check)
+				ButtonsToAdd[key] = check
+			end)
+
+			display.newText(arg_, text, cb.x + cb.width + 40, y, native.systemFont, 20)
+
+			cb:Check(ButtonsToAdd[key])
+		end
 	end
 end

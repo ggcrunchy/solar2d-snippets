@@ -38,6 +38,9 @@ local display = display
 -- Exports --
 local M = {}
 
+-- List of circle caches --
+local Circles
+
 -- List of rect caches --
 local Rects
 
@@ -53,6 +56,19 @@ local function Pull (cache, into)
 	end
 
 	return object
+end
+
+--- If a circle has been stashed in a certain cache, it will be pulled out and recycled.
+-- Otherwise, a fresh circle is created with default properties.
+-- @param what Name of a cache which may contain circles deposited by @{PushCircle}.
+-- @pgroup into Group into which the circle is pulled. If absent, the stage.
+-- @treturn DisplayCircle Circle display object.
+function M.PullCircle (what, into)
+	into = into or display.getCurrentStage()
+
+	local cache = Circles[what]
+
+	return Pull(cache, into) or display.newCircle(into, 0, 0, 1)
 end
 
 --- If a rect has been stashed in a certain cache, it will be pulled out and recycled.
@@ -74,6 +90,8 @@ local function AddToCache (cache, object)
 		cache[#cache + 1] = object
 
 		Stash:insert(object)
+	elseif object.parent then
+		object:removeSelf()
 	end
 end
 
@@ -86,7 +104,7 @@ end
 
 -- Type-agnostic pull logic
 local function Push (list, what, object, how)
-	local cache = list[what]
+	local cache = list and list[what]
 
 	if how == "is_group" or how == "is_dead_group" then
 		if how == "is_dead_group" then
@@ -113,6 +131,14 @@ local function Push (list, what, object, how)
 	end
 end
 
+--- Stashes one or more circles for later retrieval by @{PullCircle}.
+-- @param what Name of a cache (will be created if absent).
+-- @pobject circle A group or circle, pushed according to _how_.
+-- @string how As per @{PushRect}, _mutatis mutandis_.
+function M.PushCircle (what, circle, how)
+	Push(Circles, what, circle, how)
+end
+
 --- Stashes one or more rects for later retrieval by @{PullRect}.
 -- @param what Name of a cache (will be created if absent).
 -- @pobject rect A group or rect, pushed according to _how_.
@@ -131,6 +157,7 @@ end
 dispatch_list.AddToMultipleLists{
 	-- Enter Level --
 	enter_level = function(level)
+		Circles = lazy_tables.SubTablesOnDemand()
 		Rects = lazy_tables.SubTablesOnDemand()
 		Stash = display.newGroup()
 
@@ -153,7 +180,7 @@ dispatch_list.AddToMultipleLists{
 			end
 		end, 200)
 
-		Rects, Stash = nil
+		Circles, Rects, Stash = nil
 	end
 }
 

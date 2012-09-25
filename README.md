@@ -13,6 +13,15 @@ between the nodes, and break links between nodes. In "Timers", some of the outpu
 what's happening is probably not obvious without actually reading the code itself to see the flow.
 
 "Game" is some bits from a game in progress. The "player" is the white dot, and can be controlled with the
-buttons at the bottom or by double-tapping a spot on the map. (The pathing can occasionally snag, at corners
-I believe, and while I have a fix in mind I haven't gotten to it yet.) A button also appears when you're over
-a warp, in order to use that. Also, you can set some debug stuff in the Options screen, from the main menu.
+buttons at the bottom or by double-tapping a spot on the map. A button also appears when you're over a warp,
+in order to use that. Also, you can set some debug stuff in the Options screen, from the main menu.
+
+Fonts are from [DaFont](http://www.DaFont.com)
+
+Sounds are from
+
+[GRSites](http://www.grsites.com/archive/sounds/)
+
+or
+
+[Media College](http://www.mediacollege.com/downloads/sound-effects/)

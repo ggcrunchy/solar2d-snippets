@@ -112,7 +112,7 @@ end
 local Groups = { "game_group", "hud_group" }
 
 -- Assorted values, during normal play... --
-local NormalValues = { return_to = "scene.Title", wait_to_end = 3000 }
+local NormalValues = { return_to = "scene.Choices", wait_to_end = 3000 }
 
 -- ...those same values, if the level was launched from the editor... --
 local TestingValues = { return_to = "scene.MapEditor", wait_to_end = 500 }
