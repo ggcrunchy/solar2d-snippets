@@ -125,6 +125,7 @@ local function ListboxRowAdder (press, release, get_text)
 end
 
 local Names = {
+	"Curves",
 	"Hilbert",
 	"Marching",
 	"Nodes",

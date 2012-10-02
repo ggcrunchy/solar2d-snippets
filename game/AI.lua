@@ -34,6 +34,8 @@ local type = type
 local dispatch_list = require("game.DispatchList")
 local flow_ops = require("flow_ops")
 local movement = require("game.Movement")
+local mwc_rng = require("mwc_rng")
+local numeric_ops = require("numeric_ops")
 local tile_flags = require("game.TileFlags")
 local tile_maps = require("game.TileMaps")
 
@@ -86,10 +88,7 @@ end
 -- @treturn number X
 -- @treturn number Y
 function M.GetExtents ()
-	local ncols, nrows = tile_maps.GetCounts()
-	local tilew, tileh = tile_maps.GetSizes()
-
-	return max(ncols * tilew, display.contentWidth), max(nrows * tileh, display.contentHeight)
+	return MaxX, MaxY
 end
 
 --- DOCME
@@ -113,6 +112,41 @@ function M.GetTileNeighbor (start, halfx, halfy, gen)
 	return tile
 end
 
+--
+local function TSign (n, bias)
+	return n, n < 0 and -bias or bias
+end
+
+--- DOCME
+-- @uint start
+-- @uint halfx
+-- @uint halfy
+-- @callable gen
+-- @int biasx
+-- @int biasy
+-- @treturn uint T
+function M.GetTileNeighbor_Biased (start, halfx, halfy, gen, biasx, biasy)
+	halfx, halfy = halfx - biasx, halfy - biasy
+
+	local col, row = tile_maps.GetCell(start)
+	local ncols, nrows = tile_maps.GetCounts()
+	local w, h, tile = 2 * halfx + 1, 2 * halfy + 1, start
+
+	repeat
+		local gw = halfx - gen() % w + 1
+		local gh = halfy - gen() % h + 1
+
+		if gw ~= 0 and gh ~= 0 then
+			col = numeric_ops.ClampIn(col + TSign(gw, biasx), 1, ncols)
+			row = numeric_ops.ClampIn(row + TSign(gh, biasy), 1, nrows)
+
+			tile = tile_maps.GetTileIndex(col, row)
+		end
+	until tile ~= start
+
+	return tile
+end
+
 --- DOCME
 -- @number dx
 -- @number dy
@@ -129,77 +163,6 @@ end
 -- @treturn boolean X
 function M.NotZero (value)
 	return abs(value) > 1e-5
-end
-
--- Count of frames without movement --
-local NoMove = setmetatable({}, {
-	__mode = "k",
-	__index = function()
-		return 0
-	end
-})
-
---- DOCME
--- @param entity
--- @number dist
--- @string dir
--- @number near
--- @ptable path_funcs
--- @callable update
--- @treturn boolean M
--- @treturn number X
--- @treturn number Y
--- @treturn string D
-function M.TryToMove (entity, dist, dir, near, path_funcs, update)
-	local acc, step, x, y = 0, min(near, dist), entity.x, entity.y
-	local x0, y0, tilew, tileh = x, y, tile_maps.GetSizes()
-
-	while acc < dist do
-		local prevx, prevy = x, y
-
-		acc, x, y = acc + step, movement.MoveFrom(x, y, min(step, dist - acc), dir)
-
-		-- If the entity is following a path, stop if it reaches the goal (or gets impeded).
-		-- Because the goal can be on the fringe of the rectangular cell, radius checks have
-		-- problems, so we instead check the before and after projections of the goal onto
-		-- the path. If the position on the path switched sides, it passed the goal; if the
-		-- goal is also within cell range, we consider it reached.
-		if path_funcs.IsFollowingPath() then
-			local switch, gx, gy, gtile = false, path_funcs.GoalPos()
-
-			if dir == "left" or dir == "right" then
-				switch = (gx - prevx) * (gx - x) <= 0 and abs(gy - y) <= tileh / 2
-			else
-				switch = (gy - prevy) * (gy - y) <= 0 and abs(gx - x) <= tilew / 2
-			end
-
-			if switch or NoMove[entity] >= 2 then
-				path_funcs.CancelPath()
-
-				NoMove[entity] = 0
-
-				break
-			end
-
-			-- If the entity steps onto the center of a non-corner / junction tile for the
-			-- first time during a path, update the pathing state.
-			local tile = tile_maps.GetTileIndex_XY(x, y)
-			local tx, ty = tile_maps.GetTilePos(tile)
-
-			if not tile_flags.IsStraight(tile) and gtile ~= tile and M.IsClose(tx - x, ty - y, near) then
-				dir = update(dir, tile, entity)
-			end
-		end
-	end
-
-	--
-	local no_move = M.IsClose(x - x0, y - y0, 1e-3)
-
-	if no_move then
-		NoMove[entity] = NoMove[entity] + 1
-	end
-
-	return not no_move, x, y, dir
 end
 
 --- DOCME
@@ -242,6 +205,99 @@ function M.SamplePositions (n, tolerx, tolery, target, dt, update, arg)
 	end
 
 	return true, sumx / n, sumy / n
+end
+
+--- DOCME
+-- @pobject enemy
+-- @treturn boolean X
+function M.StartWithGenerator (enemy)
+	local life = enemy.m_life
+
+	enemy.m_life = (life or 0) + 1
+	enemy.m_gen = mwc_rng.MakeGenerator(enemy.m_tile or 0, enemy.m_life)
+
+	return life == nil
+end
+
+-- Count of frames without movement --
+local NoMove = setmetatable({}, {
+	__mode = "k",
+	__index = function()
+		return 0
+	end
+})
+
+-- --
+local TooManyMoves = 2
+
+--- DOCME
+-- @param entity
+-- @number dist
+-- @string dir
+-- @number near
+-- @ptable path_funcs
+-- @callable update
+-- @treturn boolean M
+-- @treturn number X
+-- @treturn number Y
+-- @treturn string D
+function M.TryToMove (entity, dist, dir, near, path_funcs, update)
+	local acc, step, x, y = 0, min(near or dist, dist), entity.x, entity.y
+	local x0, y0, tilew, tileh = x, y, tile_maps.GetSizes()
+
+	while acc < dist do
+		local prevx, prevy = x, y
+
+		acc, x, y = acc + step, movement.MoveFrom(x, y, min(step, dist - acc), dir)
+
+		-- If the entity is following a path, stop if it reaches the goal (or gets impeded).
+		-- Because the goal can be on the fringe of the rectangular cell, radius checks have
+		-- problems, so we instead check the before and after projections of the goal onto
+		-- the path. If the position on the path switched sides, it passed the goal; if the
+		-- goal is also within cell range, we consider it reached.
+		if path_funcs and path_funcs.IsFollowingPath(entity) then
+			local switch, gx, gy, gtile = false, path_funcs.GoalPos(entity)
+
+			if dir == "left" or dir == "right" then
+				switch = (gx - prevx) * (gx - x) <= 0 and abs(gy - y) <= tileh / 2
+			else
+				switch = (gy - prevy) * (gy - y) <= 0 and abs(gx - x) <= tilew / 2
+			end
+
+			if switch or NoMove[entity] >= TooManyMoves then
+				path_funcs.CancelPath(entity)
+
+				break
+			end
+
+			-- If the entity steps onto the center of a non-corner / junction tile for the
+			-- first time during a path, update the pathing state.
+			local tile = tile_maps.GetTileIndex_XY(x, y)
+			local tx, ty = tile_maps.GetTilePos(tile)
+
+			if not tile_flags.IsStraight(tile) and gtile ~= tile and M.IsClose(tx - x, ty - y, near) then
+				dir = update(dir, tile, entity)
+			end
+		end
+	end
+
+	--
+	-- CONSIDER: What if 'dist' happened to be low?
+	local no_move = M.IsClose(x - x0, y - y0, 1e-3)
+
+	if no_move and path_funcs and path_funcs.IsFollowingPath(entity) then
+		NoMove[entity] = min(NoMove[entity] + 1, TooManyMoves)
+	else
+		NoMove[entity] = 0
+	end
+
+	return not no_move, x, y, dir
+end
+
+--- DOCME
+-- @param entity
+function M.WipePath (entity)
+	NoMove[entity] = nil
 end
 
 -- Listen to events.

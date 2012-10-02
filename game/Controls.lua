@@ -378,7 +378,7 @@ local function TrapTaps (event)
 		if event.phase == "began" then
 			local now = event.time
 
-			if trap.m_last and now - trap.m_last < 300 then
+			if trap.m_last and now - trap.m_last < 550 then
 				trap.m_tapped_when, trap.m_last = now
 			else
 				trap.m_last = now
@@ -387,7 +387,7 @@ local function TrapTaps (event)
 		-- Released: If this follows a second touch, was it within a certain interval?
 		-- (Doesn't feel like a good fit for a tap if the press lingered for too long.)
 		elseif event.phase == "ended" then
-			if trap.m_tapped_when and event.time - trap.m_tapped_when < 200 then
+			if trap.m_tapped_when and event.time - trap.m_tapped_when < 300 then
 				dispatch_list.CallList("tapped_at", event.x, event.y)
 			end
 

@@ -120,6 +120,8 @@ function M.CancelPath ()
 	display.remove(X1)
 	display.remove(X2)
 
+	ai.WipePath(Player.m_body)
+
 	Cur, Goal, X1, X2 = nil
 end
 
@@ -165,7 +167,7 @@ local function UpdateOnMove (dir, tile)
 
 	Goal.tile = tile
 
-	return Cur[Cur.index + 1] 
+	return path_utils.CurrentDir(Cur) 
 end
 
 -- Near goal distance --
@@ -197,7 +199,7 @@ local function OnEnterFrame ()
 	-- If on a path, progress along it.
 	-- TODO: Good way to get player onto X evenly (and reliably; right now it sort of depends on if there's already a node, probably, and how off-center the X is then)
 	if Cur then
-		M.MovePlayer(Cur[Cur.index + 1])
+		M.MovePlayer(path_utils.CurrentDir(Cur))
 	end
 end
 

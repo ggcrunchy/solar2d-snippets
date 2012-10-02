@@ -47,6 +47,13 @@ end
 -- Remaps a curve's domain (namely, [0, 1] -> [-1, +1])
 local function Remap (curve)
 	return function(t)
+		return curve(2 * (t - .5))
+	end
+end
+
+-- Remap that always uses a positive time
+local function RemapAbs (curve)
+	return function(t)
 		return curve(2 * abs(t - .5))
 	end
 end
@@ -75,11 +82,49 @@ end
 -- @treturn number 1 - _t'_ &sup3;.
 M.OneMinusT3_Shifted = Remap(M.OneMinusT3)
 
+--- Shifted positive variant of @{OneMinusT3}.
+-- @function OneMinusT3_ShiftedAbs
+-- @number t Curve parameter.
+-- @treturn number 1 - |_t'_| &sup3;.
+M.OneMinusT3_ShiftedAbs = RemapAbs(M.OneMinusT3)
+
 --- A curve used in [Improved Perlin noise](http://mrl.nyu.edu/~perlin/paper445.pdf).
 -- @number t Curve parameter.
 -- @treturn number Curve value at _t_.
 function M.Perlin (t)
 	return t * t * t * (t * (t * 6 - 15) + 10)
+end
+
+-- Remaps a curve's domain (namely, [-1, +1] -> [0, 1])
+local function Narrow (t)
+	return 2 * t - 1
+end
+
+--- A cubic curve with double point, cf. [Wikipedia](http://en.wikipedia.org/wiki/File:Cubic_with_double_point.svg).
+-- @number t Curve parameter. (**N.B.** Remapped s.t. [-1, +1] &rarr; [0, 1].)
+-- @treturn number Unit x-displacement...
+-- @treturn number ...and y-displacement.
+function M.SingularCubic (t)
+	t = Narrow(t)
+
+	local x = -M.OneMinusT2(t)
+
+	return x, t * x
+end
+
+-- Cached coefficient --
+local Sqrt3 = math.sqrt(3)
+
+--- The [Tschirnhausen cubic](http://en.wikipedia.org/wiki/Tschirnhausen_cubic), with a = 1.
+-- @number t Curve parameter. (**N.B.** Remapped s.t. [-&radic;3, +&radic;3] &rarr; [0, 1].)
+-- @treturn number Unit x-displacement...
+-- @treturn number ...and y-displacement.
+function M.Tschirnhausen (t)
+	t = Narrow(t)
+
+	local x = 3 - M.T2(Sqrt3 * t)
+
+	return 3 * x, t * x
 end
 
 ---@number t Curve parameter.
@@ -105,6 +150,12 @@ end
 -- @number t Curve parameter.
 -- @treturn number _t'_ &sup3;.
 M.T3_Shifted = Remap(M.T3)
+
+--- Shifted positive variant of @{T3}.
+-- @function T3_ShiftedAbs
+-- @number t Curve parameter.
+-- @treturn number |_t'_| &sup3;.
+M.T3_ShiftedAbs = RemapAbs(M.T3)
 
 -- Export the module.
 return M

@@ -91,7 +91,7 @@ local DecalsLayer
 -- This function is called on creation (this is when it receives the **true** argument),
 -- and on each update; _shadow_ is the shadow object returned by this call.
 --
--- If _result_ is ever **"quit"**, the object is removed and the effect canceled.
+-- If _result_ is ever **"quit"**, the object is removed and the effect cancelled.
 --
 -- If _result_ was **"report_quit"** on the initial call, then after quitting the call
 -- `func("quitting", arg)` is performed, allowing e.g. for external cleanup.
