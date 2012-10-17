@@ -29,6 +29,7 @@
 -- Standard library imports --
 local abs = math.abs
 local sin = math.sin
+local sqrt = math.sqrt
 
 -- Exports --
 local M = {}
@@ -156,6 +157,23 @@ M.T3_Shifted = Remap(M.T3)
 -- @number t Curve parameter.
 -- @treturn number |_t'_| &sup3;.
 M.T3_ShiftedAbs = RemapAbs(M.T3)
+
+--- DOCME
+-- @callable curve
+-- @number t
+-- @number dt
+-- @treturn number X
+-- @treturn number Y
+function M.UnitTangent (curve, t, dt)
+	dt = dt or .015
+
+	local x1, y1 = curve(t - dt)
+	local x2, y2 = curve(t + dt)
+	local dx, dy = x2 - x1, y2 - y1
+	local len = sqrt(dx * dx + dy * dy)
+
+	return dx / len, dy / len
+end
 
 -- Export the module.
 return M

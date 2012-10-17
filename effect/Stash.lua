@@ -58,30 +58,44 @@ local function Pull (cache, into)
 	return object
 end
 
+-- Stock circle constructor
+function NewCircle (into)
+	return display.newCircle(into, 0, 0, 1)
+end
+
 --- If a circle has been stashed in a certain cache, it will be pulled out and recycled.
 -- Otherwise, a fresh circle is created with default properties.
 -- @param what Name of a cache which may contain circles deposited by @{PushCircle}.
 -- @pgroup into Group into which the circle is pulled. If absent, the stage.
+-- @callable new Optional circle constructor, which takes _into_ as argument and returns
+-- a circle display object; if absent, a default is used.
 -- @treturn DisplayCircle Circle display object.
-function M.PullCircle (what, into)
+function M.PullCircle (what, into, new)
 	into = into or display.getCurrentStage()
 
 	local cache = Circles[what]
 
-	return Pull(cache, into) or display.newCircle(into, 0, 0, 1)
+	return Pull(cache, into) or (new or NewCircle)(into)
+end
+
+-- Stock rect constructor
+function NewRect (into)
+	return display.newRect(into, 0, 0, 1, 1)
 end
 
 --- If a rect has been stashed in a certain cache, it will be pulled out and recycled.
 -- Otherwise, a fresh rect is created with default properties.
 -- @param what Name of a cache which may contain rects deposited by @{PushRect}.
 -- @pgroup into Group into which the rect is pulled. If absent, the stage.
+-- @callable new Optional rect constructor, which takes _into_ as argument and returns
+-- a rect display object; if absent, a default is used.
 -- @treturn DisplayRect Rect display object.
-function M.PullRect (what, into)
+function M.PullRect (what, into, new)
 	into = into or display.getCurrentStage()
 
 	local cache = Rects[what]
 
-	return Pull(cache, into) or display.newRect(into, 0, 0, 1, 1)
+	return Pull(cache, into) or (new or NewRect)(into)
 end
 
 -- Adds a display object to a cache (and in the stash as a dummy hierarchy)

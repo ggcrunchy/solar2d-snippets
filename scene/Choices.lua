@@ -27,6 +27,7 @@
 local exit = os.exit
 
 -- Modules --
+local common = require("editor.Common")
 local dispatch_list = require("game.DispatchList")
 local layout = require("ui.Layout")
 local scenes = require("game.Scenes")
@@ -36,7 +37,6 @@ local system = system
 
 -- Corona modules --
 local storyboard = require("storyboard")
-local widget = require("widget")
 
 -- Use graceful exit method on Android.
 if system.getInfo("platformName") == "Android" then
@@ -46,84 +46,7 @@ end
 -- Title scene --
 local Scene = storyboard.newScene()
 
---- Creates a listbox, built on top of `widget.newTableView`.
--- @pgroup group Group to which listbox will be inserted.
--- @number x Listbox x-coordinate...
--- @number y ...and y-coordinate.
--- @treturn DisplayObject Listbox object.
-local function Listbox (group, x, y)
-	local listbox = widget.newTableView{
-		left = x, top = y, width = 300, height = 150,
-		maskFile = "UI_Assets/ListboxMask.png"
-	}
-
-	group:insert(listbox)
-
-	return listbox
-end
-
---- Creates a listbox-compatible row inserter.
---
--- Each of the arguments is a function that takes _event_.**index** as argument, where
--- _event_ is the parameter of **onEvent** or **onRender**.
--- @callable press Optional, called when a listbox row is pressed.
--- @callable release Optional, called when a listbox row is released.
--- @callable get_text Returns a row's text string.
--- @treturn table Argument to `tableView:insertRow`.
-local function ListboxRowAdder (press, release, get_text)
-	local row, old_color
-
-	return {
-		-- On Event --
-		onEvent = function(event)
-			-- Listbox item pressed...
-			if event.phase == "press" then
-				if press then
-					press(event.index)
-				end
-
-				if event.target ~= row then
-					old_color = event.target.rowColor
-				end
-
-				if row then
-					row.reRender, row.rowColor = true, old_color
-				else
-					old_color = event.target.row
-				end
-
-				event.target.rowColor = { 0, 0, 255, 192 }
-
-				row = event.row
-
-				event.view.alpha = 0.5
-
-			-- ...and released.
-			elseif event.phase == "release" then
-				if release then
-					release(event.index)
-				end
-
-				event.target.reRender = true
-			end
-
-			return true
-		end,
-
-		-- On Render --
-		onRender = function(event)
-			local text = display.newRetinaText(get_text(event.index), 0, 0, native.systemFont, 25)
-
-			text:setReferencePoint(display.CenterLeftReferencePoint)
-			text:setTextColor(0)
-
-			text.x, text.y = 15, event.target.height / 2
-
-			event.view:insert(text)
-		end
-	}
-end
-
+-- Samples names --
 local Names = {
 	"Curves",
 	"Hilbert",
@@ -133,7 +56,8 @@ local Names = {
 	"Thoughts",
 	"Tiling",
 	"Timers",
-	"Game"
+	"Game",
+	"Editor"
 }
 
 --
@@ -145,10 +69,10 @@ end
 
 --
 function Scene:createScene ()
-	local Choices = Listbox(self.view, 20, 20)
+	local Choices = common.Listbox(self.view, 20, 20)
 	local Current = display.newText(self.view, "", 480, 50, native.systemFont, 35)
 
-	local add_row = ListboxRowAdder(function(index)
+	local add_row = common.ListboxRowAdder(function(index)
 		SetCurrent(Current, index)
 	end, nil, function(index)
 		return Names[index]
@@ -166,6 +90,8 @@ function Scene:createScene ()
 
 			if name == "Game" then
 				storyboard.gotoScene("scene.Level", { params = 1 })
+			elseif name == "Editor" then
+				storyboard.gotoScene("scene.EditorSetup", "fade") -- Corona bug? Without some effect, doesn't work on second try...
 			else
 				storyboard.gotoScene("samples." .. name)
 			end

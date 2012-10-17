@@ -35,6 +35,7 @@ local dispatch_list = require("game.DispatchList")
 
 -- Corona globals --
 local system = system
+local timer = timer
 
 -- Corona modules --
 local audio = require("audio")
@@ -46,7 +47,13 @@ local M = {}
 local Groups = {}
 
 -- Plays a bit of audio (unless it has already played too recently)
-local function Play (group, handles, name)
+local function Play (group, handles, name, delay)
+	if delay then
+		return timer.performWithDelay(delay, function()
+			Play(group, handles, name)
+		end)
+	end
+
 	local handle = handles[name]
 
 	if handle --[[and SoundOn]] then
@@ -119,15 +126,19 @@ function M.NewSoundGroup (sounds)
 	end
 
 	---@param name Name of sound to play.
-	function group:PlaySound (name)
-		Play(self, assert(self.m_handles, "Sound group not loaded"), name)
+	-- @uint delay Optional delay, in milliseconds, before playing.
+	-- @treturn TimerHandle A timer that may be cancelled, or **nil** if _delay_ was absent.
+	function group:PlaySound (name, delay)
+		return Play(self, assert(self.m_handles, "Sound group not loaded"), name, delay)
 	end
 
 	--- If the group has an array part, plays one of its sounds.
-	function group:RandomSound ()
+	-- @uint delay Optional delay, in milliseconds, before playing.
+	-- @treturn TimerHandle A timer that may be cancelled, or **nil** if _delay_ was absent.
+	function group:RandomSound (delay)
 		local handles = assert(self.m_handles, "Sound group not loaded")
 
-		Play(self, handles, random(#handles))
+		return Play(self, handles, random(#handles), delay)
 	end
 
 	Groups[#Groups + 1] = group

@@ -83,9 +83,16 @@ function M.DragTouch ()
 	end)
 end
 
+-- Is the target touched, or at least considered so?
+local function IsTouched (target, event)
+	return target.m_is_touched or event.id == "ignore_me"
+end
+
 -- Helper to set (multitouch) stage focus
 local function SetFocusForTouch (target, touch)
 	display.getCurrentStage():setFocus(target, touch)
+
+	target.m_is_touched = not not touch
 end
 
 --- Builds a function to be assigned as a **"touch"** listener, which handles various common
@@ -105,24 +112,26 @@ function M.TouchHelperFunc (began, moved, ended)
 	return function(event)
 		local target = event.target
 
-		if event.phase == "moved" and moved then
-			moved(event, target)
-
-		elseif event.phase == "ended" or event.phase == "cancelled" then
-			if event.id ~= "ignore_me" then
-				SetFocusForTouch(target, nil)
-			end
-
-			if ended then
-				ended(event, target)
-			end
-
-		elseif event.phase == "began" then
+		if event.phase == "began" then
 			if event.id ~= "ignore_me" then
 				SetFocusForTouch(target, event.id)
 			end
 
 			began(event, target)
+		
+		elseif IsTouched(target, event) then
+			if event.phase == "moved" and moved then
+				moved(event, target)
+
+			elseif event.phase == "ended" or event.phase == "cancelled" then
+				if event.id ~= "ignore_me" then
+					SetFocusForTouch(target, nil)
+				end
+
+				if ended then
+					ended(event, target)
+				end
+			end
 		end
 
 		return true

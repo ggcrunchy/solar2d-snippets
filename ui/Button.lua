@@ -25,9 +25,6 @@
 -- [ MIT license: http://www.opensource.org/licenses/mit-license.php ]
 --
 
--- Standard library imports --
-local assert = assert
-
 -- Modules --
 local class = require("class")
 local colors = require("ui.Color")
@@ -35,7 +32,6 @@ local frames = require("game.Frames")
 local geom2d_ops = require("geom2d_ops")
 local skins = require("ui.Skin")
 local timers = require("game.Timers")
-local touch = require("ui.Touch")
 
 -- Corona globals --
 local display = display
@@ -113,15 +109,10 @@ local function OnTouch (event)
 			DoTimeouts(button)
 		end
 
+	-- Guard against moves onto the button during touches.
+	elseif not button.m_is_touched then
+		return true
 	else
-if not button.m_is_touched then
-	print("BUTTON:")
-	vdump(button)
-	print("EVENT:")
-	vdump(event)
-end
-		assert(button.m_is_touched, "Button in inconsistent state") -- TODO: Ugh, this IS more possible than I thought...
-
 		-- Check whether the touch is inside the button.
 		local bx, by = button:localToContent(0, 0)
 
