@@ -187,11 +187,11 @@ end
 function M.GetTileLayer ()
 	ImageSheet = graphics.newImageSheet("GameTiles/Tiles.png", GameTiles)
 
-	if system.getInfo("platformName") == "Win" then -- Is this a bug?
+--	if system.getInfo("platformName") == "Win" then -- Is this a bug?
 		return display.newGroup()
-	else
-		return display.newImageGroup(ImageSheet)
-	end
+--	else
+--		return display.newImageGroup(ImageSheet) -- Err, this still needs some work :)
+--	end
 end
 
 ---@uint index Tile index.

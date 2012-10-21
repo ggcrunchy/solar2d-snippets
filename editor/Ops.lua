@@ -244,9 +244,17 @@ end
 -- @see editor.Common.IsVerified, game.DispatchList.CallList
 function M.Verify ()
 	if not common.IsVerified() then
-		local verify = { pass = 1 }
+		local verify, done = { pass = 1 }
 
 		native.setActivityIndicator(true)
+
+		timers.RepeatEx(function()
+			if done then
+				native.setActivityIndicator(false)
+
+				return "cancel"
+			end
+		end, 10)
 
 		repeat
 			verify.needs_another_pass = false
@@ -256,7 +264,7 @@ function M.Verify ()
 			verify.pass = verify.pass + 1
 		until #verify > 0 or not verify.needs_another_pass
 
-		native.setActivityIndicator(false)
+		done = true
 
 		if #verify > 0 then
 			local message
