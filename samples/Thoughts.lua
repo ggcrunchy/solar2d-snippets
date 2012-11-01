@@ -31,7 +31,7 @@ local scenes = require("game.Scenes")
 -- Corona modules --
 local storyboard = require("storyboard")
 
--- Map editor scene --
+-- Thoughts demo scene --
 local Scene = storyboard.newScene()
 
 --

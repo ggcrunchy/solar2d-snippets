@@ -33,7 +33,7 @@ local timers = require("game.Timers")
 -- Corona modules --
 local storyboard = require("storyboard")
 
--- Map editor scene --
+-- Marching squares demo scene --
 local Scene = storyboard.newScene()
 
 --

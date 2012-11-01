@@ -32,7 +32,7 @@ local timers = require("game.Timers")
 -- Corona modules --
 local storyboard = require("storyboard")
 
--- Map editor scene --
+-- Hilbert curve demo scene --
 local Scene = storyboard.newScene()
 
 --
@@ -51,13 +51,13 @@ function Scene:enterScene ()
 		hilbert.ForEach(6, function(s, x, y, way)
 			local wx, wy = 300 + x * 7, 470 - y * 7
 
-			if self.line then
+			if self.line then -- Third point and on
 				self.line:append(wx, wy)
-			elseif px then
+			elseif px then -- Second point
 				self.line = display.newLine(px, py, wx, wy)
 
 				self.line.width = 4
-			else
+			else -- First point
 				px, py = wx, wy
 			end
 

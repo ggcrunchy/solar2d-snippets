@@ -50,6 +50,7 @@ local Scene = storyboard.newScene()
 local Names = {
 	"Curves",
 	"Hilbert",
+	"Hop",
 	"Marching",
 	"Nodes",
 	"SlowMo",

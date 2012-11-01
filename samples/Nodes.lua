@@ -38,7 +38,7 @@ local transition = transition
  -- Corona modules --
 local storyboard = require("storyboard")
 
--- Map editor scene --
+-- Lines demo scene --
 local Scene = storyboard.newScene()
 
 --

@@ -31,7 +31,7 @@ local sheet = require("ui.Sheet")
 -- Corona modules --
 local storyboard = require("storyboard")
 
--- Map editor scene --
+-- Tiling demo scene --
 local Scene = storyboard.newScene()
 
 --
