@@ -54,12 +54,77 @@ local Names = {
 	"Marching",
 	"Nodes",
 	"SlowMo",
+	"Snowfall", -- In progress...
 	"Thoughts",
 	"Tiling",
 	"Timers",
 	"Game",
 	"Editor"
 }
+
+--[[
+	This seems a decent staging area for new ideas, versus the "TESTING" scene used now
+	in-game.
+
+	Prospects for future additions:
+
+	* Ramer-Douglas-Peucker algorithm
+
+		function DouglasPeucker(PointList[], epsilon)
+			//Find the point with the maximum distance
+			dmax = 0
+			index = 0
+			for i = 2 to (length(PointList) - 1)
+				d = PerpendicularDistance(PointList[i], Line(PointList[1], PointList[end])) 
+				if d > dmax
+					index = i
+					dmax = d
+				end
+			end
+
+			//If max distance is greater than epsilon, recursively simplify
+			if dmax >= epsilon
+				//Recursive call
+				recResults1[] = DouglasPeucker(PointList[1...index], epsilon)
+				recResults2[] = DouglasPeucker(PointList[index...end], epsilon)
+
+				// Build the result list
+				ResultList[] = {recResults1[1...end-1] recResults2[1...end]}
+			else
+				ResultList[] = {PointList[1], PointList[end]}
+			end
+
+			//Return the result
+			return ResultList[]
+		end
+
+		Also try Lang simplification, McMaster's slide, etc.
+
+		http://psimpl.sourceforge.net/reumann-witkam.html
+		http://www.motiondraw.com/blog/?p=50
+
+	* Play with some priority queues (sort of alluded to in Tektite wiki)
+
+	* Timeline / ladder queue stuff? (ditto)
+
+	* Theta* or Phi* demo (not sure off-hand if both would be redundant)
+
+	* Approximate crumble effect from Vektor Space / Icebreakers (need general quads to get it right)
+
+	* Do something with some of the curve code from Icebreakers? (If nothing else, a nice contribution
+	  to the curves module)
+
+	* I don't even know if this would look good, but try, say, sampling Hilbert curves starting at
+	  three points and trace the locus of the centroid of the triangle (I have to get this idea out
+	  of my head... for whatever reason, it plagues me on my Sunday runs)
+
+	* Go to town with the grid iterators, e.g. to make masks or general art... could amortize costs
+	  by iteratively capturing completed sections and compositing them? (Ditto)
+
+	* Projectile targeting, with gravity (maybe with some of the competing teams stuff from WAY back...)
+
+	* Try to do 8- or 16-bit style of 3D, like World Runner or Panorama Cotton (proof of concept)
+]]
 
 --
 local function SetCurrent (current, index)

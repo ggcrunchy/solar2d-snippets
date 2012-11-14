@@ -40,7 +40,7 @@ local _is_paused = {}
 local _offset = {}
 
 -- Timer class definition --
-class.Define("Timer", function(Timer)
+return class.Define(function(Timer)
 	--- Checks the timer for timeouts.
 	--
 	-- The counter is divided by the timeout duration. The integer part of this is the

@@ -26,7 +26,6 @@
 --
 
 -- Modules --
-local class = require("class")
 local colors = require("ui.Color")
 local frames = require("game.Frames")
 local geom2d_ops = require("geom2d_ops")
@@ -38,7 +37,7 @@ local display = display
 local native = native
 
 -- Classes --
-require("class.Timer")
+local TimerClass = require("class.Timer")
 
 -- Imports --
 local GetColor = colors.GetColor
@@ -188,7 +187,7 @@ local function SetTimeout (button, timeout)
 	local lapse = button[1].m_lapse
 
 	if timeout then
-		lapse = lapse or class.New("Timer")
+		lapse = lapse or TimerClass()
 
 		lapse:Start(timeout)
 

@@ -48,13 +48,12 @@ local Try_Multi = exception.Try_Multi
 -- Cached module references --
 local _IsInstance_
 local _IsType_
-local _New_
 
 -- Instance / type mappings --
 local Instances = table_ops.Weak("k")
 
 -- Class definitions --
-local Defs = {}
+local Defs = table_ops.Weak("k")
 
 -- Built-in type set --
 local BuiltIn = table_ops.MakeSet{ "boolean", "function", "nil", "number", "string", "table", "thread", "userdata" }
@@ -71,30 +70,47 @@ local Metamethods = table_ops.MakeSet{
 -- Exports --
 local M = {}
 
+-- Linearization heads, i.e. the classes themselves --
+local Heads = table_ops.Weak("v")
+
+-- Weak-mode, __index'd table
+function WeakIndexed (ifunc)
+	return setmetatable({}, { __mode = "k", __index = ifunc })
+end
+
 -- Class hierarchy linearizations --
-local Linearizations = setmetatable({}, {
-    __index = function(t, ctype)
-        local types = {}
+local Linearizations = WeakIndexed(function(t, id)
+	local n, types = 1
 
-        local function walker (index)
-            if index == nil then
-                return #types
-            else
-                return types[index]
-            end
-        end
+	local function walker (index)
+		if index == nil then
+			return n
+		elseif index == 1 then
+			return Heads[id]
+		else
+			return types and types[index]
+		end
+	end
 
-        t[ctype] = walker
+	t[id] = walker
 
-        repeat
-            types[#types + 1] = ctype
+	local ctype = Heads[id]
 
-			ctype = Defs[ctype].base
-        until ctype == nil
+	repeat
+		ctype = Defs[ctype].base
 
-        return walker
-    end
-})
+		if ctype then
+			types = types or { false }
+
+			types[n + 1], n = ctype, n + 1
+		end
+	until ctype == nil
+
+	return walker
+end)
+
+-- Forward declarations --
+local AuxNew
 
 do
 	-- Helper to copy between tables
@@ -104,18 +120,23 @@ do
 		end
 	end
 
-	-- Per-class data for default allocations --
-	local ClassData = setmetatable({}, {
-		__index = function(t, meta)
-			local datum = newproxy(true)
-
-			Copy(meta, getmetatable(datum))
-
-			t[meta] = datum
-
-			return datum
+	-- Create a substitute newproxy, if necessary
+	if not newproxy then
+		function newproxy (arg)
+			return setmetatable({}, arg == true and {} or getmetatable(arg))
 		end
-	})
+	end
+
+	-- Per-class data for default allocations --
+	local ClassData = WeakIndexed(function(t, meta)
+		local datum = newproxy(true)
+
+		Copy(meta, getmetatable(datum))
+
+		t[meta] = datum
+
+		return datum
+	end)
 
 	-- Per-instance data for default allocations --
 	local InstanceData = table_ops.Weak("k")
@@ -141,8 +162,8 @@ do
 
 	-- Common __index body
 	local function Index (I, key)
-		local defs = Defs[Instances[I]]
-		local index = defs.__index
+		local def = Defs[Instances[I]]
+		local index = def.__index
 
 		-- Pass the search along for the value.
 		local value
@@ -157,7 +178,7 @@ do
 		if value ~= nil then
 			return value
 		else
-			return defs.members[key]
+			return def.members[key]
 		end
 	end
 
@@ -177,7 +198,6 @@ do
 	local function DefaultCons () end
 
 	--- Defines a new class.
-	-- @param ctype Class type name.
 	-- @param members Members to add.
 	--
 	-- This may be a table, in which case each (name, member) pair is read out directly.
@@ -191,7 +211,8 @@ do
 	-- A **__cons** entry will be installed as the constructor, which is a no-op
 	-- otherwise. This should be callable as
 	--    cons(I, ...),
-	-- where _I_ is the instance and _..._ are any arguments passed to @{New}.
+	-- where _I_ is the instance and _..._ are any arguments passed to the class type, cf.
+	-- the return value.
 	--
 	-- A **__clone** entry will be installed as the clone body, which is an error otherwise.
 	-- This should be callable as
@@ -199,8 +220,8 @@ do
 	-- where _I_ is the instance to clone and _..._ are any arguments passed to @{Clone}.
 	-- @tparam table params Configuration parameters table, or **nil** to use the defaults.
 	--
-	-- If the **base** key is present, its value should be the type name of a class previously
-	-- made with `Define`. This class will then inherit the base class members and metamethods.
+	-- If the **base** key is present, its value should be a class type previously returned
+	-- by `Define`. This class will then inherit the base class members and metamethods.
 	--
 	-- If the **alloc** key is present, its value should be callable as
 	--    alloc(meta),
@@ -215,12 +236,11 @@ do
 	-- userdata, using the defaults for **__index** and **__newindex**. A member may be
 	-- shadowed in an instance by assigning another value to its name, and restored by
 	-- setting it to **nil**.
+	-- @treturn callable Class type, which may be called as
+	--    instance = ctype(...)
+	-- to instantiate the class.
 	-- @see GetMember
-	function M.Define (ctype, members, params)
-		assert(ctype ~= nil, "Define: ctype == nil")
-		assert(ctype == ctype, "Define: ctype is NaN")
-		assert(not BuiltIn[ctype], "Define: ctype refers to built-in type")
-		assert(not Defs[ctype], "Class already defined")
+	function M.Define (members, params)
 		assert(type(members) == "table" or type(members) == "function", "Non-table / function members")
 
 		-- Prepare the definition.
@@ -259,7 +279,7 @@ do
 					alloc = base_info.alloc
 				end
 
-				-- Store the base class name.
+				-- Store the base class type.
 				def.base = params.base
 			end
 
@@ -321,24 +341,26 @@ do
 		def.meta.__metatable = true
 
 		-- Register the class.
-		Defs[ctype] = def
+		local id = #Heads + 1
+
+		def.id = id
+
+		local function cons (...)
+			return AuxNew(def, ...)
+		end
+
+		Heads[id] = cons
+		Defs[cons] = def
+
+		return cons
 	end
-end
-
----@param ctype Type name.
--- @treturn boolean Type exists?
--- @see Define
-function M.Exists (ctype)
-	assert(ctype ~= nil, "Exists: ctype == nil")
-
-	return Defs[ctype] ~= nil
 end
 
 --- Obtains a value that was registered in the members table (or the table passed to the
 -- members function) during type definition.
 --
 -- Metamethods and the constructor are not included.
--- @param ctype Type name.
+-- @param ctype Class type.
 -- @param member Member name.
 -- @return Member, or **nil** if absent.
 -- @see Define
@@ -349,14 +371,20 @@ function M.GetMember (ctype, member)
 	return assert(Defs[ctype], "Type not found").members[member]
 end
 
+---@param what Value, which may be a class type.
+-- @treturn boolean _what_ was returned by @{Define}?
+function M.IsClass (what)
+	return Defs[what] ~= nil
+end
+
 ---@param item Item, which may be a class instance.
--- @treturn boolean _item_ was made by @{New}?
+-- @treturn boolean _item_ was instantiated by a @{Define}'d class?
 function M.IsInstance (item)
-	return (item and Instances[item]) ~= nil
+	return Instances[item] ~= nil
 end
 
 ---@param item Item.
--- @param what Type name or a return value of @{type}.
+-- @param what Type (as returned by @{Define}) or a return value of @{type}.
 -- @treturn boolean _item_ is of the given type or one of its subclasses?
 function M.IsType (item, what)
     assert(what ~= nil, "IsType: what == nil")
@@ -380,11 +408,12 @@ function M.IsType (item, what)
 end
 
 --- Gets a type's linearization, i.e. a flattened representation of its superclass hierarchy.
--- @param ctype Type name.
+-- @param ctype Class type.
 -- @treturn function Linearization walker, which is called as
---    walker(i),
--- where _i_ is the index in the linearization, ranging from 1 (the type itself) to the
--- linearization's size (its least specific base class), which is obtained by `walker(nil)`.
+--    type = walker(i),
+-- where _i_ is the index in the linearization, ranging from 1 (_type_ = _ctype_) to _size_
+-- (_ctype_'s least specific base class), where
+--    size = walker(nil).
 -- @see Define
 function M.Linearization (ctype)
     assert(ctype ~= nil, "Linearization: ctype == nil")
@@ -401,9 +430,9 @@ do
 	--
 	-- This may only be called on an instance within its constructor.
 	-- @param I Instance.
-	-- @param stype Superclass type name.
+	-- @param stype Superclass type.
 	-- @param ... Constructor arguments.
-	-- @see Define, New
+	-- @see Define
 	function M.SuperCons (I, stype, ...)
 		assert(I ~= nil, "SuperCons: I == nil")
 		assert(stype ~= nil, "SuperCons: stype == nil")
@@ -449,37 +478,19 @@ do
 		return CI
 	end
 
-	--- Builds a callback to instantiate a class.
-	-- @param ctype Type name.
-	-- @param arg1 Argument #1.
-	-- @param arg2 Argument #2.
-	-- @treturn function Callback.
-	function M.InstanceMaker (ctype, arg1, arg2)
-		return function()
-			return _New_(ctype, arg1, arg2)
-		end
-	end
-
-	--- Instantiates a class.
-	-- @param ctype Type name.
-	-- @param ... Constructor arguments.
-	-- @return Instance.
-	-- @see Define
-	function M.New (ctype, ...)
-		assert(ctype ~= nil, "New: ctype == nil")
-
-		local type_info = AssertArg(Defs[ctype], "class.New: Type \"%s\" not found", ctype)
+	-- Instantiates a class
+	function AuxNew (type_info, ...)
 		local I = type_info.alloc(type_info.meta)
 
-		Try_Multi(Cons, ConsDone, #ConsStack + 1, type_info.cons, I, ctype, ...)
+		Try_Multi(Cons, ConsDone, #ConsStack + 1, type_info.cons, I, Heads[type_info.id], ...)
 
 		return I
 	end
 end
 
 --- Gets a type's direct superclasses.
--- @param ctype Type name.
--- @return List of superclass type names, or **nil** if the type has no base classes.
+-- @param ctype Class type.
+-- @return List of superclass types, or **nil** if the type has no base classes.
 function M.Supers (ctype)
 	assert(ctype ~= nil, "Supers: ctype == nil")
 
@@ -488,8 +499,8 @@ end
 
 --- Gets an arbitrary item's type.
 -- @param item Item, which may be a class instance.
--- @return If _item_ was made by @{New}, its type name. Otherwise, the result of @{type}.
--- @treturn boolean _item_ is an instance made by @{New}?
+-- @return If _item_ was instantiated by a class, its type. Otherwise, the result of @{type}.
+-- @treturn boolean _item_ is an instance of a @{Define}'d class?
 function M.Type (item)
 	if _IsInstance_(item) then
 		return Instances[item], true
@@ -501,7 +512,6 @@ end
 -- Cache module members.
 _IsInstance_ = M.IsInstance
 _IsType_ = M.IsType
-_New_ = M.New
 
 -- Export the module.
 return M
