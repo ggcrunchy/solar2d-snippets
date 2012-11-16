@@ -120,10 +120,17 @@ do
 		end
 	end
 
+	-- Copy directly into datum? --
+	local Direct = not newproxy
+
 	-- Create a substitute newproxy, if necessary
-	if not newproxy then
+	if Direct then
 		function newproxy (arg)
-			return setmetatable({}, arg == true and {} or getmetatable(arg))
+			if arg == true then
+				return {}
+			else
+				return setmetatable({}, arg)
+			end
 		end
 	end
 
@@ -131,7 +138,7 @@ do
 	local ClassData = WeakIndexed(function(t, meta)
 		local datum = newproxy(true)
 
-		Copy(meta, getmetatable(datum))
+		Copy(meta, Direct and datum or getmetatable(datum))
 
 		t[meta] = datum
 

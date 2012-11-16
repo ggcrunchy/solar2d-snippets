@@ -1,0 +1,422 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+<head>
+    <title>Snippets documentation</title>
+    <link rel="stylesheet" href="../ldoc.css" type="text/css" />
+</head>
+<body>
+
+<div id="container">
+
+<div id="product">
+	<div id="product_logo"></div>
+	<div id="product_name"><big><b></b></big></div>
+	<div id="product_description"></div>
+</div> <!-- id="product" -->
+
+
+<div id="main">
+
+
+<!-- Menu -->
+
+<div id="navigation">
+<br/>
+<h1>Corona SDK snippets</h1>
+
+<ul>
+  <li><a href="../api.html">Index</a></li>
+</ul>
+
+<h2>Contents</h2>
+<ul>
+<li><a href="#Functions">Functions</a></li>
+</ul>
+
+
+<h2>Modules</h2>
+<ul>
+  <li><a href="../modules/DEBUG.html">DEBUG</a></li>
+  <li><a href="../modules/array_ops.html">array_ops</a></li>
+  <li><a href="../modules/bitwise_ops.html">bitwise_ops</a></li>
+  <li><a href="../modules/bound_args.html">bound_args</a></li>
+  <li><a href="../modules/cache_ops.html">cache_ops</a></li>
+  <li><a href="../modules/class.html">class</a></li>
+  <li><a href="../modules/class.Timer.html">class.Timer</a></li>
+  <li><a href="../modules/coroutine_ex.html">coroutine_ex</a></li>
+  <li><a href="../modules/dot.Switch.html">dot.Switch</a></li>
+  <li><a href="../modules/dot.Warp.html">dot.Warp</a></li>
+  <li><a href="../modules/editor.Common.html">editor.Common</a></li>
+  <li><a href="../modules/editor.Dialog.html">editor.Dialog</a></li>
+  <li><a href="../modules/editor.Dots.html">editor.Dots</a></li>
+  <li><a href="../modules/editor.EventBlocks.html">editor.EventBlocks</a></li>
+  <li><a href="../modules/editor.Events.html">editor.Events</a></li>
+  <li><a href="../modules/editor.General.html">editor.General</a></li>
+  <li><a href="../modules/editor.Grid.html">editor.Grid</a></li>
+  <li><a href="../modules/editor.Ops.html">editor.Ops</a></li>
+  <li><a href="../modules/editor.Settings.html">editor.Settings</a></li>
+  <li><a href="../modules/editor.Tiles.html">editor.Tiles</a></li>
+  <li><a href="../modules/effect.Balloons.html">effect.Balloons</a></li>
+  <li><a href="../modules/effect.Curves.html">effect.Curves</a></li>
+  <li><a href="../modules/effect.Fillers.html">effect.Fillers</a></li>
+  <li><a href="../modules/effect.Generators.html">effect.Generators</a></li>
+  <li><a href="../modules/effect.Glow.html">effect.Glow</a></li>
+  <li><a href="../modules/effect.Markers.html">effect.Markers</a></li>
+  <li><a href="../modules/effect.Shadows.html">effect.Shadows</a></li>
+  <li><a href="../modules/effect.Snowfall.html">effect.Snowfall</a></li>
+  <li><a href="../modules/effect.Stars.html">effect.Stars</a></li>
+  <li><a href="../modules/effect.Stash.html">effect.Stash</a></li>
+  <li><a href="../modules/errors.html">errors</a></li>
+  <li><a href="../modules/event_block.Maze.html">event_block.Maze</a></li>
+  <li><a href="../modules/exception.html">exception</a></li>
+  <li><a href="../modules/fibonacci_heap.html">fibonacci_heap</a></li>
+  <li><a href="../modules/fill.Circle.html">fill.Circle</a></li>
+  <li><a href="../modules/fill.Hilbert.html">fill.Hilbert</a></li>
+  <li><a href="../modules/fill.MarchingSquares.html">fill.MarchingSquares</a></li>
+  <li><a href="../modules/flow_bodies.html">flow_bodies</a></li>
+  <li><a href="../modules/flow_ops.html">flow_ops</a></li>
+  <li><a href="../modules/func_ops.html">func_ops</a></li>
+  <li><a href="../modules/game.AI.html">game.AI</a></li>
+  <li><a href="../modules/game.Audio.html">game.Audio</a></li>
+  <li><strong>game.Collision</strong></li>
+  <li><a href="../modules/game.Controls.html">game.Controls</a></li>
+  <li><a href="../modules/game.DispatchList.html">game.DispatchList</a></li>
+  <li><a href="../modules/game.Dots.html">game.Dots</a></li>
+  <li><a href="../modules/game.EventBlocks.html">game.EventBlocks</a></li>
+  <li><a href="../modules/game.FX.html">game.FX</a></li>
+  <li><a href="../modules/game.Frames.html">game.Frames</a></li>
+  <li><a href="../modules/game.LevelMap.html">game.LevelMap</a></li>
+  <li><a href="../modules/game.LevelsList.html">game.LevelsList</a></li>
+  <li><a href="../modules/game.Movement.html">game.Movement</a></li>
+  <li><a href="../modules/game.PathUtils.html">game.PathUtils</a></li>
+  <li><a href="../modules/game.Pathing.html">game.Pathing</a></li>
+  <li><a href="../modules/game.Persistence.html">game.Persistence</a></li>
+  <li><a href="../modules/game.Player.html">game.Player</a></li>
+  <li><a href="../modules/game.Scenes.html">game.Scenes</a></li>
+  <li><a href="../modules/game.Scrolling.html">game.Scrolling</a></li>
+  <li><a href="../modules/game.TileFlags.html">game.TileFlags</a></li>
+  <li><a href="../modules/game.TileMaps.html">game.TileMaps</a></li>
+  <li><a href="../modules/game.Timers.html">game.Timers</a></li>
+  <li><a href="../modules/game.Transitions.html">game.Transitions</a></li>
+  <li><a href="../modules/geom2d_ops.html">geom2d_ops</a></li>
+  <li><a href="../modules/grid_iterators.html">grid_iterators</a></li>
+  <li><a href="../modules/heap_utils.html">heap_utils</a></li>
+  <li><a href="../modules/index_ops.html">index_ops</a></li>
+  <li><a href="../modules/iterators.html">iterators</a></li>
+  <li><a href="../modules/lazy_tables.html">lazy_tables</a></li>
+  <li><a href="../modules/main.html">main</a></li>
+  <li><a href="../modules/mwc_rng.html">mwc_rng</a></li>
+  <li><a href="../modules/numeric_ops.html">numeric_ops</a></li>
+  <li><a href="../modules/pairing_heap.html">pairing_heap</a></li>
+  <li><a href="../modules/per_coroutine_ops.html">per_coroutine_ops</a></li>
+  <li><a href="../modules/proxy.html">proxy</a></li>
+  <li><a href="../modules/samples.Curves.html">samples.Curves</a></li>
+  <li><a href="../modules/samples.Hilbert.html">samples.Hilbert</a></li>
+  <li><a href="../modules/samples.Hop.html">samples.Hop</a></li>
+  <li><a href="../modules/samples.Marching.html">samples.Marching</a></li>
+  <li><a href="../modules/samples.Nodes.html">samples.Nodes</a></li>
+  <li><a href="../modules/samples.SlowMo.html">samples.SlowMo</a></li>
+  <li><a href="../modules/samples.Snowfall.html">samples.Snowfall</a></li>
+  <li><a href="../modules/samples.Thoughts.html">samples.Thoughts</a></li>
+  <li><a href="../modules/samples.Tiling.html">samples.Tiling</a></li>
+  <li><a href="../modules/samples.Timers.html">samples.Timers</a></li>
+  <li><a href="../modules/scene.Choices.html">scene.Choices</a></li>
+  <li><a href="../modules/scene.EditorSetup.html">scene.EditorSetup</a></li>
+  <li><a href="../modules/scene.Intro.html">scene.Intro</a></li>
+  <li><a href="../modules/scene.Level.html">scene.Level</a></li>
+  <li><a href="../modules/scene.MapEditor.html">scene.MapEditor</a></li>
+  <li><a href="../modules/scene.Options.html">scene.Options</a></li>
+  <li><a href="../modules/simplex_noise.html">simplex_noise</a></li>
+  <li><a href="../modules/skew_heap.html">skew_heap</a></li>
+  <li><a href="../modules/soft_heap.html">soft_heap</a></li>
+  <li><a href="../modules/table_ops.html">table_ops</a></li>
+  <li><a href="../modules/tiles.TreeBG.html">tiles.TreeBG</a></li>
+  <li><a href="../modules/ui.Button.html">ui.Button</a></li>
+  <li><a href="../modules/ui.Checkbox.html">ui.Checkbox</a></li>
+  <li><a href="../modules/ui.Color.html">ui.Color</a></li>
+  <li><a href="../modules/ui.Grid1D.html">ui.Grid1D</a></li>
+  <li><a href="../modules/ui.Grid2D.html">ui.Grid2D</a></li>
+  <li><a href="../modules/ui.Keyboard.html">ui.Keyboard</a></li>
+  <li><a href="../modules/ui.Layout.html">ui.Layout</a></li>
+  <li><a href="../modules/ui.Lines.html">ui.Lines</a></li>
+  <li><a href="../modules/ui.Sheet.html">ui.Sheet</a></li>
+  <li><a href="../modules/ui.Skin.html">ui.Skin</a></li>
+  <li><a href="../modules/ui.Touch.html">ui.Touch</a></li>
+  <li><a href="../modules/ui.Utils.html">ui.Utils</a></li>
+  <li><a href="../modules/utils.html">utils</a></li>
+  <li><a href="../modules/var_dump.html">var_dump</a></li>
+  <li><a href="../modules/var_ops.html">var_ops</a></li>
+  <li><a href="../modules/var_preds.html">var_preds</a></li>
+</ul>
+
+</div>
+
+<div id="content">
+
+<h1>Module <code>game.Collision</code></h1>
+
+<p>This module wraps up some useful collision functionality.</p>
+<p>
+
+</p>
+
+<h2><a href="#Functions">Functions</a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#Activate">Activate&nbsp;(object, active)</a></td>
+	<td class="summary">Activate or deactivate of a physics object, via a 0-lapse timer.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#AddHandler">AddHandler&nbsp;(type, func)</a></td>
+	<td class="summary">Defines a collision handler for objects of a given collision type with other objects.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Border">Border&nbsp;(group, x, y, w, h, rdim, sep)</a></td>
+	<td class="summary">Builds some invisible rectangles around a rectangular interior region.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#FilterBits">FilterBits&nbsp;(...)</a></td>
+	<td class="summary">Convenience routine used to build bitmasks for <strong>categoryBits</strong> and <strong>maskBits</strong> filter
+ fields, using friendly names instead of magic numbers.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#GetType">GetType&nbsp;(object)</a></td>
+	<td class="summary">
+
+</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#MakeSensor">MakeSensor&nbsp;(object, body_type, props)</a></td>
+	<td class="summary">Assigns a sensor body to an object.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Reflect">Reflect&nbsp;(dx, dy, nx, ny)</a></td>
+	<td class="summary">
+
+</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#SetType">SetType&nbsp;(object, type)</a></td>
+	<td class="summary">Associates a collision type with <em>object</em>.</td>
+	</tr>
+</table>
+
+<br/>
+<br/>
+
+
+    <h2><a name="Functions"></a>Functions</h2>
+    
+    <dl class="function">
+    <dt>
+    <a name = "Activate"></a>
+    <strong>Activate&nbsp;(object, active)</strong>
+    </dt>
+    <dd>
+    Activate or deactivate of a physics object, via a 0-lapse timer. 
+
+    <h3>Parameters:</h3>
+    <ul>
+       <li><code><em>object</em></code>: <strong>DisplayObject</strong>  Physics object.</li>
+       <li><code><em>active</em></code>: <strong>bool</strong>  Activate? Otherwise, deactivate.</li>
+    </ul>
+
+
+    <h3>Returns:</h3>
+    <ol>
+        (0-lapse) timer handle.
+    </ol>
+
+
+</dd>
+    <dt>
+    <a name = "AddHandler"></a>
+    <strong>AddHandler&nbsp;(type, func)</strong>
+    </dt>
+    <dd>
+    Defines a collision handler for objects of a given collision type with other objects. </p>
+
+<p> When two objects collide, each is checked for a handler. Each handler that exists is
+ called as</p>
+<pre><code>handler(phase, object, other, other_type),
+</code></pre>
+<p> where <em>phase</em> is <strong>"began"</strong> or <strong>"ended"</strong>, <em>object</em> is what supplied <em>handler</em>, <em>other</em>
+ is what collided with <em>object</em>, and <em>other</em>type_ is the collision type of <em>other</em> (may be
+ <strong>nil</strong>).</p>
+
+<p> The collision type of <em>object</em> is not supplied, being implicit in the handler itself. For
+ all practical purposes, <em>type</em> is just a convenient name for <em>func</em>; there is no real
+ reason to assign a handler to more than one type.
+
+    <h3>Parameters:</h3>
+    <ul>
+       <li><code><em>type</em></code>:  Type of object that will use this handler, as assigned by <a href="../modules/game.Collision.html#SetType">SetType</a>.</li>
+       <li><code><em>func</em></code>: <strong>callable</strong>  Handler function, or <strong>nil</strong> to remove the handler.</li>
+    </ul>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Border"></a>
+    <strong>Border&nbsp;(group, x, y, w, h, rdim, sep)</strong>
+    </dt>
+    <dd>
+    Builds some invisible rectangles around a rectangular interior region.  This is convenient
+ e.g. for detecting objects leaving the level boundaries.</p>
+
+<p> These rectangles will have static, sensor bodies, with collision type <strong>"border"</strong>.
+
+    <h3>Parameters:</h3>
+    <ul>
+       <li><code><em>group</em></code>: <strong>DisplayGroup</strong>  Display group that will hold border rectangles.</li>
+       <li><code><em>x</em></code>: <strong>number</strong>  Interior region, upper-left x-coordinate.</li>
+       <li><code><em>y</em></code>: <strong>number</strong>  Interior region, upper-left y-coordinate.</li>
+       <li><code><em>w</em></code>: <strong>number</strong>  Interior region width.</li>
+       <li><code><em>h</em></code>: <strong>number</strong>  Interior region height.</li>
+       <li><code><em>rdim</em></code>: <strong>number</strong>  One of the dimensions of each border rectangle: for rectangles mostly
+ to the left or right of the interior region, this will be the width; for the rest mostly
+ above or below, the height. The other dimension may then be deduced via a heuristic.</li>
+       <li><code><em>sep</em></code>: <strong>number</strong>  Minimum separation distance away from sides of the interior rectangle
+ that border rectangles must honor; if absent, 0.</li>
+    </ul>
+
+
+
+
+    <h3>see also:</h3>
+    <ul>
+         <a href="../modules/game.Collision.html#GetType">GetType</a>
+    </ul>
+</dd>
+    <dt>
+    <a name = "FilterBits"></a>
+    <strong>FilterBits&nbsp;(...)</strong>
+    </dt>
+    <dd>
+    Convenience routine used to build bitmasks for <strong>categoryBits</strong> and <strong>maskBits</strong> filter
+ fields, using friendly names instead of magic numbers. </p>
+
+<p> When a name is used for the first time, it is mapped to the next available flag. There
+ is a hard limit of 16 names, per the physics API.</p>
+
+<p> These names are in a separate namespace from collision types, i.e. they need not match,
+ though there is likely to be some crossover in practice, e.g. for clarity.
+
+    <h3>Parameters:</h3>
+    <ul>
+       <li><code><em>...</em></code>:  Names of filter bits to combine. Duplicate and <strong>nil</strong> names are ignored.</li>
+    </ul>
+
+
+    <h3>Returns:</h3>
+    <ol>
+        <strong>uint</strong> The boolean union of filter bits, or 0 if none were assigned.
+    </ol>
+
+
+</dd>
+    <dt>
+    <a name = "GetType"></a>
+    <strong>GetType&nbsp;(object)</strong>
+    </dt>
+    <dd>
+     
+
+    <h3>Parameters:</h3>
+    <ul>
+       <li><code><em>object</em></code>:  Object to query.</li>
+    </ul>
+
+
+    <h3>Returns:</h3>
+    <ol>
+        Collision type of <em>object</em>, or <strong>nil</strong> if absent.
+    </ol>
+
+
+    <h3>see also:</h3>
+    <ul>
+         <a href="../modules/game.Collision.html#SetType">SetType</a>
+    </ul>
+</dd>
+    <dt>
+    <a name = "MakeSensor"></a>
+    <strong>MakeSensor&nbsp;(object, body_type, props)</strong>
+    </dt>
+    <dd>
+    Assigns a sensor body to an object. 
+
+    <h3>Parameters:</h3>
+    <ul>
+       <li><code><em>object</em></code>: <strong>DisplayObject</strong>  Object to make into a sensor.</li>
+       <li><code><em>body_type</em></code>: <a href="http://www.lua.org/manual/5.1/manual.html#5.4">string</a>  Physics body type, or <strong>"dynamic"</strong> by default.</li>
+       <li><code><em>props</em></code>: <a href="http://www.lua.org/manual/5.1/manual.html#5.5">table</a>  Optional properties.</li>
+    </ul>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Reflect"></a>
+    <strong>Reflect&nbsp;(dx, dy, nx, ny)</strong>
+    </dt>
+    <dd>
+     
+
+    <h3>Parameters:</h3>
+    <ul>
+       <li><code><em>dx</em></code>: <strong>number</strong>  Incident vector x-component...</li>
+       <li><code><em>dy</em></code>: <strong>number</strong>  ...and y-component.</li>
+       <li><code><em>nx</em></code>: <strong>number</strong>  Normal x-component...</li>
+       <li><code><em>ny</em></code>: <strong>number</strong>  ...and y-component.</li>
+    </ul>
+
+
+    <h3>Returns:</h3>
+    <ol>
+        <li><strong>number</strong> Reflected vector x-component...</li>
+        <li><strong>number</strong> ...and y-component.</li>
+    </ol>
+
+
+</dd>
+    <dt>
+    <a name = "SetType"></a>
+    <strong>SetType&nbsp;(object, type)</strong>
+    </dt>
+    <dd>
+    Associates a collision type with <em>object</em>.  This is used to choose <em>object</em>'s handler in
+ the event of a collision, and will also be provided (as a convenience) to the other
+ object's handler.
+
+    <h3>Parameters:</h3>
+    <ul>
+       <li><code><em>object</em></code>:  Object to type.</li>
+       <li><code><em>type</em></code>:  Type to assign, or <strong>nil</strong> to untype <em>object</em>.</li>
+    </ul>
+
+
+
+
+    <h3>see also:</h3>
+    <ul>
+         <li><a href="../modules/game.Collision.html#AddHandler">AddHandler</a></li>
+         <li><a href="../modules/game.Collision.html#GetType">GetType</a></li>
+    </ul>
+</dd>
+</dl>
+
+
+</div> <!-- id="content" -->
+</div> <!-- id="main" -->
+<div id="about">
+<i>generated by <a href="http://github.com/stevedonovan/LDoc">LDoc 1.2</a></i>
+</div> <!-- id="about" -->
+</div> <!-- id="container" -->
+</body>
+</html>

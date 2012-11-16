@@ -1,0 +1,439 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+<head>
+    <title>Snippets documentation</title>
+    <link rel="stylesheet" href="../ldoc.css" type="text/css" />
+</head>
+<body>
+
+<div id="container">
+
+<div id="product">
+	<div id="product_logo"></div>
+	<div id="product_name"><big><b></b></big></div>
+	<div id="product_description"></div>
+</div> <!-- id="product" -->
+
+
+<div id="main">
+
+
+<!-- Menu -->
+
+<div id="navigation">
+<br/>
+<h1>Corona SDK snippets</h1>
+
+<ul>
+  <li><a href="../api.html">Index</a></li>
+</ul>
+
+<h2>Contents</h2>
+<ul>
+<li><a href="#Functions">Functions</a></li>
+</ul>
+
+
+<h2>Modules</h2>
+<ul>
+  <li><a href="../modules/DEBUG.html">DEBUG</a></li>
+  <li><a href="../modules/array_ops.html">array_ops</a></li>
+  <li><a href="../modules/bitwise_ops.html">bitwise_ops</a></li>
+  <li><a href="../modules/bound_args.html">bound_args</a></li>
+  <li><a href="../modules/cache_ops.html">cache_ops</a></li>
+  <li><a href="../modules/class.html">class</a></li>
+  <li><a href="../modules/class.Timer.html">class.Timer</a></li>
+  <li><a href="../modules/coroutine_ex.html">coroutine_ex</a></li>
+  <li><a href="../modules/dot.Switch.html">dot.Switch</a></li>
+  <li><a href="../modules/dot.Warp.html">dot.Warp</a></li>
+  <li><a href="../modules/editor.Common.html">editor.Common</a></li>
+  <li><a href="../modules/editor.Dialog.html">editor.Dialog</a></li>
+  <li><a href="../modules/editor.Dots.html">editor.Dots</a></li>
+  <li><a href="../modules/editor.EventBlocks.html">editor.EventBlocks</a></li>
+  <li><a href="../modules/editor.Events.html">editor.Events</a></li>
+  <li><a href="../modules/editor.General.html">editor.General</a></li>
+  <li><a href="../modules/editor.Grid.html">editor.Grid</a></li>
+  <li><strong>editor.Ops</strong></li>
+  <li><a href="../modules/editor.Settings.html">editor.Settings</a></li>
+  <li><a href="../modules/editor.Tiles.html">editor.Tiles</a></li>
+  <li><a href="../modules/effect.Balloons.html">effect.Balloons</a></li>
+  <li><a href="../modules/effect.Curves.html">effect.Curves</a></li>
+  <li><a href="../modules/effect.Fillers.html">effect.Fillers</a></li>
+  <li><a href="../modules/effect.Generators.html">effect.Generators</a></li>
+  <li><a href="../modules/effect.Glow.html">effect.Glow</a></li>
+  <li><a href="../modules/effect.Markers.html">effect.Markers</a></li>
+  <li><a href="../modules/effect.Shadows.html">effect.Shadows</a></li>
+  <li><a href="../modules/effect.Snowfall.html">effect.Snowfall</a></li>
+  <li><a href="../modules/effect.Stars.html">effect.Stars</a></li>
+  <li><a href="../modules/effect.Stash.html">effect.Stash</a></li>
+  <li><a href="../modules/errors.html">errors</a></li>
+  <li><a href="../modules/event_block.Maze.html">event_block.Maze</a></li>
+  <li><a href="../modules/exception.html">exception</a></li>
+  <li><a href="../modules/fibonacci_heap.html">fibonacci_heap</a></li>
+  <li><a href="../modules/fill.Circle.html">fill.Circle</a></li>
+  <li><a href="../modules/fill.Hilbert.html">fill.Hilbert</a></li>
+  <li><a href="../modules/fill.MarchingSquares.html">fill.MarchingSquares</a></li>
+  <li><a href="../modules/flow_bodies.html">flow_bodies</a></li>
+  <li><a href="../modules/flow_ops.html">flow_ops</a></li>
+  <li><a href="../modules/func_ops.html">func_ops</a></li>
+  <li><a href="../modules/game.AI.html">game.AI</a></li>
+  <li><a href="../modules/game.Audio.html">game.Audio</a></li>
+  <li><a href="../modules/game.Collision.html">game.Collision</a></li>
+  <li><a href="../modules/game.Controls.html">game.Controls</a></li>
+  <li><a href="../modules/game.DispatchList.html">game.DispatchList</a></li>
+  <li><a href="../modules/game.Dots.html">game.Dots</a></li>
+  <li><a href="../modules/game.EventBlocks.html">game.EventBlocks</a></li>
+  <li><a href="../modules/game.FX.html">game.FX</a></li>
+  <li><a href="../modules/game.Frames.html">game.Frames</a></li>
+  <li><a href="../modules/game.LevelMap.html">game.LevelMap</a></li>
+  <li><a href="../modules/game.LevelsList.html">game.LevelsList</a></li>
+  <li><a href="../modules/game.Movement.html">game.Movement</a></li>
+  <li><a href="../modules/game.PathUtils.html">game.PathUtils</a></li>
+  <li><a href="../modules/game.Pathing.html">game.Pathing</a></li>
+  <li><a href="../modules/game.Persistence.html">game.Persistence</a></li>
+  <li><a href="../modules/game.Player.html">game.Player</a></li>
+  <li><a href="../modules/game.Scenes.html">game.Scenes</a></li>
+  <li><a href="../modules/game.Scrolling.html">game.Scrolling</a></li>
+  <li><a href="../modules/game.TileFlags.html">game.TileFlags</a></li>
+  <li><a href="../modules/game.TileMaps.html">game.TileMaps</a></li>
+  <li><a href="../modules/game.Timers.html">game.Timers</a></li>
+  <li><a href="../modules/game.Transitions.html">game.Transitions</a></li>
+  <li><a href="../modules/geom2d_ops.html">geom2d_ops</a></li>
+  <li><a href="../modules/grid_iterators.html">grid_iterators</a></li>
+  <li><a href="../modules/heap_utils.html">heap_utils</a></li>
+  <li><a href="../modules/index_ops.html">index_ops</a></li>
+  <li><a href="../modules/iterators.html">iterators</a></li>
+  <li><a href="../modules/lazy_tables.html">lazy_tables</a></li>
+  <li><a href="../modules/main.html">main</a></li>
+  <li><a href="../modules/mwc_rng.html">mwc_rng</a></li>
+  <li><a href="../modules/numeric_ops.html">numeric_ops</a></li>
+  <li><a href="../modules/pairing_heap.html">pairing_heap</a></li>
+  <li><a href="../modules/per_coroutine_ops.html">per_coroutine_ops</a></li>
+  <li><a href="../modules/proxy.html">proxy</a></li>
+  <li><a href="../modules/samples.Curves.html">samples.Curves</a></li>
+  <li><a href="../modules/samples.Hilbert.html">samples.Hilbert</a></li>
+  <li><a href="../modules/samples.Hop.html">samples.Hop</a></li>
+  <li><a href="../modules/samples.Marching.html">samples.Marching</a></li>
+  <li><a href="../modules/samples.Nodes.html">samples.Nodes</a></li>
+  <li><a href="../modules/samples.SlowMo.html">samples.SlowMo</a></li>
+  <li><a href="../modules/samples.Snowfall.html">samples.Snowfall</a></li>
+  <li><a href="../modules/samples.Thoughts.html">samples.Thoughts</a></li>
+  <li><a href="../modules/samples.Tiling.html">samples.Tiling</a></li>
+  <li><a href="../modules/samples.Timers.html">samples.Timers</a></li>
+  <li><a href="../modules/scene.Choices.html">scene.Choices</a></li>
+  <li><a href="../modules/scene.EditorSetup.html">scene.EditorSetup</a></li>
+  <li><a href="../modules/scene.Intro.html">scene.Intro</a></li>
+  <li><a href="../modules/scene.Level.html">scene.Level</a></li>
+  <li><a href="../modules/scene.MapEditor.html">scene.MapEditor</a></li>
+  <li><a href="../modules/scene.Options.html">scene.Options</a></li>
+  <li><a href="../modules/simplex_noise.html">simplex_noise</a></li>
+  <li><a href="../modules/skew_heap.html">skew_heap</a></li>
+  <li><a href="../modules/soft_heap.html">soft_heap</a></li>
+  <li><a href="../modules/table_ops.html">table_ops</a></li>
+  <li><a href="../modules/tiles.TreeBG.html">tiles.TreeBG</a></li>
+  <li><a href="../modules/ui.Button.html">ui.Button</a></li>
+  <li><a href="../modules/ui.Checkbox.html">ui.Checkbox</a></li>
+  <li><a href="../modules/ui.Color.html">ui.Color</a></li>
+  <li><a href="../modules/ui.Grid1D.html">ui.Grid1D</a></li>
+  <li><a href="../modules/ui.Grid2D.html">ui.Grid2D</a></li>
+  <li><a href="../modules/ui.Keyboard.html">ui.Keyboard</a></li>
+  <li><a href="../modules/ui.Layout.html">ui.Layout</a></li>
+  <li><a href="../modules/ui.Lines.html">ui.Lines</a></li>
+  <li><a href="../modules/ui.Sheet.html">ui.Sheet</a></li>
+  <li><a href="../modules/ui.Skin.html">ui.Skin</a></li>
+  <li><a href="../modules/ui.Touch.html">ui.Touch</a></li>
+  <li><a href="../modules/ui.Utils.html">ui.Utils</a></li>
+  <li><a href="../modules/utils.html">utils</a></li>
+  <li><a href="../modules/var_dump.html">var_dump</a></li>
+  <li><a href="../modules/var_ops.html">var_ops</a></li>
+  <li><a href="../modules/var_preds.html">var_preds</a></li>
+</ul>
+
+</div>
+
+<div id="content">
+
+<h1>Module <code>editor.Ops</code></h1>
+
+<p>Editor operations.</p>
+<p>
+
+</p>
+
+<h2><a href="#Functions">Functions</a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#Build">Build&nbsp;()</a></td>
+	<td class="summary">Builds a game-ready version of the work-in-progress level, saving it in the database
+ under the working name.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#CleanUp">CleanUp&nbsp;()</a></td>
+	<td class="summary">Cleans up various state used by editor operations.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#GetLevelName">GetLevelName&nbsp;()</a></td>
+	<td class="summary">
+
+</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Init">Init&nbsp;(view)</a></td>
+	<td class="summary">Initializes various state used by editor operations.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Save">Save&nbsp;()</a></td>
+	<td class="summary">Saves the work-in-progress level in the database under the working name.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#SendToClipboard">SendToClipboard&nbsp;(text)</a></td>
+	<td class="summary">
+
+</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Quit">Quit&nbsp;()</a></td>
+	<td class="summary">Quits the editor.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#SetLevelName">SetLevelName&nbsp;(name)</a></td>
+	<td class="summary">Sets the current working name, which is used by <a href="../modules/editor.Ops.html#Build">Build</a> and <a href="../modules/editor.Ops.html#Save">Save</a> to assign levels
+ into the database.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#SetTemp">SetTemp&nbsp;(is_temp)</a></td>
+	<td class="summary">Sets or clears an "is temporary" flag.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Verify">Verify&nbsp;()</a></td>
+	<td class="summary">Verifies the game-ready integrity of the working version of the level.</td>
+	</tr>
+</table>
+
+<br/>
+<br/>
+
+
+    <h2><a name="Functions"></a>Functions</h2>
+    
+    <dl class="function">
+    <dt>
+    <a name = "Build"></a>
+    <strong>Build&nbsp;()</strong>
+    </dt>
+    <dd>
+    Builds a game-ready version of the work-in-progress level, saving it in the database
+ under the working name.  The level is first verified; if this fails, the build is aborted.</p>
+
+<p> The build proceeds in two steps. First, the <strong>save_level_wip</strong> event list is dispatched,
+ with a table argument as per <a href="../modules/editor.Ops.html#Save">Save</a>. Second, the <strong>build_level</strong> event list is dispatched
+ with this same table as argument; listeners can then mutate the table into game-ready form.</p>
+
+<p> This table is then added, as a string, to the level database. If possible, this string is
+ also sent to the clipboard.
+
+
+
+
+
+    <h3>see also:</h3>
+    <ul>
+         <li><a href="../modules/editor.Common.html#IsVerified">editor.Common.IsVerified</a></li>
+         <li><a href="../modules/game.DispatchList.html#CallList">game.DispatchList.CallList</a></li>
+         <li><a href="../modules/game.Persistence.html#SaveLevel">game.Persistence.SaveLevel</a></li>
+         <li><a href="../modules/editor.Ops.html#GetLevelName">GetLevelName</a></li>
+         <li><a href="../modules/editor.Ops.html#SendToClipboard">SendToClipboard</a></li>
+         <li><a href="../modules/editor.Ops.html#Verify">Verify</a></li>
+    </ul>
+</dd>
+    <dt>
+    <a name = "CleanUp"></a>
+    <strong>CleanUp&nbsp;()</strong>
+    </dt>
+    <dd>
+    Cleans up various state used by editor operations. 
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "GetLevelName"></a>
+    <strong>GetLevelName&nbsp;()</strong>
+    </dt>
+    <dd>
+     
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+        <a href="http://www.lua.org/manual/5.1/manual.html#5.4">string</a> Current working name, or <strong>nil</strong> if unassigned.
+    </ol>
+
+
+    <h3>see also:</h3>
+    <ul>
+         <a href="../modules/editor.Ops.html#SetLevelName">SetLevelName</a>
+    </ul>
+</dd>
+    <dt>
+    <a name = "Init"></a>
+    <strong>Init&nbsp;(view)</strong>
+    </dt>
+    <dd>
+    Initializes various state used by editor operations. 
+
+    <h3>Parameters:</h3>
+    <ul>
+       <li><code><em>view</em></code>: <strong>DisplayGroup</strong>  Editor scene view.</li>
+    </ul>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Save"></a>
+    <strong>Save&nbsp;()</strong>
+    </dt>
+    <dd>
+    Saves the work-in-progress level in the database under the working name. </p>
+
+<p> If the editor state is not dirty, this is no-op.</p>
+
+<p> A table of the form <code>to_save = { main = { _cols_, _rows_ } }</code> is prepared, where <em>cols</em>
+ and <em>rows</em> are the tile-wise level dimensions. The <strong>save_level_wip</strong> event list is
+ dispatched with this table as argument; listeners can then fill it in.</p>
+
+<p> This table is then added, as a string, to the level database (as a WIP). If possible, this
+ string is also sent to the clipboard.
+
+
+
+
+
+    <h3>see also:</h3>
+    <ul>
+         <li><a href="../modules/editor.Common.html#IsDirty">editor.Common.IsDirty</a></li>
+         <li><a href="../modules/game.DispatchList.html#CallList">game.DispatchList.CallList</a></li>
+         <li><a href="../modules/game.Persistence.html#SaveLevel">game.Persistence.SaveLevel</a></li>
+         <li><a href="../modules/editor.Ops.html#GetLevelName">GetLevelName</a></li>
+         <li><a href="../modules/editor.Ops.html#SendToClipboard">SendToClipboard</a></li>
+    </ul>
+</dd>
+    <dt>
+    <a name = "SendToClipboard"></a>
+    <strong>SendToClipboard&nbsp;(text)</strong>
+    </dt>
+    <dd>
+     
+
+    <h3>Parameters:</h3>
+    <ul>
+       <li><code><em>text</em></code>: <a href="http://www.lua.org/manual/5.1/manual.html#5.4">string</a>  If possible, this text is sent to the clipboard.</li>
+    </ul>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Quit"></a>
+    <strong>Quit&nbsp;()</strong>
+    </dt>
+    <dd>
+    Quits the editor. 
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "SetLevelName"></a>
+    <strong>SetLevelName&nbsp;(name)</strong>
+    </dt>
+    <dd>
+    Sets the current working name, which is used by <a href="../modules/editor.Ops.html#Build">Build</a> and <a href="../modules/editor.Ops.html#Save">Save</a> to assign levels
+ into the database. 
+
+    <h3>Parameters:</h3>
+    <ul>
+       <li><code><em>name</em></code>: <a href="http://www.lua.org/manual/5.1/manual.html#5.4">string</a>  Name to assign, or <strong>nil</strong> to clear the working name.</li>
+    </ul>
+
+
+
+
+    <h3>see also:</h3>
+    <ul>
+         <li><a href="../modules/game.Persistence.html#">game.Persistence</a></li>
+         <li><a href="../modules/editor.Ops.html#GetLevelName">GetLevelName</a></li>
+    </ul>
+</dd>
+    <dt>
+    <a name = "SetTemp"></a>
+    <strong>SetTemp&nbsp;(is_temp)</strong>
+    </dt>
+    <dd>
+    Sets or clears an "is temporary" flag.  Any level saved by <a href="../modules/editor.Ops.html#Build">Build</a> or <a href="../modules/editor.Ops.html#Save">Save</a> while this
+ flag is set will be ignored by <a href="../modules/game.Persistence.html#GetLevels">game.Persistence.GetLevels</a>.
+
+    <h3>Parameters:</h3>
+    <ul>
+       <li><code><em>is_temp</em></code>: <strong>bool</strong>  Is the level temporary, in the operations to follow?</li>
+    </ul>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Verify"></a>
+    <strong>Verify&nbsp;()</strong>
+    </dt>
+    <dd>
+    Verifies the game-ready integrity of the working version of the level. </p>
+
+<p> If the editor state is already verified, this is a no-op.</p>
+
+<p> One or more passes are run over the level data. On each pass, the <strong>verify_level_wip</strong>
+ event list is dispatched, with a table as argument. The table has the following fields:</p>
+
+<ul>
+    <li><strong>pass</strong>: Read-only <strong>uint</strong>. Starts at 1 and is incremented after each pass.</li>
+    <li><strong>needs_another_pass</strong>: <strong>bool</strong>. Begins each pass as <strong>false</strong>. To request another
+    pass, set it to true; a listener should never set it to false.</li>
+</ul>
+
+<p> Errors may be appended to the array part of the table. They will be reported to the
+ user in an environment-specific way.</p>
+
+<p> Verification runs until a pass ends either: with errors (failure) or without a request
+ for a follow-up pass (success). On success, the editor will be in the verified state.
+
+
+
+
+
+    <h3>see also:</h3>
+    <ul>
+         <li><a href="../modules/editor.Common.html#IsVerified">editor.Common.IsVerified</a></li>
+         <li><a href="../modules/game.DispatchList.html#CallList">game.DispatchList.CallList</a></li>
+    </ul>
+</dd>
+</dl>
+
+
+</div> <!-- id="content" -->
+</div> <!-- id="main" -->
+<div id="about">
+<i>generated by <a href="http://github.com/stevedonovan/LDoc">LDoc 1.2</a></i>
+</div> <!-- id="about" -->
+</div> <!-- id="container" -->
+</body>
+</html>

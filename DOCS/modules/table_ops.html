@@ -1,0 +1,525 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+<head>
+    <title>Snippets documentation</title>
+    <link rel="stylesheet" href="../ldoc.css" type="text/css" />
+</head>
+<body>
+
+<div id="container">
+
+<div id="product">
+	<div id="product_logo"></div>
+	<div id="product_name"><big><b></b></big></div>
+	<div id="product_description"></div>
+</div> <!-- id="product" -->
+
+
+<div id="main">
+
+
+<!-- Menu -->
+
+<div id="navigation">
+<br/>
+<h1>Corona SDK snippets</h1>
+
+<ul>
+  <li><a href="../api.html">Index</a></li>
+</ul>
+
+<h2>Contents</h2>
+<ul>
+<li><a href="#Functions">Functions</a></li>
+</ul>
+
+
+<h2>Modules</h2>
+<ul>
+  <li><a href="../modules/DEBUG.html">DEBUG</a></li>
+  <li><a href="../modules/array_ops.html">array_ops</a></li>
+  <li><a href="../modules/bitwise_ops.html">bitwise_ops</a></li>
+  <li><a href="../modules/bound_args.html">bound_args</a></li>
+  <li><a href="../modules/cache_ops.html">cache_ops</a></li>
+  <li><a href="../modules/class.html">class</a></li>
+  <li><a href="../modules/class.Timer.html">class.Timer</a></li>
+  <li><a href="../modules/coroutine_ex.html">coroutine_ex</a></li>
+  <li><a href="../modules/dot.Switch.html">dot.Switch</a></li>
+  <li><a href="../modules/dot.Warp.html">dot.Warp</a></li>
+  <li><a href="../modules/editor.Common.html">editor.Common</a></li>
+  <li><a href="../modules/editor.Dialog.html">editor.Dialog</a></li>
+  <li><a href="../modules/editor.Dots.html">editor.Dots</a></li>
+  <li><a href="../modules/editor.EventBlocks.html">editor.EventBlocks</a></li>
+  <li><a href="../modules/editor.Events.html">editor.Events</a></li>
+  <li><a href="../modules/editor.General.html">editor.General</a></li>
+  <li><a href="../modules/editor.Grid.html">editor.Grid</a></li>
+  <li><a href="../modules/editor.Ops.html">editor.Ops</a></li>
+  <li><a href="../modules/editor.Settings.html">editor.Settings</a></li>
+  <li><a href="../modules/editor.Tiles.html">editor.Tiles</a></li>
+  <li><a href="../modules/effect.Balloons.html">effect.Balloons</a></li>
+  <li><a href="../modules/effect.Curves.html">effect.Curves</a></li>
+  <li><a href="../modules/effect.Fillers.html">effect.Fillers</a></li>
+  <li><a href="../modules/effect.Generators.html">effect.Generators</a></li>
+  <li><a href="../modules/effect.Glow.html">effect.Glow</a></li>
+  <li><a href="../modules/effect.Markers.html">effect.Markers</a></li>
+  <li><a href="../modules/effect.Shadows.html">effect.Shadows</a></li>
+  <li><a href="../modules/effect.Snowfall.html">effect.Snowfall</a></li>
+  <li><a href="../modules/effect.Stars.html">effect.Stars</a></li>
+  <li><a href="../modules/effect.Stash.html">effect.Stash</a></li>
+  <li><a href="../modules/errors.html">errors</a></li>
+  <li><a href="../modules/event_block.Maze.html">event_block.Maze</a></li>
+  <li><a href="../modules/exception.html">exception</a></li>
+  <li><a href="../modules/fibonacci_heap.html">fibonacci_heap</a></li>
+  <li><a href="../modules/fill.Circle.html">fill.Circle</a></li>
+  <li><a href="../modules/fill.Hilbert.html">fill.Hilbert</a></li>
+  <li><a href="../modules/fill.MarchingSquares.html">fill.MarchingSquares</a></li>
+  <li><a href="../modules/flow_bodies.html">flow_bodies</a></li>
+  <li><a href="../modules/flow_ops.html">flow_ops</a></li>
+  <li><a href="../modules/func_ops.html">func_ops</a></li>
+  <li><a href="../modules/game.AI.html">game.AI</a></li>
+  <li><a href="../modules/game.Audio.html">game.Audio</a></li>
+  <li><a href="../modules/game.Collision.html">game.Collision</a></li>
+  <li><a href="../modules/game.Controls.html">game.Controls</a></li>
+  <li><a href="../modules/game.DispatchList.html">game.DispatchList</a></li>
+  <li><a href="../modules/game.Dots.html">game.Dots</a></li>
+  <li><a href="../modules/game.EventBlocks.html">game.EventBlocks</a></li>
+  <li><a href="../modules/game.FX.html">game.FX</a></li>
+  <li><a href="../modules/game.Frames.html">game.Frames</a></li>
+  <li><a href="../modules/game.LevelMap.html">game.LevelMap</a></li>
+  <li><a href="../modules/game.LevelsList.html">game.LevelsList</a></li>
+  <li><a href="../modules/game.Movement.html">game.Movement</a></li>
+  <li><a href="../modules/game.PathUtils.html">game.PathUtils</a></li>
+  <li><a href="../modules/game.Pathing.html">game.Pathing</a></li>
+  <li><a href="../modules/game.Persistence.html">game.Persistence</a></li>
+  <li><a href="../modules/game.Player.html">game.Player</a></li>
+  <li><a href="../modules/game.Scenes.html">game.Scenes</a></li>
+  <li><a href="../modules/game.Scrolling.html">game.Scrolling</a></li>
+  <li><a href="../modules/game.TileFlags.html">game.TileFlags</a></li>
+  <li><a href="../modules/game.TileMaps.html">game.TileMaps</a></li>
+  <li><a href="../modules/game.Timers.html">game.Timers</a></li>
+  <li><a href="../modules/game.Transitions.html">game.Transitions</a></li>
+  <li><a href="../modules/geom2d_ops.html">geom2d_ops</a></li>
+  <li><a href="../modules/grid_iterators.html">grid_iterators</a></li>
+  <li><a href="../modules/heap_utils.html">heap_utils</a></li>
+  <li><a href="../modules/index_ops.html">index_ops</a></li>
+  <li><a href="../modules/iterators.html">iterators</a></li>
+  <li><a href="../modules/lazy_tables.html">lazy_tables</a></li>
+  <li><a href="../modules/main.html">main</a></li>
+  <li><a href="../modules/mwc_rng.html">mwc_rng</a></li>
+  <li><a href="../modules/numeric_ops.html">numeric_ops</a></li>
+  <li><a href="../modules/pairing_heap.html">pairing_heap</a></li>
+  <li><a href="../modules/per_coroutine_ops.html">per_coroutine_ops</a></li>
+  <li><a href="../modules/proxy.html">proxy</a></li>
+  <li><a href="../modules/samples.Curves.html">samples.Curves</a></li>
+  <li><a href="../modules/samples.Hilbert.html">samples.Hilbert</a></li>
+  <li><a href="../modules/samples.Hop.html">samples.Hop</a></li>
+  <li><a href="../modules/samples.Marching.html">samples.Marching</a></li>
+  <li><a href="../modules/samples.Nodes.html">samples.Nodes</a></li>
+  <li><a href="../modules/samples.SlowMo.html">samples.SlowMo</a></li>
+  <li><a href="../modules/samples.Snowfall.html">samples.Snowfall</a></li>
+  <li><a href="../modules/samples.Thoughts.html">samples.Thoughts</a></li>
+  <li><a href="../modules/samples.Tiling.html">samples.Tiling</a></li>
+  <li><a href="../modules/samples.Timers.html">samples.Timers</a></li>
+  <li><a href="../modules/scene.Choices.html">scene.Choices</a></li>
+  <li><a href="../modules/scene.EditorSetup.html">scene.EditorSetup</a></li>
+  <li><a href="../modules/scene.Intro.html">scene.Intro</a></li>
+  <li><a href="../modules/scene.Level.html">scene.Level</a></li>
+  <li><a href="../modules/scene.MapEditor.html">scene.MapEditor</a></li>
+  <li><a href="../modules/scene.Options.html">scene.Options</a></li>
+  <li><a href="../modules/simplex_noise.html">simplex_noise</a></li>
+  <li><a href="../modules/skew_heap.html">skew_heap</a></li>
+  <li><a href="../modules/soft_heap.html">soft_heap</a></li>
+  <li><strong>table_ops</strong></li>
+  <li><a href="../modules/tiles.TreeBG.html">tiles.TreeBG</a></li>
+  <li><a href="../modules/ui.Button.html">ui.Button</a></li>
+  <li><a href="../modules/ui.Checkbox.html">ui.Checkbox</a></li>
+  <li><a href="../modules/ui.Color.html">ui.Color</a></li>
+  <li><a href="../modules/ui.Grid1D.html">ui.Grid1D</a></li>
+  <li><a href="../modules/ui.Grid2D.html">ui.Grid2D</a></li>
+  <li><a href="../modules/ui.Keyboard.html">ui.Keyboard</a></li>
+  <li><a href="../modules/ui.Layout.html">ui.Layout</a></li>
+  <li><a href="../modules/ui.Lines.html">ui.Lines</a></li>
+  <li><a href="../modules/ui.Sheet.html">ui.Sheet</a></li>
+  <li><a href="../modules/ui.Skin.html">ui.Skin</a></li>
+  <li><a href="../modules/ui.Touch.html">ui.Touch</a></li>
+  <li><a href="../modules/ui.Utils.html">ui.Utils</a></li>
+  <li><a href="../modules/utils.html">utils</a></li>
+  <li><a href="../modules/var_dump.html">var_dump</a></li>
+  <li><a href="../modules/var_ops.html">var_ops</a></li>
+  <li><a href="../modules/var_preds.html">var_preds</a></li>
+</ul>
+
+</div>
+
+<div id="content">
+
+<h1>Module <code>table_ops</code></h1>
+
+<p>This module provides various utilities that make or operate on tables.</p>
+<p>
+
+</p>
+
+<h2><a href="#Functions">Functions</a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#Copy">Copy&nbsp;(t, how, how_arg)</a></td>
+	<td class="summary">Shallow-copies a table.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#CopyK">CopyK&nbsp;(t, keys)</a></td>
+	<td class="summary">Copies all values with the given keys into a second table with those keys.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#DeepCopy">DeepCopy&nbsp;(t)</a></td>
+	<td class="summary">Deep-copies a table.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Equal">Equal&nbsp;(t1, t2)</a></td>
+	<td class="summary">Compares two tables for equality, recursing into subtables.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Find">Find&nbsp;(t, value, is_array)</a></td>
+	<td class="summary">Finds a match for a value in the table.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Find_N">Find_N&nbsp;(t, value, n)</a></td>
+	<td class="summary">Array variant of <a href="../modules/table_ops.html#Find">Find</a>, which searches each entry up to the first <strong>nil</strong>,
+ quitting if the index exceeds <em>n</em>.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#FindNot">FindNot&nbsp;(t, value_not, is_array)</a></td>
+	<td class="summary">Finds a non-match for a value in the table.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#ForEach">ForEach&nbsp;(t, func, is_array, arg)</a></td>
+	<td class="summary">Performs an action on each item of the table.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#ForEachKV">ForEachKV&nbsp;(t, func, is_array, arg)</a></td>
+	<td class="summary">Key-value variant of <a href="../modules/table_ops.html#ForEach">ForEach</a>.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Invert">Invert&nbsp;(t)</a></td>
+	<td class="summary">Builds a table's inverse, i.e.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#MakeSet">MakeSet&nbsp;(t)</a></td>
+	<td class="summary">Makes a set, i.e.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Weak">Weak&nbsp;(choice)</a></td>
+	<td class="summary">Builds a new weak table.</td>
+	</tr>
+</table>
+
+<br/>
+<br/>
+
+
+    <h2><a name="Functions"></a>Functions</h2>
+    
+    <dl class="function">
+    <dt>
+    <a name = "Copy"></a>
+    <strong>Copy&nbsp;(t, how, how_arg)</strong>
+    </dt>
+    <dd>
+    Shallow-copies a table. </p>
+
+<p> TODO: Account for cycles, table as key
+
+    <h3>Parameters:</h3>
+    <ul>
+       <li><code><em>t</em></code>: <a href="http://www.lua.org/manual/5.1/manual.html#5.5">table</a>  Table to copy.</li>
+       <li><code><em>how</em></code>:  Copy behavior, as per <code>Map</code>.</li>
+       <li><code><em>how_arg</em></code>:  Copy behavior, as per <code>Map</code>.</li>
+    </ul>
+
+
+    <h3>Returns:</h3>
+    <ol>
+        <a href="http://www.lua.org/manual/5.1/manual.html#5.5">table</a> Copy.
+    </ol>
+
+
+    <h3>see also:</h3>
+    <ul>
+    </ul>
+</dd>
+    <dt>
+    <a name = "CopyK"></a>
+    <strong>CopyK&nbsp;(t, keys)</strong>
+    </dt>
+    <dd>
+    Copies all values with the given keys into a second table with those keys. 
+
+    <h3>Parameters:</h3>
+    <ul>
+       <li><code><em>t</em></code>: <a href="http://www.lua.org/manual/5.1/manual.html#5.5">table</a>  Table to copy.</li>
+       <li><code><em>keys</em></code>: <a href="http://www.lua.org/manual/5.1/manual.html#5.5">table</a>  Key array.</li>
+    </ul>
+
+
+    <h3>Returns:</h3>
+    <ol>
+        <a href="http://www.lua.org/manual/5.1/manual.html#5.5">table</a> Copy.
+    </ol>
+
+
+</dd>
+    <dt>
+    <a name = "DeepCopy"></a>
+    <strong>DeepCopy&nbsp;(t)</strong>
+    </dt>
+    <dd>
+    Deep-copies a table. </p>
+
+<p> This will also copy metatables, and thus assumes these are accessible.</p>
+
+<p> TODO: Account for cycles, table as key
+
+    <h3>Parameters:</h3>
+    <ul>
+       <li><code><em>t</em></code>: <a href="http://www.lua.org/manual/5.1/manual.html#5.5">table</a>  Table to copy.</li>
+    </ul>
+
+
+    <h3>Returns:</h3>
+    <ol>
+        <a href="http://www.lua.org/manual/5.1/manual.html#5.5">table</a> Copy.
+    </ol>
+
+
+</dd>
+    <dt>
+    <a name = "Equal"></a>
+    <strong>Equal&nbsp;(t1, t2)</strong>
+    </dt>
+    <dd>
+    Compares two tables for equality, recursing into subtables.  The comparison respects
+ the <strong>"eq"</strong> metamethod of non-table elements.</p>
+
+<p> TODO: Account for cycles
+
+    <h3>Parameters:</h3>
+    <ul>
+       <li><code><em>t1</em></code>: <a href="http://www.lua.org/manual/5.1/manual.html#5.5">table</a>  Table to compare.</li>
+       <li><code><em>t2</em></code>: <a href="http://www.lua.org/manual/5.1/manual.html#5.5">table</a>  Table to compare.</li>
+    </ul>
+
+
+    <h3>Returns:</h3>
+    <ol>
+        <strong>boolean</strong> Are the tables equal?
+    </ol>
+
+
+</dd>
+    <dt>
+    <a name = "Find"></a>
+    <strong>Find&nbsp;(t, value, is_array)</strong>
+    </dt>
+    <dd>
+    Finds a match for a value in the table.  The <strong>"eq"</strong> metamethod is respected by
+ the search.
+
+    <h3>Parameters:</h3>
+    <ul>
+       <li><code><em>t</em></code>: <a href="http://www.lua.org/manual/5.1/manual.html#5.5">table</a>  Table to search.</li>
+       <li><code><em>value</em></code>:  Value to find.</li>
+       <li><code><em>is_array</em></code>: <strong>bool</strong>  Search only the array part (up to a <strong>nil</strong>, in order)?</li>
+    </ul>
+
+
+    <h3>Returns:</h3>
+    <ol>
+        Key belonging to a match, or <strong>nil</strong> if the value was not found.
+    </ol>
+
+
+</dd>
+    <dt>
+    <a name = "Find_N"></a>
+    <strong>Find_N&nbsp;(t, value, n)</strong>
+    </dt>
+    <dd>
+    Array variant of <a href="../modules/table_ops.html#Find">Find</a>, which searches each entry up to the first <strong>nil</strong>,
+ quitting if the index exceeds <em>n</em>. 
+
+    <h3>Parameters:</h3>
+    <ul>
+       <li><code><em>t</em></code>: <a href="http://www.lua.org/manual/5.1/manual.html#5.5">table</a>  Table to search.</li>
+       <li><code><em>value</em></code>:  Value to find.</li>
+       <li><code><em>n</em></code>: <strong>uint</strong>  Limiting size.</li>
+    </ul>
+
+
+    <h3>Returns:</h3>
+    <ol>
+        <strong>uint</strong> Index of first match, or <strong>nil</strong> if the value was not found in the range.
+    </ol>
+
+
+</dd>
+    <dt>
+    <a name = "FindNot"></a>
+    <strong>FindNot&nbsp;(t, value_not, is_array)</strong>
+    </dt>
+    <dd>
+    Finds a non-match for a value in the table.  The <strong>"eq"</strong> metamethod is respected
+ by the search.
+
+    <h3>Parameters:</h3>
+    <ul>
+       <li><code><em>t</em></code>: <a href="http://www.lua.org/manual/5.1/manual.html#5.5">table</a>  Table to search.</li>
+       <li><code><em>value_not</em></code>:  Value to reject.</li>
+       <li><code><em>is_array</em></code>: <strong>bool</strong>  Search only the array part (up to a <strong>nil</strong>, in order)?</li>
+    </ul>
+
+
+    <h3>Returns:</h3>
+    <ol>
+        Key belonging to a non-match, or <strong>nil</strong> if only matches were found.
+    </ol>
+
+
+    <h3>see also:</h3>
+    <ul>
+         <a href="../modules/table_ops.html#Find">Find</a>
+    </ul>
+</dd>
+    <dt>
+    <a name = "ForEach"></a>
+    <strong>ForEach&nbsp;(t, func, is_array, arg)</strong>
+    </dt>
+    <dd>
+    Performs an action on each item of the table. 
+
+    <h3>Parameters:</h3>
+    <ul>
+       <li><code><em>t</em></code>: <a href="http://www.lua.org/manual/5.1/manual.html#5.5">table</a>  Table to iterate.</li>
+       <li><code><em>func</em></code>: <strong>callable</strong>  Visitor function, called as</p>
+<pre><code>func(v, arg),
+</code></pre>
+<p> where <em>v</em> is the current value and <em>arg</em> is the parameter. If the return value
+ is not <strong>nil</strong>, iteration is interrupted and quits.</li>
+       <li><code><em>is_array</em></code>: <strong>bool</strong>  Traverse only the array part (up to a <strong>nil</strong>, in order)?</li>
+       <li><code><em>arg</em></code>:  Argument to <em>func</em>.</li>
+    </ul>
+
+
+    <h3>Returns:</h3>
+    <ol>
+        Interruption result, or <strong>nil</strong> if the iteration completed.
+    </ol>
+
+
+</dd>
+    <dt>
+    <a name = "ForEachKV"></a>
+    <strong>ForEachKV&nbsp;(t, func, is_array, arg)</strong>
+    </dt>
+    <dd>
+    Key-value variant of <a href="../modules/table_ops.html#ForEach">ForEach</a>. 
+
+    <h3>Parameters:</h3>
+    <ul>
+       <li><code><em>t</em></code>: <a href="http://www.lua.org/manual/5.1/manual.html#5.5">table</a>  Table to iterate.</li>
+       <li><code><em>func</em></code>: <strong>callable</strong>  Visitor function, called as</p>
+<pre><code>func(k, v, arg),
+</code></pre>
+<p> where <em>k</em> is the current key, <em>v</em> is the current value, and <em>arg</em> is the
+ parameter. If the return value is not <strong>nil</strong>, iteration is interrupted and quits.</li>
+       <li><code><em>is_array</em></code>: <strong>bool</strong>  Traverse only the array part (up to a <strong>nil</strong>, in order)?</li>
+       <li><code><em>arg</em></code>:  Argument to <em>func</em>.</li>
+    </ul>
+
+
+    <h3>Returns:</h3>
+    <ol>
+        Interruption result, or <strong>nil</strong> if the iteration completed.
+    </ol>
+
+
+</dd>
+    <dt>
+    <a name = "Invert"></a>
+    <strong>Invert&nbsp;(t)</strong>
+    </dt>
+    <dd>
+    Builds a table's inverse, i.e.  a table with the original keys as values and vice versa.</p>
+
+<p> Where the same value maps to many keys, no guarantee is provided about which key becomes
+ the new value.
+
+    <h3>Parameters:</h3>
+    <ul>
+       <li><code><em>t</em></code>: <a href="http://www.lua.org/manual/5.1/manual.html#5.5">table</a>  Table to invert.</li>
+    </ul>
+
+
+    <h3>Returns:</h3>
+    <ol>
+        <a href="http://www.lua.org/manual/5.1/manual.html#5.5">table</a> Inverse table.
+    </ol>
+
+
+</dd>
+    <dt>
+    <a name = "MakeSet"></a>
+    <strong>MakeSet&nbsp;(t)</strong>
+    </dt>
+    <dd>
+    Makes a set, i.e.  a table where each element has value <strong>true</strong>. For each value in
+ <em>t</em>, an element is added to the set, with the value instead as the key.
+
+    <h3>Parameters:</h3>
+    <ul>
+       <li><code><em>t</em></code>: <a href="http://www.lua.org/manual/5.1/manual.html#5.5">table</a>  Key array.</li>
+    </ul>
+
+
+    <h3>Returns:</h3>
+    <ol>
+        <a href="http://www.lua.org/manual/5.1/manual.html#5.5">table</a> Set constructed from array.
+    </ol>
+
+
+</dd>
+    <dt>
+    <a name = "Weak"></a>
+    <strong>Weak&nbsp;(choice)</strong>
+    </dt>
+    <dd>
+    Builds a new weak table. </p>
+
+<p> The table's metatable is fixed.
+
+    <h3>Parameters:</h3>
+    <ul>
+       <li><code><em>choice</em></code>: <a href="http://www.lua.org/manual/5.1/manual.html#5.4">string</a>  Weak option, which is one of <strong>"k"</strong>, <strong>"v"</strong>, or <strong>"kv"</strong>,
+ and will assign that behavior to the <strong>__mode</strong> key of the table's metatable.</li>
+    </ul>
+
+
+    <h3>Returns:</h3>
+    <ol>
+        <a href="http://www.lua.org/manual/5.1/manual.html#5.5">table</a> Table.
+    </ol>
+
+
+</dd>
+</dl>
+
+
+</div> <!-- id="content" -->
+</div> <!-- id="main" -->
+<div id="about">
+<i>generated by <a href="http://github.com/stevedonovan/LDoc">LDoc 1.2</a></i>
+</div> <!-- id="about" -->
+</div> <!-- id="container" -->
+</body>
+</html>

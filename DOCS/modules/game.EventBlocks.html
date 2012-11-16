@@ -1,0 +1,664 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+<head>
+    <title>Snippets documentation</title>
+    <link rel="stylesheet" href="../ldoc.css" type="text/css" />
+</head>
+<body>
+
+<div id="container">
+
+<div id="product">
+	<div id="product_logo"></div>
+	<div id="product_name"><big><b></b></big></div>
+	<div id="product_description"></div>
+</div> <!-- id="product" -->
+
+
+<div id="main">
+
+
+<!-- Menu -->
+
+<div id="navigation">
+<br/>
+<h1>Corona SDK snippets</h1>
+
+<ul>
+  <li><a href="../api.html">Index</a></li>
+</ul>
+
+<h2>Contents</h2>
+<ul>
+<li><a href="#Functions">Functions</a></li>
+</ul>
+
+
+<h2>Modules</h2>
+<ul>
+  <li><a href="../modules/DEBUG.html">DEBUG</a></li>
+  <li><a href="../modules/array_ops.html">array_ops</a></li>
+  <li><a href="../modules/bitwise_ops.html">bitwise_ops</a></li>
+  <li><a href="../modules/bound_args.html">bound_args</a></li>
+  <li><a href="../modules/cache_ops.html">cache_ops</a></li>
+  <li><a href="../modules/class.html">class</a></li>
+  <li><a href="../modules/class.Timer.html">class.Timer</a></li>
+  <li><a href="../modules/coroutine_ex.html">coroutine_ex</a></li>
+  <li><a href="../modules/dot.Switch.html">dot.Switch</a></li>
+  <li><a href="../modules/dot.Warp.html">dot.Warp</a></li>
+  <li><a href="../modules/editor.Common.html">editor.Common</a></li>
+  <li><a href="../modules/editor.Dialog.html">editor.Dialog</a></li>
+  <li><a href="../modules/editor.Dots.html">editor.Dots</a></li>
+  <li><a href="../modules/editor.EventBlocks.html">editor.EventBlocks</a></li>
+  <li><a href="../modules/editor.Events.html">editor.Events</a></li>
+  <li><a href="../modules/editor.General.html">editor.General</a></li>
+  <li><a href="../modules/editor.Grid.html">editor.Grid</a></li>
+  <li><a href="../modules/editor.Ops.html">editor.Ops</a></li>
+  <li><a href="../modules/editor.Settings.html">editor.Settings</a></li>
+  <li><a href="../modules/editor.Tiles.html">editor.Tiles</a></li>
+  <li><a href="../modules/effect.Balloons.html">effect.Balloons</a></li>
+  <li><a href="../modules/effect.Curves.html">effect.Curves</a></li>
+  <li><a href="../modules/effect.Fillers.html">effect.Fillers</a></li>
+  <li><a href="../modules/effect.Generators.html">effect.Generators</a></li>
+  <li><a href="../modules/effect.Glow.html">effect.Glow</a></li>
+  <li><a href="../modules/effect.Markers.html">effect.Markers</a></li>
+  <li><a href="../modules/effect.Shadows.html">effect.Shadows</a></li>
+  <li><a href="../modules/effect.Snowfall.html">effect.Snowfall</a></li>
+  <li><a href="../modules/effect.Stars.html">effect.Stars</a></li>
+  <li><a href="../modules/effect.Stash.html">effect.Stash</a></li>
+  <li><a href="../modules/errors.html">errors</a></li>
+  <li><a href="../modules/event_block.Maze.html">event_block.Maze</a></li>
+  <li><a href="../modules/exception.html">exception</a></li>
+  <li><a href="../modules/fibonacci_heap.html">fibonacci_heap</a></li>
+  <li><a href="../modules/fill.Circle.html">fill.Circle</a></li>
+  <li><a href="../modules/fill.Hilbert.html">fill.Hilbert</a></li>
+  <li><a href="../modules/fill.MarchingSquares.html">fill.MarchingSquares</a></li>
+  <li><a href="../modules/flow_bodies.html">flow_bodies</a></li>
+  <li><a href="../modules/flow_ops.html">flow_ops</a></li>
+  <li><a href="../modules/func_ops.html">func_ops</a></li>
+  <li><a href="../modules/game.AI.html">game.AI</a></li>
+  <li><a href="../modules/game.Audio.html">game.Audio</a></li>
+  <li><a href="../modules/game.Collision.html">game.Collision</a></li>
+  <li><a href="../modules/game.Controls.html">game.Controls</a></li>
+  <li><a href="../modules/game.DispatchList.html">game.DispatchList</a></li>
+  <li><a href="../modules/game.Dots.html">game.Dots</a></li>
+  <li><strong>game.EventBlocks</strong></li>
+  <li><a href="../modules/game.FX.html">game.FX</a></li>
+  <li><a href="../modules/game.Frames.html">game.Frames</a></li>
+  <li><a href="../modules/game.LevelMap.html">game.LevelMap</a></li>
+  <li><a href="../modules/game.LevelsList.html">game.LevelsList</a></li>
+  <li><a href="../modules/game.Movement.html">game.Movement</a></li>
+  <li><a href="../modules/game.PathUtils.html">game.PathUtils</a></li>
+  <li><a href="../modules/game.Pathing.html">game.Pathing</a></li>
+  <li><a href="../modules/game.Persistence.html">game.Persistence</a></li>
+  <li><a href="../modules/game.Player.html">game.Player</a></li>
+  <li><a href="../modules/game.Scenes.html">game.Scenes</a></li>
+  <li><a href="../modules/game.Scrolling.html">game.Scrolling</a></li>
+  <li><a href="../modules/game.TileFlags.html">game.TileFlags</a></li>
+  <li><a href="../modules/game.TileMaps.html">game.TileMaps</a></li>
+  <li><a href="../modules/game.Timers.html">game.Timers</a></li>
+  <li><a href="../modules/game.Transitions.html">game.Transitions</a></li>
+  <li><a href="../modules/geom2d_ops.html">geom2d_ops</a></li>
+  <li><a href="../modules/grid_iterators.html">grid_iterators</a></li>
+  <li><a href="../modules/heap_utils.html">heap_utils</a></li>
+  <li><a href="../modules/index_ops.html">index_ops</a></li>
+  <li><a href="../modules/iterators.html">iterators</a></li>
+  <li><a href="../modules/lazy_tables.html">lazy_tables</a></li>
+  <li><a href="../modules/main.html">main</a></li>
+  <li><a href="../modules/mwc_rng.html">mwc_rng</a></li>
+  <li><a href="../modules/numeric_ops.html">numeric_ops</a></li>
+  <li><a href="../modules/pairing_heap.html">pairing_heap</a></li>
+  <li><a href="../modules/per_coroutine_ops.html">per_coroutine_ops</a></li>
+  <li><a href="../modules/proxy.html">proxy</a></li>
+  <li><a href="../modules/samples.Curves.html">samples.Curves</a></li>
+  <li><a href="../modules/samples.Hilbert.html">samples.Hilbert</a></li>
+  <li><a href="../modules/samples.Hop.html">samples.Hop</a></li>
+  <li><a href="../modules/samples.Marching.html">samples.Marching</a></li>
+  <li><a href="../modules/samples.Nodes.html">samples.Nodes</a></li>
+  <li><a href="../modules/samples.SlowMo.html">samples.SlowMo</a></li>
+  <li><a href="../modules/samples.Snowfall.html">samples.Snowfall</a></li>
+  <li><a href="../modules/samples.Thoughts.html">samples.Thoughts</a></li>
+  <li><a href="../modules/samples.Tiling.html">samples.Tiling</a></li>
+  <li><a href="../modules/samples.Timers.html">samples.Timers</a></li>
+  <li><a href="../modules/scene.Choices.html">scene.Choices</a></li>
+  <li><a href="../modules/scene.EditorSetup.html">scene.EditorSetup</a></li>
+  <li><a href="../modules/scene.Intro.html">scene.Intro</a></li>
+  <li><a href="../modules/scene.Level.html">scene.Level</a></li>
+  <li><a href="../modules/scene.MapEditor.html">scene.MapEditor</a></li>
+  <li><a href="../modules/scene.Options.html">scene.Options</a></li>
+  <li><a href="../modules/simplex_noise.html">simplex_noise</a></li>
+  <li><a href="../modules/skew_heap.html">skew_heap</a></li>
+  <li><a href="../modules/soft_heap.html">soft_heap</a></li>
+  <li><a href="../modules/table_ops.html">table_ops</a></li>
+  <li><a href="../modules/tiles.TreeBG.html">tiles.TreeBG</a></li>
+  <li><a href="../modules/ui.Button.html">ui.Button</a></li>
+  <li><a href="../modules/ui.Checkbox.html">ui.Checkbox</a></li>
+  <li><a href="../modules/ui.Color.html">ui.Color</a></li>
+  <li><a href="../modules/ui.Grid1D.html">ui.Grid1D</a></li>
+  <li><a href="../modules/ui.Grid2D.html">ui.Grid2D</a></li>
+  <li><a href="../modules/ui.Keyboard.html">ui.Keyboard</a></li>
+  <li><a href="../modules/ui.Layout.html">ui.Layout</a></li>
+  <li><a href="../modules/ui.Lines.html">ui.Lines</a></li>
+  <li><a href="../modules/ui.Sheet.html">ui.Sheet</a></li>
+  <li><a href="../modules/ui.Skin.html">ui.Skin</a></li>
+  <li><a href="../modules/ui.Touch.html">ui.Touch</a></li>
+  <li><a href="../modules/ui.Utils.html">ui.Utils</a></li>
+  <li><a href="../modules/utils.html">utils</a></li>
+  <li><a href="../modules/var_dump.html">var_dump</a></li>
+  <li><a href="../modules/var_ops.html">var_ops</a></li>
+  <li><a href="../modules/var_preds.html">var_preds</a></li>
+</ul>
+
+</div>
+
+<div id="content">
+
+<h1>Module <code>game.EventBlocks</code></h1>
+
+<p>Common functionality for various "area effect" game events.</p>
+<p> Each such event type must return a factory function, cf. the result of <a href="../modules/game.EventBlocks.html#GetEvent">GetEvent</a>.
+ Such functions must gracefully handle an <em>info</em> argument of <strong>"editor_event"</strong>, by
+ returning either an editor event function or <strong>nil</strong>, cf. <a href="../modules/game.EventBlocks.html#EditorEvent">EditorEvent</a>.</p>
+
+<p> <strong>N.B.</strong>: In each of the functions below that take columns and rows as input, the
+ operation will transparently sort the columns and rows, and clamp them against the
+ level boundaries. A rect completely outside the level is null and the operation
+ will be a no-op.</p>
+
+<h2><a href="#Functions">Functions</a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#block:CanOccupy">block:CanOccupy&nbsp;(col1, row1, col2, row2)</a></td>
+	<td class="summary">Indicates whether a block can occupy a region without overlapping a different block.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#block:Dust">block:Dust&nbsp;(group, nmin, nmax)</a></td>
+	<td class="summary">Triggers a dust effect over the block's region.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#block:FillRect">block:FillRect&nbsp;(col1, row1, col2, row2)</a></td>
+	<td class="summary">Fills a region with occupancy information matching this block.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#block:FillSelf">block:FillSelf&nbsp;()</a></td>
+	<td class="summary">Variant of <a href="../modules/game.EventBlocks.html#block:FillRect">block:FillRect</a> that fills the current rect.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#block:GetColumns">block:GetColumns&nbsp;()</a></td>
+	<td class="summary">
+
+</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#block:GetRows">block:GetRows&nbsp;()</a></td>
+	<td class="summary">
+
+</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#block:GetInitialRect">block:GetInitialRect&nbsp;(flagged)</a></td>
+	<td class="summary">Gets the rect that was current at block initialization.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#block:GetOldFlags">block:GetOldFlags&nbsp;(index)</a></td>
+	<td class="summary">
+
+</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#block:Iter">block:Iter&nbsp;(col1, row1, col2, row2)</a></td>
+	<td class="summary">Iterates over a given region.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#block:IterSelf">block:IterSelf&nbsp;()</a></td>
+	<td class="summary">Variant of <a href="../modules/game.EventBlocks.html#block:Iter">block:Iter</a> that iterates over the current rect.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#block:SetRect">block:SetRect&nbsp;(col1, row1, col2, row2)</a></td>
+	<td class="summary">Sets the block's current rect, as used by the <strong>*Self</strong> methods.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#block:WipeRect">block:WipeRect&nbsp;(col1, row1, col2, row2)</a></td>
+	<td class="summary">Wipes event block state (flags, occupancy) in a given region.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#block:WipeSelf">block:WipeSelf&nbsp;()</a></td>
+	<td class="summary">Variant of <a href="../modules/game.EventBlocks.html#block:WipeRect">block:WipeRect</a> that wipes the current rect.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#AddBlock">AddBlock&nbsp;(info)</a></td>
+	<td class="summary">Adds a block to the level and registers an event for it.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#EditorEvent">EditorEvent&nbsp;(type, what, arg1, arg2, arg3)</a></td>
+	<td class="summary">Handler for event block-related events sent by the editor.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#GetEvent">GetEvent&nbsp;(name)</a></td>
+	<td class="summary">
+
+</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#FireAll">FireAll&nbsp;(forward)</a></td>
+	<td class="summary">Fires all events.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#GetTypes">GetTypes&nbsp;()</a></td>
+	<td class="summary">
+
+</td>
+	</tr>
+</table>
+
+<br/>
+<br/>
+
+
+    <h2><a name="Functions"></a>Functions</h2>
+    
+    <dl class="function">
+    <dt>
+    <a name = "block:CanOccupy"></a>
+    <strong>block:CanOccupy&nbsp;(col1, row1, col2, row2)</strong>
+    </dt>
+    <dd>
+    Indicates whether a block can occupy a region without overlapping a different block. 
+ The block will ignore itself, since this test will often be used to determine if a
+ block could be changed.</p>
+
+<p> <strong>N.B.</strong> that this is <strong>not</strong> called automatically by other block methods.
+
+    <h3>Parameters:</h3>
+    <ul>
+       <li><code><em>col1</em></code>: <strong>int</strong>  A column...</li>
+       <li><code><em>row1</em></code>: <strong>int</strong>  ... and row.</li>
+       <li><code><em>col2</em></code>: <strong>int</strong>  Another column...</li>
+       <li><code><em>row2</em></code>: <strong>int</strong>  ...and row.</li>
+    </ul>
+
+
+    <h3>Returns:</h3>
+    <ol>
+        <li><strong>boolean</strong> The block can occupy the region, i.e. each tile is either unoccupied
+ or already occupied by this block?</li>
+        <li><strong>uint</strong> If the first return value is <strong>false</strong>, the number of conflicting tiles.
+ Otherwise, 0.</li>
+    </ol>
+
+
+</dd>
+    <dt>
+    <a name = "block:Dust"></a>
+    <strong>block:Dust&nbsp;(group, nmin, nmax)</strong>
+    </dt>
+    <dd>
+    Triggers a dust effect over the block's region. 
+
+    <h3>Parameters:</h3>
+    <ul>
+       <li><code><em>group</em></code>: <strong>DisplayGroup</strong>  Group to which dust particles are added.</li>
+       <li><code><em>nmin</em></code>: <strong>uint</strong>  Minimum number of clouds to randomly throw up...</li>
+       <li><code><em>nmax</em></code>: <strong>uint</strong>  ...and maximum.</li>
+    </ul>
+
+
+    <h3>Returns:</h3>
+    <ol>
+        <strong>uint</strong> Total time elapsed, in milliseconds, by effect.
+    </ol>
+
+
+    <h3>see also:</h3>
+    <ul>
+         <a href="../modules/game.FX.html#Poof">game.FX.Poof</a>
+    </ul>
+</dd>
+    <dt>
+    <a name = "block:FillRect"></a>
+    <strong>block:FillRect&nbsp;(col1, row1, col2, row2)</strong>
+    </dt>
+    <dd>
+    Fills a region with occupancy information matching this block. 
+
+    <h3>Parameters:</h3>
+    <ul>
+       <li><code><em>col1</em></code>: <strong>int</strong>  A column...</li>
+       <li><code><em>row1</em></code>: <strong>int</strong>  ... and row.</li>
+       <li><code><em>col2</em></code>: <strong>int</strong>  Another column...</li>
+       <li><code><em>row2</em></code>: <strong>int</strong>  ...and row.</li>
+    </ul>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "block:FillSelf"></a>
+    <strong>block:FillSelf&nbsp;()</strong>
+    </dt>
+    <dd>
+    Variant of <a href="../modules/game.EventBlocks.html#block:FillRect">block:FillRect</a> that fills the current rect. 
+
+
+
+
+
+    <h3>see also:</h3>
+    <ul>
+         <a href="../modules/game.EventBlocks.html#block:SetRect">block:SetRect</a>
+    </ul>
+</dd>
+    <dt>
+    <a name = "block:GetColumns"></a>
+    <strong>block:GetColumns&nbsp;()</strong>
+    </dt>
+    <dd>
+     
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+        <li><strong>int</strong> Minimum column...</li>
+        <li><strong>int</strong> ...and maximum.</li>
+    </ol>
+
+
+</dd>
+    <dt>
+    <a name = "block:GetRows"></a>
+    <strong>block:GetRows&nbsp;()</strong>
+    </dt>
+    <dd>
+     
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+        <li><strong>int</strong> Minimum row...</li>
+        <li><strong>int</strong> ...and maximum.</li>
+    </ol>
+
+
+</dd>
+    <dt>
+    <a name = "block:GetInitialRect"></a>
+    <strong>block:GetInitialRect&nbsp;(flagged)</strong>
+    </dt>
+    <dd>
+    Gets the rect that was current at block initialization. 
+
+    <h3>Parameters:</h3>
+    <ul>
+       <li><code><em>flagged</em></code>: <strong>bool</strong>  If true, cull any unflagged outer rows and columns.</li>
+    </ul>
+
+
+    <h3>Returns:</h3>
+    <ol>
+        <li><strong>int</strong> Minimum column...</li>
+        <li><strong>int</strong> ...and row.</li>
+        <li><strong>int</strong> Maximum column...</li>
+        <li><strong>int</strong> ...and row.</li>
+    </ol>
+
+
+</dd>
+    <dt>
+    <a name = "block:GetOldFlags"></a>
+    <strong>block:GetOldFlags&nbsp;(index)</strong>
+    </dt>
+    <dd>
+     
+
+    <h3>Parameters:</h3>
+    <ul>
+       <li><code><em>index</em></code>: <strong>int</strong>  Tile index.</li>
+    </ul>
+
+
+    <h3>Returns:</h3>
+    <ol>
+        <strong>uint</strong> Tile flags at block creation time.
+    </ol>
+
+
+    <h3>see also:</h3>
+    <ul>
+         <a href="../modules/game.TileFlags.html#GetFlags">game.TileFlags.GetFlags</a>
+    </ul>
+</dd>
+    <dt>
+    <a name = "block:Iter"></a>
+    <strong>block:Iter&nbsp;(col1, row1, col2, row2)</strong>
+    </dt>
+    <dd>
+    Iterates over a given region. 
+
+    <h3>Parameters:</h3>
+    <ul>
+       <li><code><em>col1</em></code>: <strong>int</strong>  A column...</li>
+       <li><code><em>row1</em></code>: <strong>int</strong>  ... and row.</li>
+       <li><code><em>col2</em></code>: <strong>int</strong>  Another column...</li>
+       <li><code><em>row2</em></code>: <strong>int</strong>  ...and row.</li>
+    </ul>
+
+
+    <h3>Returns:</h3>
+    <ol>
+        <strong>iterator</strong> Supplies tile index, column, row.
+    </ol>
+
+
+</dd>
+    <dt>
+    <a name = "block:IterSelf"></a>
+    <strong>block:IterSelf&nbsp;()</strong>
+    </dt>
+    <dd>
+    Variant of <a href="../modules/game.EventBlocks.html#block:Iter">block:Iter</a> that iterates over the current rect. 
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+        <strong>iterator</strong> Supplies tile index, column, row.
+    </ol>
+
+
+    <h3>see also:</h3>
+    <ul>
+         <a href="../modules/game.EventBlocks.html#block:SetRect">block:SetRect</a>
+    </ul>
+</dd>
+    <dt>
+    <a name = "block:SetRect"></a>
+    <strong>block:SetRect&nbsp;(col1, row1, col2, row2)</strong>
+    </dt>
+    <dd>
+    Sets the block's current rect, as used by the <strong>*Self</strong> methods. </p>
+
+<p> Until this call, the current rect will be equivalent to <a href="../modules/game.EventBlocks.html#block:GetInitialRect">block:GetInitialRect</a>'s
+ result (with <em>flagged</em> false).</p>
+
+<p> If the rect is null, those methods will be no-ops.
+
+    <h3>Parameters:</h3>
+    <ul>
+       <li><code><em>col1</em></code>: <strong>int</strong>  A column...</li>
+       <li><code><em>row1</em></code>: <strong>int</strong>  ...and row.</li>
+       <li><code><em>col2</em></code>: <strong>int</strong>  Another column...</li>
+       <li><code><em>row2</em></code>: <strong>int</strong>  ...and row.</li>
+    </ul>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "block:WipeRect"></a>
+    <strong>block:WipeRect&nbsp;(col1, row1, col2, row2)</strong>
+    </dt>
+    <dd>
+    Wipes event block state (flags, occupancy) in a given region. 
+
+    <h3>Parameters:</h3>
+    <ul>
+       <li><code><em>col1</em></code>: <strong>int</strong>  A column...</li>
+       <li><code><em>row1</em></code>: <strong>int</strong>  ... and row.</li>
+       <li><code><em>col2</em></code>: <strong>int</strong>  Another column...</li>
+       <li><code><em>row2</em></code>: <strong>int</strong>  ...and row.</li>
+    </ul>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "block:WipeSelf"></a>
+    <strong>block:WipeSelf&nbsp;()</strong>
+    </dt>
+    <dd>
+    Variant of <a href="../modules/game.EventBlocks.html#block:WipeRect">block:WipeRect</a> that wipes the current rect. 
+
+
+
+
+
+    <h3>see also:</h3>
+    <ul>
+         <a href="../modules/game.EventBlocks.html#block:SetRect">block:SetRect</a>
+    </ul>
+</dd>
+    <dt>
+    <a name = "AddBlock"></a>
+    <strong>AddBlock&nbsp;(info)</strong>
+    </dt>
+    <dd>
+    Adds a block to the level and registers an event for it. 
+
+    <h3>Parameters:</h3>
+    <ul>
+       <li><code><em>info</em></code>: <a href="http://www.lua.org/manual/5.1/manual.html#5.5">table</a>  Block info, with at least the following properties:</p>
+
+<ul>
+    <li><strong>name</strong>: <strong>string</strong> The event is registered under this name, which should be unique
+    among event blocks.</li>
+    <li><strong>type</strong>: <strong>string</strong> One of the choices reported by <a href="../modules/game.EventBlocks.html#GetTypes">GetTypes</a>.</li>
+    <li><strong>col1</strong>, <strong>row1</strong>, <strong>col2</strong>, <strong>row2</strong>: <strong>int</strong> Columns and rows defining the block.
+    These will be sorted and clamped, as with block operations.</li>
+</ul>
+
+<p> <strong>TODO</strong>: Detect null blocks? Mention construction, block:Reset</li>
+    </ul>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "EditorEvent"></a>
+    <strong>EditorEvent&nbsp;(type, what, arg1, arg2, arg3)</strong>
+    </dt>
+    <dd>
+    Handler for event block-related events sent by the editor. </p>
+
+<p> If an editor event function is available for <em>type</em>, if will be called afterward as
+ <code>func(what, arg1, arg2, arg3)</code>.
+
+    <h3>Parameters:</h3>
+    <ul>
+       <li><code><em>type</em></code>: <a href="http://www.lua.org/manual/5.1/manual.html#5.4">string</a>  Event block type, as listed by <a href="../modules/game.EventBlocks.html#GetTypes">GetTypes</a>.</li>
+       <li><code><em>what</em></code>: <a href="http://www.lua.org/manual/5.1/manual.html#5.4">string</a>  Name of event.</li>
+       <li><code><em>arg1</em></code>:  Argument #1.</li>
+       <li><code><em>arg2</em></code>:  Argument #2.</li>
+       <li><code><em>arg3</em></code>:  Argument #3.</li>
+    </ul>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "GetEvent"></a>
+    <strong>GetEvent&nbsp;(name)</strong>
+    </dt>
+    <dd>
+     
+
+    <h3>Parameters:</h3>
+    <ul>
+       <li><code><em>name</em></code>:  Name used to register event in <a href="../modules/game.EventBlocks.html#AddBlock">AddBlock</a>.</li>
+    </ul>
+
+
+    <h3>Returns:</h3>
+    <ol>
+        <strong>callable</strong> If missing, a no-op. Otherwise, this is a function called as
+   result = event(what, arg1, arg2),
+ which should handle the following choices of <em>what</em>:</p>
+
+<ul>
+    <li><strong>"can_fire"</strong>: If <em>result</em> is true, the event can be safely fired. <em>arg1</em> indicates
+    whether the source, e.g. a switch, wants to fire forward or backward (forward = true).
+    This has meaning to certain events.</li>
+    <li><strong>"fire"</strong>: Fires the event. <em>arg1</em> is again the forward boolean.</li>
+    <li><strong>"is_done"</strong>: If <em>result</em> is false, the event is still in progress.</li>
+    <li><strong>"show"</strong>: Shows or hides event hints. <em>arg1</em> is the responsible party for firing
+    events, e.g. a switch, and <em>arg2</em> is a boolean (true = show).</li>
+</ul>
+
+<p> <strong>CONSIDER</strong>: Formalize <em>arg1</em> in "show" more... e.g. an options list (m_forward is
+ the only one we care about so far)... or maybe JUST the forward boolean, since the
+ hint might as well be compatible with can_fire / fire?
+    </ol>
+
+
+</dd>
+    <dt>
+    <a name = "FireAll"></a>
+    <strong>FireAll&nbsp;(forward)</strong>
+    </dt>
+    <dd>
+    Fires all events. 
+
+    <h3>Parameters:</h3>
+    <ul>
+       <li><code><em>forward</em></code>: <strong>bool</strong>  Forward boolean, argument to event's <strong>"can_fire"</strong> and <strong>"fire"</strong> choices.</li>
+    </ul>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "GetTypes"></a>
+    <strong>GetTypes&nbsp;()</strong>
+    </dt>
+    <dd>
+     
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+        <strong>array</strong> Unordered list of event block type names, as strings.
+    </ol>
+
+
+</dd>
+</dl>
+
+
+</div> <!-- id="content" -->
+</div> <!-- id="main" -->
+<div id="about">
+<i>generated by <a href="http://github.com/stevedonovan/LDoc">LDoc 1.2</a></i>
+</div> <!-- id="about" -->
+</div> <!-- id="container" -->
+</body>
+</html>

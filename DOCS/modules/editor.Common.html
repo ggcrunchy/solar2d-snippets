@@ -1,0 +1,777 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+<head>
+    <title>Snippets documentation</title>
+    <link rel="stylesheet" href="../ldoc.css" type="text/css" />
+</head>
+<body>
+
+<div id="container">
+
+<div id="product">
+	<div id="product_logo"></div>
+	<div id="product_name"><big><b></b></big></div>
+	<div id="product_description"></div>
+</div> <!-- id="product" -->
+
+
+<div id="main">
+
+
+<!-- Menu -->
+
+<div id="navigation">
+<br/>
+<h1>Corona SDK snippets</h1>
+
+<ul>
+  <li><a href="../api.html">Index</a></li>
+</ul>
+
+<h2>Contents</h2>
+<ul>
+<li><a href="#Functions">Functions</a></li>
+</ul>
+
+
+<h2>Modules</h2>
+<ul>
+  <li><a href="../modules/DEBUG.html">DEBUG</a></li>
+  <li><a href="../modules/array_ops.html">array_ops</a></li>
+  <li><a href="../modules/bitwise_ops.html">bitwise_ops</a></li>
+  <li><a href="../modules/bound_args.html">bound_args</a></li>
+  <li><a href="../modules/cache_ops.html">cache_ops</a></li>
+  <li><a href="../modules/class.html">class</a></li>
+  <li><a href="../modules/class.Timer.html">class.Timer</a></li>
+  <li><a href="../modules/coroutine_ex.html">coroutine_ex</a></li>
+  <li><a href="../modules/dot.Switch.html">dot.Switch</a></li>
+  <li><a href="../modules/dot.Warp.html">dot.Warp</a></li>
+  <li><strong>editor.Common</strong></li>
+  <li><a href="../modules/editor.Dialog.html">editor.Dialog</a></li>
+  <li><a href="../modules/editor.Dots.html">editor.Dots</a></li>
+  <li><a href="../modules/editor.EventBlocks.html">editor.EventBlocks</a></li>
+  <li><a href="../modules/editor.Events.html">editor.Events</a></li>
+  <li><a href="../modules/editor.General.html">editor.General</a></li>
+  <li><a href="../modules/editor.Grid.html">editor.Grid</a></li>
+  <li><a href="../modules/editor.Ops.html">editor.Ops</a></li>
+  <li><a href="../modules/editor.Settings.html">editor.Settings</a></li>
+  <li><a href="../modules/editor.Tiles.html">editor.Tiles</a></li>
+  <li><a href="../modules/effect.Balloons.html">effect.Balloons</a></li>
+  <li><a href="../modules/effect.Curves.html">effect.Curves</a></li>
+  <li><a href="../modules/effect.Fillers.html">effect.Fillers</a></li>
+  <li><a href="../modules/effect.Generators.html">effect.Generators</a></li>
+  <li><a href="../modules/effect.Glow.html">effect.Glow</a></li>
+  <li><a href="../modules/effect.Markers.html">effect.Markers</a></li>
+  <li><a href="../modules/effect.Shadows.html">effect.Shadows</a></li>
+  <li><a href="../modules/effect.Snowfall.html">effect.Snowfall</a></li>
+  <li><a href="../modules/effect.Stars.html">effect.Stars</a></li>
+  <li><a href="../modules/effect.Stash.html">effect.Stash</a></li>
+  <li><a href="../modules/errors.html">errors</a></li>
+  <li><a href="../modules/event_block.Maze.html">event_block.Maze</a></li>
+  <li><a href="../modules/exception.html">exception</a></li>
+  <li><a href="../modules/fibonacci_heap.html">fibonacci_heap</a></li>
+  <li><a href="../modules/fill.Circle.html">fill.Circle</a></li>
+  <li><a href="../modules/fill.Hilbert.html">fill.Hilbert</a></li>
+  <li><a href="../modules/fill.MarchingSquares.html">fill.MarchingSquares</a></li>
+  <li><a href="../modules/flow_bodies.html">flow_bodies</a></li>
+  <li><a href="../modules/flow_ops.html">flow_ops</a></li>
+  <li><a href="../modules/func_ops.html">func_ops</a></li>
+  <li><a href="../modules/game.AI.html">game.AI</a></li>
+  <li><a href="../modules/game.Audio.html">game.Audio</a></li>
+  <li><a href="../modules/game.Collision.html">game.Collision</a></li>
+  <li><a href="../modules/game.Controls.html">game.Controls</a></li>
+  <li><a href="../modules/game.DispatchList.html">game.DispatchList</a></li>
+  <li><a href="../modules/game.Dots.html">game.Dots</a></li>
+  <li><a href="../modules/game.EventBlocks.html">game.EventBlocks</a></li>
+  <li><a href="../modules/game.FX.html">game.FX</a></li>
+  <li><a href="../modules/game.Frames.html">game.Frames</a></li>
+  <li><a href="../modules/game.LevelMap.html">game.LevelMap</a></li>
+  <li><a href="../modules/game.LevelsList.html">game.LevelsList</a></li>
+  <li><a href="../modules/game.Movement.html">game.Movement</a></li>
+  <li><a href="../modules/game.PathUtils.html">game.PathUtils</a></li>
+  <li><a href="../modules/game.Pathing.html">game.Pathing</a></li>
+  <li><a href="../modules/game.Persistence.html">game.Persistence</a></li>
+  <li><a href="../modules/game.Player.html">game.Player</a></li>
+  <li><a href="../modules/game.Scenes.html">game.Scenes</a></li>
+  <li><a href="../modules/game.Scrolling.html">game.Scrolling</a></li>
+  <li><a href="../modules/game.TileFlags.html">game.TileFlags</a></li>
+  <li><a href="../modules/game.TileMaps.html">game.TileMaps</a></li>
+  <li><a href="../modules/game.Timers.html">game.Timers</a></li>
+  <li><a href="../modules/game.Transitions.html">game.Transitions</a></li>
+  <li><a href="../modules/geom2d_ops.html">geom2d_ops</a></li>
+  <li><a href="../modules/grid_iterators.html">grid_iterators</a></li>
+  <li><a href="../modules/heap_utils.html">heap_utils</a></li>
+  <li><a href="../modules/index_ops.html">index_ops</a></li>
+  <li><a href="../modules/iterators.html">iterators</a></li>
+  <li><a href="../modules/lazy_tables.html">lazy_tables</a></li>
+  <li><a href="../modules/main.html">main</a></li>
+  <li><a href="../modules/mwc_rng.html">mwc_rng</a></li>
+  <li><a href="../modules/numeric_ops.html">numeric_ops</a></li>
+  <li><a href="../modules/pairing_heap.html">pairing_heap</a></li>
+  <li><a href="../modules/per_coroutine_ops.html">per_coroutine_ops</a></li>
+  <li><a href="../modules/proxy.html">proxy</a></li>
+  <li><a href="../modules/samples.Curves.html">samples.Curves</a></li>
+  <li><a href="../modules/samples.Hilbert.html">samples.Hilbert</a></li>
+  <li><a href="../modules/samples.Hop.html">samples.Hop</a></li>
+  <li><a href="../modules/samples.Marching.html">samples.Marching</a></li>
+  <li><a href="../modules/samples.Nodes.html">samples.Nodes</a></li>
+  <li><a href="../modules/samples.SlowMo.html">samples.SlowMo</a></li>
+  <li><a href="../modules/samples.Snowfall.html">samples.Snowfall</a></li>
+  <li><a href="../modules/samples.Thoughts.html">samples.Thoughts</a></li>
+  <li><a href="../modules/samples.Tiling.html">samples.Tiling</a></li>
+  <li><a href="../modules/samples.Timers.html">samples.Timers</a></li>
+  <li><a href="../modules/scene.Choices.html">scene.Choices</a></li>
+  <li><a href="../modules/scene.EditorSetup.html">scene.EditorSetup</a></li>
+  <li><a href="../modules/scene.Intro.html">scene.Intro</a></li>
+  <li><a href="../modules/scene.Level.html">scene.Level</a></li>
+  <li><a href="../modules/scene.MapEditor.html">scene.MapEditor</a></li>
+  <li><a href="../modules/scene.Options.html">scene.Options</a></li>
+  <li><a href="../modules/simplex_noise.html">simplex_noise</a></li>
+  <li><a href="../modules/skew_heap.html">skew_heap</a></li>
+  <li><a href="../modules/soft_heap.html">soft_heap</a></li>
+  <li><a href="../modules/table_ops.html">table_ops</a></li>
+  <li><a href="../modules/tiles.TreeBG.html">tiles.TreeBG</a></li>
+  <li><a href="../modules/ui.Button.html">ui.Button</a></li>
+  <li><a href="../modules/ui.Checkbox.html">ui.Checkbox</a></li>
+  <li><a href="../modules/ui.Color.html">ui.Color</a></li>
+  <li><a href="../modules/ui.Grid1D.html">ui.Grid1D</a></li>
+  <li><a href="../modules/ui.Grid2D.html">ui.Grid2D</a></li>
+  <li><a href="../modules/ui.Keyboard.html">ui.Keyboard</a></li>
+  <li><a href="../modules/ui.Layout.html">ui.Layout</a></li>
+  <li><a href="../modules/ui.Lines.html">ui.Lines</a></li>
+  <li><a href="../modules/ui.Sheet.html">ui.Sheet</a></li>
+  <li><a href="../modules/ui.Skin.html">ui.Skin</a></li>
+  <li><a href="../modules/ui.Touch.html">ui.Touch</a></li>
+  <li><a href="../modules/ui.Utils.html">ui.Utils</a></li>
+  <li><a href="../modules/utils.html">utils</a></li>
+  <li><a href="../modules/var_dump.html">var_dump</a></li>
+  <li><a href="../modules/var_ops.html">var_ops</a></li>
+  <li><a href="../modules/var_preds.html">var_preds</a></li>
+</ul>
+
+</div>
+
+<div id="content">
+
+<h1>Module <code>editor.Common</code></h1>
+
+<p>Components shared throughout the editor.</p>
+<p>
+
+</p>
+
+<h2><a href="#Functions">Functions</a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#AddButton">AddButton&nbsp;(name, button)</a></td>
+	<td class="summary">Registers a button for general editor use.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#AddNet">AddNet&nbsp;(group, object)</a></td>
+	<td class="summary">DOCMAYBE</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#CheckboxWithText">CheckboxWithText&nbsp;(group, x, y, text, options)</a></td>
+	<td class="summary">Creates a checkbox with some attached text.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#CleanUp">CleanUp&nbsp;()</a></td>
+	<td class="summary">Cleans up various state used pervasively by the editor.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#CopyInto">CopyInto&nbsp;(dt, t, ignore)</a></td>
+	<td class="summary">Copies into one table from another.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Dirty">Dirty&nbsp;()</a></td>
+	<td class="summary">Sets the editor dirty state, if clear, and updates dirty-related features.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#EditableString">EditableString&nbsp;(group, keys, x, y, options)</a></td>
+	<td class="summary">Creates an editable text object.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#FadeButton">FadeButton&nbsp;(name, check, alpha)</a></td>
+	<td class="summary">Fades a button, if available, in or out to a given opacity.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#FromKey">FromKey&nbsp;(key)</a></td>
+	<td class="summary">
+
+</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#GetDims">GetDims&nbsp;()</a></td>
+	<td class="summary">
+
+</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Init">Init&nbsp;(ncols, nrows, no_load)</a></td>
+	<td class="summary">Initializes various state used pervasively by the editor.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#IsDirty">IsDirty&nbsp;()</a></td>
+	<td class="summary">
+
+</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#IsVerified">IsVerified&nbsp;()</a></td>
+	<td class="summary">
+
+</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Listbox">Listbox&nbsp;(group, x, y)</a></td>
+	<td class="summary">Creates a listbox, built on top of <code>widget.newTableView</code>.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#ListboxRowAdder">ListboxRowAdder&nbsp;(press, release, get_text)</a></td>
+	<td class="summary">Creates a listbox-compatible row inserter.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#ScrollButton">ScrollButton&nbsp;(group, name, x, y, func)</a></td>
+	<td class="summary">Creates a scroll button, with increments stored in the <strong>m_dc</strong> and <strong>m_dr</strong> fields.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#ShowCurrent">ShowCurrent&nbsp;(current, show)</a></td>
+	<td class="summary">Shows or hides the current selection widget.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#SpriteSetFromThumbs">SpriteSetFromThumbs&nbsp;(prefix, types)</a></td>
+	<td class="summary">DOCMAYBE</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#TabBar">TabBar&nbsp;(group, buttons, options, hide)</a></td>
+	<td class="summary">Creates a tab bar.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#ToKey">ToKey&nbsp;(col, row)</a></td>
+	<td class="summary">
+
+</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Undirty">Undirty&nbsp;()</a></td>
+	<td class="summary">Clears the editor dirty state, if set, and updates dirty-related features.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Verify">Verify&nbsp;()</a></td>
+	<td class="summary">Sets the editor verified state, if clear, and updates verification-related features.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#WallInRect">WallInRect&nbsp;(group, x, y, w, h)</a></td>
+	<td class="summary">Surrounds a rectangle with "walls".</td>
+	</tr>
+</table>
+
+<br/>
+<br/>
+
+
+    <h2><a name="Functions"></a>Functions</h2>
+    
+    <dl class="function">
+    <dt>
+    <a name = "AddButton"></a>
+    <strong>AddButton&nbsp;(name, button)</strong>
+    </dt>
+    <dd>
+    Registers a button for general editor use. 
+
+    <h3>Parameters:</h3>
+    <ul>
+       <li><code><em>name</em></code>: <a href="http://www.lua.org/manual/5.1/manual.html#5.4">string</a>  Name used to access button.</li>
+       <li><code><em>button</em></code>: <strong>DisplayGroup</strong>  <a href="../modules/ui.Button.html#">ui.Button</a> object.</li>
+    </ul>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "AddNet"></a>
+    <strong>AddNet&nbsp;(group, object)</strong>
+    </dt>
+    <dd>
+    DOCMAYBE 
+
+    <h3>Parameters:</h3>
+    <ul>
+       <li><code><em>group</em></code>: <strong>DisplayGroup</strong> 
+
+</li>
+       <li><code><em>object</em></code>: <strong>DisplayObject</strong> 
+
+</li>
+    </ul>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "CheckboxWithText"></a>
+    <strong>CheckboxWithText&nbsp;(group, x, y, text, options)</strong>
+    </dt>
+    <dd>
+    Creates a checkbox with some attached text. 
+
+    <h3>Parameters:</h3>
+    <ul>
+       <li><code><em>group</em></code>: <strong>DisplayGroup</strong>  Group to which checkbox will be inserted.</li>
+       <li><code><em>x</em></code>: <strong>number</strong>  Checkbox x-coordinate...</li>
+       <li><code><em>y</em></code>: <strong>number</strong>  ...and y-coordinate.</li>
+       <li><code><em>text</em></code>: <a href="http://www.lua.org/manual/5.1/manual.html#5.4">string</a>  Text string.</li>
+       <li><code><em>options</em></code>: <a href="http://www.lua.org/manual/5.1/manual.html#5.5">table</a> 
+<p> Optional checkbox options. The following fields are recognized:</p>
+
+<ul>
+    <li><strong>func</strong>: Passed as <em>func</em> to <a href="../modules/ui.Checkbox.html#Checkbox">ui.Checkbox.Checkbox</a>.</li>
+    <li><strong>is_checked</strong>: If true, the checkbox will start out checked.</li>
+</ul>
+</li>
+    </ul>
+
+
+    <h3>Returns:</h3>
+    <ol>
+        <strong>DisplayGroup</strong> Augmented <a href="../modules/ui.Checkbox.html#">ui.Checkbox</a> object, with child #3: text object.
+    </ol>
+
+
+</dd>
+    <dt>
+    <a name = "CleanUp"></a>
+    <strong>CleanUp&nbsp;()</strong>
+    </dt>
+    <dd>
+    Cleans up various state used pervasively by the editor. 
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "CopyInto"></a>
+    <strong>CopyInto&nbsp;(dt, t, ignore)</strong>
+    </dt>
+    <dd>
+    Copies into one table from another. 
+
+    <h3>Parameters:</h3>
+    <ul>
+       <li><code><em>dt</em></code>: <a href="http://www.lua.org/manual/5.1/manual.html#5.5">table</a>  Destination table.</li>
+       <li><code><em>t</em></code>: <a href="http://www.lua.org/manual/5.1/manual.html#5.5">table</a>  Source table. If absent, <em>dt</em>.</li>
+       <li><code><em>ignore</em></code>:  If present, a key to skip during copying.</li>
+    </ul>
+
+
+    <h3>Returns:</h3>
+    <ol>
+        table <em>dt</em>.
+    </ol>
+
+
+</dd>
+    <dt>
+    <a name = "Dirty"></a>
+    <strong>Dirty&nbsp;()</strong>
+    </dt>
+    <dd>
+    Sets the editor dirty state, if clear, and updates dirty-related features. </p>
+
+<p> The working level must also be re-verified.
+
+
+
+
+
+    <h3>see also:</h3>
+    <ul>
+         <li><a href="../modules/editor.Common.html#IsDirty">IsDirty</a></li>
+         <li><a href="../modules/editor.Common.html#IsVerified">IsVerified</a></li>
+         <li><a href="../modules/editor.Common.html#Undirty">Undirty</a></li>
+         <li><a href="../modules/editor.Common.html#Verify">Verify</a></li>
+    </ul>
+</dd>
+    <dt>
+    <a name = "EditableString"></a>
+    <strong>EditableString&nbsp;(group, keys, x, y, options)</strong>
+    </dt>
+    <dd>
+    Creates an editable text object. 
+
+    <h3>Parameters:</h3>
+    <ul>
+       <li><code><em>group</em></code>: <strong>DisplayGroup</strong>  Group to which text and button will be inserted.</li>
+       <li><code><em>keys</em></code>: <strong>DisplayObject</strong>  <a href="../modules/ui.Keyboard.html#">ui.Keyboard</a> object, used to edit the text.</li>
+       <li><code><em>x</em></code>: <strong>number</strong>  Button x-coordinate... (Text will follow.)</li>
+       <li><code><em>y</em></code>: <strong>number</strong>  ...and y-coordinate.</li>
+       <li><code><em>options</em></code>: <a href="http://www.lua.org/manual/5.1/manual.html#5.5">table</a> 
+<p> Optional string options. The following fields are recognized:</p>
+
+<ul>
+    <li><strong>font</strong>: Text font; if absent, uses a default.</li>
+    <li><strong>size</strong>: Text size; if absent, uses a default.</li>
+    <li><strong>text</strong>: Initial text string; if absent, empty.</li>
+    <li><strong>is_modal</strong>: If true, the keyboard will block other input.</li>
+</ul>
+</li>
+    </ul>
+
+
+    <h3>Returns:</h3>
+    <ol>
+        <li><strong>DisplayObject</strong> The text object...</li>
+        <li><strong>DisplayObject</strong> ...and the button widget.</p>
+
+<p> <strong>CONSIDER</strong>: There may be better ways, e.g. put the text in the button, etc.</li>
+    </ol>
+
+
+</dd>
+    <dt>
+    <a name = "FadeButton"></a>
+    <strong>FadeButton&nbsp;(name, check, alpha)</strong>
+    </dt>
+    <dd>
+    Fades a button, if available, in or out to a given opacity. 
+
+    <h3>Parameters:</h3>
+    <ul>
+       <li><code><em>name</em></code>:  Name of a button added by <a href="../modules/editor.Common.html#AddButton">AddButton</a>.</li>
+       <li><code><em>check</em></code>: <strong>bool</strong>  If false, no fade is performed.</li>
+       <li><code><em>alpha</em></code>: <strong>number</strong>  Final alpha value &isin; [0, 1].</li>
+    </ul>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "FromKey"></a>
+    <strong>FromKey&nbsp;(key)</strong>
+    </dt>
+    <dd>
+     
+
+    <h3>Parameters:</h3>
+    <ul>
+       <li><code><em>key</em></code>: <a href="http://www.lua.org/manual/5.1/manual.html#5.4">string</a>  A backing store key, as encoded by <a href="../modules/editor.Common.html#ToKey">ToKey</a> on a pair of grid coordinates.</li>
+    </ul>
+
+
+    <h3>Returns:</h3>
+    <ol>
+        <li><strong>uint</strong> The grid column...</li>
+        <li><strong>uint</strong> ...and row.</li>
+    </ol>
+
+
+</dd>
+    <dt>
+    <a name = "GetDims"></a>
+    <strong>GetDims&nbsp;()</strong>
+    </dt>
+    <dd>
+     
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+        <li><strong>uint</strong> Number of columns in working level...</li>
+        <li><strong>uint</strong> ...and number of rows.</li>
+    </ol>
+
+
+</dd>
+    <dt>
+    <a name = "Init"></a>
+    <strong>Init&nbsp;(ncols, nrows, no_load)</strong>
+    </dt>
+    <dd>
+    Initializes various state used pervasively by the editor. 
+
+    <h3>Parameters:</h3>
+    <ul>
+       <li><code><em>ncols</em></code>: <strong>uint</strong>  How many columns will be in the working level...</li>
+       <li><code><em>nrows</em></code>: <strong>uint</strong>  ...and how many rows?</li>
+       <li><code><em>no_load</em></code>: <strong>bool</strong>  Is the editor starting up with a new scene?</li>
+    </ul>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "IsDirty"></a>
+    <strong>IsDirty&nbsp;()</strong>
+    </dt>
+    <dd>
+     
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+        <strong>boolean</strong> Are there unsaved changes to the working level?
+    </ol>
+
+
+    <h3>see also:</h3>
+    <ul>
+         <li><a href="../modules/editor.Common.html#Dirty">Dirty</a></li>
+         <li><a href="../modules/editor.Common.html#Undirty">Undirty</a></li>
+    </ul>
+</dd>
+    <dt>
+    <a name = "IsVerified"></a>
+    <strong>IsVerified&nbsp;()</strong>
+    </dt>
+    <dd>
+     
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+        <strong>boolean</strong> Is the working level game-ready?
+    </ol>
+
+
+    <h3>see also:</h3>
+    <ul>
+         <a href="../modules/editor.Common.html#Verify">Verify</a>
+    </ul>
+</dd>
+    <dt>
+    <a name = "Listbox"></a>
+    <strong>Listbox&nbsp;(group, x, y)</strong>
+    </dt>
+    <dd>
+    Creates a listbox, built on top of <code>widget.newTableView</code>. 
+
+    <h3>Parameters:</h3>
+    <ul>
+       <li><code><em>group</em></code>: <strong>DisplayGroup</strong>  Group to which listbox will be inserted.</li>
+       <li><code><em>x</em></code>: <strong>number</strong>  Listbox x-coordinate...</li>
+       <li><code><em>y</em></code>: <strong>number</strong>  ...and y-coordinate.</li>
+    </ul>
+
+
+    <h3>Returns:</h3>
+    <ol>
+        <li><strong>DisplayObject</strong> Listbox object.</li>
+        <li><strong>DisplayObject</strong> Dummy object for hit testing.</li>
+    </ol>
+
+
+</dd>
+    <dt>
+    <a name = "ListboxRowAdder"></a>
+    <strong>ListboxRowAdder&nbsp;(press, release, get_text)</strong>
+    </dt>
+    <dd>
+    Creates a listbox-compatible row inserter. </p>
+
+<p> Each of the arguments is a function that takes <em>event</em>.<strong>index</strong> as argument, where
+ <em>event</em> is the parameter of <strong>onEvent</strong> or <strong>onRender</strong>.
+
+    <h3>Parameters:</h3>
+    <ul>
+       <li><code><em>press</em></code>: <strong>callable</strong>  Optional, called when a listbox row is pressed.</li>
+       <li><code><em>release</em></code>: <strong>callable</strong>  Optional, called when a listbox row is released.</li>
+       <li><code><em>get_text</em></code>: <strong>callable</strong>  Returns a row's text string.</li>
+    </ul>
+
+
+    <h3>Returns:</h3>
+    <ol>
+        <a href="http://www.lua.org/manual/5.1/manual.html#5.5">table</a> Argument to <code>tableView:insertRow</code>.
+    </ol>
+
+
+</dd>
+    <dt>
+    <a name = "ScrollButton"></a>
+    <strong>ScrollButton&nbsp;(group, name, x, y, func)</strong>
+    </dt>
+    <dd>
+    Creates a scroll button, with increments stored in the <strong>m_dc</strong> and <strong>m_dr</strong> fields. 
+
+    <h3>Parameters:</h3>
+    <ul>
+       <li><code><em>group</em></code>: <strong>DisplayGroup</strong>  Group to which scroll button will be inserted.</li>
+       <li><code><em>name</em></code>: <a href="http://www.lua.org/manual/5.1/manual.html#5.4">string</a>  One of <strong>"dscroll"</strong>, <strong>"lscroll"</strong>, <strong>"rscroll"</strong>, <strong>"uscroll"</strong>, for each
+ of the four cardinal directions.</li>
+       <li><code><em>x</em></code>: <strong>number</strong>  Button x-coordinate...</li>
+       <li><code><em>y</em></code>: <strong>number</strong>  ...and y-coordinate.</li>
+       <li><code><em>func</em></code>: <strong>callable</strong>  Button function, cf. <a href="../modules/ui.Button.html#Button">ui.Button.Button</a>.</li>
+    </ul>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "ShowCurrent"></a>
+    <strong>ShowCurrent&nbsp;(current, show)</strong>
+    </dt>
+    <dd>
+    Shows or hides the current selection widget.  As a convenience, the last position of a
+ widget when hidden is applied to the next widget shown.
+
+    <h3>Parameters:</h3>
+    <ul>
+       <li><code><em>current</em></code>: <strong>DisplayObject</strong>  Widget to show or hide.</li>
+       <li><code><em>show</em></code>: <strong>bool</strong>  If true, show the current item.</li>
+    </ul>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "SpriteSetFromThumbs"></a>
+    <strong>SpriteSetFromThumbs&nbsp;(prefix, types)</strong>
+    </dt>
+    <dd>
+    DOCMAYBE 
+
+    <h3>Parameters:</h3>
+    <ul>
+       <li><code><em>prefix</em></code>: <a href="http://www.lua.org/manual/5.1/manual.html#5.4">string</a> 
+
+</li>
+       <li><code><em>types</em></code>: <strong>array</strong> 
+
+</li>
+    </ul>
+
+
+    <h3>Returns:</h3>
+    <ol>
+        <strong>SpriteImages</strong> Y
+    </ol>
+
+
+</dd>
+    <dt>
+    <a name = "TabBar"></a>
+    <strong>TabBar&nbsp;(group, buttons, options, hide)</strong>
+    </dt>
+    <dd>
+    Creates a tab bar. 
+
+    <h3>Parameters:</h3>
+    <ul>
+       <li><code><em>group</em></code>: <strong>DisplayGroup</strong>  Group to which tab bar will be inserted.</li>
+       <li><code><em>buttons</em></code>: <strong>array</strong>  Tab buttons, cf. <code>widget.newTabBar</code>.</li>
+       <li><code><em>options</em></code>: <a href="http://www.lua.org/manual/5.1/manual.html#5.5">table</a>  Argument to <code>widget.newTabBar</code> (<strong>buttons</strong> and <strong>size</strong> are overridden).</li>
+       <li><code><em>hide</em></code>: <strong>bool</strong>  If true, the tab bar starts out hidden.</li>
+    </ul>
+
+
+    <h3>Returns:</h3>
+    <ol>
+        <strong>DisplayObject</strong> Tab bar object.
+    </ol>
+
+
+</dd>
+    <dt>
+    <a name = "ToKey"></a>
+    <strong>ToKey&nbsp;(col, row)</strong>
+    </dt>
+    <dd>
+     
+
+    <h3>Parameters:</h3>
+    <ul>
+       <li><code><em>col</em></code>: <strong>uint</strong>  A grid column...</li>
+       <li><code><em>row</em></code>: <strong>uint</strong>  ...and row</li>
+    </ul>
+
+
+    <h3>Returns:</h3>
+    <ol>
+        <a href="http://www.lua.org/manual/5.1/manual.html#5.4">string</a> A key, used to add grid elements to a backing store table. The coordinates
+ may be read back out via <a href="../modules/editor.Common.html#FromKey">FromKey</a>.
+    </ol>
+
+
+</dd>
+    <dt>
+    <a name = "Undirty"></a>
+    <strong>Undirty&nbsp;()</strong>
+    </dt>
+    <dd>
+    Clears the editor dirty state, if set, and updates dirty-related features. 
+
+
+
+
+
+    <h3>see also:</h3>
+    <ul>
+         <li><a href="../modules/editor.Common.html#Dirty">Dirty</a></li>
+         <li><a href="../modules/editor.Common.html#IsDirty">IsDirty</a></li>
+    </ul>
+</dd>
+    <dt>
+    <a name = "Verify"></a>
+    <strong>Verify&nbsp;()</strong>
+    </dt>
+    <dd>
+    Sets the editor verified state, if clear, and updates verification-related features. 
+
+
+
+
+
+    <h3>see also:</h3>
+    <ul>
+         <a href="../modules/editor.Common.html#IsVerified">IsVerified</a>
+    </ul>
+</dd>
+    <dt>
+    <a name = "WallInRect"></a>
+    <strong>WallInRect&nbsp;(group, x, y, w, h)</strong>
+    </dt>
+    <dd>
+    Surrounds a rectangle with "walls".  For various use cases, this is a viable alternative
+ to masks for obscuring rendering and touch events outside of the rectangle.</p>
+
+<p> The construct is useful so long as the "walled-in" objects remain below the walls in the
+ display hierarchy.
+
+    <h3>Parameters:</h3>
+    <ul>
+       <li><code><em>group</em></code>: <strong>DisplayGroup</strong>  Group to which wall elements are added.</li>
+       <li><code><em>x</em></code>: <strong>number</strong>  Upper-left x-coordinate of rectangle...</li>
+       <li><code><em>y</em></code>: <strong>number</strong>  ...and y-coordinate.</li>
+       <li><code><em>w</em></code>: <strong>number</strong>  Rectangle width...</li>
+       <li><code><em>h</em></code>: <strong>number</strong>  ...and height.</li>
+    </ul>
+
+
+
+
+</dd>
+</dl>
+
+
+</div> <!-- id="content" -->
+</div> <!-- id="main" -->
+<div id="about">
+<i>generated by <a href="http://github.com/stevedonovan/LDoc">LDoc 1.2</a></i>
+</div> <!-- id="about" -->
+</div> <!-- id="container" -->
+</body>
+</html>

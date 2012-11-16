@@ -1,0 +1,511 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+<head>
+    <title>Snippets documentation</title>
+    <link rel="stylesheet" href="../ldoc.css" type="text/css" />
+</head>
+<body>
+
+<div id="container">
+
+<div id="product">
+	<div id="product_logo"></div>
+	<div id="product_name"><big><b></b></big></div>
+	<div id="product_description"></div>
+</div> <!-- id="product" -->
+
+
+<div id="main">
+
+
+<!-- Menu -->
+
+<div id="navigation">
+<br/>
+<h1>Corona SDK snippets</h1>
+
+<ul>
+  <li><a href="../api.html">Index</a></li>
+</ul>
+
+<h2>Contents</h2>
+<ul>
+<li><a href="#Functions">Functions</a></li>
+</ul>
+
+
+<h2>Modules</h2>
+<ul>
+  <li><a href="../modules/DEBUG.html">DEBUG</a></li>
+  <li><a href="../modules/array_ops.html">array_ops</a></li>
+  <li><a href="../modules/bitwise_ops.html">bitwise_ops</a></li>
+  <li><a href="../modules/bound_args.html">bound_args</a></li>
+  <li><a href="../modules/cache_ops.html">cache_ops</a></li>
+  <li><a href="../modules/class.html">class</a></li>
+  <li><strong>class.Timer</strong></li>
+  <li><a href="../modules/coroutine_ex.html">coroutine_ex</a></li>
+  <li><a href="../modules/dot.Switch.html">dot.Switch</a></li>
+  <li><a href="../modules/dot.Warp.html">dot.Warp</a></li>
+  <li><a href="../modules/editor.Common.html">editor.Common</a></li>
+  <li><a href="../modules/editor.Dialog.html">editor.Dialog</a></li>
+  <li><a href="../modules/editor.Dots.html">editor.Dots</a></li>
+  <li><a href="../modules/editor.EventBlocks.html">editor.EventBlocks</a></li>
+  <li><a href="../modules/editor.Events.html">editor.Events</a></li>
+  <li><a href="../modules/editor.General.html">editor.General</a></li>
+  <li><a href="../modules/editor.Grid.html">editor.Grid</a></li>
+  <li><a href="../modules/editor.Ops.html">editor.Ops</a></li>
+  <li><a href="../modules/editor.Settings.html">editor.Settings</a></li>
+  <li><a href="../modules/editor.Tiles.html">editor.Tiles</a></li>
+  <li><a href="../modules/effect.Balloons.html">effect.Balloons</a></li>
+  <li><a href="../modules/effect.Curves.html">effect.Curves</a></li>
+  <li><a href="../modules/effect.Fillers.html">effect.Fillers</a></li>
+  <li><a href="../modules/effect.Generators.html">effect.Generators</a></li>
+  <li><a href="../modules/effect.Glow.html">effect.Glow</a></li>
+  <li><a href="../modules/effect.Markers.html">effect.Markers</a></li>
+  <li><a href="../modules/effect.Shadows.html">effect.Shadows</a></li>
+  <li><a href="../modules/effect.Snowfall.html">effect.Snowfall</a></li>
+  <li><a href="../modules/effect.Stars.html">effect.Stars</a></li>
+  <li><a href="../modules/effect.Stash.html">effect.Stash</a></li>
+  <li><a href="../modules/errors.html">errors</a></li>
+  <li><a href="../modules/event_block.Maze.html">event_block.Maze</a></li>
+  <li><a href="../modules/exception.html">exception</a></li>
+  <li><a href="../modules/fibonacci_heap.html">fibonacci_heap</a></li>
+  <li><a href="../modules/fill.Circle.html">fill.Circle</a></li>
+  <li><a href="../modules/fill.Hilbert.html">fill.Hilbert</a></li>
+  <li><a href="../modules/fill.MarchingSquares.html">fill.MarchingSquares</a></li>
+  <li><a href="../modules/flow_bodies.html">flow_bodies</a></li>
+  <li><a href="../modules/flow_ops.html">flow_ops</a></li>
+  <li><a href="../modules/func_ops.html">func_ops</a></li>
+  <li><a href="../modules/game.AI.html">game.AI</a></li>
+  <li><a href="../modules/game.Audio.html">game.Audio</a></li>
+  <li><a href="../modules/game.Collision.html">game.Collision</a></li>
+  <li><a href="../modules/game.Controls.html">game.Controls</a></li>
+  <li><a href="../modules/game.DispatchList.html">game.DispatchList</a></li>
+  <li><a href="../modules/game.Dots.html">game.Dots</a></li>
+  <li><a href="../modules/game.EventBlocks.html">game.EventBlocks</a></li>
+  <li><a href="../modules/game.FX.html">game.FX</a></li>
+  <li><a href="../modules/game.Frames.html">game.Frames</a></li>
+  <li><a href="../modules/game.LevelMap.html">game.LevelMap</a></li>
+  <li><a href="../modules/game.LevelsList.html">game.LevelsList</a></li>
+  <li><a href="../modules/game.Movement.html">game.Movement</a></li>
+  <li><a href="../modules/game.PathUtils.html">game.PathUtils</a></li>
+  <li><a href="../modules/game.Pathing.html">game.Pathing</a></li>
+  <li><a href="../modules/game.Persistence.html">game.Persistence</a></li>
+  <li><a href="../modules/game.Player.html">game.Player</a></li>
+  <li><a href="../modules/game.Scenes.html">game.Scenes</a></li>
+  <li><a href="../modules/game.Scrolling.html">game.Scrolling</a></li>
+  <li><a href="../modules/game.TileFlags.html">game.TileFlags</a></li>
+  <li><a href="../modules/game.TileMaps.html">game.TileMaps</a></li>
+  <li><a href="../modules/game.Timers.html">game.Timers</a></li>
+  <li><a href="../modules/game.Transitions.html">game.Transitions</a></li>
+  <li><a href="../modules/geom2d_ops.html">geom2d_ops</a></li>
+  <li><a href="../modules/grid_iterators.html">grid_iterators</a></li>
+  <li><a href="../modules/heap_utils.html">heap_utils</a></li>
+  <li><a href="../modules/index_ops.html">index_ops</a></li>
+  <li><a href="../modules/iterators.html">iterators</a></li>
+  <li><a href="../modules/lazy_tables.html">lazy_tables</a></li>
+  <li><a href="../modules/main.html">main</a></li>
+  <li><a href="../modules/mwc_rng.html">mwc_rng</a></li>
+  <li><a href="../modules/numeric_ops.html">numeric_ops</a></li>
+  <li><a href="../modules/pairing_heap.html">pairing_heap</a></li>
+  <li><a href="../modules/per_coroutine_ops.html">per_coroutine_ops</a></li>
+  <li><a href="../modules/proxy.html">proxy</a></li>
+  <li><a href="../modules/samples.Curves.html">samples.Curves</a></li>
+  <li><a href="../modules/samples.Hilbert.html">samples.Hilbert</a></li>
+  <li><a href="../modules/samples.Hop.html">samples.Hop</a></li>
+  <li><a href="../modules/samples.Marching.html">samples.Marching</a></li>
+  <li><a href="../modules/samples.Nodes.html">samples.Nodes</a></li>
+  <li><a href="../modules/samples.SlowMo.html">samples.SlowMo</a></li>
+  <li><a href="../modules/samples.Snowfall.html">samples.Snowfall</a></li>
+  <li><a href="../modules/samples.Thoughts.html">samples.Thoughts</a></li>
+  <li><a href="../modules/samples.Tiling.html">samples.Tiling</a></li>
+  <li><a href="../modules/samples.Timers.html">samples.Timers</a></li>
+  <li><a href="../modules/scene.Choices.html">scene.Choices</a></li>
+  <li><a href="../modules/scene.EditorSetup.html">scene.EditorSetup</a></li>
+  <li><a href="../modules/scene.Intro.html">scene.Intro</a></li>
+  <li><a href="../modules/scene.Level.html">scene.Level</a></li>
+  <li><a href="../modules/scene.MapEditor.html">scene.MapEditor</a></li>
+  <li><a href="../modules/scene.Options.html">scene.Options</a></li>
+  <li><a href="../modules/simplex_noise.html">simplex_noise</a></li>
+  <li><a href="../modules/skew_heap.html">skew_heap</a></li>
+  <li><a href="../modules/soft_heap.html">soft_heap</a></li>
+  <li><a href="../modules/table_ops.html">table_ops</a></li>
+  <li><a href="../modules/tiles.TreeBG.html">tiles.TreeBG</a></li>
+  <li><a href="../modules/ui.Button.html">ui.Button</a></li>
+  <li><a href="../modules/ui.Checkbox.html">ui.Checkbox</a></li>
+  <li><a href="../modules/ui.Color.html">ui.Color</a></li>
+  <li><a href="../modules/ui.Grid1D.html">ui.Grid1D</a></li>
+  <li><a href="../modules/ui.Grid2D.html">ui.Grid2D</a></li>
+  <li><a href="../modules/ui.Keyboard.html">ui.Keyboard</a></li>
+  <li><a href="../modules/ui.Layout.html">ui.Layout</a></li>
+  <li><a href="../modules/ui.Lines.html">ui.Lines</a></li>
+  <li><a href="../modules/ui.Sheet.html">ui.Sheet</a></li>
+  <li><a href="../modules/ui.Skin.html">ui.Skin</a></li>
+  <li><a href="../modules/ui.Touch.html">ui.Touch</a></li>
+  <li><a href="../modules/ui.Utils.html">ui.Utils</a></li>
+  <li><a href="../modules/utils.html">utils</a></li>
+  <li><a href="../modules/var_dump.html">var_dump</a></li>
+  <li><a href="../modules/var_ops.html">var_ops</a></li>
+  <li><a href="../modules/var_preds.html">var_preds</a></li>
+</ul>
+
+</div>
+
+<div id="content">
+
+<h1>Module <code>class.Timer</code></h1>
+
+<p>Instances of this class can be used to check manually whether a timeout has elapsed,
+ either once or periodically.</p>
+<p>
+
+</p>
+
+<h2><a href="#Functions">Functions</a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#Timer:Check">Timer:Check&nbsp;(how)</a></td>
+	<td class="summary">Checks the timer for timeouts.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Timer:GetCounter">Timer:GetCounter&nbsp;(is_fraction)</a></td>
+	<td class="summary">Gets the counter, accumulated during updates.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Timer:GetDuration">Timer:GetDuration&nbsp;()</a></td>
+	<td class="summary">
+
+</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Timer:IsPaused">Timer:IsPaused&nbsp;()</a></td>
+	<td class="summary">
+
+</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Timer:SetCounter">Timer:SetCounter&nbsp;(counter, is_fraction)</a></td>
+	<td class="summary">Sets the counter directly.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Timer:SetPause">Timer:SetPause&nbsp;(pause)</a></td>
+	<td class="summary">Pauses or resumes the timer.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Timer:Start">Timer:Start&nbsp;(duration, t)</a></td>
+	<td class="summary">Starts the timer.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Timer:Stop">Timer:Stop&nbsp;()</a></td>
+	<td class="summary">Stops the timer.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Timer:Update">Timer:Update&nbsp;(step)</a></td>
+	<td class="summary">Advances the counter.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Timer:WithTimeouts">Timer:WithTimeouts&nbsp;(with_final)</a></td>
+	<td class="summary">Instanced iterator over timeouts.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Timer:__cons">Timer:__cons&nbsp;()</a></td>
+	<td class="summary">Class constructor.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Timer:__clone">Timer:__clone&nbsp;(T)</a></td>
+	<td class="summary">Class clone body.</td>
+	</tr>
+</table>
+
+<br/>
+<br/>
+
+
+    <h2><a name="Functions"></a>Functions</h2>
+    
+    <dl class="function">
+    <dt>
+    <a name = "Timer:Check"></a>
+    <strong>Timer:Check&nbsp;(how)</strong>
+    </dt>
+    <dd>
+    Checks the timer for timeouts. </p>
+
+<p> The counter is divided by the timeout duration. The integer part of this is the
+ timeout count, and the fraction is the new counter. If the count is greater than
+ 0, the timer will respond according to the <em>how</em> parameter.
+
+    <h3>Parameters:</h3>
+    <ul>
+       <li><code><em>how</em></code>: <a href="http://www.lua.org/manual/5.1/manual.html#5.4">string</a>  Timeout response.</p>
+
+<p> If this is <strong>"continue"</strong>, all timeouts are reported and the timer continues to
+ run.</p>
+
+<p> If this is <strong>"pause"</strong>, one timeout is reported, the counter is set to 0, and the
+ timer is paused.</p>
+
+<p> Otherwise, one timeout is reported and the timer is stopped.</li>
+    </ul>
+
+
+    <h3>Returns:</h3>
+    <ol>
+        <strong>uint</strong> Timeout count, or 0 if the timer is stopped.
+    </ol>
+
+
+    <h3>see also:</h3>
+    <ul>
+         <a href="../modules/class.Timer.html#Timer:Update">Timer:Update</a>
+    </ul>
+</dd>
+    <dt>
+    <a name = "Timer:GetCounter"></a>
+    <strong>Timer:GetCounter&nbsp;(is_fraction)</strong>
+    </dt>
+    <dd>
+    Gets the counter, accumulated during updates. 
+
+    <h3>Parameters:</h3>
+    <ul>
+       <li><code><em>is_fraction</em></code>: <strong>bool</strong>  Report the counter as a fraction of the timeout duration?</li>
+    </ul>
+
+
+    <h3>Returns:</h3>
+    <ol>
+        <strong>number</strong> Counter, or 0 if the timer is stopped.
+    </ol>
+
+
+    <h3>see also:</h3>
+    <ul>
+         <li><a href="../modules/class.Timer.html#Timer:SetCounter">Timer:SetCounter</a></li>
+         <li><a href="../modules/class.Timer.html#Timer:Update">Timer:Update</a></li>
+    </ul>
+</dd>
+    <dt>
+    <a name = "Timer:GetDuration"></a>
+    <strong>Timer:GetDuration&nbsp;()</strong>
+    </dt>
+    <dd>
+     
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+        <strong>number</strong> Timeout duration, or <strong>nil</strong> if the timer is stopped.
+    </ol>
+
+
+</dd>
+    <dt>
+    <a name = "Timer:IsPaused"></a>
+    <strong>Timer:IsPaused&nbsp;()</strong>
+    </dt>
+    <dd>
+     
+
+
+
+    <h3>Returns:</h3>
+    <ol>
+        <strong>boolean</strong> The timer is paused?
+    </ol>
+
+
+    <h3>see also:</h3>
+    <ul>
+         <a href="../modules/class.Timer.html#Timer:SetPause">Timer:SetPause</a>
+    </ul>
+</dd>
+    <dt>
+    <a name = "Timer:SetCounter"></a>
+    <strong>Timer:SetCounter&nbsp;(counter, is_fraction)</strong>
+    </dt>
+    <dd>
+    Sets the counter directly. </p>
+
+<p> <code>WithTimeouts</code> will interpret this as the time of the last check.
+
+    <h3>Parameters:</h3>
+    <ul>
+       <li><code><em>counter</em></code>: <strong>number</strong>  Counter to assign.</li>
+       <li><code><em>is_fraction</em></code>: <strong>bool</strong>  Interpret the counter as a fraction of the timeout duration?</li>
+    </ul>
+
+
+
+
+    <h3>see also:</h3>
+    <ul>
+         <a href="../modules/class.Timer.html#Timer:WithTimeouts">Timer:WithTimeouts</a>
+    </ul>
+</dd>
+    <dt>
+    <a name = "Timer:SetPause"></a>
+    <strong>Timer:SetPause&nbsp;(pause)</strong>
+    </dt>
+    <dd>
+    Pauses or resumes the timer. 
+
+    <h3>Parameters:</h3>
+    <ul>
+       <li><code><em>pause</em></code>: <strong>bool</strong>  Pause the timer?</li>
+    </ul>
+
+
+
+
+    <h3>see also:</h3>
+    <ul>
+         <a href="../modules/class.Timer.html#Timer:IsPaused">Timer:IsPaused</a>
+    </ul>
+</dd>
+    <dt>
+    <a name = "Timer:Start"></a>
+    <strong>Timer:Start&nbsp;(duration, t)</strong>
+    </dt>
+    <dd>
+    Starts the timer. 
+
+    <h3>Parameters:</h3>
+    <ul>
+       <li><code><em>duration</em></code>: <strong>number</strong>  Timeout duration.</li>
+       <li><code><em>t</em></code>: <strong>number</strong>  Start counter, or 0 if absent.</li>
+    </ul>
+
+
+
+
+    <h3>see also:</h3>
+    <ul>
+         <a href="../modules/class.Timer.html#Timer:Stop">Timer:Stop</a>
+    </ul>
+</dd>
+    <dt>
+    <a name = "Timer:Stop"></a>
+    <strong>Timer:Stop&nbsp;()</strong>
+    </dt>
+    <dd>
+    Stops the timer. 
+
+
+
+
+
+    <h3>see also:</h3>
+    <ul>
+         <a href="../modules/class.Timer.html#Timer:Start">Timer:Start</a>
+    </ul>
+</dd>
+    <dt>
+    <a name = "Timer:Update"></a>
+    <strong>Timer:Update&nbsp;(step)</strong>
+    </dt>
+    <dd>
+    Advances the counter. </p>
+
+<p> If the timer is stopped or paused, this is a no-op.
+
+    <h3>Parameters:</h3>
+    <ul>
+       <li><code><em>step</em></code>: <strong>number</strong>  Time step.</li>
+    </ul>
+
+
+
+
+    <h3>see also:</h3>
+    <ul>
+         <li><a href="../modules/class.Timer.html#Timer:Check">Timer:Check</a></li>
+         <li><a href="../modules/class.Timer.html#Timer:GetCounter">Timer:GetCounter</a></li>
+    </ul>
+</dd>
+    <dt>
+    <a name = "Timer:WithTimeouts"></a>
+    <strong>Timer:WithTimeouts&nbsp;(with_final)</strong>
+    </dt>
+    <dd>
+    Instanced iterator over timeouts. </p>
+
+<p> First, this checks the timer (allowing for multiple timeouts).</p>
+
+<p> For each timeout that occurred, it reports the current state.</p>
+
+<p> Optionally, it will report the final state.
+
+    <h3>Parameters:</h3>
+    <ul>
+       <li><code><em>with_final</em></code>: <strong>bool</strong>  Conclude with an extra iteration for the end result? The index of
+ this step will be <strong>"final"</strong>.</li>
+    </ul>
+
+
+    <h3>Returns:</h3>
+    <ol>
+        <strong>iterator</strong> 
+<p>Supplies the following, in order, at each iteration:</p>
+
+<ul>
+    <li>Current iteration index.</li>
+    <li>Timeout count.</li>
+    <li>Time difference from last timeout or last check to this timeout (or final state).</li>
+    <li>Current tally of time elapsed from last check, including current time difference.</li>
+    <li>Total time, accrued in updates since last check.</li>
+</ul>
+
+    </ol>
+
+
+    <h3>see also:</h3>
+    <ul>
+         <li><a href="../modules/class.Timer.html#Timer:Check">Timer:Check</a></li>
+         <li><a href="../modules/iterators.html#InstancedAutocacher">iterators.InstancedAutocacher</a></li>
+    </ul>
+</dd>
+    <dt>
+    <a name = "Timer:__cons"></a>
+    <strong>Timer:__cons&nbsp;()</strong>
+    </dt>
+    <dd>
+    Class constructor. </p>
+
+<p> The timer begins as stopped and unpaused.
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Timer:__clone"></a>
+    <strong>Timer:__clone&nbsp;(T)</strong>
+    </dt>
+    <dd>
+    Class clone body. 
+
+    <h3>Parameters:</h3>
+    <ul>
+       <li><code><em>T</em></code>: <a href="../modules/class.Timer.html#class.Timer">Timer</a>  Timer to clone.</li>
+    </ul>
+
+
+
+
+</dd>
+</dl>
+
+
+</div> <!-- id="content" -->
+</div> <!-- id="main" -->
+<div id="about">
+<i>generated by <a href="http://github.com/stevedonovan/LDoc">LDoc 1.2</a></i>
+</div> <!-- id="about" -->
+</div> <!-- id="container" -->
+</body>
+</html>
