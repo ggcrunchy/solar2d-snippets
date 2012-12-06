@@ -58,7 +58,7 @@ function Scene:enterScene ()
 	end, 0)
 
 	self.timer2 = timer.performWithDelay(50, function()
-		local new = display.capture(group)
+		local new = display.captureBounds(group.contentBounds)
 
 		if self.ghost then
 			self.ghost:removeSelf()

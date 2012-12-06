@@ -54,9 +54,7 @@ function M.GoToScene (args)
 		Args.effect = args.effect
 	end
 
-	if args.no_effect then
-		Args.effect, Args.time = "fade", 0 -- TODO: Corona bug?
-	else
+	if not args.no_effect then
 		Args.time = args.time
 	end
 

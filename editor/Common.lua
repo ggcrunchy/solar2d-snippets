@@ -276,9 +276,6 @@ function M.IsVerified ()
 	return IsVerified
 end
 
---
-local function NoTouch () return true end
-
 --- Creates a listbox, built on top of `widget.newTableView`.
 -- @pgroup group Group to which listbox will be inserted.
 -- @number x Listbox x-coordinate...
@@ -290,14 +287,6 @@ function M.Listbox (group, x, y)
 		left = x, top = y, width = 300, height = 150,
 		maskFile = "UI_Assets/ListboxMask.png"
 	}
-
-	-- TODO: Corona bug?
-	local dummy = display.newRect(group, x, y, 300, 150)
-
-	dummy.isHitTestable, dummy.isVisible = true, false
-
-	dummy:addEventListener("touch", NoTouch)
-	-- END TODO
 
 	group:insert(listbox)
 

@@ -136,8 +136,7 @@ local function NewBlock (col1, row1, col2, row2)
 	-- initialize the current values.
 	local cmin, rmin = CMin, RMin
 	local cmax, rmax = CMax, RMax
-
-	block.m_group = display.newGroup() -- TODO: These won't be usable in image groups?
+	local bgroup = display.newGroup() -- TODO: These won't be usable in image groups?
 
 	-- Lift any tile images into the block's own group. Mark the block region as occupied
 	-- and cache the current flags on each tile, for restoration.
@@ -147,16 +146,25 @@ local function NewBlock (col1, row1, col2, row2)
 		block[i] = GetImage(index) or false
 
 		if block[i] then
-			block.m_group:insert(block[i])
+			bgroup:insert(block[i])
 		end
 
 		BlockIDs[index] = id
 		OldFlags[index] = GetFlags(index)
 	end
 
-	TilesLayer:insert(block.m_group)
+	TilesLayer:insert(bgroup)
 
 	Blocks[id] = block
+
+	--- DOCME
+	function block:AddGroup (group)
+		local new = display.newGroup()
+
+		bgroup:insert(new)
+
+		return new
+	end
 
 	--- Indicates whether a block can occupy a region without overlapping a different block.
 	-- The block will ignore itself, since this test will often be used to determine if a
@@ -230,6 +238,11 @@ local function NewBlock (col1, row1, col2, row2)
 		return cmin, cmax
 	end
 
+	--- DOCME
+	function block:GetGroup ()
+		return bgroup
+	end
+
 	---@treturn int Minimum row...
 	-- @treturn int ...and maximum.
 	function block:GetRows ()
@@ -269,6 +282,16 @@ local function NewBlock (col1, row1, col2, row2)
 	-- @see game.TileFlags.GetFlags
 	function block:GetOldFlags (index)
 		return OldFlags[index] or 0
+	end
+
+	--- DOCME
+	function block:InjectGroup ()
+		local new, parent = display.newGroup(), bgroup.parent
+
+		new:insert(bgroup)
+		parent:insert(new)
+
+		bgroup = new
 	end
 
 	--- Iterates over a given region.

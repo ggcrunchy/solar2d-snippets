@@ -219,7 +219,7 @@ end
 
 -- Updates tiles from maze block flags
 local function UpdateTiles (block)
-	tile_maps.SetTilesFromFlags(block.m_group, block:GetInitialRect())
+	tile_maps.SetTilesFromFlags(block:GetGroup(), block:GetInitialRect())
 end
 
 -- Wipes the maze state (and optionally its flags), marking borders
@@ -418,10 +418,10 @@ return function(info, block)
 		-- three transitions: before, form, after. The before and after are no-ops but
 		-- consolidate much of the bookkeeping that needs to be done.
 		if Shake then
-			params = Shake(block.m_group, params)
+			params = Shake(block:GetGroup(), params)
 		end
 
-		forming = transition.to(block.m_group, params)
+		forming = transition.to(block:GetGroup(), params)
 	end
 
 	-- Shows or hides hints about the maze event
