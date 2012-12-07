@@ -32,8 +32,14 @@ local format = string.format
 local ipairs = ipairs
 local max = math.max
 local sqrt = math.sqrt
+local type = type
+
+-- Corona globals --
+local system = system
+local timer = timer
 
 -- Corona modules --
+local lfs = require("lfs")
 local crypto = require("crypto")
 
 -- Cached module references --
@@ -78,6 +84,64 @@ function M.EndsWith (str, patt, get_prefix)
 	local ends_with = str:sub(-patt_len) == patt
 
 	return ends_with, (get_prefix and ends_with) and str:sub(1, -patt_len - 1) or ""
+end
+
+-- Enumeration choices --
+local EnumFiles = {}
+
+-- Helper to enumerate all files
+local function EnumAll (into, path)
+	for name in lfs.dir(path) do
+		into[#into + 1] = name
+	end	
+end
+
+-- Helper to enumerate files matching extension
+function EnumFiles.string (into, path, ext)
+	for name in lfs.dir(path) do
+		if M.EndsWith(name, ext) then
+			into[#into + 1] = name
+		end
+	end	
+end
+
+-- Helper to enumerate files matching one of several extensions
+function EnumFiles.table (into, path, exts)
+	for name in lfs.dir(path) do
+		for _, ext in ipairs(exts) do
+			if M.EndsWith(name, ext) then
+				into[#into + 1] = name
+
+				break
+			end
+		end
+	end	
+end
+
+--- Enumerates files in a given directory.
+-- @string path Directory path.
+-- @ptable options Optional enumeration options. Fields:
+--
+-- * **ext**: Extensions filter. If this is a string, only files ending in the string are
+-- enumerated. If it is an array, only files ending in one of its strings (tried in order)
+-- are enumerated. Otherwise, all files are enumerated.
+-- * **base**: Directory base. If absent, **system.ResourcesDirectory**.
+-- @ptable into If provided, files are appended here. Otherwise, a table is provided.
+-- @treturn table Enumerated files.
+function M.EnumerateFiles (path, options, into)
+	local base, exts
+
+	if options then
+		base = options.base
+		exts = options.exts
+	end
+
+	into = into or {}
+	path = system.pathForFile(path, base)
+
+	;(EnumFiles[type(exts)] or EnumAll)(into, path, exts)
+
+	return into
 end
 
 --- Maps a list of names to a group of constants.
@@ -164,6 +228,26 @@ end
 -- @treturn boolean _flag_ is present in _var_?
 function M.TestFlag (var, flag)
 	return var % (flag + flag) >= flag
+end
+
+--- Launches a timer to watch a file or directory for modifications.
+-- @string path File or directory path.
+-- @callable func On modification, this is called as `func(path)`.
+-- @param base Directory base. If absent, **system.ResourcesDirectory**.
+-- @treturn TimerHandle A timer, which may be cancelled.
+function M.WatchForFileModification (path, func, base)
+	local respath = system.pathForFile(path, base)
+	local modtime = lfs.attributes(respath, "modification")
+
+	return timer.performWithDelay(50, function()
+		local now = lfs.attributes(respath, "modification")
+
+		if now ~= modtime then
+			func(path)
+
+			modtime = now
+		end
+	end, 0)
 end
 
 -- Cache module members.

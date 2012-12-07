@@ -280,9 +280,9 @@ end
 -- @pgroup group Group to which listbox will be inserted.
 -- @number x Listbox x-coordinate...
 -- @number y ...and y-coordinate.
+-- @bool hide If true, the listbox starts out hidden.
 -- @treturn DisplayObject Listbox object.
--- @treturn DisplayObject Dummy object for hit testing.
-function M.Listbox (group, x, y)
+function M.Listbox (group, x, y, hide)
 	local listbox = widget.newTableView{
 		left = x, top = y, width = 300, height = 150,
 		maskFile = "UI_Assets/ListboxMask.png"
@@ -290,7 +290,7 @@ function M.Listbox (group, x, y)
 
 	group:insert(listbox)
 
-	return listbox, dummy
+	return listbox
 end
 
 -- --

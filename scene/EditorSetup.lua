@@ -118,7 +118,7 @@ end
 
 -- Clean up (conditional) elements used for scene loading
 local function CleanupLoadElements ()
-	for _, what in ipairs{ "m_current", "m_delete", "m_levels_list", "m_DUMMY", "m_load" } do
+	for _, what in ipairs{ "m_current", "m_delete", "m_levels_list", "m_load" } do
 		display.remove(Scene[what])
 
 		Scene[what] = nil
@@ -173,7 +173,7 @@ function Scene:enterScene ()
 			return level1.name < level2.name
 		end)
 
-		self.m_levels_list, self.m_DUMMY = common.Listbox(self.view, display.contentWidth - 350, 20)
+		self.m_levels_list = common.Listbox(self.view, display.contentWidth - 350, 20)
 		self.m_current = display.newText(self.view, "", 0, 0, native.systemFont, 22)
 
 		local add_row = common.ListboxRowAdder(function(index)
