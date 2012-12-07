@@ -110,8 +110,7 @@ local BlockIDs
 -- Creation-time values of flags within the block region, for restoration --
 local OldFlags
 
--- --
--- TODO: This probably is image group-incompatible
+-- Layers into which block groups are added --
 local TilesLayer
 
 -- Wipes event block state at a given tile index
@@ -136,29 +135,31 @@ local function NewBlock (col1, row1, col2, row2)
 	-- initialize the current values.
 	local cmin, rmin = CMin, RMin
 	local cmax, rmax = CMax, RMax
-	local bgroup = display.newGroup() -- TODO: These won't be usable in image groups?
+	local bgroup = display.newGroup()
 
 	-- Lift any tile images into the block's own group. Mark the block region as occupied
 	-- and cache the current flags on each tile, for restoration.
-	local id = #Blocks + 1
+	local id, igroup = #Blocks + 1, tile_maps.NewImageGroup()
 
 	for i, index in ipairs(block) do
 		block[i] = GetImage(index) or false
 
 		if block[i] then
-			bgroup:insert(block[i])
+			igroup:insert(block[i])
 		end
 
 		BlockIDs[index] = id
 		OldFlags[index] = GetFlags(index)
 	end
 
+	bgroup:insert(igroup)
 	TilesLayer:insert(bgroup)
 
 	Blocks[id] = block
 
-	--- DOCME
-	function block:AddGroup (group)
+	--- Adds a new group to the block's main group.
+	-- @treturn DisplayGroup Added group.
+	function block:AddGroup ()
 		local new = display.newGroup()
 
 		bgroup:insert(new)
@@ -238,9 +239,14 @@ local function NewBlock (col1, row1, col2, row2)
 		return cmin, cmax
 	end
 
-	--- DOCME
+	---@treturn DisplayGroup The block's main group.
 	function block:GetGroup ()
 		return bgroup
+	end
+
+	---@treturn DisplayGroup The block's image group.
+	function block:GetImageGroup ()
+		return igroup
 	end
 
 	---@treturn int Minimum row...
@@ -284,14 +290,18 @@ local function NewBlock (col1, row1, col2, row2)
 		return OldFlags[index] or 0
 	end
 
-	--- DOCME
+	--- Injects a new group above the image group's parent: i.e. the new group becomes
+	-- the image group's parent, and is added as a child of the old parent.
+	--
+	-- By default, the image group belongs to the main group.
+	-- @treturn DisplayGroup The injected group.
 	function block:InjectGroup ()
-		local new, parent = display.newGroup(), bgroup.parent
+		local new, parent = display.newGroup(), igroup.parent
 
-		new:insert(bgroup)
+		new:insert(igroup)
 		parent:insert(new)
 
-		bgroup = new
+		return new
 	end
 
 	--- Iterates over a given region.

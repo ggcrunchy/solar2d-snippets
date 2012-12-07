@@ -219,7 +219,7 @@ end
 
 -- Updates tiles from maze block flags
 local function UpdateTiles (block)
-	tile_maps.SetTilesFromFlags(block:GetGroup(), block:GetInitialRect())
+	tile_maps.SetTilesFromFlags(block:GetImageGroup(), block:GetInitialRect())
 end
 
 -- Wipes the maze state (and optionally its flags), marking borders

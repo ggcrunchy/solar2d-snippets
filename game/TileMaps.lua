@@ -182,18 +182,6 @@ function M.GetTileIndex_XY (x, y)
 	return M.GetTileIndex(M.GetCell_XY(x, y))
 end
 
---- DOCMAYBE
--- @treturn DisplayGroup A
-function M.GetTileLayer ()
-	ImageSheet = graphics.newImageSheet("GameTiles/Tiles.png", GameTiles)
-
---	if system.getInfo("platformName") == "Win" then -- Is this a bug?
-		return display.newGroup()
---	else
---		return display.newImageGroup(ImageSheet) -- Err, this still needs some work :)
---	end
-end
-
 ---@uint index Tile index.
 --
 -- If the index is invalid or outside the level, falls back to the upper-left tile.
@@ -203,6 +191,15 @@ function M.GetTilePos (index)
 	local tile = Tiles[index]
 
 	return tile.x + TileW / 2, tile.y + TileH / 2
+end
+
+---TODO: Hard-coded image file...
+-- CONSIDER: layers...
+-- @treturn DisplayGroup Image group using current tile sheet.
+function M.NewImageGroup ()
+	ImageSheet = ImageSheet or graphics.newImageSheet("GameTiles/Tiles.png", GameTiles)
+
+	return display.newImageGroup(ImageSheet)
 end
 
 ---@uint index Tile index (see the caveat for @{GetTilePos}).

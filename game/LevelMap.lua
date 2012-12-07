@@ -179,7 +179,7 @@ function M.LoadLevel (view, which)
 
 		-- Add game group sublayers, duplicating them in the level info for convenience.
 		for _, name in ipairs{ "bg_layer", "tiles_layer", "decals_layer", "things_layer", "markers_layer" } do
-			local layer = name == "tiles_layer" and tile_maps.GetTileLayer() or display.newGroup()
+			local layer = display.newGroup()
 
 			CurrentLevel[name] = layer
 
@@ -195,7 +195,11 @@ function M.LoadLevel (view, which)
 		dispatch_list.CallList("enter_level", CurrentLevel)
 
 		-- Add the tiles to the level...
-		tile_maps.AddTiles(CurrentLevel.tiles_layer, level)
+		local tgroup = tile_maps.NewImageGroup()
+
+		CurrentLevel.tiles_layer:insert(tgroup)
+
+		tile_maps.AddTiles(tgroup, level)
 
 		-- ...and the event blocks...
 		for _, block in Ipairs(level.event_blocks) do
