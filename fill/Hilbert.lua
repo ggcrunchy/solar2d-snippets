@@ -101,7 +101,7 @@ local Step = {}
 local Ways = { "right", "down", "left", "up" }
 
 --- DOCME
--- [LINK](http://www.hackersdelight.org/HDcode/hilbert/hilgen2.c.txt)
+-- [LINK](http://www.hackersdelight.org/hdcodetxt/hilbert/hilgen2.c.txt)
 -- @uint order
 -- @callable func
 function M.ForEach (order, func)
@@ -143,7 +143,7 @@ local function MaskedShift (x, n, mask)
 end
 
 --- DOCME
--- [LINK](http://www.hackersdelight.org/HDcode/hilbert/hil_xy_from_s.c.txt)
+-- [LINK](http://www.hackersdelight.org/hdcodetxt/hilbert/hil_xy_from_s.c.txt)
 -- @uint order
 -- @uint s
 -- @treturn uint X
@@ -164,7 +164,7 @@ function M.GetXY (order, s)
 end
 
 --- DOCME
--- [LINK](http://www.hackersdelight.org/HDcode/hilbert/hil_inc_xy.c.txt)
+-- [LINK](http://www.hackersdelight.org/hdcodetxt/hilbert/hil_inc_xy.c.txt)
 -- @uint order
 -- @uint x
 -- @uint y
@@ -193,7 +193,7 @@ function M.GetXY_Incremental (order, x, y)
 end
 
 --- DOCME
--- [LINK](http://www.hackersdelight.org/HDcode/hilbert/hil_s_from_xy.c.txt)
+-- [LINK](http://www.hackersdelight.org/hdcodetxt/hilbert/hil_s_from_xy.c.txt)
 -- @uint order
 -- @uint x
 -- @uint y
