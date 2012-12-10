@@ -29,6 +29,7 @@ local abs = math.abs
 -- Modules --
 local buttons = require("ui.Button")
 local common = require("editor.Common")
+local curves = require("effect.Curves")
 local hilbert = require("fill.Hilbert")
 local numeric_ops = require("numeric_ops")
 local scenes = require("game.Scenes")
@@ -48,59 +49,61 @@ end
 Scene:addEventListener("createScene")
 
 --
-local function GetXY (t, div)
-	local x, y = hilbert.GetXY(6, numeric_ops.RoundTo(t / div) % 2^6)
+local function MakePolygon (group, points, j, r, g, b)
+	local polygon = display.newLine(group, points[1], points[2], points[3], points[4])
 
-	return x * 33, 550 - y * 33
+	for i = 5, j, 2 do
+		polygon:append(points[i + 0], points[i + 1])
+	end
+
+	polygon:append(points[1], points[2])
+	polygon:setColor(r, g, b)
+
+	polygon.width = 3
+
+	return polygon
 end
 
 -- --
-local Min = numeric_ops.RoundTo(2^6 * .2)
-local Max = numeric_ops.RoundTo(2^6 * .8)
+local NParts = 12
 
 -- --
-local NParts = 5
-
--- --
-local A = .25
+local A = .425
 local B = 1 - A
 local H = .7
+local Near = 25
+
+-- --
+local Curve, N = {}
 
 --
-local function DoCurve (view, points, state, j, is_checked)
+local function AddToCurve (x, y)
+	Curve[N + 1], Curve[N + 2], N = x, y, N + 2
+end
+
+--
+local function MakeCurvedPolygon (group, points, j)
+	N = 0
+
 	--
-	for i = 1, j, 2 do
+	for i = 1, j - 1, 2 do
 		local x1, y1 = points[i + 0], points[i + 1]
 		local x2, y2 = points[i + 2], points[i + 3]
-		local X, Y, x3, y3, dx, dy, d2
+		local x3, y3 = points[i + 4], points[i + 5]
+		local X, Y, d2 = x2, y2
 
-		if is_checked and i ~= j then -- TODO: i == j case: still jagged at first point, I think
-			x3, y3 = points[i + 4], points[i + 5]
+		x3, y3 = x2 + (x3 - x2) * A, y2 + (y3 - y2) * A
+		x2, y2 = x1 + (x2 - x1) * B, y1 + (y2 - y1) * B
 
-			if x3 then
-				X, Y = x2, y2
-				x3, y3 = x2 + (x3 - x2) * A, y2 + (y3 - y2) * A
-				x2, y2 = x1 + (x2 - x1) * B, y1 + (y2 - y1) * B
-				dx, dy = x3 - x2, y3 - y2
+		local dx, dy = x3 - x2, y3 - y2
 
-				if abs(dx) > 5 or abs(dy) > 5 then
-					d2 = dx * dx + dy * dy
-				else
-					x2, y2 = X, Y
-				end
-			end
-		end
-
-		if i == 1 then
-			state.polygon = display.newLine(view, x1, y1, x2, y2)
-
-			state.polygon.width = 3
-
-			state.polygon:setColor(is_checked and 0 or 255, is_checked and 255 or 0, 0)
-
+		if abs(dx) > Near or abs(dy) > Near then
+			d2 = dx * dx + dy * dy
 		else
-			state.polygon:append(x2, y2)
+			x2, y2 = X, Y
 		end
+
+		AddToCurve(x2, y2)
 
 		if d2 then
 			local t = ((X - x2) * dx + (Y - y2) * dy) / d2
@@ -112,16 +115,26 @@ local function DoCurve (view, points, state, j, is_checked)
 
 				local xc, yc = x2 + dx * t, y2 + dy * t
 
-				t = 2 * t - 1
-				t = H * (1 - t * t)
+				t = H * curves.OneMinusT3_ShiftedAbs(t)
 
-				state.polygon:append(xc + nx * t, yc + ny * t)
+				AddToCurve(xc + nx * t, yc + ny * t)
 			end
 		end
 	end
+
+	return MakePolygon(group, Curve, N, 0, 255, 0)
 end
 
-local tt = {}
+--
+local function GetXY (t, div)
+	local x, y = hilbert.GetXY(6, numeric_ops.RoundTo(t / div) % 2^6)
+
+	return x * 33, 550 - y * 33
+end
+
+-- --
+local Min = numeric_ops.RoundTo(2^6 * .2)
+local Max = numeric_ops.RoundTo(2^6 * .8)
 
 --
 function Scene:enterScene ()
@@ -129,14 +142,12 @@ function Scene:enterScene ()
 
 	for _ = 1, 5 do
 		points[#points + 1] = math.random(Min, Max)
-		points[#points + 1] = math.random(100, 500)
+		points[#points + 1] = math.random(150, 600)
 	end
 
 	self.points = points
 	self.smooth = common.CheckboxWithText(self.view, 20, display.contentHeight - 70, "Smooth polygon")
 	self.t = timers.RepeatEx(function(event)
-		display.remove(self.polygon)
-
 		--
 		local now, j, n, cx, cy = event.m_elapsed, -1, 0, 0, 0
 
@@ -150,20 +161,18 @@ function Scene:enterScene ()
 			cx, cy = cx + x, cy + y
 		end
 
-		self[j + 2], self[j + 3] = self[1], self[2]
+		--
+		self[j + 0], self[j + 1] = self[1], self[2]
+		self[j + 2], self[j + 3] = self[3], self[4]
 
 		--
-		local is_checked = self.smooth:IsChecked()
---[[
-		display.remove(tt.polygon)
+		display.remove(self.polygon)
 
-		tt.polygon = nil
-
-		if is_checked then
-			DoCurve(self.view, self, tt, j, true)
+		if self.smooth:IsChecked() then
+			self.polygon = MakeCurvedPolygon(self.view, self, j)
+		else
+			self.polygon = MakePolygon(self.view, self, j, 255, 0, 0)
 		end
-]]
-		DoCurve(self.view, self, self, j, is_checked)
 
 		--
 		if not self.trace then
