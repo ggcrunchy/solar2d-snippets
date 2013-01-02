@@ -142,11 +142,13 @@ function M.EditorEvent (type, what, arg1, arg2, arg3)
 			-- COMMON STUFF... nothing yet, I don't think, assuming well-formed editor
 		end
 
-		local event = cons("editor_event")
+		local event, result = cons("editor_event")
 
 		if event then
-			event(what, arg1, arg2, arg3)
+			result = event(what, arg1, arg2, arg3)
 		end
+
+		return result
 	end
 end
 

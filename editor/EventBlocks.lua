@@ -26,6 +26,7 @@
 -- Standard library imports --
 local ipairs = ipairs
 local max = math.max
+local min = math.min
 
 -- Modules --
 local common = require("editor.Common")
@@ -35,6 +36,7 @@ local event_blocks = require("game.EventBlocks")
 local events = require("editor.Events")
 local grid = require("editor.Grid")
 local grid1D = require("ui.Grid1D")
+local links = require("editor.Links")
 local sheet = require("ui.Sheet")
 local touch = require("ui.Touch")
 
@@ -72,6 +74,24 @@ local Dialog = dialog.DialogWrapper(event_blocks.EditorEvent)
 local CanFill, Name, ID
 
 --
+local function FitTo (rep, ul, lr)
+	local x, y, w, h = common.Rect(ul)
+
+	if lr then
+		local x2, y2, w2, h2 = common.Rect(lr)
+		local xr, yb = max(x + w, x2 + w2), max(y + h, y2 + h2)
+
+		x, y = min(x, x2), min(y, y2)
+		w, h = xr - x, yb - y
+	end
+
+	rep:setReferencePoint(display.TopLeftReferencePoint)
+
+	rep.x, rep.width = x, w
+	rep.y, rep.height = y, h
+end
+
+--
 local function SetColors (handle, grabbed)
 	local comp = grabbed and 0 or 255
 
@@ -101,6 +121,10 @@ local function UpdateHandles (block)
 		ul.parent:insert(block[i])
 
 		block[i]:toBack()
+	end
+
+	if block.rep then
+		FitTo(block.rep, ul, lr)
 	end
 end
 
@@ -340,13 +364,28 @@ local function GridFunc (group, col, row, x, y, w, h)
 
 			AddImage(group, key, id, x, y, w, h)
 
+			--
+			local tag = Dialog(type, "get_tag")
+
+			if tag then
+				local block = Blocks[id]
+				local tile = Tiles[common.ToKey(block.col1, block.row1)]
+				local rep = display.newRect(tile.parent, 0, 0, 50, 50, 15)
+
+				FitTo(rep, tile)
+
+				links.SetTag(rep, tag)
+
+				block.rep, rep.isVisible = rep, false
+			end
+
 			common.Dirty()
 		end
 
 	--
 	elseif Option == "Edit" then
 		if tile then
-			Dialog("edit", Blocks[tile.id].info, CurrentEvent.parent, tile.id)
+			Dialog("edit", Blocks[tile.id].info, CurrentEvent.parent, tile.id, Blocks[tile.id].rep)
 		else
 			Dialog("close")
 		end
@@ -357,6 +396,8 @@ local function GridFunc (group, col, row, x, y, w, h)
 
 		if id then
 			WipeBlock(Blocks[id])
+
+			display.remove(Blocks[id].rep)
 
 			Blocks[id] = false
 

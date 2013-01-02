@@ -27,10 +27,14 @@
 local format = string.format
 local ipairs = ipairs
 local match = string.match
+local next = next
 local pairs = pairs
+local sort = table.sort
 local tonumber = tonumber
+local type = type
 
 -- Modules --
+local array_ops = require("array_ops")
 local button = require("ui.Button")
 local checkbox = require("ui.Checkbox")
 local sheet = require("ui.Sheet")
@@ -137,7 +141,7 @@ end
 -- @param ignore If present, a key to skip during copying.
 -- @return table _dt_.
 function M.CopyInto (dt, t, ignore)
-	for k, v in pairs(t or dt) do
+	for k, v in M.PairsIf(t) do
 		if k ~= ignore then
 			dt[k] = v
 		end
@@ -223,6 +227,25 @@ function M.FadeButton (name, check, alpha)
 	end
 end
 
+--- Frames an object with a slightly rounded rect.
+-- @pobject object Object to frame.
+-- @byte r Red...
+-- @byte g ...green...
+-- @byte b ...and blue components
+-- @pgroup group Group to which frame is added; if absent, _object_'s parent.
+-- @treturn DisplayObject Rect object.
+function M.Frame (object, r, g, b, group)
+	local x, y, w, h = M.Rect(object)
+	local frame = display.newRoundedRect(group or object.parent, x, y, w, h, 2)
+
+	frame:setFillColor(0, 0)
+	frame:setStrokeColor(r, g, b)
+
+	frame.strokeWidth = 4
+
+	return frame
+end
+
 ---@string key A backing store key, as encoded by @{ToKey} on a pair of grid coordinates.
 -- @treturn uint The grid column...
 -- @treturn uint ...and row.
@@ -264,6 +287,18 @@ function M.Init (ncols, nrows, no_load)
 	IsDirty, IsVerified = false, not not no_load
 end
 
+--
+local function NoOp () end
+
+--- DOCME
+function M.IpairsIf (t)
+	if t then
+		return ipairs(t)
+	else
+		return NoOp
+	end
+end
+
 --- @treturn boolean Are there unsaved changes to the working level?
 -- @see Dirty, Undirty
 function M.IsDirty ()
@@ -289,6 +324,8 @@ function M.Listbox (group, x, y, hide)
 	}
 
 	group:insert(listbox)
+
+	listbox.isVisible = not hide
 
 	return listbox
 end
@@ -373,6 +410,61 @@ function M.ListboxRowAdder (press, release, get_text)
 			event.view:insert(text)
 		end
 	}
+end
+
+-- --
+local KeyType = setmetatable({}, { __mode = "k" })
+
+--
+local function TypePairs (t, k)
+	local ktype = KeyType[t]
+
+	repeat
+		k = next(t, k)
+	until k == nil or type(k) == ktype
+
+	return k, t[k]
+end
+
+--- DOCME
+function M.PairsIf (t, ktype)
+	if not t then
+		return NoOp
+	elseif ktype then
+		KeyType[t] = ktype
+
+		return TypePairs, t
+	else
+		return pairs(t)
+	end
+end
+
+--- Gets the content rect of an object.
+-- @pobject object Reference object.
+-- @treturn number Upper-left x-coordinate...
+-- @treturn number ...and y-coordinate.
+-- @treturn number Object width...
+-- @treturn number ...and height.
+function M.Rect (object)
+	local bounds = object.contentBounds
+
+	return bounds.xMin, bounds.yMin, bounds.xMax - bounds.xMin, bounds.yMax - bounds.yMin
+end
+
+--- DOCME
+function M.RemoveDups (list)
+	sort(list)
+
+	--
+	local prev
+
+	for i = #list, 1, -1 do
+		if list[i] == prev then
+			array_ops.Backfill(list, i)
+		else
+			prev = list[i]
+		end
+	end
 end
 
 -- Values used by each scroll button type --

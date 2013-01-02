@@ -35,19 +35,13 @@ local collision = require("game.Collision")
 local dispatch_list = require("game.DispatchList")
 local frames = require("game.Frames")
 --local fx = require("game.FX")
+local level_map = lazy_require("game.LevelMap")
 local movement = require("game.Movement")
 local pathing = require("game.Pathing")
 local path_utils = require("game.PathUtils")
 local scrolling = require("game.Scrolling")
 local tile_flags = require("game.TileFlags")
 local tile_maps = require("game.TileMaps")
-
--- Deferred modules --
-local level_map
-
-timer.performWithDelay(0, function()
-	level_map = require("game.LevelMap")
-end)
 
 -- Corona globals --
 local display = display

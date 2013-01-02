@@ -34,7 +34,9 @@ local collision = require("game.Collision")
 local dispatch_list = require("game.DispatchList")
 local frames = require("game.Frames")
 local fx = require("game.FX")
+local links = lazy_require("editor.Links")
 local markers = require("effect.Markers")
+local tags = lazy_require("editor.Tags")
 local utils = require("utils")
 
 -- Corona globals --
@@ -288,6 +290,7 @@ local function OnEditorEvent (what, arg1, arg2, arg3)
 	-- arg3: Item to build
 	if what == "build" then
 		-- STUFF
+		-- Resolve links?
 
 	-- Enumerate Defaults --
 	-- arg1: Defaults
@@ -296,9 +299,23 @@ local function OnEditorEvent (what, arg1, arg2, arg3)
 
 	-- Enumerate Properties --
 	-- arg1: Dialog
+	-- arg2: Representative object
 	elseif what == "enum_props" then
-		arg1:AddString{ before = "Target warp name:", value_name = "to", name = true }
+		arg1:AddLink{ text = "Link to target warp", value_name = "TO", name = true, rep = arg2, tags = "warp" }
+		arg1:AddString{ before = "Target warp name:", value_name = "to", name = true } -- <- "link string"
 		-- Polarity? Can be rotated?
+
+	-- Get Tag --
+	elseif what == "get_tag" then
+		if not tags.Exists("warp") then
+			tags.New("warp", {
+				can_link = function(warp, other)
+					return links.GetTag(other) == "warp" and not links.HasLinks(warp, nil)
+				end
+			})
+		end
+
+		return "warp"
 
 	-- Verify --
 	-- arg1: Verify block
@@ -330,6 +347,7 @@ local function OnEditorEvent (what, arg1, arg2, arg3)
 
 			arg1[#arg1 + 1] = "Target `" .. warp.to .. "` of warp `" .. warp.name .. message
 		end
+-- Links?
 	end
 end
 

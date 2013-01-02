@@ -45,6 +45,9 @@ local graphics = graphics
 local native = native
 local system = system
 
+-- Corona modules --
+local storyboard = require("storyboard")
+
 -- Exports --
 local M = {}
 
@@ -319,7 +322,7 @@ local function CommonAdd (dialog, object, options, static_text)
 					dialog.m_keys:toFront()
 				end
 
-				text, button = common.EditableString(dialog[2], dialog.m_keys, 0, 0, { text = options.text, native.systemFontBold, 22 })
+				text, button = common.EditableString(dialog[2], dialog.m_keys, 0, 0, { text = options.text, font = native.systemFontBold, size = 22 })
 			end
 
 			Update(dialog, text, button and 50)
@@ -385,6 +388,35 @@ end
 
 -- --
 local DirTabs
+
+-- --
+local OverlayArgs = { params = {}, isModal = true }
+
+--
+local LinkTouch = touch.TouchHelperFunc(function(_, link)
+	local params = OverlayArgs.params
+
+	params.x = link.x
+	params.y = link.y
+	params.rep = link.m_rep
+	params.sub = link.m_sub
+	params.tags = link.m_tags
+end, nil, function()
+	-- Inside? (Add another helper?)
+-- Link to: 
+	-- Sublink
+	-- Text
+	-- ID? (Trying to decide how this stays intact in event blocks)
+	-- Object? (Same issue as ID...)
+	-- Rect? (Measure object?)
+	-- How do links get saved / loaded? (SHOULD be okay with keys...)
+
+	storyboard.showOverlay("overlay.Link", OverlayArgs)
+
+	local params = OverlayArgs.params
+
+	params.rep, params.tags = nil
+end)
 
 --- DOCME
 -- @pgroup group Group to which the dialog will be inserted.
@@ -472,6 +504,26 @@ function M.Dialog (group, options)
 
 	--- DOCME
 	-- @ptable options
+	function dgroup:AddLink (options)
+		local link = display.newCircle(self[2], 0, 0, 20)
+
+		if options then
+			link.m_rep = options.rep
+			link.m_sub = options.sub
+			link.m_tags = options.tags
+		end
+
+		link:addEventListener("touch", LinkTouch)
+		link:setFillColor(0)
+		link:setStrokeColor(192)
+
+		link.strokeWidth = 6
+
+		CommonAdd(self, link, options, true)
+	end
+
+	--- DOCME
+	-- @ptable options
 	function dgroup:AddListbox (options)
 		local listbox = common.Listbox(self[2], 0, 0)
 
@@ -487,19 +539,13 @@ function M.Dialog (group, options)
 	--- DOCME
 	-- @ptable options
 	function dgroup:AddSpinner (options)
-		local inc, nmax, nmin, skip, value
-
-		if options then
-			inc = options.inc
-			nmax = options.max
-			nmin = options.min
-			skip = inc ~= 0 and options.skip
-			value = self:GetValue(options.value_name)
-		end
-
-		inc, value = inc or 1, value or 0
-
 		local sopts = common.CopyInto({}, options)
+
+		local inc = sopts.inc or 1
+		local nmax = sopts.max
+		local nmin = sopts.min
+		local skip = inc ~= 0 and sopts.skip
+		local value = self:GetValue(sopts.value_name) or 0
 
 		sopts.is_static = true
 		sopts.text = value .. ""
@@ -718,10 +764,15 @@ end
 function M.DialogWrapper (on_editor_event)
 	local dialog
 
-	return function(what, arg1, arg2, arg3)
+	return function(what, arg1, arg2, arg3, arg4)
 		--
 		if what == "get_dialog" then
 			return dialog
+
+		--
+		-- arg1: Element type
+		elseif what == "get_tag" then
+			return on_editor_event(arg1, "get_tag")
 
 		--
 		-- arg1: Element type
@@ -755,6 +806,7 @@ function M.DialogWrapper (on_editor_event)
 		-- arg1: Element to edit
 		-- arg2: Group
 		-- arg3: Key
+		-- arg4: Representative object
 		if what == "edit" then
 			if arg1 then
 				dialog = M.Dialog(arg2)
@@ -762,7 +814,7 @@ function M.DialogWrapper (on_editor_event)
 				dialog:BindDefaults(GetDefaults(on_editor_event, arg1.type, arg3))
 				dialog:BindValues(arg1)
 
-				on_editor_event(arg1.type, "enum_props", dialog)
+				on_editor_event(arg1.type, "enum_props", dialog, arg4)
 
 				dialog.x = dx or display.contentCenterX - dialog.width / 2
 				dialog.y = dy or display.contentCenterY - dialog.height / 2

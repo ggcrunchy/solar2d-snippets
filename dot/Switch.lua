@@ -141,9 +141,21 @@ local function OnEditorEvent (what, arg1, arg2, arg3)
 	-- Enumerate Properties --
 	-- arg1: Dialog
 	elseif what == "enum_props" then
-		arg1:AddString{ before = "Name of event:", value_name = "event_name", name = true }
+		arg1:AddString{ before = "Name of event:", value_name = "event_name", name = true } -- <- "link string"
 		arg1:AddCheckbox{ text = "Starts forward?", value_name = "forward", name = true }
 		arg1:AddCheckbox{ text = "Reverse on trip?", value_name = "reverses", name = true }
+
+	-- Tag Options --
+	elseif what == "tag_options" then
+		local options = {
+			sub_links = { "fire" }
+		}
+
+		-- TODO:
+		-- Can link... Any restriction?
+		-- What else?
+
+		return options
 
 	-- Verify --
 	-- arg1: Verify block

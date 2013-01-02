@@ -83,7 +83,7 @@ end
 local EditorView = {}
 
 -- Names of editor views --
-local Names = { "General", "Dots", "EventBlocks", "Tiles", "Settings" }
+local Names = { "General", "Ambience", "Dots", "EventBlocks", "Tiles", "Settings" }
 
 -- Tab buttons to choose views... --
 local TabButtons = {}

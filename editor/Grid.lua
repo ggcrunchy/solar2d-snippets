@@ -38,6 +38,7 @@ local pairs = pairs
 local common = require("editor.Common")
 local grid1D = require("ui.Grid1D")
 local grid2D = require("ui.Grid2D")
+local links = require("editor.Links")
 local sheet = require("ui.Sheet")
 
 -- Corona globals --
@@ -106,14 +107,14 @@ function M.EditErase (dialog_wrapper, types)
 			--
 			elseif option == "Edit" then
 				if cur then
-					dialog_wrapper("edit", cur, current.parent, key)
+					dialog_wrapper("edit", cur, current.parent, key, tile)
 				else
 					dialog_wrapper("close")
 				end
 
 			--
 			elseif option == "Erase" then
-				if cur then
+				if tile then
 					tile:removeSelf()
 
 					common.Dirty()
@@ -122,11 +123,22 @@ function M.EditErase (dialog_wrapper, types)
 				elements[key], tiles[key] = nil
 
 			--
-			elseif not cur or sheet.GetSpriteSetImageFrame(tile) ~= which then
+			elseif not cur or sheet.GetSpriteSetImageFrame(tile) ~= which then -- TODO: can 'tile' sub for 'cur' ?(then we have a pattern...)
+				if tile then
+					links.RemoveTag(tile)
+				end
+
 				elements[key] = dialog_wrapper("new_element", types[which], key)
 				tiles[key] = tile or sheet.NewImage(group, tile_images, x, y, w, h)
 
 				sheet.SetSpriteSetImageFrame(tiles[key], which)
+
+				--				
+				local tag = dialog_wrapper("get_tag", types[which])
+
+				if tag then
+					links.SetTag(tiles[key], tag)
+				end
 
 				common.Dirty()
 			end
