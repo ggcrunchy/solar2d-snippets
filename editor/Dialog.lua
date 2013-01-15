@@ -396,12 +396,12 @@ local OverlayArgs = { params = {}, isModal = true }
 local LinkTouch = touch.TouchHelperFunc(function(_, link)
 	local params = OverlayArgs.params
 
-	params.x = link.x
-	params.y = link.y
+	params.x, params.y = link:localToContent(0, 0)
+	params.dialog = link.parent.parent
 	params.rep = link.m_rep
 	params.sub = link.m_sub
 	params.tags = link.m_tags
-end, nil, function()
+end, nil, function(_, link)
 	-- Inside? (Add another helper?)
 -- Link to: 
 	-- Sublink
@@ -415,7 +415,7 @@ end, nil, function()
 
 	local params = OverlayArgs.params
 
-	params.rep, params.tags = nil
+	params.dialog, params.rep, params.tags = nil
 end)
 
 --- DOCME

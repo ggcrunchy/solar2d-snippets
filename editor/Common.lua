@@ -100,6 +100,37 @@ function M.AddNet (group, object)
 	Nets[net] = object
 end
 
+-- --
+local BackBindings, Bindings
+
+--
+local function BackBind (elem, rep)
+	if elem ~= nil then
+		BackBindings[elem] = rep
+	end
+end
+
+--- DOCME
+function M.BindToElement (rep, element)
+	local prev
+
+	if rep then
+		prev = Bindings[rep]
+
+		BackBind(prev, nil)
+		BackBind(element, rep)
+
+		Bindings[rep] = element
+	end
+
+	return prev
+end
+function MMM ()
+	print("Back bindings:")
+	vdump(BackBindings)
+	print("Bindings:")
+	vdump(Bindings)
+end
 --- Creates a checkbox with some attached text.
 -- @pgroup group Group to which checkbox will be inserted.
 -- @number x Checkbox x-coordinate...
@@ -132,7 +163,7 @@ function M.CleanUp ()
 		Runtime:removeEventListener("enterFrame", WatchNets)
 	end
 
-	Buttons, Nets = nil
+	BackBindings, Bindings, Buttons, Nets = nil
 end
 
 --- Copies into one table from another.
@@ -257,6 +288,18 @@ function M.FromKey (key)
 	end
 end
 
+--- DOCME
+-- @pobject rep
+-- @bool find_rep
+-- @treturn table T
+function M.GetBinding (rep, find_rep)
+	if find_rep then
+		return BackBindings[rep]
+	else
+		return Bindings[rep]
+	end
+end
+
 -- How many columns wide and how many rows tall is the working level? --
 local NCols, NRows
 
@@ -284,7 +327,7 @@ function M.Init (ncols, nrows, no_load)
 		Buttons.Verify.alpha = .4
 	end
 
-	IsDirty, IsVerified = false, not not no_load
+	BackBindings, Bindings, IsDirty, IsVerified = {}, {}, false, not not no_load
 end
 
 --
@@ -311,6 +354,9 @@ function M.IsVerified ()
 	return IsVerified
 end
 
+--
+local function StopTouch () return true end
+
 --- Creates a listbox, built on top of `widget.newTableView`.
 -- @pgroup group Group to which listbox will be inserted.
 -- @number x Listbox x-coordinate...
@@ -324,6 +370,8 @@ function M.Listbox (group, x, y, hide)
 	}
 
 	group:insert(listbox)
+
+	listbox:addEventListener("touch", StopTouch)
 
 	listbox.isVisible = not hide
 
@@ -400,7 +448,7 @@ function M.ListboxRowAdder (press, release, get_text)
 
 		-- On Render --
 		onRender = function(event)
-			local text = display.newRetinaText(get_text(event.index), 0, 0, native.systemFont, 25)
+			local text = display.newRetinaText(get_text(event.index), 0, 0, native.systemFont, 20)
 
 			text:setReferencePoint(display.CenterLeftReferencePoint)
 			text:setTextColor(0)

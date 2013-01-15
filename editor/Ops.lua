@@ -34,6 +34,7 @@ local write = io.write
 -- Modules --
 local common = require("editor.Common")
 local dispatch_list = require("game.DispatchList")
+local events = require("editor.Events")
 local keyboard = require("ui.Keyboard")
 local persistence = require("game.Persistence")
 local timers = require("game.Timers")
@@ -125,6 +126,8 @@ local function AuxSave ()
 	local saved = { main = { common.GetDims() } }
 
 	dispatch_list.CallList("save_level_wip", saved)
+
+	events.ResolveLinks(saved, true)
 
 	return saved
 end

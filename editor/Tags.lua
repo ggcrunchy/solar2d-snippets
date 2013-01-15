@@ -234,7 +234,7 @@ local IterStrList = iterators.InstancedAutocacher(function()
 	end,
 
 	-- Setup --
-	function(enum, name_, is_multi)
+	function(enum, name_, is_multi, extra)
 		--
 		local count
 
@@ -254,6 +254,10 @@ local IterStrList = iterators.InstancedAutocacher(function()
 		end
 
 		common.RemoveDups(str_list)
+
+		if extra then
+			str_list[#str_list + 1] = false
+		end
 
 		return nil, 0
 	end
@@ -276,9 +280,10 @@ do
 
 	--- DOCME
 	-- @string name
+	-- @bool add_nil
 	-- @treturn iterator I
-	function M.Sublinks (name)
-		return IterStrList(EnumSublinks, name)
+	function M.Sublinks (name, add_nil)
+		return IterStrList(EnumSublinks, name, false, add_nil)
 	end
 end
 

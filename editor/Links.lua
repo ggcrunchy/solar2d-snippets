@@ -158,14 +158,12 @@ local function Match2 (link, proxy, sub)
 end
 
 --
-local function NotLinked (p1, p2, sub1, sub2)
+local function AlreadyLinked (p1, p2, sub1, sub2)
 	for _, link in LinksIter(p1, p2) do
 		if Match1(link, p1, sub1) and Match2(link, p2, sub2) then
-			return false
+			return true
 		end
 	end
-
-	return true
 end
 
 -- Helper to get a proxy (if valid) from an object
@@ -174,7 +172,7 @@ local function Proxy (object)
 end
 
 --
-local function SortProxies (p1, p2, options)
+local function SortProxies (p1, p2, options, obj1, obj2)
 	local sub1, sub2
 
 	if options then
@@ -182,9 +180,9 @@ local function SortProxies (p1, p2, options)
 	end
 
 	if p2.id < p1.id then
-		return p2, p1, sub2, sub1
+		return p2, p1, sub2, sub1, obj2, obj1
 	else
-		return p1, p2, sub1, sub2
+		return p1, p2, sub1, sub2, obj1, obj2
 	end
 end
 
@@ -196,10 +194,14 @@ do
 		for _, tname in f, s, v0 do
 			local can_link = tags.GetProperty(tname, "can_link")
 
-			if can_link and not can_link(obj1, obj2, sub1, sub2) then
-				reclaim()
+			if can_link then
+				local passed, why = can_link(obj1, obj2, sub1, sub2)
 
-				return false
+				if not passed then
+					reclaim()
+
+					return false, why or "Can't link"
+				end
 			end
 		end
 
@@ -211,21 +213,36 @@ do
 	-- @pobject object2
 	-- @ptable options
 	-- @treturn boolean X
+	-- @treturn string If the first result is false, a reason.
 	function M.CanLink (object1, object2, options)
 		local p1, p2, sub1, sub2 = Proxy(object1), Proxy(object2)
 
 		-- Both objects are still valid?
 		if p1 and p2 then
-			p1, p2, sub1, sub2 = SortProxies(p1, p2, options)
+			p1, p2, sub1, sub2, object1, object2 = SortProxies(p1, p2, options, object1, object2)
+
+			if p1 == p2 or AlreadyLinked(p1, p2, sub1, sub2) then
+				return false, p1 == p2 and "Same object" or "Already linked"
 
 			-- ...and not already linked?
-			if NotLinked(p1, p2, sub1, sub2) then
-				-- ...pass all object1-object2 predicates? ...and object2-object1 ones too?
-				return CheckLinks(p1, object1, object2, sub1, sub2) and CheckLinks(p2, object2, object1, sub2, sub1)
+			else
+				-- ...pass all object1-object2 predicates?
+				local passed, why = CheckLinks(p1, object1, object2, sub1, sub2)
+
+				if passed then
+					-- ...and object2-object1 ones too?
+					passed, why = CheckLinks(p2, object2, object1, sub2, sub1)
+
+					if passed then
+						return true
+					end
+				end
+
+				return false, why
 			end
 		end
 
-		return false
+		return false, "Invalid object"
 	end
 end
 
@@ -382,10 +399,11 @@ end
 -- @pobject object2
 -- @ptable options
 -- @treturn LinkHandle L
+-- @treturn string S
 function M.LinkObjects (object1, object2, options)
-	local link
+	local can_link, why = M.CanLink(object1, object2, options) 
 
-	if M.CanLink(object1, object2, options) then
+	if can_link then
 		-- To limit a few checks later on, impose an order on the proxies.
 		local p1, p2, sub1, sub2 = SortProxies(Proxies[object1], Proxies[object2], options)
 
@@ -401,14 +419,16 @@ function M.LinkObjects (object1, object2, options)
 		end
 
 		-- Install the link.
-		link = { m_proxy1 = p1, m_proxy2 = p2, m_sub1 = sub1, m_sub2 = sub2 }
+		local link = { m_proxy1 = p1, m_proxy2 = p2, m_sub1 = sub1, m_sub2 = sub2 }
 
 		common.CopyInto(link, Link)
 
 		links[#links + 1] = link
+
+		return link
 	end
 
-	return link
+	return nil, why
 end
 
 --- DOCME

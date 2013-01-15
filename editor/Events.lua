@@ -31,9 +31,58 @@ local pairs = pairs
 -- Modules --
 local common = require("editor.Common")
 local grid = require("editor.Grid")
+local links = require("editor.Links")
+local tags = require("editor.Tags")
+local utils = require("utils")
 
 -- Export --
 local M = {}
+
+--
+local function HasAny (rep)
+	local tag = links.GetTag(rep)
+
+	if tag then
+		local f, s, v0, reclaim = tags.Sublinks(tag, true)
+
+		for _, sub in f, s, v0 do
+			if links.HasLinks(rep, sub or nil) then
+				reclaim()
+
+				return true
+			end
+		end
+	end
+end
+
+--- DOCME
+-- @ptable level
+-- @ptable value
+-- @ptable elem
+-- @bool save
+function M.AddAnyLinks (level, value, elem, save)
+	local rep = common.GetBinding(elem, true)
+
+	--
+	if save then
+		if HasAny(rep) then
+			local list = level.links or {}
+
+			if not list[rep] then
+				elem.uid = utils.NewName()
+
+				list[#list + 1] = rep
+				list[rep] = #list
+			end
+
+			level.links = list
+		end
+
+	--
+	elseif value.uid then
+		level.links[value.uid] = rep
+	end
+end
 
 --- DOCME
 -- @ptable level
@@ -137,6 +186,68 @@ end
 
 --- DOCME
 -- @ptable level
+-- @bool save
+function M.ResolveLinks (level, save)
+	local list, new = level.links
+
+	if level.links then
+		--
+		if save then
+			local list, new = level.links, {}
+
+			for _, rep in ipairs(list) do
+				local element = common.GetBinding(rep)
+
+				--
+				new[#new + 1] = "element"
+				new[#new + 1] = element.uid
+
+				for _, sub in tags.Sublinks(links.GetTag(rep), true) do
+					new[#new + 1] = "sub"
+					new[#new + 1] = sub or false
+
+					for link in links.Links(rep, sub or nil) do
+						local obj, osub = link:GetOtherObject(rep)
+
+						new[#new + 1] = list[obj]
+						new[#new + 1] = osub or false
+					end
+				end
+			end
+
+			level.links = new
+
+		--
+		else
+			local list, elem = level.links
+			local link_opts, index = {}, 1
+
+			for i = 1, #list, 2 do
+				local item, other = list[i], list[i + 1] or nil
+
+				--
+				if item == "element" then
+					elem = list[other]
+
+					list[index], index = elem, index + 1
+
+				--
+				elseif item == "sub" then
+					link_opts.sub1 = other
+
+				--
+				elseif index > item then
+					link_opts.sub2 = other
+
+					links.LinkObjects(elem, list[item], link_opts)
+				end
+			end
+		end
+	end
+end
+
+--- DOCME
+-- @ptable level
 -- @string what
 -- @ptable mod
 -- @callable common_ops
@@ -183,6 +294,9 @@ function M.SaveOrLoad (level, mod, value, elem, save)
 
 		mod.EditorEvent(ValueType, "enum_defs", Defs)
 	end
+
+	--
+	M.AddAnyLinks(level, arg1, arg2, save)
 
 	--
 	for k, v in pairs(value) do

@@ -26,6 +26,7 @@
 -- Modules --
 local audio = require("game.Audio")
 local collision = require("game.Collision")
+local common_tags = require("editor.CommonTags")
 local dispatch_list = require("game.DispatchList")
 local event_blocks = require("game.EventBlocks")
 
@@ -140,22 +141,18 @@ local function OnEditorEvent (what, arg1, arg2, arg3)
 
 	-- Enumerate Properties --
 	-- arg1: Dialog
+	-- arg2: Representative object
 	elseif what == "enum_props" then
 		arg1:AddString{ before = "Name of event:", value_name = "event_name", name = true } -- <- "link string"
+		arg1:AddLink{ text = "Link to event target", value_name = "TO", name = true, rep = arg2, tags = "event_target" }
 		arg1:AddCheckbox{ text = "Starts forward?", value_name = "forward", name = true }
 		arg1:AddCheckbox{ text = "Reverse on trip?", value_name = "reverses", name = true }
 
-	-- Tag Options --
-	elseif what == "tag_options" then
-		local options = {
-			sub_links = { "fire" }
-		}
+	-- Get Tag --
+	elseif what == "get_tag" then
+		common_tags.EnsureLoaded("event_source")
 
-		-- TODO:
-		-- Can link... Any restriction?
-		-- What else?
-
-		return options
+		return "event_source"
 
 	-- Verify --
 	-- arg1: Verify block

@@ -46,6 +46,7 @@ local pairs = pairs
 local button = require("ui.Button")
 local common = require("editor.Common")
 local dispatch_list = require("game.DispatchList")
+local events = require("editor.Events")
 local grid = require("editor.Grid")
 local iterators = require("iterators")
 local ops = require("editor.Ops")
@@ -246,6 +247,7 @@ function Scene:enterScene (event)
 
 		dispatch_list.CallList("load_level_wip", params)
 
+		events.ResolveLinks(params, false)
 		common.Undirty()
 	end
 

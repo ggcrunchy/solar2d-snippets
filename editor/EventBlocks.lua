@@ -274,6 +274,23 @@ local function AddImage (group, key, id, x, y, w, h, hide)
 end
 
 --
+local function AddRep (block, type)
+	local tag = Dialog("get_tag", type)
+
+	if tag then
+		local tile = Tiles[common.ToKey(block.col1, block.row1)].image
+		local rep = display.newRect(tile.parent, 0, 0, 50, 50, 15)
+
+		FitTo(rep, tile)
+
+		common.BindToElement(rep, block.info)
+		links.SetTag(rep, tag)
+
+		block.rep, rep.isVisible = rep, false
+	end
+end
+
+--
 local function CheckCol (col, rfrom, rto)
 	for row = rfrom, rto do
 		local tile = Tiles[common.ToKey(col, row)]
@@ -363,21 +380,7 @@ local function GridFunc (group, col, row, x, y, w, h)
 			Blocks[id] = { col1 = col, row1 = row, col2 = col, row2 = row, info = Dialog("new_element", Types[which], id) }
 
 			AddImage(group, key, id, x, y, w, h)
-
-			--
-			local tag = Dialog(type, "get_tag")
-
-			if tag then
-				local block = Blocks[id]
-				local tile = Tiles[common.ToKey(block.col1, block.row1)]
-				local rep = display.newRect(tile.parent, 0, 0, 50, 50, 15)
-
-				FitTo(rep, tile)
-
-				links.SetTag(rep, tag)
-
-				block.rep, rep.isVisible = rep, false
-			end
+			AddRep(Blocks[id], Types[which])
 
 			common.Dirty()
 		end
@@ -397,6 +400,7 @@ local function GridFunc (group, col, row, x, y, w, h)
 		if id then
 			WipeBlock(Blocks[id])
 
+			common.BindToElement(Blocks[id].rep, nil)
 			display.remove(Blocks[id].rep)
 
 			Blocks[id] = false
@@ -521,6 +525,7 @@ dispatch_list.AddToMultipleLists{
 				Option, ID = "Stretch", id
 
 				TouchBlock(Blocks[#Blocks], "fill")
+				AddRep(Blocks[#Blocks], block.info.type)
 
 				Option, ID = "Paint"
 

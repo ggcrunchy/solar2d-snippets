@@ -302,6 +302,8 @@ local function OnEditorEvent (what, arg1, arg2, arg3)
 	-- arg2: Representative object
 	elseif what == "enum_props" then
 		arg1:AddLink{ text = "Link to target warp", value_name = "TO", name = true, rep = arg2, tags = "warp" }
+-- ^^ Should have source / target sublinks (and a "reciprocate" checkbox, if there is only one or the other)
+-- ^^ In builds, resolves to name target?? (since supposedly that will be constrained....)
 		arg1:AddString{ before = "Target warp name:", value_name = "to", name = true } -- <- "link string"
 		-- Polarity? Can be rotated?
 
@@ -310,7 +312,13 @@ local function OnEditorEvent (what, arg1, arg2, arg3)
 		if not tags.Exists("warp") then
 			tags.New("warp", {
 				can_link = function(warp, other)
-					return links.GetTag(other) == "warp" and not links.HasLinks(warp, nil)
+					if links.GetTag(other) ~= "warp" then
+						return false, "Non-warp target"
+					elseif links.HasLinks(warp, nil) then
+						return false, "Warp already has target"
+					end
+
+					return true
 				end
 			})
 		end

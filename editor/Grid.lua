@@ -117,6 +117,7 @@ function M.EditErase (dialog_wrapper, types)
 				if tile then
 					tile:removeSelf()
 
+					common.BindToElement(tile, nil)
 					common.Dirty()
 				end
 
@@ -133,10 +134,12 @@ function M.EditErase (dialog_wrapper, types)
 
 				sheet.SetSpriteSetImageFrame(tiles[key], which)
 
-				--				
+				--
 				local tag = dialog_wrapper("get_tag", types[which])
 
 				if tag then
+					common.BindToElement(tiles[key], elements[key])
+
 					links.SetTag(tiles[key], tag)
 				end
 

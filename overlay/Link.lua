@@ -24,17 +24,22 @@
 --
 
 -- Standard library imports --
+local abs = math.abs
+local ceil = math.ceil
 local type = type
 
 -- Modules --
 local button = require("ui.Button")
 local common = require("editor.Common")
-local lines = require("ui.Lines")
+local link_group = require("ui.LinkGroup")
 local links = require("editor.Links")
+local tags = require("editor.Tags")
 local touch = require("ui.Touch")
 
 -- Corona globals --
 local display = display
+local native = native
+local transition = transition
 
 -- Corona modules --
 local storyboard = require("storyboard")
@@ -42,23 +47,50 @@ local storyboard = require("storyboard")
 -- Link overlay --
 local Overlay = storyboard.newScene()
 
+-- --
+local Box, Links
+
 -- Box drag listener
-local DragTouch = touch.DragParentTouch()
+local on_touch = touch.DragParentTouch()
+
+local function DragTouch (event)
+	if event.phase == "began" then
+		local dialog = event.target.parent
+
+		dialog:toFront()
+
+		if dialog == Box then
+			Links:toFront()
+		end
+	end
+
+	return on_touch(event)
+end
 
 -- --
-local FadeParams = { time = 150, transition = easing.inOutQuad }
+local FadeShadeParams = { transition = easing.inOutQuad }
 
-function FadeParams.onComplete (object)
+function FadeShadeParams.onComplete (object)
 	if object.alpha < .5 then
+		local dialog = object.m_dialog
+
+		dialog.alpha, object.m_dialog = 1
+
 		storyboard.hideOverlay(true)
 	end
 end
 
 --
-local function Fade (alpha)
-	FadeParams.alpha = alpha
+local function Fade (object, params, alpha)
+	params.alpha = alpha
+	params.time = ceil(abs(object.alpha - alpha) * 150) + 20
 
-	transition.to(Overlay.m_shade, FadeParams)
+	transition.to(object, params)
+end
+
+--
+local function FadeShade (alpha)
+	Fade(Overlay.m_shade, FadeShadeParams, alpha)
 end
 
 --
@@ -87,56 +119,321 @@ function Overlay:createScene (event)
 	common.Frame(self.m_choices, 0, 32, 96)
 
 	--
-	self.m_about = display.newRetinaText(cgroup, "", 0, 0, native.systemFont, 24)
+	self.m_about = display.newRetinaText(cgroup, "", 0, 0, native.systemFont, 18)
 
 	--
 	button.Button(cgroup, nil, 300, 10, 35, 35, function()
-		Fade(0)
+		FadeShade(0)
 	end, "X")
 end
 
 Overlay:addEventListener("createScene")
 
 -- --
-local Box
+local Outline
 
--- ^ "State / Node" ... populate with choices (MAYBE scroll things... and mask, by implication)
--- Adapt to listbox selection
--- Box group
+-- --
+local List
 
--- ^ Listbox, with enumerated stuff... select to put in "State"
--- Listbox group
+-- --
+local Rep, Sub
+
+-- --
+local FadeLinkParams = { transition = easing.inOutQuad }
+
+--
+local function SetText (str, x, y, text)
+	str.text = text
+
+	str:setReferencePoint(display.CenterLeftReferencePoint)
+
+	str.x, str.y = x, y
+end
+
+--
+local function FixSub (sub)
+	return sub ~= true and sub or nil
+end
+
+--
+local function Item (from, to, inc)
+	for i = from, to, inc do
+		local item = Box[i]
+		local sub = item.m_sub
+
+		if sub then
+			return i, item, Box[i + 1], FixSub(sub)
+		end
+	end
+end
+
+--
+local function AuxIter (n, i)
+	return Item(i + 1, n, 1)
+end
+
+--
+local function AuxIterR (_, i)
+	return Item(i - 1, 1, -1)
+end
+
+--
+local function BoxItems (reverse)
+	local n = Box.numChildren
+
+	return reverse and AuxIterR or AuxIter, n, reverse and n + 1 or 0
+end
+
+-- TODO: Remove?
+local AddRow
+
+--
+local function Refresh (is_dirty)
+	local object, link_opts = Box.m_object, Box.m_opts
+
+	for _, item, str, sub in BoxItems() do
+		link_opts.sub2 = sub
+
+		local can_link, why = links.CanLink(Rep, object, link_opts)
+		local text, alpha = sub and "Sublink: " .. sub or "General link"
+
+		if not can_link then
+			alpha, text = .2, "Cannot link (" .. text .. ")" .. (#why > 0 and ": " .. why or "")
+		end
+
+		item.m_no_link = not can_link
+
+		SetText(str, item.x + item.width / 2 + 10, str.y, text)
+		Fade(item, FadeLinkParams, alpha or 1)
+	end
+
+	--
+	if is_dirty then
+--[[
+		local rows = Overlay.m_choices.content.rows
+
+		for i = 1, #List do
+			rows[i].reRender = true
+		end
+]] -- ^^^ SHOULD be like this???
+
+-- TODO: Broken?
+Overlay.m_choices:deleteAllRows()
+
+for _ = 1, #List do
+	Overlay.m_choices:insertRow(AddRow)
+end
+-- and... reselect it...
+		common.Dirty()
+	end
+end
+
+--
+local function AddObject (object)
+	List[object] = (List[object] or 0) + 1
+end
+
+--
+local function Connect (_, obj1, obj2, node)
+	-- One object is the rep, but the other will have some data and need some treatment.
+	local object, link_opts = Box.m_object, Box.m_opts
+
+	link_opts.sub2 = FixSub(obj1.m_sub or obj2.m_sub)
+
+	node.m_link = links.LinkObjects(Rep, object, link_opts)
+
+	AddObject(object)
+	Refresh(true)
+end
 
 -- Lines (with "break" option) shown in between
+local NodeTouch = link_group.BreakTouchFunc(function(node)
+	node.m_link:Break()
 
--- Node touch listener: allows for breaking links
-local NodeTouch = touch.TouchHelperFunc(function()
-	-- ??
-end, nil, function(_, node)
-	node:removeSelf()
+	local object = Box.m_object
 
-	node.m_broken = true
+	List[object] = List[object] - 1
+
+	if List[object] == 0 then
+		List[object] = nil
+	end
+
+	Refresh(true)
 end)
 
--- Options for a temporary line --
-local LineOptsMaybe = { color = { 255, 64, 64, 192 } }
+--
+local function AddToBox (object, sub, node)
+	Box.m_count = (sub and Box.m_count or 0) + 1
 
--- Options for established lines --
-local LineOpts = {
-	color = { 255, 255, 255, 128 },
+	--
+	local link = Links:AddLink(1, true)
 
-	keep = function(_, _, node)
-		return not node.m_broken
+	Box:insert(link)
+
+	link.x, link.y = 35, 45 + Box.m_count * 50
+
+	link.m_sub = sub or true
+
+	--
+	display.newText(Box, "", 0, link.y, native.systemFont, 16)
+end
+
+--
+local function BoxHeight ()
+	return Box.m_count * 70 + 200
+end
+
+--
+local LinkGroupOpts = {}
+
+--
+function LinkGroupOpts:can_touch ()
+	return not self.m_no_link
+end
+
+--
+function LinkGroupOpts:show_or_hide (how)
+	--
+	if how == "began" then
+		self.m_old_alpha = self.alpha
+
+		Fade(self, FadeLinkParams, .4)
+
+	--
+	elseif how == "cancelled" or self.m_owner_id == 0 then
+		Fade(self, FadeLinkParams, self.m_old_alpha)
 	end
-}
+end
+
+--
+local function ConnectObjects (object, node)
+	for _, item, _, sub in BoxItems() do
+		for link in links.Links(object, sub) do
+			local obj, osub = link:GetOtherObject(object)
+
+			if obj == Rep and osub == Sub then
+				local join = link_group.Connect(item, node, NodeTouch, Links:GetGroups())
+
+				join.m_link = link
+			end
+		end
+	end
+end
+
+--
+local function ElementName (object)
+	local element = common.GetBinding(object)
+
+	return element and element.name
+end
+
+--
+local function Show ()
+	for _, item, str in BoxItems() do
+		item.isVisible, str.isVisible = true, true
+	end
+
+	Refresh()
+end
+
+--
+local function SetCurrent (group, object, node)
+	-- Box exists and is being reassigned the same object: no-op.
+	if Box and Box.m_object == object then
+		return
+
+	-- New object being assigned, box may or may not exist.
+	elseif object then
+		local curn = Box and Box.m_count
+
+		--
+		if curn then
+			Links:Clear()
+
+			Links:removeSelf()
+			Outline:removeSelf()
+
+			for _, item, str in BoxItems(true) do
+				str:removeSelf()
+				item:removeSelf()
+			end
+
+		--
+		else
+			Box = display.newGroup()
+
+			group:insert(Box)
+
+			local backdrop = display.newRoundedRect(Box, 0, 0, 500, 300, 35)
+
+			backdrop:addEventListener("touch", DragTouch)
+			backdrop:setFillColor(96)
+
+			Box.x, Box.y = 200, 200
+
+			Box.m_backdrop = backdrop
+			Box.m_name = display.newRetinaText(Box, "", 0, 0, native.systemFont, 18)
+			Box.m_opts = { sub1 = Sub }
+		end
+
+		--
+		Links = link_group.LinkGroup(group, Connect, NodeTouch, LinkGroupOpts)
+
+		Links:AddLink(0, false, node)
+
+		--
+		AddToBox(object, nil, node)
+
+		for _, sub in tags.Sublinks(links.GetTag(object)) do
+			AddToBox(object, sub, node)
+		end
+
+		Box.m_object = object
+
+		ConnectObjects(object, node)
+
+		--
+		local name = ElementName(object)
+
+		SetText(Box.m_name, 25, 35, "Sublinks for object" .. (name and ": " .. name or ""))
+
+		--
+		local n = curn and abs(curn - Box.m_count)
+
+		if n and n > 0 then
+			for _, item, str in BoxItems() do
+				item.isVisible, str.isVisible = false, false
+			end
+
+			transition.to(Box.m_backdrop, { height = BoxHeight(), time = n * 120, onComplete = Show })
+		else
+			Box.m_backdrop.height = BoxHeight()
+-- ^^ Need to move away from edge?
+			Refresh()
+		end
+
+		--
+		local x, y, w, h = common.Rect(object)
+
+		Outline = display.newRoundedRect(object.parent, x - 5, y - 5, w + 10, h + 10, 15)
+
+		Outline:setFillColor(0, 0)
+		Outline:setStrokeColor(0, 255, 0)
+
+		Outline.strokeWidth = 7
+
+	-- Cleanup.
+	else
+		display.remove(Box)
+		display.remove(Outline)
+
+		Box, Links, Outline = nil
+	end
+end
 
 --
 local function SetAboutText (about, has_links)
-	about.text = has_links and "Link choices" or "Nothing to link against"
-
-	about:setReferencePoint(display.CenterLeftReferencePoint)
-
-	about.x, about.y = 25, 15
+	SetText(about, 25, 15, has_links and "Link choices for " .. (ElementName(Rep) or "") or "Nothing to link against")
 end
 
 --
@@ -148,70 +445,87 @@ function Overlay:enterScene (event)
 	--
 	self.m_shade.alpha = 0
 
-	Fade(.6)
+	FadeShade(.6)
 
 	--
-	local params, list = event.params, {}
-	local rep, sub = params.rep, params.sub
-	local has_links = links.HasLinks(rep, sub)
+	local params = event.params
+
+	Rep, Sub = params.rep, params.sub
+
+	--
+	params.dialog.alpha = .35
+
+	self.m_shade.m_dialog = params.dialog
 
 	--
 	self.m_choices:deleteAllRows()
 
-	--
-	local iter = type(params.tags) == "string" and "Tagged" or "Tagged_Multi"
+	List = {}
 
-	for object in links[iter](params.tags) do
-		if object ~= rep then
-			list[#list + 1] = { text = ("%s"):format(links.GetTag(object)), object = object }
+	--
+	local iter = "TagAndChildren" .. (type(params.tags) ~= "string" and "_Multi" or "")
+
+	for _, name in tags[iter](params.tags) do
+		for object in links.Tagged(name) do
+			if object ~= Rep then
+				local name = ElementName(object)
+
+				List[#List + 1] = {
+					text = ("%s%s"):format(links.GetTag(object), name and " (" .. name .. ")" or ""),
+					object = object
+				}
+			end
 		end
 	end
 
 	--
-	local has_links = #list > 0
+	local node = display.newCircle(self.view, params.x, params.y, 15)
+
+	node:setFillColor(32, 255, 32)
+	node:setStrokeColor(255, 0, 0)
+
+	node.strokeWidth = 3
+
+	--
+	local has_links = #List > 0
 
 	if has_links then
 		local add_row = common.ListboxRowAdder(function(index)
-	--		UpdateCurrent(self, levels, index)
-			-- Update according to stuff in link...
+			SetCurrent(self.view, List[index].object, node)
 		end, nil, function(index)
-			return list[index].text
+			local item = List[index]
+			local count = List[item.object]
+
+			return item.text .. (count and (" - %i link%s"):format(count, count > 1 and "s" or "") or "")
 		end)
-	-- ^^ Could be slow?
-	-- Listbox for items to show (special highlight for selection?), checkboxes to filter
-
+AddRow = add_row
+-- ^^^ TODO: Remove
 		-- Make a note of whichever objects already link to the representative.
-		for _, link in links.Links(rep, sub) do
-			local obj, osub = link:GetOtherObject(rep)
-
-			list[obj] = true
+		for link in links.Links(Rep, Sub) do
+			AddObject(link:GetOtherObject(Rep))
 		end
 
-		for _ = 1, #list do
+		for _ = 1, #List do
 			self.m_choices:insertRow(add_row)
-			-- Links exist? (If so, perhaps gus up the link a little)
 		end
 
 		self.m_choices.isVisible = true
 	end
 
 	SetAboutText(self.m_about, has_links)
-
-	-- Params = position of enter button? (or just button)
-
-	-- Draggable, with choices (up to X items)
-	-- Outlines around tiles or whatever
-		-- Get extents from grid (USUALLY just the square around a tile, but there are event blocks, too)
-		-- Probably some of this will fit in with the lookup we end up doing anyway
-	-- Breakability - just port from State.lua
-	-- Swap between window sizes (add / remove scroll buttons), repopulate - SHOULD be easy enough...
 end
 
 Overlay:addEventListener("enterScene")
 
 --
 function Overlay:exitScene (event)
+	SetCurrent(nil)
+
 	self.m_choices.isVisible = false
+
+	List, Rep, Sub = nil
+-- TODO: Remove?
+AddRow = nil
 end
 
 Overlay:addEventListener("exitScene")

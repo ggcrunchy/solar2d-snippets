@@ -42,10 +42,12 @@ local random = math.random
 local yield = coroutine.yield
 
 -- Modules --
+local common_tags = require("editor.CommonTags")
 local coroutine_ex = require("coroutine_ex")
 local dispatch_list = require("game.DispatchList")
 local fx = require("game.FX")
 local numeric_ops = require("numeric_ops")
+local tags = lazy_require("editor.Tags")
 local tile_flags = require("game.TileFlags")
 local tile_maps = require("game.TileMaps")
 
@@ -415,12 +417,24 @@ function M.EditorEvent (type, what, arg1, arg2, arg3)
 
 		-- Enumerate Properties --
 		-- arg1: Dialog
+		-- arg2: Representative object
 		elseif what == "enum_props" then
 			arg1:Spacer()
 			arg1:StockElements("EventBlock", type)
+			arg1:AddLink{ text = "Link to event source", value_name = "TO", name = true, rep = arg2, tags = "event_source" }
 			arg1:AddSeparator()
 --			arg1:AddCheckbox{ text = "On By Default?", value_name = "starts_on", name = true }
 --			arg1:AddSeparator()
+
+		-- Get Tag --
+		elseif what == "get_tag" then
+			common_tags.EnsureLoaded("event_target")
+
+			if not tags.Exists("event_block") then
+				tags.New("event_block", { "event_target" })
+			end
+
+			return "event_block"
 
 		-- Verify --
 		elseif what == "verify" then
