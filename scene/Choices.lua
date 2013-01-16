@@ -48,19 +48,20 @@ local Scene = storyboard.newScene()
 
 -- Samples names --
 local Names = {
-	"Curves",
-	"Hilbert",
-	"HilbertMixer",
-	"Hop",
-	"Marching",
-	"Nodes",
-	"SlowMo",
+	"Curves", -- These were mostly just for testing something... could be more interesting...
+	"Hilbert", -- I rather like this, nothing immediate to add...
+	"HilbertMixer", -- Done? See if smoothing would beautify it
+	"Hop", -- Was just to show an idea to a work colleague... has some "problems"... worth fixing?
+	"Marching", -- Better example? Better implementation?
+	"Nodes", -- Was incorporated into editor... though not quite like this... at very least, use LinkGroup?
+	"OrbitsAndLattices", -- In progress...
+	"SlowMo", -- Explore the "copycat" idea I have here?
 	"Snowfall", -- In progress...
-	"Thoughts",
-	"Tiling",
-	"Timers",
-	"Game",
-	"Editor"
+	"Thoughts", -- Seems to need some fixing...
+	"Tiling", -- Image group? Do effects on these, once in play?
+	"Timers", -- Better examples?
+	"Game", -- Having actual game ideas... explore? Which are best?
+	"Editor" -- Ongoing (better way to do this? somewhat hard to port changes... submodule?)
 }
 
 --[[
@@ -114,10 +115,6 @@ local Names = {
 
 	* Do something with some of the curve code from Icebreakers? (If nothing else, a nice contribution
 	  to the curves module)
-
-	* I don't even know if this would look good, but try, say, sampling Hilbert curves starting at
-	  three points and trace the locus of the centroid of the triangle (I have to get this idea out
-	  of my head... for whatever reason, it plagues me on my Sunday runs)
 
 	* Go to town with the grid iterators, e.g. to make masks or general art... could amortize costs
 	  by iteratively capturing completed sections and compositing them? (Ditto)
