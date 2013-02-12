@@ -56,7 +56,7 @@ local Tags = {
 		end,
 
 		m_setup = function()
-			M.EnsureLoaded("event_target")
+			M.EnsureLoaded("event_source")
 		end
 	}
 }
@@ -82,6 +82,8 @@ function M.EnsureLoaded (name)
 	if setup then
 		setup()
 	end
+
+	return name
 end
 
 -- Export the module.

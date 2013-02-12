@@ -153,6 +153,36 @@ function M.CheckboxWithText (group, x, y, text, options)
 	return cb
 end
 
+-- (Sometimes) common view choice --
+local CurrentChoice
+
+--- DOCME
+function M.ChoiceTrier (names)
+	local choices = {}
+
+	for _, v in ipairs(names) do
+		choices[#choices + 1] = v.label
+	end
+
+	return function(tabs, unless)
+		local index
+
+		for i, v in ipairs(choices) do
+			if CurrentChoice == v then
+				index = i
+
+				break
+			end
+		end
+
+		CurrentChoice = nil
+
+		if index and choices[index] ~= unless then
+			tabs:pressButton(index, true)
+		end
+	end
+end
+
 --- Cleans up various state used pervasively by the editor.
 function M.CleanUp ()
 	if Nets then
@@ -317,7 +347,7 @@ local CurrentX, CurrentY
 -- @uint nrows ...and how many rows?
 -- @bool no_load Is the editor starting up with a new scene?
 function M.Init (ncols, nrows, no_load)
-	NCols, NRows, CurrentX, CurrentY = ncols, nrows
+	NCols, NRows, CurrentChoice, CurrentX, CurrentY = ncols, nrows
 
 	if Buttons.Save then
 		Buttons.Save.alpha = .4
@@ -539,6 +569,11 @@ function M.ScrollButton (group, name, x, y, func)
 	button[1].rotation = values[3]
 
 	return button
+end
+
+--- DOCME
+function M.SetChoice (choice)
+	CurrentChoice = choice
 end
 
 --- Shows or hides the current selection widget. As a convenience, the last position of a

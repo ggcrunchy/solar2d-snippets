@@ -87,7 +87,7 @@ end
 -- * **"get\_data"**: Returns the current tile @{ui.Grid1D}, the elements table, and the
 -- tiles table.
 function M.EditErase (dialog_wrapper, types)
-	local current, option, pick, elements, tabs, tiles, tile_images
+	local current, option, pick, elements, tabs, tiles, tile_images, try_option
 
 	return function (what, group, col_, row_, x, y, w, h)
 		-- Grid --
@@ -179,6 +179,9 @@ function M.EditErase (dialog_wrapper, types)
 			tabs:pressButton(1, true)
 
 			--
+			try_option = common.ChoiceTrier(tab_buttons)
+
+			--
 			tile_images = common.SpriteSetFromThumbs(col_, types)
 
 			current:Bind(tile_images, #tile_images)
@@ -191,6 +194,7 @@ function M.EditErase (dialog_wrapper, types)
 		elseif what == "enter" then
 			M.Show(col_)
 
+			try_option(tabs, option)
 			common.ShowCurrent(current, option == "Paint")
 
 			tabs.isVisible = true
@@ -199,6 +203,7 @@ function M.EditErase (dialog_wrapper, types)
 		elseif what == "exit" then
 			dialog_wrapper("close")
 
+			common.SetChoice(option)
 			common.ShowCurrent(current, false)
 
 			tabs.isVisible = false
@@ -209,7 +214,7 @@ function M.EditErase (dialog_wrapper, types)
 		elseif what == "unload" then
 			tabs:removeSelf()
 
-			current, option, pick, elements, tabs, tiles, tile_images = nil
+			current, option, pick, elements, tabs, tiles, tile_images, try_option = nil
 
 		-- Get Data --
 		elseif what == "get_data" then

@@ -93,6 +93,18 @@ local function FadeShade (alpha)
 	Fade(Overlay.m_shade, FadeShadeParams, alpha)
 end
 
+local function Backdrop (group, w, h, corner)
+	local backdrop = display.newRoundedRect(group, 0, 0, w, h, corner)
+
+	backdrop:addEventListener("touch", DragTouch)
+	backdrop:setFillColor(96, 160)
+	backdrop:setStrokeColor(32)
+
+	backdrop.strokeWidth = 2
+
+	return backdrop
+end
+
 --
 function Overlay:createScene (event)
 	--
@@ -108,10 +120,7 @@ function Overlay:createScene (event)
 	self.m_cgroup = cgroup
 
 	--
-	local backdrop = display.newRoundedRect(cgroup, 0, 0, 350, 225, 22)
-
-	backdrop:addEventListener("touch", DragTouch)
-	backdrop:setFillColor(128)
+	Backdrop(cgroup, 350, 225, 22)
 
 	--
 	self.m_choices = common.Listbox(cgroup, 25, 50)
@@ -188,17 +197,20 @@ end
 local AddRow
 
 --
+local function SubLinkText (sub)
+	return "(" .. (sub and "Sublink: " .. sub or "General link") .. ")"
+end
+
+--
 local function Refresh (is_dirty)
-	local object, link_opts = Box.m_object, Box.m_opts
+	local object = Box.m_object
 
 	for _, item, str, sub in BoxItems() do
-		link_opts.sub2 = sub
-
-		local can_link, why = links.CanLink(Rep, object, link_opts)
-		local text, alpha = sub and "Sublink: " .. sub or "General link"
+		local can_link, why = links.CanLink(Rep, object, Sub, sub)
+		local text, alpha = SubLinkText(sub)
 
 		if not can_link then
-			alpha, text = .2, "Cannot link (" .. text .. ")" .. (#why > 0 and ": " .. why or "")
+			alpha, text = .2, text .. (#why > 0 and ": " .. why or "")
 		end
 
 		item.m_no_link = not can_link
@@ -236,11 +248,9 @@ end
 --
 local function Connect (_, obj1, obj2, node)
 	-- One object is the rep, but the other will have some data and need some treatment.
-	local object, link_opts = Box.m_object, Box.m_opts
+	local object, sub = Box.m_object, FixSub(obj1.m_sub or obj2.m_sub)
 
-	link_opts.sub2 = FixSub(obj1.m_sub or obj2.m_sub)
-
-	node.m_link = links.LinkObjects(Rep, object, link_opts)
+	node.m_link = links.LinkObjects(Rep, object, Sub, sub)
 
 	AddObject(object)
 	Refresh(true)
@@ -261,6 +271,14 @@ local NodeTouch = link_group.BreakTouchFunc(function(node)
 	Refresh(true)
 end)
 
+-- --
+local NameY, Pad, SubHeight = 35, 10
+
+--
+local function BoxHeight ()
+	return NameY + (Box.m_count + 1) * (SubHeight + Pad)
+end
+
 --
 local function AddToBox (object, sub, node)
 	Box.m_count = (sub and Box.m_count or 0) + 1
@@ -268,19 +286,19 @@ local function AddToBox (object, sub, node)
 	--
 	local link = Links:AddLink(1, true)
 
+	SubHeight = SubHeight or link.height
+
 	Box:insert(link)
 
-	link.x, link.y = 35, 45 + Box.m_count * 50
+	link.x, link.y = 35, BoxHeight()
 
 	link.m_sub = sub or true
 
 	--
 	display.newText(Box, "", 0, link.y, native.systemFont, 16)
-end
 
---
-local function BoxHeight ()
-	return Box.m_count * 70 + 200
+	--
+	Box.m_count = Box.m_count + 1
 end
 
 --
@@ -321,10 +339,40 @@ local function ConnectObjects (object, node)
 end
 
 --
+local function CouldPass (object, sub)
+	local passed, _, is_cont = links.CanLink(Rep, object, Sub, sub or nil)
+
+	return passed or not is_cont
+end
+
+--
 local function ElementName (object)
 	local element = common.GetBinding(object)
 
 	return element and element.name
+end
+
+--
+local function MayLink (object, tag)
+	for _, sub in tags.Sublinks(tag, true) do
+		if CouldPass(object, sub) then
+			return true
+		end
+	end
+end
+
+--
+local function SetBoxParams (params)
+	local h = BoxHeight()
+
+	params.y, params.height = h / 2, h
+end
+
+--
+local function SetName ()
+	local name = ElementName(Box.m_object)
+
+	SetText(Box.m_name, 25, NameY, "Sublinks for object" .. (name and ": " .. name or "") .. " " .. SubLinkText(Sub))
 end
 
 --
@@ -333,6 +381,7 @@ local function Show ()
 		item.isVisible, str.isVisible = true, true
 	end
 
+	SetName()
 	Refresh()
 end
 
@@ -364,16 +413,10 @@ local function SetCurrent (group, object, node)
 
 			group:insert(Box)
 
-			local backdrop = display.newRoundedRect(Box, 0, 0, 500, 300, 35)
-
-			backdrop:addEventListener("touch", DragTouch)
-			backdrop:setFillColor(96)
-
 			Box.x, Box.y = 200, 200
 
-			Box.m_backdrop = backdrop
+			Box.m_backdrop = Backdrop(Box, 500, 300, 35)
 			Box.m_name = display.newRetinaText(Box, "", 0, 0, native.systemFont, 18)
-			Box.m_opts = { sub1 = Sub }
 		end
 
 		--
@@ -382,20 +425,17 @@ local function SetCurrent (group, object, node)
 		Links:AddLink(0, false, node)
 
 		--
-		AddToBox(object, nil, node)
+		Box.m_count = 0
 
-		for _, sub in tags.Sublinks(links.GetTag(object)) do
-			AddToBox(object, sub, node)
+		for _, sub in tags.Sublinks(links.GetTag(object), true) do
+			if CouldPass(object, sub) then
+				AddToBox(object, sub or nil, node)
+			end
 		end
 
 		Box.m_object = object
 
 		ConnectObjects(object, node)
-
-		--
-		local name = ElementName(object)
-
-		SetText(Box.m_name, 25, 35, "Sublinks for object" .. (name and ": " .. name or ""))
 
 		--
 		local n = curn and abs(curn - Box.m_count)
@@ -405,10 +445,16 @@ local function SetCurrent (group, object, node)
 				item.isVisible, str.isVisible = false, false
 			end
 
+			--[[
+local params = {}
+SetBoxParams(params)
+params.time, params.onComplete = n * 120, Show
+...
+]]
 			transition.to(Box.m_backdrop, { height = BoxHeight(), time = n * 120, onComplete = Show })
 		else
-			Box.m_backdrop.height = BoxHeight()
--- ^^ Need to move away from edge?
+			SetBoxParams(Box.m_backdrop)
+			SetName()
 			Refresh()
 		end
 
@@ -433,7 +479,7 @@ end
 
 --
 local function SetAboutText (about, has_links)
-	SetText(about, 25, 15, has_links and "Link choices for " .. (ElementName(Rep) or "") or "Nothing to link against")
+	SetText(about, 25, 25, has_links and "Link choices for " .. (ElementName(Rep) or "") or "Nothing to link against")
 end
 
 --
@@ -467,7 +513,7 @@ function Overlay:enterScene (event)
 
 	for _, name in tags[iter](params.tags) do
 		for object in links.Tagged(name) do
-			if object ~= Rep then
+			if object ~= Rep and MayLink(object, name) then
 				local name = ElementName(object)
 
 				List[#List + 1] = {

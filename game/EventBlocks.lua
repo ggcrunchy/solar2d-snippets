@@ -44,6 +44,7 @@ local yield = coroutine.yield
 -- Modules --
 local common_tags = require("editor.CommonTags")
 local coroutine_ex = require("coroutine_ex")
+local defer = require("game.Defer")
 local dispatch_list = require("game.DispatchList")
 local fx = require("game.FX")
 local numeric_ops = require("numeric_ops")
@@ -362,7 +363,7 @@ local function NewBlock (col1, row1, col2, row2)
 	return block
 end
 
--- Named events --
+-- Block events --
 local Events
 
 -- Event block type lookup table --
@@ -382,11 +383,13 @@ function M.AddBlock (info)
 	local block = NewBlock(info.col1, info.row1, info.col2, info.row2)
 	local event = assert(EventBlockList[info.type], "Invalid event block")(info, block)
 
-	Events[info.name] = event
+	defer.Defer("loading_level", event, info.uid)
+
+	Events[#Events + 1] = event -- TODO: Forgo this when not debugging?
 end
 
 -- Keys referenced in editor event --
-local BlockKeys = { "type", "name", "col1", "row1", "col2", "row2" }
+local BlockKeys = { "type", "col1", "row1", "col2", "row2" }
 
 --- Handler for event block-related events sent by the editor.
 --
@@ -421,9 +424,9 @@ function M.EditorEvent (type, what, arg1, arg2, arg3)
 		elseif what == "enum_props" then
 			arg1:Spacer()
 			arg1:StockElements("EventBlock", type)
-			arg1:AddLink{ text = "Link to event source", value_name = "TO", name = true, rep = arg2, tags = "event_source" }
+			arg1:AddLink{ text = "Link to event source", rep = arg2, tags = "event_source" }
 			arg1:AddSeparator()
---			arg1:AddCheckbox{ text = "On By Default?", value_name = "starts_on", name = true }
+--			arg1:AddCheckbox{ text = "On By Default?", value_name = "starts_on" }
 --			arg1:AddSeparator()
 
 		-- Get Tag --
@@ -436,9 +439,13 @@ function M.EditorEvent (type, what, arg1, arg2, arg3)
 
 			return "event_block"
 
+		-- Prep Link --
+		elseif what == "prep_link" then
+			-- ??
+
 		-- Verify --
 		elseif what == "verify" then
-			-- COMMON STUFF... nothing yet, I don't think, assuming well-formed editor
+			-- Has one or more source...
 		end
 
 		local event = factory("editor_event")
@@ -474,7 +481,7 @@ end
 function M.FireAll (forward)
 	forward = not not forward
 
-	for _, v in pairs(Events) do
+	for _, v in ipairs(Events) do
 		if v("can_fire", forward) then
 			v("fire", forward)
 		end

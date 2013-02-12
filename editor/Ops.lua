@@ -151,6 +151,8 @@ function M.Build ()
 
 			dispatch_list.CallList("build_level", level)
 
+			events.ResolveLinks(level, "build")
+
 			return level
 		end, false)
 	end
@@ -161,7 +163,7 @@ function M.CleanUp ()
 	IsTemp, LevelName, View = nil
 end
 
----@treturn string Current working name, or **nil** if unassigned.
+---@treturn string|nil Current working name, if assigned.
 -- @see SetLevelName
 function M.GetLevelName ()
 	return LevelName
@@ -215,16 +217,18 @@ end
 
 --- Sets the current working name, which is used by @{Build} and @{Save} to assign levels
 -- into the database.
--- @string name Name to assign, or **nil** to clear the working name.
 -- @see game.Persistence, GetLevelName
-function M.SetLevelName (name)
+function M.SetLevelName (
+  name -- string|nil: Name to assign, or **nil** to clear the working name.
+)
 	LevelName = name
 end
 
 --- Sets or clears an "is temporary" flag. Any level saved by @{Build} or @{Save} while this
 -- flag is set will be ignored by @{game.Persistence.GetLevels}.
--- @bool is_temp Is the level temporary, in the operations to follow?
-function M.SetTemp (is_temp)
+function M.SetTemp (
+  is_temp -- bool: Is the level temporary, in the operations to follow?
+)
 	IsTemp = not not is_temp
 end
 

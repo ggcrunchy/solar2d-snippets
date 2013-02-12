@@ -334,12 +334,7 @@ local function CommonAdd (dialog, object, options, static_text)
 
 		-- If no object was supplied, the text will be the object instead. Associate a
 		-- friendly name and value name to the object and note any further options.
-		local name = options.name
-
-		if name == true then
-			name = options.value_name
-		end
-
+		local name = options.name or options.value_name
 		local oprops = Props[object or text]
 
 		oprops.name = name
@@ -415,7 +410,7 @@ end, nil, function(_, link)
 
 	local params = OverlayArgs.params
 
-	params.dialog, params.rep, params.tags = nil
+	params.dialog, params.rep, params.sub, params.tags = nil
 end)
 
 --- DOCME
@@ -713,6 +708,10 @@ function M.Dialog (group, options)
 		self.m_defs = nil
 		self.m_values = nil
 
+		if self.m_before_remove then
+			self:m_before_remove()
+		end
+
 		local igroup = self[2]
 
 		for i = igroup.numChildren, 1, -1 do
@@ -722,6 +721,11 @@ function M.Dialog (group, options)
 		end
 
 		self:removeSelf()
+	end
+
+	--- DOCME
+	function dgroup:SetBeforeRemove (func)
+		self.m_before_remove = func
 	end
 
 	--- DOCME
@@ -741,8 +745,12 @@ function M.Dialog (group, options)
 	-- @string dir
 	-- @string type
 	function dgroup:StockElements (dir, type)
+		CommonAdd(self, button.Button(self[2], nil, 0, 0, 25, 25, function()
+			self:RemoveSelf()
+		end, "X"), { continue_line = true })
+
 		self:AddImage{ file = format("%s_Assets/%s_Thumb.png", dir, type), continue_line = true }
-		self:AddString{ value_name = "name", name = true }
+		self:AddString{ value_name = "name" }
 		self:AddCoordinates{ text = "Pos", is_static = true, name = "current" }
 	end
 
@@ -762,7 +770,13 @@ end
 -- @callable on_editor_event
 -- @treturn function X
 function M.DialogWrapper (on_editor_event)
-	local dialog
+	local dialog, dx, dy
+
+	-- If we're closing a dialog (or switching to a different one), remember the
+	-- current dialog's position, so that the next dialog can appear there.
+	local function BeforeRemove ()
+		dx, dy, dialog = dialog.x, dialog.y
+	end
 
 	return function(what, arg1, arg2, arg3, arg4)
 		--
@@ -790,16 +804,9 @@ function M.DialogWrapper (on_editor_event)
 			end
 		end
 
-		-- If we're closing a dialog (or switching to a different one), remember the
-		-- current dialog's position, so that the next dialog can appear there.
-		local dx, dy
-
+		--
 		if (what == "close" or what == "edit") and dialog then
-			dx, dy = dialog.x, dialog.y
-
 			dialog:RemoveSelf()
-
-			dialog = nil
 		end
 
 		--
@@ -813,6 +820,7 @@ function M.DialogWrapper (on_editor_event)
 
 				dialog:BindDefaults(GetDefaults(on_editor_event, arg1.type, arg3))
 				dialog:BindValues(arg1)
+				dialog:SetBeforeRemove(BeforeRemove)
 
 				on_editor_event(arg1.type, "enum_props", dialog, arg4)
 

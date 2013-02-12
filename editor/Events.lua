@@ -95,6 +95,14 @@ function M.BuildElement (level, mod, from, acc)
 
 	local elem = common.CopyInto({}, from)
 
+	if from.uid then
+		level.links[from.uid], elem.uid = elem
+
+		level.links[elem] = mod.EditorEvent(from.type, "prep_link", level, elem)
+	end
+
+	elem.name = nil
+
 	mod.EditorEvent(from.type, "build", level, from, elem)
 
 	acc[#acc + 1] = elem
@@ -184,6 +192,58 @@ function M.Load (level, what, mod, grid_func, common_ops)
 	grid.Show(false)
 end
 
+--
+local function ReadLinks (level, on_element, on_pair)
+	local list, index, elem, sub = level.links, 1
+
+	for i = 1, #list, 2 do
+		local item, other = list[i], list[i + 1] or nil
+
+		--
+		if item == "element" then
+			elem = list[other]
+
+			on_element(elem, index)
+
+			list[index], index = elem, index + 1
+
+		--
+		elseif item == "sub" then
+			sub = other
+
+		--
+		elseif index > item then
+			on_pair(list, elem, list[item], sub, other)
+		end
+	end
+end
+
+--
+local function OnElement_Build (elem, index)
+	elem.uid = index
+end
+
+--
+local function OnElement_Load () end
+
+--
+local function OnPair_Build (list, elem1, elem2, sub1, sub2)
+	local func1, func2 = list[elem1], list[elem2]
+
+	if func1 then
+		func1(elem1, elem2, sub1, sub2)
+	end
+
+	if func2 then
+		func2(elem2, elem1, sub2, sub1)
+	end
+end
+
+--
+local function OnPair_Load (_, obj1, obj2, sub1, sub2)
+	links.LinkObjects(obj1, obj2, sub1, sub2)
+end
+
 --- DOCME
 -- @ptable level
 -- @bool save
@@ -192,7 +252,13 @@ function M.ResolveLinks (level, save)
 
 	if level.links then
 		--
-		if save then
+		if save == "build" then
+			ReadLinks(level, OnElement_Build, OnPair_Build)
+
+			level.links = nil
+
+		--
+		elseif save then
 			local list, new = level.links, {}
 
 			for _, rep in ipairs(list) do
@@ -219,29 +285,7 @@ function M.ResolveLinks (level, save)
 
 		--
 		else
-			local list, elem = level.links
-			local link_opts, index = {}, 1
-
-			for i = 1, #list, 2 do
-				local item, other = list[i], list[i + 1] or nil
-
-				--
-				if item == "element" then
-					elem = list[other]
-
-					list[index], index = elem, index + 1
-
-				--
-				elseif item == "sub" then
-					link_opts.sub1 = other
-
-				--
-				elseif index > item then
-					link_opts.sub2 = other
-
-					links.LinkObjects(elem, list[item], link_opts)
-				end
-			end
+			ReadLinks(level, OnElement_Load, OnPair_Load)
 		end
 	end
 end

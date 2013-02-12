@@ -62,11 +62,12 @@ end
 -- Module table --
 local M = {}
 
----@uint z Z seed; if absent, uses a default.
--- @uint w W Seed; if absent, uses a default.
--- @treturn function Called with a true argument, returns a random number &isin; (0, 1);
--- otherwise, returns a random 32-bit integer.
-function M.MakeGenerator (z, w)
+---@treturn function Called as `result = gen(want_real)`. If _want\_real_ is true, _result_
+-- will be a random number &isin; (0, 1); otherwise, it will be a random 32-bit integer.
+function M.MakeGenerator (
+  z, -- uint: Z seed; if absent, uses a default.
+  w -- uint: W Seed; if absent, uses a default.
+)
 	local zdef, wdef = not z, not w
 
 	z = z or 362436069

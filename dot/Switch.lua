@@ -26,9 +26,12 @@
 -- Modules --
 local audio = require("game.Audio")
 local collision = require("game.Collision")
+local common = lazy_require("editor.Common")
 local common_tags = require("editor.CommonTags")
+local defer = require("game.Defer")
 local dispatch_list = require("game.DispatchList")
-local event_blocks = require("game.EventBlocks")
+local links = lazy_require("editor.Links")
+local utils = require("utils")
 
 -- Corona globals --
 local display = display
@@ -41,27 +44,44 @@ local Sounds = audio.NewSoundGroup{ "Switch1.wav", "Switch2.mp3" }
 
 --- Dot method: switch acted on as dot of interest.
 function Switch:ActOn ()
-	if self.m_waiting then
-		-- Fail sound
-	else
+	local flag, forward, waiting = 1, self.m_forward, self.m_waiting
+
+	-- If there is state around to restore the initial "forward" state of the switch,
+	-- we do what it anticipated: reverse the switch's forward-ness.
+	if self.m_forward_saved ~= nil then
+		self.m_forward = not forward
+	end
+
+	--
+	-- Fire the event and stop showing its hint, and wait for it to finish.
+	for _, event in defer.IterEvents(self.m_event) do
+		if not utils.TestFlag(waiting, flag) then
+			event("fire", forward)
+
+			waiting = waiting + flag
+
+			event("show", self, false)
+		end
+
+		flag = flag + flag
+	end
+
+	--
+	if waiting ~= self.m_waiting then
 		Sounds:RandomSound()
 
 		-- Change the switch image.
 		self[1].isVisible = not self[1].isVisible
 		self[2].isVisible = not self[2].isVisible
 
-		-- Fire the event and stop showing its hint, and wait for it to finish. If there is
-		-- state around to restore the initial "forward" state of the switch, we do what it
-		-- anticipated: reverse the switch's forward-ness.
-		self.m_event("fire", self.m_forward)
+		--
+		self.m_waiting = waiting
 
-		if self.m_forward_saved ~= nil then
-			self.m_forward = not self.m_forward
-		end
+	--
+	else
+		self.m_forward = forward
 
-		self.m_waiting = true
-
-		self.m_event("show", self, false)
+		-- Fail sound
 	end
 end
 
@@ -85,7 +105,7 @@ function Switch:Reset ()
 	self[2].isVisible = false
 
 	self.m_touched = false
-	self.m_waiting = false
+	self.m_waiting = 0
 
 	if self.m_forward_saved ~= nil then
 		self.m_forward = self.m_forward_saved
@@ -94,13 +114,21 @@ end
 
 --- Dot method: update switch state.
 function Switch:Update ()
-	if self.m_waiting and self.m_event("is_done") then
-		self.m_waiting = false
+	local flag, touched, waiting = 1, self.m_touched, self.m_waiting
 
-		if self.m_touched then
-			self.m_event("show", self, true)
-		end
-	end
+	for _, event in defer.IterEvents(self.m_event) do
+		if utils.TestFlag(waiting, flag) and event("is_done") then
+			waiting = waiting - flag
+
+			if touched then
+				event("show", self, true)
+			end
+ 		end
+
+		flag = flag + flag
+ 	end
+
+	self.m_waiting = waiting
 end
 
 -- Add switch-OBJECT collision handler.
@@ -113,8 +141,15 @@ collision.AddHandler("switch", function(phase, switch, _, other_type)
 
 		dispatch_list.CallList("touching_dot", switch, is_touched)
 
-		if not switch.m_waiting then
-			switch.m_event("show", switch, is_touched)
+		--
+		local flag, waiting = 1, switch.m_waiting
+
+		for _, event in defer.IterEvents(switch.m_event) do
+			if not utils.TestFlag(waiting, flag) then
+				event("show", switch, is_touched)
+			end
+
+			flag = flag + flag
 		end
 
 	-- Acorn touched switch: try to flip it.
@@ -122,6 +157,12 @@ collision.AddHandler("switch", function(phase, switch, _, other_type)
 		switch:ActOn()
 	end
 end)
+
+--
+local function LinkSwitch (switch, other, sub1, _)
+	-- sub1 == ?
+	defer.AddId(switch, "target", other.uid)
+end
 
 -- Handler for switch-specific editor events, cf. game.Dots.EditorEvent
 local function OnEditorEvent (what, arg1, arg2, arg3)
@@ -135,7 +176,6 @@ local function OnEditorEvent (what, arg1, arg2, arg3)
 	-- Enumerate Defaults --
 	-- arg1: Defaults
 	elseif what == "enum_defs" then
-		arg1.event_name = "NONE"
 		arg1.forward = false
 		arg1.reverses = false
 
@@ -143,31 +183,34 @@ local function OnEditorEvent (what, arg1, arg2, arg3)
 	-- arg1: Dialog
 	-- arg2: Representative object
 	elseif what == "enum_props" then
-		arg1:AddString{ before = "Name of event:", value_name = "event_name", name = true } -- <- "link string"
-		arg1:AddLink{ text = "Link to event target", value_name = "TO", name = true, rep = arg2, tags = "event_target" }
-		arg1:AddCheckbox{ text = "Starts forward?", value_name = "forward", name = true }
-		arg1:AddCheckbox{ text = "Reverse on trip?", value_name = "reverses", name = true }
+		arg1:AddLink{ text = "Link to event target", rep = arg2, tags = "event_target" }
+		arg1:AddCheckbox{ text = "Starts forward?", value_name = "forward" }
+		arg1:AddCheckbox{ text = "Reverse on trip?", value_name = "reverses" }
 
 	-- Get Tag --
 	elseif what == "get_tag" then
-		common_tags.EnsureLoaded("event_source")
+		return common_tags.EnsureLoaded("event_source")
 
-		return "event_source"
+	-- Prep Link --
+	elseif what == "prep_link" then
+		return LinkSwitch
 
 	-- Verify --
 	-- arg1: Verify block
 	-- arg2: Dots
 	-- arg3: Key
 	elseif what == "verify" then
-		if arg1.pass == 1 then
-			arg1.needs_another_pass = true
-		elseif arg1.pass == 2 then
-			local switch = arg2[arg3]
+		local switch = arg2[arg3]
+		local rep = common.GetBinding(switch, true)
 
-			dispatch_list.CallList("editor_event_message", arg1, { message = "target:event_block", target = switch.event_name, what = "switch", name = switch.name })
+		if not links.HasLinks(rep, nil) then
+			arg1[#arg1 + 1] = "Switch `" .. switch.name .. "` has no event targets"
 		end
 	end
 end
+
+-- Deferred switch <-> event binding
+local GetEvent = defer.BindBroadcast("m_event")
 
 -- Export the switch factory.
 return function (group, info)
@@ -192,9 +235,14 @@ return function (group, info)
 
 	Sounds:Load()
 
-	switch.m_event = event_blocks.GetEvent(info.event_name)
+	defer.Await("loading_level", info.target, GetEvent, switch)
+
 	switch.m_forward = not not info.forward
-	switch.m_forward_saved = info.reverses and switch.m_forward or nil
+	switch.m_waiting = 0
+
+	if info.reverses then
+		switch.m_forward_saved = switch.m_forward
+	end
 
 	return switch
 end

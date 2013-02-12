@@ -63,14 +63,14 @@ local Levels = {
 
 		-- Dots --
 		dots = {
-			{ type = "warp", col = 4, row = 5, name = "A", to = "B" },
-			{ type = "warp", col = 7, row = 8, name = "B", to = "A" },
-			{ type = "switch", col = 7, row = 3, event_name = "C" },
+			{ type = "warp", col = 4, row = 5, uid = 1, to = 2 },
+			{ type = "warp", col = 7, row = 8, uid = 2, to = 1 },
+			{ type = "switch", col = 7, row = 3, target = 3 },
 		},
 
 		-- Event Blocks --
 		event_blocks = {
-			{ type = "maze", name = "C", col1 = 1, row1 = 5, col2 = 4, row2 = 9 }
+			{ type = "maze", uid = 3, col1 = 1, row1 = 5, col2 = 4, row2 = 9 }
 		},
 
 		-- Layout --

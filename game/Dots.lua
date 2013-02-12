@@ -133,8 +133,8 @@ function M.EditorEvent (type, what, arg1, arg2, arg3)
 			arg1:Spacer()
 			arg1:StockElements("Dot", type)
 			arg1:AddSeparator()
---			arg1:AddCheckbox{ text = "On By Default?", value_name = "starts_on", name = true }
-			arg1:AddCheckbox{ text = "Can Attach To Event Block?", value_name = "can_attach", name = true }
+--			arg1:AddCheckbox{ text = "On By Default?", value_name = "starts_on" }
+			arg1:AddCheckbox{ text = "Can Attach To Event Block?", value_name = "can_attach" }
 			arg1:AddSeparator()				
 
 		-- Verify --

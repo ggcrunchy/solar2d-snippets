@@ -31,6 +31,7 @@ local sin = math.sin
 -- Modules --
 local audio = require("game.Audio")
 local collision = require("game.Collision")
+local common = lazy_require("editor.Common")
 local dispatch_list = require("game.DispatchList")
 local frames = require("game.Frames")
 local fx = require("game.FX")
@@ -55,7 +56,7 @@ local MoveParams = { transition = easing.inOutQuad }
 -- Sounds played during warping --
 local Sounds = audio.NewSoundGroup{ warp = "Warp.mp3", whiz = "WarpWhiz.mp3" }
 
--- Network of named warps --
+-- Network of warps --
 local WarpList
 
 -- Default warp logic: no-op
@@ -236,9 +237,8 @@ collision.AddHandler("warp", function(phase, warp, other, other_type)
 		if target then
 			if phase == "began" then
 				warp.m_line = markers.PointFromTo(MarkersLayer, warp, target, 5, .5)
-
-			elseif warp.m_line then
-				warp.m_line:removeSelf()
+			else
+				display.remove(warp.m_line)
 
 				warp.m_line = nil
 			end
@@ -282,6 +282,13 @@ dispatch_list.AddToMultipleLists{
 	end
 }
 
+--
+local function LinkWarp (warp1, warp2, sub1, _)
+	if sub1 == "to" or (sub1 == "from" and not warp1.to) then
+		warp1.to = warp2.uid
+	end
+end
+
 -- Handler for warp-specific editor events, cf. game.Dots.EditorEvent
 local function OnEditorEvent (what, arg1, arg2, arg3)
 	-- Build --
@@ -289,41 +296,53 @@ local function OnEditorEvent (what, arg1, arg2, arg3)
 	-- arg2: Instance
 	-- arg3: Item to build
 	if what == "build" then
-		-- STUFF
-		-- Resolve links?
+		arg3.reciprocal_link = nil
 
 	-- Enumerate Defaults --
 	-- arg1: Defaults
 	elseif what == "enum_defs" then
-		arg1.to = "NONE"
+		arg1.reciprocal_link = true
 
 	-- Enumerate Properties --
 	-- arg1: Dialog
 	-- arg2: Representative object
 	elseif what == "enum_props" then
-		arg1:AddLink{ text = "Link to target warp", value_name = "TO", name = true, rep = arg2, tags = "warp" }
--- ^^ Should have source / target sublinks (and a "reciprocate" checkbox, if there is only one or the other)
--- ^^ In builds, resolves to name target?? (since supposedly that will be constrained....)
-		arg1:AddString{ before = "Target warp name:", value_name = "to", name = true } -- <- "link string"
+		arg1:AddLink{ text = "Link from source warp", rep = arg2, sub = "from", tags = "warp" }
+ 		arg1:AddLink{ text = "Link to target warp", rep = arg2, sub = "to", tags = "warp" }
+		arg1:AddCheckbox{ text = "Two-way link, if one is blank?", value_name = "reciprocal_link" }
 		-- Polarity? Can be rotated?
 
 	-- Get Tag --
 	elseif what == "get_tag" then
 		if not tags.Exists("warp") then
 			tags.New("warp", {
-				can_link = function(warp, other)
-					if links.GetTag(other) ~= "warp" then
-						return false, "Non-warp target"
-					elseif links.HasLinks(warp, nil) then
-						return false, "Warp already has target"
+				can_link = function(warp, other, wsub, osub)
+					if wsub == "from" or wsub == "to" then
+						if links.GetTag(other) ~= "warp" then
+							return false, "Non-warp partner", true
+						elseif osub ~= "from" and osub ~= "to" then
+							return false, "Non-source / target sublink", true
+						elseif wsub == osub then
+							return false, "Source must pair with target", true
+						elseif links.HasLinks(warp, wsub) then
+							return false, "Source / target already paired"
+						end
 					end
 
 					return true
-				end
+				end,
+
+				sub_links = { "from", "to" }
+
+				-- ^^ ? for fire, etc...
 			})
 		end
 
 		return "warp"
+
+	-- Prep Link --
+	elseif what == "prep_link" then
+		return LinkWarp
 
 	-- Verify --
 	-- arg1: Verify block
@@ -331,31 +350,13 @@ local function OnEditorEvent (what, arg1, arg2, arg3)
 	-- arg3: Key
 	elseif what == "verify" then
 		local warp = arg2[arg3]
+		local rep = common.GetBinding(warp, true)
 
-		if warp.to == warp.name then
-			arg1[#arg1 + 1] = "Warp `" .. warp.name .. "` is targeting itself."
+		if links.HasLinks(rep, "to") or (links.HasLinks(rep, "from") and warp.reciprocal_link) then
+			return
 		else
-			local target, message
-
-			for _, v in pairs(arg2) do
-				if v.name == warp.to then
-					target = v
-
-					break
-				end
-			end
-
-			if not target then
-				message = "` does not exist."
-			elseif target.type ~= "warp" then
-				message = "` is of type " .. target.type .. ", not a warp."
-			else
-				return
-			end
-
-			arg1[#arg1 + 1] = "Target `" .. warp.to .. "` of warp `" .. warp.name .. message
+			arg1[#arg1 + 1] = "Warp `" .. warp.name .. "` no target" .. (warp.recriprocal_link and " (or source to back-link)" or "")
 		end
--- Links?
 	end
 end
 
@@ -378,7 +379,7 @@ return function (group, info)
 	-- Add the warp to the list so it can be targeted.
 	warp.m_to = info.to
 
-	WarpList[info.name] = warp
+	WarpList[info.uid] = warp
 
 	return warp
 end

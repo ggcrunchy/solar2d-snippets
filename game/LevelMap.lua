@@ -35,6 +35,7 @@ local yield = coroutine.yield
 
 -- Modules --
 local controls = require("game.Controls")
+local defer = require("game.Defer")
 local dispatch_list = require("game.DispatchList")
 local dots = require("game.Dots")
 local event_blocks = require("game.EventBlocks")
@@ -192,6 +193,8 @@ function M.LoadLevel (view, which)
 		bg_func(CurrentLevel.bg_layer, CurrentLevel.ncols, CurrentLevel.nrows, Width, Height)
 
 		-- Dispatch to "enter level" observers, now that the basics are in place.
+		defer.Reset("loading_level")
+
 		dispatch_list.CallList("enter_level", CurrentLevel)
 
 		-- Add the tiles to the level...
@@ -218,6 +221,11 @@ function M.LoadLevel (view, which)
 		for _, enemy in Ipairs(level.enemies) do
 			enemies.SpawnEnemy(CurrentLevel.things_layer, enemy)
 		end
+
+		-- Built-ins...
+
+		-- Patch up deferred objects.
+		defer.Resolve("loading_level")
 
 		-- Some of the loading may have been expensive, which can lead to an unnatural
 		-- start, since various things will act as if that time had passed for them as

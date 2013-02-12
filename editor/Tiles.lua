@@ -44,7 +44,7 @@ local TileImages
 local CurrentTile
 
 -- --
-local Erase
+local Erase, TryOption
 
 -- --
 local Tabs
@@ -80,13 +80,18 @@ function M.Load (view)
 	CurrentTile = grid1D.OptionsHGrid(view, nil, 150, 50, 200, 100, "Current tile")
 
 	--
-	Tabs = common.TabBar(view, {
+	local tab_buttons = {
 		-- Paint mode --
 		{ label = "Paint", onPress = SetEraseMode(false), selected = true },
 
 		-- Erase mode --
 		{ label = "Erase", onPress = SetEraseMode(true) }
-	}, { top = display.contentHeight - 65, left = 120, width = 200 }, true)
+	}
+
+	Tabs = common.TabBar(view, tab_buttons, { top = display.contentHeight - 65, left = 120, width = 200 }, true)
+
+	--
+	TryOption = common.ChoiceTrier(tab_buttons)
 
 	--
 	CurrentTile:Bind(TileImages, #TileNames - 4) -- 4 for (unimplemented) up, left, right, down...
@@ -137,6 +142,7 @@ end
 ---
 function M.Enter ()
 	grid.Show(GridFunc)
+	TryOption(Tabs)
 	common.ShowCurrent(CurrentTile, not Erase)
 
 	Tabs.isVisible = true
@@ -154,7 +160,8 @@ end
 function M.Unload ()
 	Tabs:removeSelf()
 
-	CurrentTile, Erase, Tabs, Tiles, TileImages = nil
+	common.SetChoice(Erase and "Erase" or "Paint")
+	CurrentTile, Erase, Tabs, Tiles, TileImages, TryOption = nil
 end
 
 -- Listen to events.

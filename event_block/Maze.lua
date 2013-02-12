@@ -258,7 +258,7 @@ local function OnEditorEvent (what, arg1, arg2, arg3)
 	-- Enumerate Properties --
 	-- arg1: Dialog
 	elseif what == "enum_props" then
-		arg1:AddCheckbox{ text = "Starts on?", value_name = "starts_on", name = true }
+		arg1:AddCheckbox{ text = "Starts on?", value_name = "starts_on" }
 
 	-- Verify --
 	-- arg1: Verify block

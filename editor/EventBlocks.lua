@@ -53,7 +53,7 @@ local TileImages
 local CurrentEvent
 
 -- --
-local Option
+local Option, TryOption
 
 -- --
 local Tabs
@@ -240,6 +240,9 @@ function M.Load (view)
 	Tabs = common.TabBar(view, tab_buttons, { top = display.contentHeight - 65, left = 120, width = 360 }, true)
 
 	Tabs:pressButton(1, true)
+
+	--
+	TryOption = common.ChoiceTrier(tab_buttons)
 
 	--
 	Types = event_blocks.GetTypes()
@@ -453,6 +456,7 @@ end
 ---
 function M.Enter ()
 	grid.Show(GridFunc)
+	TryOption(Tabs, Option)
 	common.ShowCurrent(CurrentEvent, Option == "Paint")
 
 	Tabs.isVisible = true
@@ -464,6 +468,7 @@ function M.Exit ()
 
 	Tabs.isVisible = false
 
+	common.SetChoice(Option)
 	common.ShowCurrent(CurrentEvent, false)
 	grid.Show(false)
 end
@@ -472,7 +477,7 @@ end
 function M.Unload ()
 	Tabs:removeSelf()
 
-	CurrentEvent, Option, Blocks, Tabs, Tiles, TileImages, Types = nil
+	CurrentEvent, Option, Blocks, Tabs, Tiles, TileImages, TryOption, Types = nil
 end
 
 --

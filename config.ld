@@ -1,5 +1,5 @@
 -- ldoc configuration file
-file = { ".", "class", "dot", "effect", "enemy", "event", "fill", "game", "ui", exclude = { "scene", "tiles" } }
+file = { ".", exclude = { "scene", "tiles" } }
 -- TODO: Why aren't my excludes working? ...And then correct those folders when they are.
 output = "api"
 title = "Snippets documentation"
