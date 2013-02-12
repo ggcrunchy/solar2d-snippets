@@ -212,7 +212,7 @@ do
 	-- @treturn ?boolean This is a contradiction or "strong" failure, i.e. the predicate will
 	-- *always* fail, given the inputs?
 	function M.CanLink (object1, object2, sub1, sub2)
-		local p1, p2, sub1, sub2 = Proxy(object1), Proxy(object2)
+		local p1, p2 = Proxy(object1), Proxy(object2)
 
 		-- Both objects are still valid?
 		if p1 and p2 then

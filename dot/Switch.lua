@@ -25,9 +25,9 @@
 
 -- Modules --
 local audio = require("game.Audio")
-local collision = require("game.Collision")
 local common = lazy_require("editor.Common")
 local common_tags = require("editor.CommonTags")
+local collision = require("game.Collision")
 local defer = require("game.Defer")
 local dispatch_list = require("game.DispatchList")
 local links = lazy_require("editor.Links")
@@ -80,7 +80,6 @@ function Switch:ActOn ()
 	--
 	else
 		self.m_forward = forward
-
 		-- Fail sound
 	end
 end
@@ -89,7 +88,7 @@ end
 local Body = { radius = 25 }
 
 --- Dot method: get property.
--- @param name Property name.
+-- @string name Property name.
 -- @return Property value, or **nil** if absent.
 function Switch:GetProperty (name)
 	if name == "body" then
@@ -123,10 +122,10 @@ function Switch:Update ()
 			if touched then
 				event("show", self, true)
 			end
- 		end
+		end
 
 		flag = flag + flag
- 	end
+	end
 
 	self.m_waiting = waiting
 end

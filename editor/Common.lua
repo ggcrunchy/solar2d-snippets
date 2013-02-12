@@ -125,12 +125,7 @@ function M.BindToElement (rep, element)
 
 	return prev
 end
-function MMM ()
-	print("Back bindings:")
-	vdump(BackBindings)
-	print("Bindings:")
-	vdump(Bindings)
-end
+
 --- Creates a checkbox with some attached text.
 -- @pgroup group Group to which checkbox will be inserted.
 -- @number x Checkbox x-coordinate...

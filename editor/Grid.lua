@@ -87,7 +87,7 @@ end
 -- * **"get\_data"**: Returns the current tile @{ui.Grid1D}, the elements table, and the
 -- tiles table.
 function M.EditErase (dialog_wrapper, types)
-	local current, option, pick, elements, tabs, tiles, tile_images, try_option
+	local current, option, pick, elements, tabs, tiles, try_option, tile_images
 
 	return function (what, group, col_, row_, x, y, w, h)
 		-- Grid --

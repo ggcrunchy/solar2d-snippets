@@ -57,7 +57,9 @@ local function Write (name, func, wip)
 	local blob = persistence.Encode(func(), not wip)
 
 	M.SendToClipboard(blob)
-
+if not wip then
+	print(blob)
+end
 	persistence.SaveLevel(name, blob, true, wip, IsTemp)
 end
 
@@ -171,6 +173,7 @@ end
 
 --- Initializes various state used by editor operations.
 -- @pgroup view Editor scene view.
+-- @todo PARAMS
 function M.Init (view)
 	View = view
 end

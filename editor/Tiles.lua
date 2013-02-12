@@ -139,7 +139,7 @@ local function GridFunc (group, col, row, x, y, w, h)
 	end
 end
 
----
+--- DOCMAYBE
 function M.Enter ()
 	grid.Show(GridFunc)
 	TryOption(Tabs)
@@ -148,19 +148,19 @@ function M.Enter ()
 	Tabs.isVisible = true
 end
 
----
+--- DOCMAYBE
 function M.Exit ()
 	Tabs.isVisible = false
 
+	common.SetChoice(Erase and "Erase" or "Paint")
 	common.ShowCurrent(CurrentTile, false)
 	grid.Show(false)
 end
 
----
+--- DOCMAYBE
 function M.Unload ()
 	Tabs:removeSelf()
 
-	common.SetChoice(Erase and "Erase" or "Paint")
 	CurrentTile, Erase, Tabs, Tiles, TileImages, TryOption = nil
 end
 

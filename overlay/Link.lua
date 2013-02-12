@@ -93,6 +93,7 @@ local function FadeShade (alpha)
 	Fade(Overlay.m_shade, FadeShadeParams, alpha)
 end
 
+--
 local function Backdrop (group, w, h, corner)
 	local backdrop = display.newRoundedRect(group, 0, 0, w, h, corner)
 
@@ -281,8 +282,6 @@ end
 
 --
 local function AddToBox (object, sub, node)
-	Box.m_count = (sub and Box.m_count or 0) + 1
-
 	--
 	local link = Links:AddLink(1, true)
 
@@ -444,7 +443,6 @@ local function SetCurrent (group, object, node)
 			for _, item, str in BoxItems() do
 				item.isVisible, str.isVisible = false, false
 			end
-
 			--[[
 local params = {}
 SetBoxParams(params)
