@@ -133,14 +133,20 @@ end
 
 --
 function Scene:createScene ()
-	local Choices = common.Listbox(self.view, 20, 20)
 	local Current = display.newText(self.view, "", 480, 50, native.systemFont, 35)
+	local Choices = common.Listbox(self.view, 20, 20, {
+		-- --
+		get_text = function(index)
+			return Names[index]
+		end,
 
-	local add_row = common.ListboxRowAdder(function(index)
-		SetCurrent(Current, index)
-	end, nil, function(index)
-		return Names[index]
-	end)
+		-- --
+		press = function(index)
+			SetCurrent(Current, index)
+		end
+	})
+
+	local add_row = common.ListboxRowAdder()
 
 	for _ = 1, #Names do
 		Choices:insertRow(add_row)

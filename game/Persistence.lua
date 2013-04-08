@@ -51,7 +51,7 @@ local Loaded = {}
 
 -- Opens a given database table, performing setup if necessary
 local function OpenDB (what)
-	local path = system.pathForFile("data.sqlite3", system.DocumentsDirectory)
+	local path = system.pathForFile("data.sqlite3", system.CachesDirectory) -- TODO: Probably config (+ game state?) should be in caches, editor stuff in documents
 	local db = sqlite3.open(path)
 
 	local info = Info[what]
@@ -276,7 +276,7 @@ end
 
 --- Wipes the database.
 function M.Wipe ()
-	local drop, path = "", system.pathForFile("data.sqlite3", system.DocumentsDirectory)
+	local drop, path = "", system.pathForFile("data.sqlite3", system.CachesDirectory)
 	local db = sqlite3.open(path)
 
 	drop = drop .. [[DROP TABLE IF EXISTS config;]]

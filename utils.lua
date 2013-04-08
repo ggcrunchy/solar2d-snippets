@@ -31,6 +31,7 @@ local assert = assert
 local format = string.format
 local ipairs = ipairs
 local max = math.max
+local open = io.open
 local sqrt = math.sqrt
 local type = type
 
@@ -47,6 +48,16 @@ local _TestFlag_
 
 -- Exports --
 local M = {}
+
+--- DOCME
+function M.AddDirectory (name, base)
+	local path = system.pathForFile("", base)
+
+	if lfs.attributes(path .. "/" .. name, "mode") ~= "directory" then
+		lfs.chdir(path)
+		lfs.mkdir(name)
+	end
+end
 
 ---@string str Source string.
 -- @string patt Prefix pattern. (n.b. only supports exact "patterns")
@@ -70,6 +81,26 @@ function M.ClearFlag (var, flag)
 		return var - flag, true
 	else
 		return var, false
+	end
+end
+
+--- DOCME
+-- TODO: Still doesn't seem to work...
+function M.CopyFile (src_name, src_base, dst_name, dst_base)
+	local src_path = system.pathForFile(src_name, src_base)
+	local source = src_path and open(src_path, "rb")
+
+	if source then
+		local data = source:read("*a")
+		local dst_path = data and system.pathForFile(dst_name, dst_base or system.DocumentsDirectory)
+		local target = dst_path and open(dst_path, "wb")
+
+		if target then
+			target:write(data)
+			target:close()
+		end
+
+		source:close()
 	end
 end
 
@@ -188,6 +219,15 @@ local NameID = 0
 -- A basic salt to avoid name clashes with leftovers from a previous session --
 local Prefix = os.date()
 
+-- TODO: Get to the bottom of this... just Android? bug?
+local digest = crypto.digest
+
+if system.getInfo("environment") == "device" then
+	function digest (_, n)
+		return ":3KJFDASD:" .. n -- Sophisticated generator!
+	end
+end
+
 ---@treturn string A reasonably unique name.
 function M.NewName ()
 	NameID = NameID + 1
@@ -235,7 +275,7 @@ end
 --- Launches a timer to watch a file or directory for modifications.
 -- @string path File or directory path.
 -- @callable func On modification, this is called as `func(path)`.
--- @param base Directory base. If absent, **system.ResourcesDirectory**.
+-- @param base Directory base. If absent, **system.ResourceDirectory**.
 -- @treturn TimerHandle A timer, which may be cancelled.
 function M.WatchForFileModification (path, func, base)
 	local respath, watch = system.pathForFile(path, base)

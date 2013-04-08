@@ -58,6 +58,8 @@ local function SetEraseMode (erase)
 		Erase = erase
 
 		CurrentTile.isVisible = not erase
+
+		return true
 	end
 end
 

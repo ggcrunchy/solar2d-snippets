@@ -38,6 +38,7 @@ local scenes = require("game.Scenes")
 local var_dump = require("var_dump")
 
 -- Corona globals --
+local native = native
 local system = system
 
 -- Install the coroutine time logic.
@@ -67,6 +68,13 @@ Runtime:addEventListener("key", function(event)
 		return true
 	end
 end)
+
+-- "unhandledError" listener --
+if system.getInfo("environment") == "device" then
+	Runtime:addEventListener("unhandledError", function(event)
+		native.showAlert("Error!", event.errorMessage .. " \n " .. event.stackTrace, { "OK" }, native.requestExit)
+	end)
+end
 
 --- Helper to deal with circular module require situations. Provided module access is not
 -- needed immediately (in particular, it can wait until the requiring module has loaded),

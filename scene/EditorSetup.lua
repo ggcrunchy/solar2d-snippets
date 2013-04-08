@@ -173,14 +173,20 @@ function Scene:enterScene ()
 			return level1.name < level2.name
 		end)
 
-		self.m_levels_list = common.Listbox(self.view, display.contentWidth - 350, 20)
+		self.m_levels_list = common.Listbox(self.view, display.contentWidth - 350, 20, {
+			--
+			get_text = function(index)
+				return levels[index].name
+			end,
+
+			--
+			press = function(index)
+				UpdateCurrent(self, levels, index)
+			end
+		})
 		self.m_current = display.newText(self.view, "", 0, 0, native.systemFont, 22)
 
-		local add_row = common.ListboxRowAdder(function(index)
-			UpdateCurrent(self, levels, index)
-		end, nil, function(index)
-			return levels[index].name
-		end)
+		local add_row = common.ListboxRowAdder()
 
 		for _ = 1, #levels do
 			self.m_levels_list:insertRow(add_row)

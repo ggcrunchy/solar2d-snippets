@@ -125,12 +125,7 @@ function M.BindToElement (rep, element)
 
 	return prev
 end
-function MMM ()
-	print("Back bindings:")
-	vdump(BackBindings)
-	print("Bindings:")
-	vdump(Bindings)
-end
+
 --- Creates a checkbox with some attached text.
 -- @pgroup group Group to which checkbox will be inserted.
 -- @number x Checkbox x-coordinate...
@@ -178,7 +173,7 @@ function M.ChoiceTrier (names)
 		CurrentChoice = nil
 
 		if index and choices[index] ~= unless then
-			tabs:pressButton(index, true)
+			tabs:setSelected(index, true)
 		end
 	end
 end
@@ -345,19 +340,18 @@ local CurrentX, CurrentY
 --- Initializes various state used pervasively by the editor.
 -- @uint ncols How many columns will be in the working level...
 -- @uint nrows ...and how many rows?
--- @bool no_load Is the editor starting up with a new scene?
-function M.Init (ncols, nrows, no_load)
+function M.Init (ncols, nrows)
 	NCols, NRows, CurrentChoice, CurrentX, CurrentY = ncols, nrows
 
 	if Buttons.Save then
 		Buttons.Save.alpha = .4
 	end
 
-	if Buttons.Verify and no_load then
+	if Buttons.Verify then
 		Buttons.Verify.alpha = .4
 	end
 
-	BackBindings, Bindings, IsDirty, IsVerified = {}, {}, false, not not no_load
+	BackBindings, Bindings, IsDirty, IsVerified = {}, {}, false, false
 end
 
 --
@@ -384,8 +378,12 @@ function M.IsVerified ()
 	return IsVerified
 end
 
---
-local function StopTouch () return true end
+-- Each of the arguments is a function that takes _event_.**index** as argument, where
+-- _event_ is the parameter of **onEvent** or **onRender**.
+-- @callable press Optional, called when a listbox row is pressed.
+-- @callable release Optional, called when a listbox row is released.
+-- @callable get_text Returns a row's text string.
+-- @treturn table Argument to `tableView:insertRow`.
 
 --- Creates a listbox, built on top of `widget.newTableView`.
 -- @pgroup group Group to which listbox will be inserted.
@@ -393,101 +391,82 @@ local function StopTouch () return true end
 -- @number y ...and y-coordinate.
 -- @bool hide If true, the listbox starts out hidden.
 -- @treturn DisplayObject Listbox object.
-function M.Listbox (group, x, y, hide)
-	local listbox = widget.newTableView{
+-- TODO: Update, reincorporate former Adder docs...
+function M.Listbox (group, x, y, options)
+	local lopts = {
 		left = x, top = y, width = 300, height = 150,
 		maskFile = "UI_Assets/ListboxMask.png"
 	}
 
+	-- On Render --
+	local get_text = options.get_text
+
+	function lopts.onRowRender (event)
+		local text = display.newText(get_text(event.row.index), 0, 0, native.systemFont, 20)
+
+		text:setReferencePoint(display.CenterLeftReferencePoint)
+		text:setTextColor(0)
+
+		text.x, text.y = 15, event.row.height / 2
+
+		event.row:insert(text)
+	end
+
+	-- On Touch --
+	local press, release = options.press, options.release
+	local old_row
+
+	function lopts.onRowTouch (event)
+		-- Listbox item pressed...
+		if event.phase == "press" then
+			if press then
+				press(event.row.index)
+			end
+
+			--
+			event.row.alpha = 1
+
+		-- ...and released.
+		elseif event.phase == "release" then
+			if release then
+				release(event.row.index)
+			end
+
+			--
+			if old_row and old_row ~= event.row then
+				old_row.alpha = 1
+			end
+
+			event.row.alpha, old_row = .5, event.row
+		end
+
+		return true
+	end
+
+	--
+	local listbox = widget.newTableView(lopts)
+
 	group:insert(listbox)
 
-	listbox:addEventListener("touch", StopTouch)
-
-	listbox.isVisible = not hide
+	listbox.isVisible = not options.hide
 
 	return listbox
 end
 
 -- --
-local RowDefault = { 255, 255, 255, 255 }
+local RowAdder = {
+	isCategory = false,
+	lineHeight = 16,
+	lineColor = { 120, 120, 120 },
+	rowColor = {
+		default = { 255, 255, 255 },
+		over = { 0, 0, 255, 192 }
+ 	}
+}
 
--- --
-local RowHighlight = { 0, 0, 255, 192 }
-
---
-local function Touch (row, event)
-	if row ~= event.row then
-		if row then
-			row.reRender, row.rowColor = true, RowDefault
-		end
-
-		event.row.rowColor = RowHighlight
-	end
-end
-
---- Creates a listbox-compatible row inserter.
---
--- Each of the arguments is a function that takes _event_.**index** as argument, where
--- _event_ is the parameter of **onEvent** or **onRender**.
--- @callable press Optional, called when a listbox row is pressed.
--- @callable release Optional, called when a listbox row is released.
--- @callable get_text Returns a row's text string.
--- @treturn table Argument to `tableView:insertRow`.
-function M.ListboxRowAdder (press, release, get_text)
-	local row
-
-	return {
-		-- On Event --
-		onEvent = function(event)
-			-- Listbox item pressed...
-			if event.phase == "press" then
-				if press then
-					press(event.index)
-				end
-
-				Touch(row, event)
-
-				event.view.alpha, row = 0.5, event.row
-
-			-- ...and released.
-			elseif event.phase == "release" then
-				if release then
-					release(event.index)
-				end
-
-				row.reRender = true
-
-			-- Alternatively, tapped.
-			elseif event.phase == "tap" then
-				if press then
-					press(event.index)
-				end
-
-				if release then
-					release(event.index)
-				end
-
-				Touch(row, event)
-
-				row = event.row
-				row.reRender = true
-			end
-
-			return true
-		end,
-
-		-- On Render --
-		onRender = function(event)
-			local text = display.newRetinaText(get_text(event.index), 0, 0, native.systemFont, 20)
-
-			text:setReferencePoint(display.CenterLeftReferencePoint)
-			text:setTextColor(0)
-
-			text.x, text.y = 15, event.target.height / 2
-
-			event.view:insert(text)
-		end
-	}
+--- DOCME
+function M.ListboxRowAdder ()
+	return RowAdder
 end
 
 -- --
@@ -609,18 +588,17 @@ end
 --- Creates a tab bar.
 -- @pgroup group Group to which tab bar will be inserted.
 -- @array buttons Tab buttons, cf. `widget.newTabBar`.
--- @ptable options Argument to `widget.newTabBar` (**buttons** and **size** are overridden).
+-- @ptable options Argument to `widget.newTabBar` (**buttons** is overridden).
 -- @bool hide If true, the tab bar starts out hidden.
 -- @treturn DisplayObject Tab bar object.
 function M.TabBar (group, buttons, options, hide)
 	for _, button in ipairs(buttons) do
-		button.down, button.up = "UI_Assets/tabIcon-down.png", "UI_Assets/tabIcon.png"
-		button.width, button.height = 32, 32
+		button.overFile, button.defaultFile = "UI_Assets/tabIcon-down.png", "UI_Assets/tabIcon.png"
+		button.width, button.height, button.size = 32, 32, 14
 	end
 
 	local topts = M.CopyInto({}, options)
 
-	topts.size = 15
 	topts.buttons = buttons
 
 	local tbar = widget.newTabBar(topts)

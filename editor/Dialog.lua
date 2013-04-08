@@ -361,7 +361,9 @@ local TabButtons = setmetatable({}, { __mode = "k" })
 local function TabButtonPress (event) -- TODO: This seems kind of brittle :P
 	local label = event.target.label.text
 
-	UpdateObject(event.target.parent.parent, label) -- No targetParent property...
+	UpdateObject(event.target.parent, label)
+
+	return true
 end
 
 --
@@ -522,6 +524,8 @@ function M.Dialog (group, options)
 	function dgroup:AddListbox (options)
 		local listbox = common.Listbox(self[2], 0, 0)
 
+		Props[listbox].type = "widget"
+
 		-- TODO! there are probably some ways to make this nicer?
 		CommonAdd(self, listbox, options)
 	end
@@ -628,7 +632,7 @@ function M.Dialog (group, options)
 
 			for i = 1, #(options.buttons or "") do
 				if choice == options.buttons[i].label then
-					tabs:pressButton(i, true)
+					tabs:setSelected(i, true)
 
 					break
 				end
@@ -637,6 +641,23 @@ function M.Dialog (group, options)
 			Props[tabs].type = "widget"
 
 			CommonAdd(self, tabs, options)
+-- TODO: HACK! (tab hit tests don't seem to be relative / dynamic or whatever...)
+local rect, n = display.newRect(self[2], 0, 0, tabs.width, tabs.height), #options.buttons
+
+rect:setReferencePoint(display.TopLeftReferencePoint)
+
+rect.x, rect.y = tabs.x, tabs.y
+rect.isHitTestable, rect.isVisible = true, false
+
+rect:addEventListener("touch", function(event)
+	local bounds = event.target.contentBounds
+	local index = require("index_ops").FitToSlot(event.x, bounds.xMin, (bounds.xMax - bounds.xMin) / n)
+
+	tabs:setSelected(index, true)
+
+	return true
+end)
+-- end hack...
 		end
 	end
 

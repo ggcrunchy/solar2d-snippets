@@ -35,16 +35,20 @@
 
 -- Standard library imports --
 local ipairs = ipairs
+local lines = io.lines
+local open = io.open
 
 -- Modules --
 local button = require("ui.Button")
 local common = require("editor.Common")
 local dispatch_list = require("game.DispatchList")
+local lfs = require("lfs")
 local utils = require("utils")
 
 -- Corona globals --
 local display = display
 local audio = audio
+local system = system
 local timer = timer
 
 -- Exports --
@@ -87,25 +91,27 @@ local function SetCurrent (what)
 	CurrentText:setReferencePoint(display.BottomRightReferencePoint)
 
 	CurrentText.x = Songs.x + Songs.width
-	CurrentText.y = Songs.y + Songs.height + CurrentText.height / 2
+	CurrentText.y = Songs.y + Songs.height + CurrentText.height
 end
+
+-- --
+local Base = system.getInfo("platformName") == "Android" and system.DocumentsDirectory or system.ResourceDirectory
+-- ^^ TODO: Documents -> Caches?
+
+-- --
+local Names
 
 -- Helper to load or reload the music list
 local function Reload ()
 	Songs:deleteAllRows()
 
 	-- Populate the song list, checking what's still around.
-	local names = utils.EnumerateFiles("Music", { exts = { ".mp3", ".ogg" } })
+	Names = utils.EnumerateFiles("Music", { base = Base, exts = { ".mp3", ".ogg" } })
 
-	local add_row = common.ListboxRowAdder(function(index)
-		Offset = names[index]
-	end, nil, function(index)
-		return names[index]
-	end)
-
+	local add_row = common.ListboxRowAdder()
 	local current, offset, stream_found
 
-	for i, name in ipairs(names) do
+	for i, name in ipairs(Names) do
 		if name == Current then
 			current = i
 		end
@@ -138,7 +144,7 @@ local function Reload ()
 		Songs:scrollToIndex(offset, 0)
 	end
 
-	Offset = names[offset]
+	Offset = Names[offset]
 end
 
 --
@@ -146,13 +152,26 @@ local function SetText (button, text)
 	button.parent[2].text = text
 end
 
+-- --
+local OnDevice = system.getInfo("environment") == "device"
+
 ---
 -- @pgroup view X
 function M.Load (view)
 	local w, h = display.contentWidth, display.contentHeight
 
 	Group = display.newGroup()
-	Songs = common.Listbox(Group, w - 350, 100)
+	Songs = common.Listbox(Group, w - 350, 100, {
+		-- --
+		get_text = function(index)
+			return Names[index]
+		end,
+
+		-- --
+		press = function(index)
+			Offset = Names[index]
+		end
+	})
 
 	common.Frame(Songs, 255, 0, 0)
 
@@ -181,13 +200,49 @@ function M.Load (view)
 
 	SetCurrent(nil)
 
-	button.Button(Group, nil, w - 280, h - 70, 120, 50, function(bgroup)
+	button.Button(Group, nil, w - 280, h - 70, 120, 50, function()
 		SetCurrent(Offset)
 	end, "Set")
 
-	button.Button(Group, nil, w - 150, h - 70, 120, 50, function(bgroup)
+	button.Button(Group, nil, w - 150, h - 70, 120, 50, function()
 		SetCurrent(nil)
 	end, "Clear")
+
+	-- TODO: Might need adjusting
+	utils.AddDirectory("Music", Base)
+
+	--
+	if OnDevice then -- TODO: Make this handle non-Android intelligently too...
+		--
+		local ipath = system.pathForFile("MusicIndex.txt") -- TODO: Formalize in persistence?
+		local ifile = ipath and open(ipath, "rt")
+
+		if ifile then
+			for name in ifile:lines() do
+			--	if lfs.attributes(dpath .. name, "mode") ~= "file" then -- TODO: Compare some info to avoid copying?
+				name = "Music/" .. name
+
+				utils.CopyFile(name, nil, name, nil)
+			--	end
+			end
+
+			ifile:close()
+		end
+
+	--
+	else
+		button.Button(Group, nil, w - 320, h - 140, 280, 50, function()
+			local ifile = open(system.pathForFile("MusicIndex.txt"), "wt") -- TODO: Formalize in persistence?
+
+			if ifile then
+				for _, name in ipairs(Names) do
+					ifile:write(name, "\n")
+				end
+
+				ifile:close()
+			end
+		end, "Bake index file")
+	end
 
 	--
 	WatchMusicFolder = utils.WatchForFileModification("Music", function()
@@ -196,7 +251,7 @@ function M.Load (view)
 		else
 			Songs.is_consistent = false
 		end
-	end)
+	end, Base)
 
 	--
 	Group.isVisible = false
@@ -232,7 +287,9 @@ end
 function M.Unload ()
 	timer.cancel(WatchMusicFolder)
 
-	Choice, Current, CurrentText, Group, PlayOrStop, Songs, WatchMusicFolder = nil
+	Songs:removeSelf()
+
+	Choice, Current, CurrentText, Group, Names, PlayOrStop, Songs, WatchMusicFolder = nil
 end
 
 -- Listen to events.

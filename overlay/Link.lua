@@ -93,6 +93,7 @@ local function FadeShade (alpha)
 	Fade(Overlay.m_shade, FadeShadeParams, alpha)
 end
 
+--
 local function Backdrop (group, w, h, corner)
 	local backdrop = display.newRoundedRect(group, 0, 0, w, h, corner)
 
@@ -104,6 +105,12 @@ local function Backdrop (group, w, h, corner)
 
 	return backdrop
 end
+
+-- --
+local List, Node
+
+-- Forward reference
+local SetCurrent
 
 --
 function Overlay:createScene (event)
@@ -123,12 +130,25 @@ function Overlay:createScene (event)
 	Backdrop(cgroup, 350, 225, 22)
 
 	--
-	self.m_choices = common.Listbox(cgroup, 25, 50)
+	self.m_choices = common.Listbox(cgroup, 25, 50, {
+		--
+		get_text = function(index)
+			local item = List[index]
+			local count = List[item.object]
+
+			return item.text .. (count and (" - %i link%s"):format(count, count > 1 and "s" or "") or "")
+		end,
+
+		--
+		press = function(index)
+			SetCurrent(self.view, List[index].object, Node)
+		end
+	})
 
 	common.Frame(self.m_choices, 0, 32, 96)
 
 	--
-	self.m_about = display.newRetinaText(cgroup, "", 0, 0, native.systemFont, 18)
+	self.m_about = display.newText(cgroup, "", 0, 0, native.systemFont, 18)
 
 	--
 	button.Button(cgroup, nil, 300, 10, 35, 35, function()
@@ -140,9 +160,6 @@ Overlay:addEventListener("createScene")
 
 -- --
 local Outline
-
--- --
-local List
 
 -- --
 local Rep, Sub
@@ -193,9 +210,6 @@ local function BoxItems (reverse)
 	return reverse and AuxIterR or AuxIter, n, reverse and n + 1 or 0
 end
 
--- TODO: Remove?
-local AddRow
-
 --
 local function SubLinkText (sub)
 	return "(" .. (sub and "Sublink: " .. sub or "General link") .. ")"
@@ -232,8 +246,10 @@ local function Refresh (is_dirty)
 -- TODO: Broken?
 Overlay.m_choices:deleteAllRows()
 
+local add_row = common.ListboxRowAdder()
+
 for _ = 1, #List do
-	Overlay.m_choices:insertRow(AddRow)
+	Overlay.m_choices:insertRow(add_row)
 end
 -- and... reselect it...
 		common.Dirty()
@@ -281,8 +297,6 @@ end
 
 --
 local function AddToBox (object, sub, node)
-	Box.m_count = (sub and Box.m_count or 0) + 1
-
 	--
 	local link = Links:AddLink(1, true)
 
@@ -386,7 +400,7 @@ local function Show ()
 end
 
 --
-local function SetCurrent (group, object, node)
+function SetCurrent (group, object, node)
 	-- Box exists and is being reassigned the same object: no-op.
 	if Box and Box.m_object == object then
 		return
@@ -416,7 +430,7 @@ local function SetCurrent (group, object, node)
 			Box.x, Box.y = 200, 200
 
 			Box.m_backdrop = Backdrop(Box, 500, 300, 35)
-			Box.m_name = display.newRetinaText(Box, "", 0, 0, native.systemFont, 18)
+			Box.m_name = display.newText(Box, "", 0, 0, native.systemFont, 18)
 		end
 
 		--
@@ -444,7 +458,6 @@ local function SetCurrent (group, object, node)
 			for _, item, str in BoxItems() do
 				item.isVisible, str.isVisible = false, false
 			end
-
 			--[[
 local params = {}
 SetBoxParams(params)
@@ -525,18 +538,18 @@ function Overlay:enterScene (event)
 	end
 
 	--
-	local node = display.newCircle(self.view, params.x, params.y, 15)
+	Node = display.newCircle(self.view, params.x, params.y, 15)
 
-	node:setFillColor(32, 255, 32)
-	node:setStrokeColor(255, 0, 0)
+	Node:setFillColor(32, 255, 32)
+	Node:setStrokeColor(255, 0, 0)
 
-	node.strokeWidth = 3
+	Node.strokeWidth = 3
 
 	--
 	local has_links = #List > 0
 
 	if has_links then
-		local add_row = common.ListboxRowAdder(function(index)
+--[[		local add_row = common.ListboxRowAdder(function(index)
 			SetCurrent(self.view, List[index].object, node)
 		end, nil, function(index)
 			local item = List[index]
@@ -544,12 +557,13 @@ function Overlay:enterScene (event)
 
 			return item.text .. (count and (" - %i link%s"):format(count, count > 1 and "s" or "") or "")
 		end)
-AddRow = add_row
--- ^^^ TODO: Remove
+]]
 		-- Make a note of whichever objects already link to the representative.
 		for link in links.Links(Rep, Sub) do
 			AddObject(link:GetOtherObject(Rep))
 		end
+
+		local add_row = common.ListboxRowAdder()
 
 		for _ = 1, #List do
 			self.m_choices:insertRow(add_row)
@@ -569,9 +583,7 @@ function Overlay:exitScene (event)
 
 	self.m_choices.isVisible = false
 
-	List, Rep, Sub = nil
--- TODO: Remove?
-AddRow = nil
+	List, Node, Rep, Sub = nil
 end
 
 Overlay:addEventListener("exitScene")

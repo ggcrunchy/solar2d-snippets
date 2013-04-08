@@ -253,16 +253,24 @@ function M.Verify ()
 	if not common.IsVerified() then
 		local verify, done = { pass = 1 }
 
-		native.setActivityIndicator(true)
+		-- If the verification takes a while, post the activity indicator.
+		timers.RepeatEx(function(event)
+ 			if done then
+				if event.count > 3 then
+					native.setActivityIndicator(false)
+				end
 
-		timers.RepeatEx(function()
-			if done then
-				native.setActivityIndicator(false)
+ 				return "cancel"
 
-				return "cancel"
-			end
-		end, 10)
+			elseif event.count == 3 then
+				native.setActivityIndicator(true)
+ 			end
+ 		end, 10)
 
+		-- Run all verification listeners (performing extra passes if requested), quitting
+		-- if some issues came up.
+		-- TODO: While not implemented yet, this is meant to be built with some form of yields
+		-- in mind, either via coroutines or based on the timer
 		repeat
 			verify.needs_another_pass = false
 
@@ -273,6 +281,7 @@ function M.Verify ()
 
 		done = true
 
+		-- One or more issues: report in environment-appropriate way.
 		if #verify > 0 then
 			local message
 
@@ -290,6 +299,7 @@ function M.Verify ()
 
 			native.showAlert("Scene has errors!", message)
 
+		-- Verification successful.
 		else
 			common.Verify()
 		end

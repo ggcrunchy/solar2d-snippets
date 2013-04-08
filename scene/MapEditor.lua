@@ -91,11 +91,12 @@ local TabButtons = {}
 
 for i, name in ipairs(Names) do
 	TabButtons[#TabButtons + 1] = {
-		up = "UI_Assets/tabIcon.png", down = "UI_Assets/tabIcon-down.png",
-		label = name, width = 32, height = 32,
+		label = name,
 
 		onPress = function(event)
 			SetCurrent(EditorView[name])
+
+			return true
 		end
 	}
 end
@@ -229,7 +230,7 @@ function Scene:enterScene (event)
 	Tabs = common.TabBar(self.view, TabButtons)
 
 	-- Initialize systems.
-	common.Init(params.main[1], params.main[2], not params.is_loading)
+	common.Init(params.main[1], params.main[2])
 	grid.Init(self.view)
 	ops.Init(self.view)
 
@@ -250,6 +251,9 @@ function Scene:enterScene (event)
 		events.ResolveLinks(params, false)
 		common.Undirty()
 	end
+
+	-- Trigger the default view.
+	Tabs:setSelected(1, true)
 
 	-- If the state was dirty before a test, then re-dirty it.
 	if RestoreState and RestoreState.was_dirty then

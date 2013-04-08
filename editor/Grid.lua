@@ -170,13 +170,15 @@ function M.EditErase (dialog_wrapper, types)
 						if label ~= "Edit" then
 							dialog_wrapper("close")
 						end
+
+						return true
 					end
 				}
 			end
 
 			tabs = common.TabBar(group, tab_buttons, { top = display.contentHeight - 65, left = 120, width = 300 }, true)
 
-			tabs:pressButton(1, true)
+			tabs:setSelected(1, true)
 
 			--
 			try_option = common.ChoiceTrier(tab_buttons)

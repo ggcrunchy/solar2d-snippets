@@ -92,6 +92,8 @@ function M.Load (view)
 					end
 
 					Option = label
+
+					return true
 				end
 			end
 		}
@@ -100,7 +102,7 @@ function M.Load (view)
 	--
 	Tabs = common.TabBar(view, tab_buttons, { top = display.contentHeight - 65, left = 120, width = 200 }, true)
 
-	Tabs:pressButton(1, true)
+	Tabs:setSelected(1, true)
 
 	--
 	grid.Show(false)

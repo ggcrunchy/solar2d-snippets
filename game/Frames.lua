@@ -86,7 +86,7 @@ end
 -- "enterFrame" listener --
 Runtime:addEventListener("enterFrame", function(event)
 	-- Update the time difference.
-	Diff, Last = (event.time - Last) / 1000, event.time
+	Diff, Last = Last and (event.time - Last) / 1000 or 0, event.time
 
 	-- Invalidate any ID from last frame.
 	FrameID = -abs(FrameID)
@@ -95,7 +95,7 @@ end)
 -- "system" listener --
 Runtime:addEventListener("system", function(event)
 	if event.type == "applicationStart" or event.type == "applicationResume" then
-		Last, Diff = system.getTimer(), 0
+--		Last, Diff = system.getTimer(), 0
 	elseif event.type == "applicationExit" then
 --		SG:Clear()
 	end

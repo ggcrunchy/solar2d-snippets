@@ -48,7 +48,6 @@ local Levels = {
 		-- Background --
 		background = function(bg, ncols, nrows, tilew, tileh)
 			local back = display.newImage(bg, "Background_Assets/Background.png")
-
 			local w = max(display.contentWidth, ncols * tilew)
 			local h = max(display.contentHeight, nrows * tileh)
 
