@@ -181,7 +181,7 @@ end
 local Body = { radius = 25 }
 
 --- Dot method: get property.
--- @param name Property name.
+-- @string name Property name.
 -- @return Property value, or **nil** if absent.
 function Warp:GetProperty (name)
 	if name == "body" then
@@ -308,7 +308,7 @@ local function OnEditorEvent (what, arg1, arg2, arg3)
 	-- arg2: Representative object
 	elseif what == "enum_props" then
 		arg1:AddLink{ text = "Link from source warp", rep = arg2, sub = "from", tags = "warp" }
- 		arg1:AddLink{ text = "Link to target warp", rep = arg2, sub = "to", tags = "warp" }
+		arg1:AddLink{ text = "Link to target warp", rep = arg2, sub = "to", tags = "warp" }
 		arg1:AddCheckbox{ text = "Two-way link, if one is blank?", value_name = "reciprocal_link" }
 		-- Polarity? Can be rotated?
 
@@ -333,7 +333,6 @@ local function OnEditorEvent (what, arg1, arg2, arg3)
 				end,
 
 				sub_links = { "from", "to" }
-
 				-- ^^ ? for fire, etc...
 			})
 		end

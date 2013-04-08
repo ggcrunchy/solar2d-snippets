@@ -455,7 +455,7 @@ local function GridFunc (group, col, row, x, y, w, h)
 	end
 end
 
----
+--- DOCMAYBE
 function M.Enter ()
 	grid.Show(GridFunc)
 	TryOption(Tabs, Option)
@@ -464,7 +464,7 @@ function M.Enter ()
 	Tabs.isVisible = true
 end
 
----
+--- DOCMAYBE
 function M.Exit ()
 	Dialog("close")
 
@@ -475,7 +475,7 @@ function M.Exit ()
 	grid.Show(false)
 end
 
----
+--- DOCMAYBE
 function M.Unload ()
 	Tabs:removeSelf()
 

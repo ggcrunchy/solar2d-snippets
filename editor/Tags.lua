@@ -132,10 +132,11 @@ do
 	end
 
 	--- DOCME
-	-- @string name
-	-- @string sub
 	-- @treturn boolean
-	function M.HasSublink (name, sub)
+	function M.HasSublink (
+		name, -- MURBLE
+		sub -- BURBLE
+		)
 		return sub == nil or AuxHasSublink(name, sub)
 	end
 end

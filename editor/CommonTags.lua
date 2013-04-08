@@ -4,7 +4,7 @@
 -- and may begin in either state. After toggling, the **"tiles_changed"** event list
 -- is dispatched with **"maze"** as the argument, cf. @{game.DispatchList.CallList}.
 --
--- **TODO**: Maze format.
+-- @todo Maze format.
 
 --
 -- Permission is hereby granted, free of charge, to any person obtaining

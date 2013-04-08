@@ -248,8 +248,6 @@ end
 -- @ptable level
 -- @bool save
 function M.ResolveLinks (level, save)
-	local list, new = level.links
-
 	if level.links then
 		--
 		if save == "build" then
