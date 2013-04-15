@@ -52,7 +52,7 @@ Scene:addEventListener("createScene")
 local function MakePolygon (group, points, j, r, g, b)
 	local polygon = display.newLine(group, points[1], points[2], points[3], points[4])
 
-	for i = 5, j, 2 do
+	for i = 5, j + 1, 2 do
 		polygon:append(points[i + 0], points[i + 1])
 	end
 
@@ -86,12 +86,12 @@ local function MakeCurvedPolygon (group, points, j)
 	N = 0
 
 	--
-	for i = 1, j - 1, 2 do
+	for i = 1, j + 1, 2 do
 		local x1, y1 = points[i + 0], points[i + 1]
 		local x2, y2 = points[i + 2], points[i + 3]
 		local x3, y3 = points[i + 4], points[i + 5]
 		local X, Y, d2 = x2, y2
-
+-- TODO: Tune these weights? (e.g. with processing considered...)
 		x3, y3 = x2 + (x3 - x2) * A, y2 + (y3 - y2) * A
 		x2, y2 = x1 + (x2 - x1) * B, y1 + (y2 - y1) * B
 
@@ -115,14 +115,16 @@ local function MakeCurvedPolygon (group, points, j)
 
 				local xc, yc = x2 + dx * t, y2 + dy * t
 
-				t = H * curves.OneMinusT3_ShiftedAbs(t)
+				t = H * curves.OneMinusT3_ShiftedAbs(t) -- TODO: Alternatives? (or add slider for H?)
 
 				AddToCurve(xc + nx * t, yc + ny * t)
 			end
 		end
 	end
-
-	return MakePolygon(group, Curve, N, 0, 255, 0)
+-- shrink / inflate (lambda, mu), Laplacian = mean curvature normal
+-- For pi, neighbors = pj, pk -> distances lij, lik -> weights wij = 1 / lij, wik = 1 / lik, T(pi) = (wij * pj + wik * pk) / (wij + wik) - pi
+-- cot, four points = weight wij = (cot Aij + cot Bij) / 2
+	return MakePolygon(group, Curve, N - 1, 0, 255, 0)
 end
 
 --
@@ -161,9 +163,11 @@ function Scene:enterScene ()
 			cx, cy = cx + x, cy + y
 		end
 
+		-- TODO: Add post-processing options...
+		
 		--
-		self[j + 0], self[j + 1] = self[1], self[2]
-		self[j + 2], self[j + 3] = self[3], self[4]
+		self[j + 2], self[j + 3] = self[1], self[2]
+		self[j + 4], self[j + 5] = self[3], self[4]
 
 		--
 		display.remove(self.polygon)
