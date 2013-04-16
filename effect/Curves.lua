@@ -34,6 +34,73 @@ local sqrt = math.sqrt
 -- Exports --
 local M = {}
 
+--- Maps a 4-vector by the Bézier matrix.
+-- TODO: DOCME more
+function M.Bezier_Eval (coeffs, a, b, c, d)
+	coeffs.a = a - 3 * (b - c) - d
+	coeffs.b = 3 * (b - 2 * c + d)
+	coeffs.c = 3 * (c - d)
+	coeffs.d = d
+end
+
+--- Converts coefficients from Bézier to Hermite form.
+-- (P1, Q1, Q2, P2) -> (P1, P2, T1, T2)
+-- TODO: DOCME more
+function M.BezierToHermite (src1, src2, src3, src4, dst1, dst2, dst3, dst4)
+	dst1, dst2, dst3, dst4 = dst1 or src1, dst2 or src2, dst3 or src3, dst4 or src4
+
+	local t1x, t1y = (src2.x - src1.x) * 3, (src2.y - src1.y) * 3
+	local t2x, t2y = (src4.x - src3.x) * 3, (src4.y - src3.y) * 3
+
+	dst1.x, dst1.y = src1.x, src1.y
+	dst2.x, dst2.y = src4.x, src4.y
+	dst3.x, dst3.y = t1x, t1y
+	dst4.x, dst4.y = t2x, t2y
+end
+
+--- Converts coefficients from Catmull-Rom to Hermite form.
+-- (P1, P2, P3, P4) -> (P2, P3, T1, T2)
+-- TODO: DOCME more
+function M.CatmullRomToHermite (src1, src2, src3, src4, dst1, dst2, dst3, dst4)
+	dst1, dst2, dst3, dst4 = dst1 or src1, dst2 or src2, dst3 or src3, dst4 or src4
+
+	local t1x, t1y = src3.x - src1.x, src3.y - src1.y
+	local t2x, t2y = src4.x - src2.x, src4.y - src2.y
+
+	dst1.x, dst1.y = src2.x, src2.y
+	dst2.x, dst2.y = src3.x, src3.y
+	dst3.x, dst3.y = t1x, t1y
+	dst4.x, dst4.y = t2x, t2y
+end
+
+
+--- Maps a 4-vector by the Catmull-Rom matrix.
+-- TODO: DOCME more
+function M.CatmullRom_Eval (coeffs, a, b, c, d)
+	coeffs.a = .5 * (-b + 2 * c - d)
+	coeffs.b = .5 * (2 * a - 5 * c + 3 * d)
+	coeffs.c = .5 * (b + 4 * c - 3 * d)
+	coeffs.d = .5 * (-c + d)
+end
+
+--- Evaluates curve coefficents, for use with @{M.MapToCurve}.
+-- @callable eval Evaluator function, with signature as per @{M.Bezier_Eval}.
+-- @param pos If present, position coefficients to evaluate at _t_.
+-- @param tan If present, tangent to evaluate at _t_.
+-- number t Time along curve, &isin [0, 1].
+-- TODO: Meaningful types for above?
+function  M.EvaluateCurve (eval, pos, tan, t)
+	local t2 = t * t
+
+	if pos then
+		eval(pos, 1, t, t2, t2 * t)
+	end
+
+	if tan then
+		eval(tan, 0, 1, 2 * t, 3 * t2)
+	end
+end
+
 --- Computes a figure 8 displacement.
 --
 -- The underlying curve is a [Lissajous figure](http://en.wikipedia.org/wiki/Lissajous_figure)
@@ -43,6 +110,64 @@ local M = {}
 -- @treturn number ...and y-displacement.
 function M.Figure8 (angle)
 	return sin(angle), sin(angle * 2)
+end
+
+--- Maps a 4-vector by the Hermite matrix.
+-- TODO: DOCME more
+function M.Hermite_Eval (coeffs, a, b, c, d)
+	coeffs.a = a - 3 * c + 2 * d
+	coeffs.b = 3 * c - 2 * d
+	coeffs.c = b - 2 * c + d
+	coeffs.d = -c + d
+end
+
+-- --
+local Div = 1 / 3
+
+--- Converts coefficients from Hermite to Bézier form.
+-- (P1, P2, T1, T2) -> (P1, Q1, Q2, P2)
+-- DOCME more
+function M.HermiteToBezier (src1, src2, src3, src4, dst1, dst2, dst3, dst4)
+	dst1, dst2, dst3, dst4 = dst1 or src1, dst2 or src2, dst3 or src3, dst4 or src4
+
+	local q1x, q1y = src1.x + src3.x * Div, src1.y + src3.y * Div
+	local q2x, q2y = src2.x - src4.x * Div, src2.y - src4.y * Div
+
+	dst1.x, dst1.y = src1.x, src1.y
+	dst4.x, dst4.y = src2.x, src2.y
+	dst2.x, dst2.y = q1x, q1y
+	dst3.x, dst3.y = q2x, q2y
+end
+
+--- Converts coefficients from Hermite to Catmull-Rom form.
+-- (P1, P2, T1, T2) -> (P0, P1, P2, P3)
+-- DOCME more
+function M.HermiteToCatmullRom (src1, src2, src3, src4, dst1, dst2, dst3, dst4)
+	dst1, dst2, dst3, dst4 = dst1 or src1, dst2 or src2, dst3 or src3, dst4 or src4
+
+	local p1x, p1y = src2.x - src3.x, src2.y - src3.y
+	local p4x, p4y = src4.x - src1.x, src4.y - src1.y
+
+	dst3.x, dst3.y = src2.x, src2.y
+	dst2.x, dst2.y = src1.x, src1.y
+	dst1.x, dst1.y = p1x, p1y
+	dst4.x, dst4.y = p4x, p4y
+end
+
+--- Given some pre-computed coefficients, maps vectors to a curve.
+-- @param coeffs Coefficients generated e.g. by @{M.EvaluateCurve}.
+-- @param a Vector #1...
+-- @param b ...#2...
+-- @param c ...#3...
+-- @param d ...and #4.
+-- @treturn number Curve x-coordinate...
+-- @treturn number ...and y-coordinate.
+-- TODO: Meaningful types
+function M.MapToCurve (coeffs, a, b, c, d)
+	local x = coeffs.a * a.x + coeffs.b * b.x + coeffs.c * c.x + coeffs.d * d.x
+	local y = coeffs.a * a.y + coeffs.b * b.y + coeffs.c * c.y + coeffs.d * d.y
+
+	return x, y
 end
 
 -- Remaps a curve's domain (namely, [0, 1] -> [-1, +1])
@@ -181,186 +306,6 @@ return M
 Curve.cpp:
 	#include "GeometryEffects.h"
 
-	// @brief Multiplies a group of coefficients with the precomputed t-values
-	// @param A Coefficent #1
-	// @param B Coefficent #2
-	// @param C Coefficent #3
-	// @param D Coefficent #4
-	// @return Result vector
-	Vector TVector::Map (Vector const & A, Vector const & B, Vector const & C, Vector const & D) const
-	{
-		return A * m[0] + B * m[1] + C * m[2] + D * m[3];
-	}
-
--- return a.x * tv.a + b.x * tv.b + c.x * tv.c + d.x * tv.d, a.y * tv.a + b.y * tv.b + c.y * tv.c + tv.d * d.y
-
-	// @brief Multiplies an array of coefficents with the precomputed t-values
-	// @param in Coefficent vector
-	// @return Result vector
-	Vector TVector::Map (Vector const in[]) const
-	{
-		return in[0] * m[0] + in[1] * m[1] + in[2] * m[2] + in[3] * m[3];
-	}
-
--- Bother with this?
-
-	// @brief Gets a t-vector in [0, 1]
-	// @param eval Evaluator function
-	// @param pos [out] Point at t
-	// @param tan [out] Tangent at t
-	// @param t Time
-	// @param bEvalP If true, evaluate point part
-	// @param bEvalT If true, evaluate tangent part
-	void EvaluateCurvePoint (CurveEval eval, TVector & point, TVector & tangent, float t, bool bEvalP, bool bEvalT)
-	{
-		float t2 = t * t, t3 = t2 * t;
-
-		if (bEvalP) eval(point, 1.0f, t, t2, t3);
-		if (bEvalT) eval(tangent, 0.0f, 1.0f, 2.0f * t, 3.0f * t2);
-	}
-
--- local t2 = t * t
-
--- if point then
---   local t3 = t2 * t
---
---   eval(point, 1, t, t2, t3)
--- end
-
--- if tangent then
---   eval(tangent, 0, 1, 2 * t, 3 * t2)
--- end
-
-	// @brief Gets pre-mapped t-vectors in [0, 1]
-	// @param eval Evaluator function
-	// @param points [out] Points at each t
-	// @param tangents [out] Tangents at each t
-	// @param layers Number of evaluations along interval
-	// @param bEvalP If true, evaluate point part
-	// @param bEvalT If true, evaluate tangent part
-	void EvaluateCurve (CurveEval eval, TVector points[], TVector tangents[], int layers, bool bEvalP, bool bEvalT)
-	{
-		ASSERT(layers >= 2);
-
-		for (int i = 0; i < layers; ++i) EvaluateCurvePoint(eval, points[i], tangents[i], float(i) / (layers - 1), bEvalP, bEvalT);
-	}
-
--- Bother?
-
-	// @brief Maps a 4-vector by the Bézier matrix
-	void Bezier_Eval (TVector & v, float a, float b, float c, float d)
-	{
-		v.m[0] = a - 3.0f * (b - c) - d;
-		v.m[1] = 3.0f * (b - 2.0f * c + d);
-		v.m[2] = 3.0f * (c - d);
-		v.m[3] = d;
-	}
-
--- tv.a = a - 3 * (b - c) - d
--- tv.b = 3 * (b - 2 * c + d)
--- tv.c = 3 * (c - d)
--- tv.d = d
-
-	// @brief Maps a 4-vector by the Catmull-Rom matrix
-	void CatmullRom_Eval (TVector & v, float a, float b, float c, float d)
-	{
-		v.m[0] = 0.5f * (-b + 2.0f * c - d);
-		v.m[1] = 0.5f * (2.0f * a - 5.0f * c + 3.0f * d);
-		v.m[2] = 0.5f * (b + 4.0f * c - 3.0f * d);
-		v.m[3] = 0.5f * (-c + d);
-	}
-
--- tv.a = .5 * (-b + 2 * c - d)
--- tv.b = .5 * (2 * a - 5 * c + 3 * d)
--- tv.c = .5 * (b + 4 * c - 3 * d)
--- tv.d = .5 * (-c + d)
-
-	// @brief Maps a 4-vector by the Hermite matrix
-	void Hermite_Eval (TVector & v, float a, float b, float c, float d)
-	{
-		v.m[0] = a - 3.0f * c + 2.0f * d;
-		v.m[1] = 3.0f * c - 2.0f * d;
-		v.m[2] = b - 2.0f * c + d;
-		v.m[3] = -c + d;
-	}
-
--- tv.a = a - 3 * c + 2 * d
--- tv.b = 3 * c - 2 * d
--- tv.c = b - 2 * c + d
--- tv.d = -c + d
-
-	// @brief Converts coefficients from Bézier to Hermite from
-	// @note (P1, Q1, Q2, P2) -> (P1, P2, T1, T2)
-	void BezierToHermite (Vector const in[4], Vector out[4])
-	{
-		Vector t1 = (in[1] - in[0]) * 3.0f, t2 = (in[3] - in[2]) * 3.0f;
-
-		out[0] = in[0];
-		out[1] = in[3];
-		out[2] = t1;
-		out[3] = t2;
-	}
-
--- out[1].x, out[1].y = in[1].x, in[1].y
--- out[2].x, out[2].y = in[4].x, in[3].y
--- out[3].x, out[3].y = (in[2].x - in[1].x) * 3, (in[2].y - in[1].y) * 3
--- out[4].x, out[4].y = (in[4].x - in[3].x) * 3, (in[4].y - in[3].y) * 3
-
-	// @brief Converts coefficients from Catmull-Rom to Hermite form
-	// @note (P1, P2, P3, P4) -> (P2, P3, T1, T2)
-	void CatmullRomToHermite (Vector const in[4], Vector out[4])
-	{
-		Vector t1 = in[2] - in[0], t2 = in[3] - in[1];
-
-		out[0] = in[1];
-		out[1] = in[2];
-		out[2] = t1;
-		out[3] = t2;
-	}
-
--- out[1].x, out[1].y = in[2].x, in[2].y
--- out[2].x, out[2].y = in[3].x, in[3].y
--- out[3].x, out[3].y = in[3].x - in[1].x, in[3].y - in[1].y
--- out[4].x, out[4].y = in[4].x - in[2].x, in[4].y - in[2].y
-
-	// @brief Converts coefficients from Hermite to Bézier form
-	// @note (P1, P2, T1, T2) -> (P1, Q1, Q2, P2)
-	void HermiteToBezier (Vector const in[4], Vector out[4])
-	{
-		const float div = 1.0f / 3;
-
-		Vector q1 = in[0] + in[2] * div, q2 = in[1] - in[3] * div;
-
-		out[0] = in[0];
-		out[3] = in[1];
-		out[1] = q1;
-		out[2] = q2;
-	}
-
--- local div = 1 / 3
-
--- out[1].x, out[1].y = in[1].x, in[1].y
--- out[4].x, out[4].y = in[2].x, in[2].y
--- out[2].x, out[2].y = in[1].x + in[3].x * div, in[1].y + in[3].y * div
--- out[3].x, out[3].y = in[2].x - in[4].x * div, in[2].y - in[4].y * div
-
-	// @brief Converts coefficients from Hermite to Catmull-Rom form
-	// @note (P1, P2, T1, T2) -> (P0, P1, P2, P3)
-	void HermiteToCatmullRom (Vector const in[4], Vector out[4])
-	{
-		Vector p1 = in[1] - in[2], p4 = in[3] - in[0];
-
-		out[2] = in[1];
-		out[1] = in[0];
-		out[0] = p1;
-		out[3] = p4;
-	}
-
--- out[3].x, out[3].y = in[2].x, in[2].y
--- out[2].x, out[2].y = in[1].x, in[1].y
--- out[1].x, out[1].y = in[2].x - in[3].x, in[2].y - in[3].y
--- out[4].x, out[4].y = in[4].x - in[1].x, in[4].y - in[1].y
-
 	/*
 		Adapted from Earl Boebert, http://steve.hollasch.net/cgindex/curves/cbezarclen.html
 		The last suggestion by Gravesen is pretty nifty, and I think it's a candidate for the
@@ -450,7 +395,10 @@ Curve.cpp:
 
 			return length * diff;
 		}
-
+-- ^^ This one never seemed to work...
+-- *Internet investigation...*
+-- Int(f(x) dx, x, a, b) ~ (b - a) / 2 * Sum[i, 1, n]{ wi * f(a + (xi + 1) * (b - a) / 2)}
+-- Didn't do +1...
 		float Length (CurveEval eval, double t)
 		{
 			TVector Tan;
@@ -490,14 +438,6 @@ Curve.cpp:
 
 --[[
 CubicCurve.cpp:
-	#include "Lua_/Lua.h"
-	#include "Lua_/Helpers.h"
-	#include "Lua_/LibEx.h"
-	#include "Lua_/Templates.h"
-	#include "Lua_/Types.h"
-	#include "Bindings/Graphics/Graphics.h"
-	#include "Bindings/Graphics/GeometryEffects/GeometryEffects.h"
-
 	// @brief Cubic curve representation
 	struct CubicCurve {
 		CurveEval mEval;// Curve evaluation method
@@ -508,19 +448,6 @@ CubicCurve.cpp:
 
 		CubicCurve (void) : mEval(Hermite_Eval), mTolerance(0.5f), mU1(0.0f), mU2(1.0f) {}
 	};
-
-	//
-	// CubicCurve / RCubicCurve utilities
-	//
-	template<> char const * Lua::_typeT<CubicCurve> (void)
-	{
-		return "CubicCurve";
-	}
-
-	template<> char const * Lua::_rtypeT<CubicCurve> (void)
-	{
-		return "RCubicCurve";
-	}
 
 	//
 	// CubicCurve / RCubicCurve metamethods
@@ -557,99 +484,5 @@ CubicCurve.cpp:
 		lua_pushnumber(L, BezierLength(pcoeffs, C->mTolerance));
 
 		return 1;
-	}
-
-	static int Eval (lua_State * L)
-	{
-		bool bPos = !lua_isnoneornil(L, 3), bTan = !lua_isnoneornil(L, 4);
-
-		CubicCurve * C = _pT<CubicCurve>(L, 1);
-
-		TVector Pos, Tan;
-
-		EvaluateCurvePoint(C->mEval, Pos, Tan, F(L, 2), bPos, bTan);
-
-		if (bPos) Vec3D_r(L, 3) = Pos.Map(C->mCoeffs);
-		if (bTan) Vec3D_r(L, 4) = Tan.Map(C->mCoeffs);
-
-		return 0;
-	}
-
-	static int SetCoeffs (lua_State * L)
-	{
-		CubicCurve * C = _pT<CubicCurve>(L, 1);
-
-		C->mCoeffs[0] = Vec3D_(L, 2);
-		C->mCoeffs[1] = Vec3D_(L, 3);
-		C->mCoeffs[2] = Vec3D_(L, 4);
-		C->mCoeffs[3] = Vec3D_(L, 5);
-
-		return 0;
-	}
-
-	static int SetEvalMethod (lua_State * L)
-	{
-		CurveEval const curves[] = { Bezier_Eval, CatmullRom_Eval, Hermite_Eval };
-
-		char const * options[] = { "bezier", "catmull_rom", "hermite", 0 };
-
-		int index = luaL_checkoption(L, 2, 0, options);
-
-		_pT<CubicCurve>(L, 1)->mEval = curves[index];
-
-		return 0;
-	}
-
-	static int SetInterval (lua_State * L)
-	{
-		CubicCurve * C = _pT<CubicCurve>(L, 1);
-
-		C->mU1 = F(L, 2);
-		C->mU2 = F(L, 3);
-
-		return 0;
-	}
-
-	static int SetTolerance (lua_State * L)
-	{
-		_pT<CubicCurve>(L, 1)->mTolerance = F(L, 2);
-
-		return 0;
-	}
-
-	//
-	// CubicCurve constructor
-	//
-	static int Cons (lua_State * L)
-	{
-		CubicCurve * C = _pT<CubicCurve>(L, 1);
-
-		new (C) CubicCurve;
-
-		if (!lua_isnil(L, 2)) SetEvalMethod(L);
-
-		return 0;
-	}
-
-	// @brief Defines the cubic curve classes
-	// @param L Lua state
-	void Bindings::Graphics::def_cubiccurve (lua_State * L)
-	{
-		// Define the cubic curve.
-		luaL_reg funcs[] = {
-			{ "BezierLen", BezierLen },
-			{ "Eval", Eval },
-			{ "__len", _len },
-			{ "SetCoeffs", SetCoeffs },
-			{ "SetEvalMethod", SetEvalMethod },
-			{ "SetInterval", SetInterval },
-			{ "SetTolerance", SetTolerance },
-			{ 0, 0 }
-		};
-
-		Class::Define(L, "CubicCurve", funcs, Cons, Class::Def(sizeof(CubicCurve), 0, true));
-
-		// Define the reference cubic curve.
-		Class::Define(L, "RCubicCurve", funcs, _consT_copy<CubicCurve>, Class::Def(sizeof(CubicCurve *), "CubicCurve", true));
 	}
 ]]
