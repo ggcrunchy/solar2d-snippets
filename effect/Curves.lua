@@ -177,3 +177,424 @@ end
 
 -- Export the module.
 return M
+--[[
+Curve.cpp:
+	#include "GeometryEffects.h"
+
+	// @brief Multiplies a group of coefficients with the precomputed t-values
+	// @param A Coefficent #1
+	// @param B Coefficent #2
+	// @param C Coefficent #3
+	// @param D Coefficent #4
+	// @return Result vector
+	Vector TVector::Map (Vector const & A, Vector const & B, Vector const & C, Vector const & D) const
+	{
+		return A * m[0] + B * m[1] + C * m[2] + D * m[3];
+	}
+
+	// @brief Multiplies an array of coefficents with the precomputed t-values
+	// @param in Coefficent vector
+	// @return Result vector
+	Vector TVector::Map (Vector const in[]) const
+	{
+		return in[0] * m[0] + in[1] * m[1] + in[2] * m[2] + in[3] * m[3];
+	}
+
+	// @brief Gets a t-vector in [0, 1]
+	// @param eval Evaluator function
+	// @param pos [out] Point at t
+	// @param tan [out] Tangent at t
+	// @param t Time
+	// @param bEvalP If true, evaluate point part
+	// @param bEvalT If true, evaluate tangent part
+	void EvaluateCurvePoint (CurveEval eval, TVector & point, TVector & tangent, float t, bool bEvalP, bool bEvalT)
+	{
+		float t2 = t * t, t3 = t2 * t;
+
+		if (bEvalP) eval(point, 1.0f, t, t2, t3);
+		if (bEvalT) eval(tangent, 0.0f, 1.0f, 2.0f * t, 3.0f * t2);
+	}
+
+	// @brief Gets pre-mapped t-vectors in [0, 1]
+	// @param eval Evaluator function
+	// @param points [out] Points at each t
+	// @param tangents [out] Tangents at each t
+	// @param layers Number of evaluations along interval
+	// @param bEvalP If true, evaluate point part
+	// @param bEvalT If true, evaluate tangent part
+	void EvaluateCurve (CurveEval eval, TVector points[], TVector tangents[], int layers, bool bEvalP, bool bEvalT)
+	{
+		ASSERT(layers >= 2);
+
+		for (int i = 0; i < layers; ++i) EvaluateCurvePoint(eval, points[i], tangents[i], float(i) / (layers - 1), bEvalP, bEvalT);
+	}
+
+	// @brief Maps a 4-vector by the Bézier matrix
+	void Bezier_Eval (TVector & v, float a, float b, float c, float d)
+	{
+		v.m[0] = a - 3.0f * (b - c) - d;
+		v.m[1] = 3.0f * (b - 2.0f * c + d);
+		v.m[2] = 3.0f * (c - d);
+		v.m[3] = d;
+	}
+
+	// @brief Maps a 4-vector by the Catmull-Rom matrix
+	void CatmullRom_Eval (TVector & v, float a, float b, float c, float d)
+	{
+		v.m[0] = 0.5f * (-b + 2.0f * c - d);
+		v.m[1] = 0.5f * (2.0f * a - 5.0f * c + 3.0f * d);
+		v.m[2] = 0.5f * (b + 4.0f * c - 3.0f * d);
+		v.m[3] = 0.5f * (-c + d);
+	}
+
+	// @brief Maps a 4-vector by the Hermite matrix
+	void Hermite_Eval (TVector & v, float a, float b, float c, float d)
+	{
+		v.m[0] = a - 3.0f * c + 2.0f * d;
+		v.m[1] = 3.0f * c - 2.0f * d;
+		v.m[2] = b - 2.0f * c + d;
+		v.m[3] = -c + d;
+	}
+
+	// @brief Converts coefficients from Bézier to Hermite from
+	// @note (P1, Q1, Q2, P2) -> (P1, P2, T1, T2)
+	void BezierToHermite (Vector const in[4], Vector out[4])
+	{
+		Vector t1 = (in[1] - in[0]) * 3.0f, t2 = (in[3] - in[2]) * 3.0f;
+
+		out[0] = in[0];
+		out[1] = in[3];
+		out[2] = t1;
+		out[3] = t2;
+	}
+
+	// @brief Converts coefficients from Catmull-Rom to Hermite form
+	// @note (P1, P2, P3, P4) -> (P2, P3, T1, T2)
+	void CatmullRomToHermite (Vector const in[4], Vector out[4])
+	{
+		Vector t1 = in[2] - in[0], t2 = in[3] - in[1];
+
+		out[0] = in[1];
+		out[1] = in[2];
+		out[2] = t1;
+		out[3] = t2;
+	}
+
+	// @brief Converts coefficients from Hermite to Bézier form
+	// @note (P1, P2, T1, T2) -> (P1, Q1, Q2, P2)
+	void HermiteToBezier (Vector const in[4], Vector out[4])
+	{
+		const float div = 1.0f / 3;
+
+		Vector q1 = in[0] + in[2] * div, q2 = in[1] - in[3] * div;
+
+		out[0] = in[0];
+		out[3] = in[1];
+		out[1] = q1;
+		out[2] = q2;
+	}
+
+	// @brief Converts coefficients from Hermite to Catmull-Rom form
+	// @note (P1, P2, T1, T2) -> (P0, P1, P2, P3)
+	void HermiteToCatmullRom (Vector const in[4], Vector out[4])
+	{
+		Vector p1 = in[1] - in[2], p4 = in[3] - in[0];
+
+		out[2] = in[1];
+		out[1] = in[0];
+		out[0] = p1;
+		out[3] = p4;
+	}
+
+	/*
+		Adapted from Earl Boebert, http://steve.hollasch.net/cgindex/curves/cbezarclen.html
+		The last suggestion by Gravesen is pretty nifty, and I think it's a candidate for the
+		next Graphics Gems. I hacked out the following quick implementation, using the .h and
+		libraries definitions from Graphics Gems I (If you haven't got that book then you have
+		no business mucking with with this stuff :-)) The function "bezsplit" is lifted
+		shamelessly from Schneider's Bezier curve-fitter.
+	*/
+
+	/************************ split a cubic bezier in two ***********************/
+	  
+	static void BezSplit (Vector const V[], Vector L[], Vector R[])
+	{
+		Vector Temp[4][4];
+
+		// Copy control points.
+		for (int i = 0; i < 4; ++i) Temp[0][i] = V[i];
+
+		// Triangle computation.
+		for (int i = 1; i < 4; ++i)
+		{
+			for (int j = 0; j < 4 - i; ++j) Temp[i][j] = (Temp[i - 1][j] + Temp[i - 1][j + 1]) * 0.5f;
+		}
+
+		for (int i = 0; i < 4; ++i) L[i] = Temp[i][0];
+		for (int i = 0; i < 4; ++i) R[i] = Temp[3 - i][i]; 
+	}
+
+	/********************** add polyline length if close enuf *******************/
+
+	static void AddIfClose (Vector const V[], double & length, double error) 
+	{
+		Vector L[4], R[4];// bez poly splits
+
+		double len = 0.0, main_len = (V[0] - V[3]).GetLen();
+
+		for (int i = 0; i <= 2; ++i) len = len + (V[i] - V[i + 1]).GetLen();
+
+		if (len - main_len > error)
+		{
+			BezSplit(V, L, R);
+
+			AddIfClose(L, length, error);
+			AddIfClose(R, length, error);
+		}
+
+		else length = length + len;
+	}
+
+	// @brief Computes a Bézier curve's length
+	// @param coeffs Control coefficients
+	// @param tolerance Evaluation tolerance
+	// @return Length of curve
+	float BezierLength (Vector const coeffs[4], float tolerance)
+	{
+		double length = 0.0;
+
+		AddIfClose(coeffs, length, double(tolerance));
+
+		return float(length);
+	}
+
+	// @brief Cubic curve state
+	struct CubicCurve {
+		// Members
+		Vector const * mCoeffs;	// Control coefficeints
+
+		// Lifetime
+		CubicCurve (Vector const coeffs[4]) : mCoeffs(coeffs) {}
+
+		// Methods
+		double Integrate (CurveEval eval, float t1, float t2)
+		{
+			const double x[] = { 0.1488743389, 0.4333953941, 0.6794095692, 0.8650633666, 0.9739065285 };
+			const double w[] = { 0.2966242247, 0.2692667193, 0.2190863625, 0.1494513491, 0.0666713443 };
+
+			double midt = (t1 + t2) / 2.0;
+			double diff = (t2 - t1) / 2.0;
+			double length = 0.0;
+
+			for (int i = 0; i < 5; ++i)
+			{
+				double dx = diff * x[i];
+
+				length += w[i] * (Length(eval, midt - dx) + Length(eval, midt + dx));
+			}
+
+			return length * diff;
+		}
+
+		float Length (CurveEval eval, double t)
+		{
+			TVector Tan;
+
+			EvaluateCurvePoint(eval, Tan, Tan, float(t), false, true);
+
+			return Tan.Map(mCoeffs).GetLen();
+		}
+
+		double Subdivide (CurveEval eval, double t1, double t2, double len, double tolerance)
+		{
+			double midt = (t1 + t2) / 2.0;
+
+			double llen = Integrate(eval, t1, midt);
+			double rlen = Integrate(eval, midt, t2);
+
+			if (abs(len - (llen + rlen)) > tolerance) return Subdivide(eval, t1, midt, llen, tolerance) + Subdivide(eval, midt, t2, rlen, tolerance);
+
+			else return llen + rlen;
+		}
+	};
+
+	// @brief Computes a curve length
+	// @param eval Evaluator function
+	// @param coeffs Control coefficients
+	// @param t1 Parameter #1
+	// @param t2 Parameter #2
+	// @param tolerance Evaluation tolerance
+	// @return Length of curve
+	float CurveLength (CurveEval eval, Vector const coeffs[4], float t1, float t2, float tolerance)
+	{
+		CubicCurve cc(coeffs);
+
+		return (float)cc.Subdivide(eval, t1, t2, cc.Integrate(eval, t1, t2), tolerance);
+	}
+]]
+
+--[[
+CubicCurve.cpp:
+	#include "Lua_/Lua.h"
+	#include "Lua_/Helpers.h"
+	#include "Lua_/LibEx.h"
+	#include "Lua_/Templates.h"
+	#include "Lua_/Types.h"
+	#include "Bindings/Graphics/Graphics.h"
+	#include "Bindings/Graphics/GeometryEffects/GeometryEffects.h"
+
+	// @brief Cubic curve representation
+	struct CubicCurve {
+		CurveEval mEval;// Curve evaluation method
+		Vector mCoeffs[4];// Coefficients set
+		float mTolerance;	// Curve fitting tolerance
+		float mU1;	// Start of curve interval
+		float mU2;	// End of curve interval
+
+		CubicCurve (void) : mEval(Hermite_Eval), mTolerance(0.5f), mU1(0.0f), mU2(1.0f) {}
+	};
+
+	//
+	// CubicCurve / RCubicCurve utilities
+	//
+	template<> char const * Lua::_typeT<CubicCurve> (void)
+	{
+		return "CubicCurve";
+	}
+
+	template<> char const * Lua::_rtypeT<CubicCurve> (void)
+	{
+		return "RCubicCurve";
+	}
+
+	//
+	// CubicCurve / RCubicCurve metamethods
+	//
+	static int _len (lua_State * L)
+	{
+		CubicCurve * C = _pT<CubicCurve>(L, 1);
+
+		lua_pushnumber(L, CurveLength(C->mEval, C->mCoeffs, C->mU1, C->mU2, C->mTolerance));// C, len
+
+		return 1;
+	}
+
+	//
+	// CubicCurve / RCubicCurve methods
+	//
+	static int BezierLen (lua_State * L)
+	{
+		CubicCurve * C = _pT<CubicCurve>(L, 1);
+
+		Vector coeffs[4], * pcoeffs = C->mCoeffs;
+
+		if (C->mEval != Bezier_Eval)
+		{
+			bool bCatmullRom = CatmullRom_Eval == C->mEval;
+
+			if (bCatmullRom) CatmullRomToHermite(C->mCoeffs, coeffs);
+
+			HermiteToBezier(bCatmullRom ? coeffs : C->mCoeffs, coeffs);
+
+			pcoeffs = coeffs;
+		}
+
+		lua_pushnumber(L, BezierLength(pcoeffs, C->mTolerance));
+
+		return 1;
+	}
+
+	static int Eval (lua_State * L)
+	{
+		bool bPos = !lua_isnoneornil(L, 3), bTan = !lua_isnoneornil(L, 4);
+
+		CubicCurve * C = _pT<CubicCurve>(L, 1);
+
+		TVector Pos, Tan;
+
+		EvaluateCurvePoint(C->mEval, Pos, Tan, F(L, 2), bPos, bTan);
+
+		if (bPos) Vec3D_r(L, 3) = Pos.Map(C->mCoeffs);
+		if (bTan) Vec3D_r(L, 4) = Tan.Map(C->mCoeffs);
+
+		return 0;
+	}
+
+	static int SetCoeffs (lua_State * L)
+	{
+		CubicCurve * C = _pT<CubicCurve>(L, 1);
+
+		C->mCoeffs[0] = Vec3D_(L, 2);
+		C->mCoeffs[1] = Vec3D_(L, 3);
+		C->mCoeffs[2] = Vec3D_(L, 4);
+		C->mCoeffs[3] = Vec3D_(L, 5);
+
+		return 0;
+	}
+
+	static int SetEvalMethod (lua_State * L)
+	{
+		CurveEval const curves[] = { Bezier_Eval, CatmullRom_Eval, Hermite_Eval };
+
+		char const * options[] = { "bezier", "catmull_rom", "hermite", 0 };
+
+		int index = luaL_checkoption(L, 2, 0, options);
+
+		_pT<CubicCurve>(L, 1)->mEval = curves[index];
+
+		return 0;
+	}
+
+	static int SetInterval (lua_State * L)
+	{
+		CubicCurve * C = _pT<CubicCurve>(L, 1);
+
+		C->mU1 = F(L, 2);
+		C->mU2 = F(L, 3);
+
+		return 0;
+	}
+
+	static int SetTolerance (lua_State * L)
+	{
+		_pT<CubicCurve>(L, 1)->mTolerance = F(L, 2);
+
+		return 0;
+	}
+
+	//
+	// CubicCurve constructor
+	//
+	static int Cons (lua_State * L)
+	{
+		CubicCurve * C = _pT<CubicCurve>(L, 1);
+
+		new (C) CubicCurve;
+
+		if (!lua_isnil(L, 2)) SetEvalMethod(L);
+
+		return 0;
+	}
+
+	// @brief Defines the cubic curve classes
+	// @param L Lua state
+	void Bindings::Graphics::def_cubiccurve (lua_State * L)
+	{
+		// Define the cubic curve.
+		luaL_reg funcs[] = {
+			{ "BezierLen", BezierLen },
+			{ "Eval", Eval },
+			{ "__len", _len },
+			{ "SetCoeffs", SetCoeffs },
+			{ "SetEvalMethod", SetEvalMethod },
+			{ "SetInterval", SetInterval },
+			{ "SetTolerance", SetTolerance },
+			{ 0, 0 }
+		};
+
+		Class::Define(L, "CubicCurve", funcs, Cons, Class::Def(sizeof(CubicCurve), 0, true));
+
+		// Define the reference cubic curve.
+		Class::Define(L, "RCubicCurve", funcs, _consT_copy<CubicCurve>, Class::Def(sizeof(CubicCurve *), "CubicCurve", true));
+	}
+]]

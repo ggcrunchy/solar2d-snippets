@@ -25,6 +25,11 @@
 
 -- Standard library imports --
 local abs = math.abs
+local cos = math.cos
+local ipairs = ipairs
+local pi = math.pi
+local random = math.random
+local sin = math.sin
 
 -- Modules --
 local buttons = require("ui.Button")
@@ -34,6 +39,10 @@ local hilbert = require("fill.Hilbert")
 local numeric_ops = require("numeric_ops")
 local scenes = require("game.Scenes")
 local timers = require("game.Timers")
+
+-- Corona globals --
+local display = display
+local transition = transition
 
 -- Corona modules --
 local storyboard = require("storyboard")
@@ -49,8 +58,11 @@ end
 
 Scene:addEventListener("createScene")
 
+-- --
+local R, G, B
+
 --
-local function MakePolygon (group, points, n, r, g, b)
+local function MakePolygon (group, points, n)
 	local polygon = display.newLine(group, points[1], points[2], points[3], points[4])
 
 	for i = 5, n - 1, 2 do
@@ -58,7 +70,7 @@ local function MakePolygon (group, points, n, r, g, b)
 	end
 
 	polygon:append(points[1], points[2])
-	polygon:setColor(r, g, b)
+	polygon:setColor(R, G, B)
 
 	polygon.width = 3
 
@@ -69,9 +81,9 @@ end
 local NParts = 12
 
 -- --
-local A = .425
-local B = 1 - A
-local H = .7
+local A, H
+
+-- --
 local Near = 25
 
 -- --
@@ -83,9 +95,8 @@ local function AddToCurve (x, y)
 end
 
 --
-local function SetAB (value)
+local function SetA (value)
 	A = .2 + value * .6 / 100
-	B = 1 - A
 end
 
 --
@@ -93,10 +104,15 @@ local function SetH (value)
 	H = .2 + Scene.hscale.value * .5 / 100
 end
 
+-- --
+local Stages = 3
+
 --
 local function MakeCurvedPolygon (group, points, n)
+	local B = 1 - A
+
 	--
-	for stage = 1, 3 do
+	for stage = 1, Stages do
 		N = 0
 
 		for i = 1, n - 1, 2 do
@@ -128,14 +144,14 @@ local function MakeCurvedPolygon (group, points, n)
 
 					local xc, yc = x2 + dx * t, y2 + dy * t
 
-					t = H * curves.OneMinusT2_Shifted(t) -- TODO: Alternatives? (or add slider for H?)
+					t = H * curves.OneMinusT3_ShiftedAbs(t) -- TODO: Alternatives?
 
 					AddToCurve(xc + nx * t, yc + ny * t)
 				end
 			end
 		end
 
-		if stage < 3 then
+		if stage < Stages then
 			points, n = Curve, N
 
 			points[N + 1], points[N + 2] = points[1], points[2]
@@ -147,7 +163,7 @@ local function MakeCurvedPolygon (group, points, n)
 -- shrink / inflate (lambda, mu), Laplacian = mean curvature normal
 -- For pi, neighbors = pj, pk -> distances lij, lik -> weights wij = 1 / lij, wik = 1 / lik, T(pi) = (wij * pj + wik * pk) / (wij + wik) - pi
 -- cot, four points = weight wij = (cot Aij + cot Bij) / 2
-	return MakePolygon(group, Curve, N, 0, 255, 0)
+	return MakePolygon(group, Curve, N)
 end
 
 --
@@ -161,114 +177,104 @@ end
 local Min = numeric_ops.RoundTo(2^6 * .2)
 local Max = numeric_ops.RoundTo(2^6 * .8)
 
+-- --
+local DoAgain, Now
+
+-- --
+local MoveParams = { time = 100, transition = easing.inOutQuad }
+
 --
-local function SetupPolygon (points, buffer, now)
-	--
-	local j, n, cx, cy = 1, 0, 0, 0
+local function OnDone (event)
+	DoAgain, Now = true, Now + MoveParams.time
+end
 
-	for i = 1, #points, 2 do
-		local x, y = GetXY(points[i] + now, points[i + 1])
+--
+local function EnterFrame ()
+	local scene, j, n, cx, cy = Scene, 1, 0, 0, 0
 
-		buffer[j], buffer[j + 1] = x, y
+	for _, point in ipairs(scene.points) do
+		local x, y = point.x, point.y
+		local angle = point.angle % (2 * pi)
 
-		cx, cy, j, n = cx + x, cy + y, j + 2, n + 1
+		scene[j], scene[j + 1] = x + 10 * cos(angle), y + 10 * sin(angle)
+
+		cx, cy, j, n = cx + point.x, cy + point.y, j + 2, n + 1
 	end
 
 	-- TODO: Add post-processing options...
 	
 	--
-	buffer[j + 0], buffer[j + 1] = buffer[1], buffer[2]
-	buffer[j + 2], buffer[j + 3] = buffer[3], buffer[4]
+	scene[j + 0], scene[j + 1] = scene[1], scene[2]
+	scene[j + 2], scene[j + 3] = scene[3], scene[4]
 
-	return cx, cy, j, n
+	--
+	if DoAgain then
+		for i, point in ipairs(scene.points) do
+			MoveParams.onComplete = i == 1 and OnDone or nil
+
+			MoveParams.angle, MoveParams.x, MoveParams.y = point.angle + point.da, GetXY(point.start + Now, point.div)
+
+			transition.to(point, MoveParams)
+		end
+
+		DoAgain = false
+	end
+
+	--
+	display.remove(scene.polygon)
+
+	--
+	local maker
+
+	if scene.smooth:IsChecked() then
+		R, G, B, maker = 0, 255, 0, MakeCurvedPolygon
+	else
+		R, G, B, maker = 255, 0, 0, MakePolygon
+	end
+
+	--
+	scene.polygon = maker(scene.view, scene, j)
+
+	--
+	if not scene.trace then
+		scene.trace = display.newCircle(scene.view, 0, 0, 10)
+
+		scene.trace:setFillColor(0, 0, 255)
+	end
+
+	scene.trace.x, scene.trace.y = cx / n, cy / n
 end
 
 --
 function Scene:enterScene ()
 	local points = {}
 
-	for _ = 1, 5 do
-		points[#points + 1] = math.random(Min, Max)
-		points[#points + 1] = math.random(150, 600)
+	for i = 1, 5 do
+		points[i] = {
+			angle = 0, da = random(3, 7) * pi / 20,
+			start = random(Min, Max),
+			div = random(150, 600)
+		}
+
+		points[i].x, points[i].y = GetXY(points[i].start, points[i].div)
 	end
 
+	--
+	Now = 0
+
+	OnDone()
+
+	--
 	self.points = points
 	self.smooth = common.CheckboxWithText(self.view, 20, display.contentHeight - 70, "Smooth polygon")
-	self.t = timers.RepeatEx(function(event)
-	--[[
-		--
-		local now, j, n, cx, cy = event.m_elapsed, 1, 0, 0, 0
-
-		for i = 1, #points, 2 do
-			local x, y = GetXY(points[i] + now, points[i + 1])
-
-			self[j], self[j + 1] = x, y
-
-			cx, cy, j, n = cx + x, cy + y, j + 2, n + 1
-		end
-
-		-- TODO: Add post-processing options...
-		
-		--
-		self[j + 0], self[j + 1] = self[1], self[2]
-		self[j + 2], self[j + 3] = self[3], self[4]
-]]
-		local cx, cy, j, n = SetupPolygon(points, self, event.m_elapsed)
-
-		--
-		display.remove(self.polygon)
-		display.remove(self.p2)
-		display.remove(self.p3)
-
-		if self.smooth:IsChecked() then
-			self.polygon = MakeCurvedPolygon(self.view, self, j)
-
-			if event.m_elapsed > 400 then
-				SetupPolygon(points, self, event.m_elapsed - 400)
-				self.p1 = MakeCurvedPolygon(self.view, self, j)
-			end
-
-			if event.m_elapsed > 800 then
-				SetupPolygon(points, self, event.m_elapsed - 800)
-				self.p2 = MakeCurvedPolygon(self.view, self, j)
-			end
-		else
-			self.polygon = MakePolygon(self.view, self, j, 255, 0, 0)
-
-			if event.m_elapsed > 400 then
-				SetupPolygon(points, self, event.m_elapsed - 400)
-				self.p1 = MakePolygon(self.view, self, j, 255, 0, 0)
-			end
-
-			if event.m_elapsed > 800 then
-				SetupPolygon(points, self, event.m_elapsed - 800)
-				self.p2 = MakePolygon(self.view, self, j, 255, 0, 0)
-			end
-		end
-if self.p1 then
-	self.p1.alpha = .6
-end
-if self.p2 then
-	self.p2.alpha = .3
-end
-		--
-		if not self.trace then
-			self.trace = display.newCircle(self.view, 0, 0, 10)
-			
-			self.trace:setFillColor(0, 0, 255)
-		end
-
-		self.trace.x, self.trace.y = cx / n, cy / n
-	end, 40)
 
 	self.smooth.isVisible = true
 
-	
 	self.acoeff = widget.newSlider{
 		left = 20, top = 90, width = 120, height = 70,
 
 		listener = function(event)
-			SetAB(event.value)
+			SetA(event.value)
 		end
 	}
 
@@ -280,33 +286,30 @@ end
 		end
 	}
 
-	SetAB(self.acoeff.value)
+	SetA(self.acoeff.value)
 	SetH(self.hscale.value)
+
+	Runtime:addEventListener("enterFrame", EnterFrame)
 end
 
 Scene:addEventListener("enterScene")
 
 --
 function Scene:exitScene ()
-	timer.cancel(self.t)
-
 	self.points = nil
-	self.t = nil
 
 	display.remove(self.polygon)
-	display.remove(self.p1)
-	display.remove(self.p2)
 	display.remove(self.smooth)
 	display.remove(self.trace)
 
 	self.polygon = nil
-	self.p1 = nil
-	self.p2 = nil
 	self.smooth = nil
 	self.trace = nil
 
 	self.acoeff:removeSelf()
 	self.hscale:removeSelf()
+
+	Runtime:removeEventListener("enterFrame", EnterFrame)
 end
 
 Scene:addEventListener("exitScene")
