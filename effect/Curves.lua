@@ -192,6 +192,8 @@ Curve.cpp:
 		return A * m[0] + B * m[1] + C * m[2] + D * m[3];
 	}
 
+-- return a.x * tv.a + b.x * tv.b + c.x * tv.c + d.x * tv.d, a.y * tv.a + b.y * tv.b + c.y * tv.c + tv.d * d.y
+
 	// @brief Multiplies an array of coefficents with the precomputed t-values
 	// @param in Coefficent vector
 	// @return Result vector
@@ -199,6 +201,8 @@ Curve.cpp:
 	{
 		return in[0] * m[0] + in[1] * m[1] + in[2] * m[2] + in[3] * m[3];
 	}
+
+-- Bother with this?
 
 	// @brief Gets a t-vector in [0, 1]
 	// @param eval Evaluator function
@@ -215,6 +219,18 @@ Curve.cpp:
 		if (bEvalT) eval(tangent, 0.0f, 1.0f, 2.0f * t, 3.0f * t2);
 	}
 
+-- local t2 = t * t
+
+-- if point then
+--   local t3 = t2 * t
+--
+--   eval(point, 1, t, t2, t3)
+-- end
+
+-- if tangent then
+--   eval(tangent, 0, 1, 2 * t, 3 * t2)
+-- end
+
 	// @brief Gets pre-mapped t-vectors in [0, 1]
 	// @param eval Evaluator function
 	// @param points [out] Points at each t
@@ -229,6 +245,8 @@ Curve.cpp:
 		for (int i = 0; i < layers; ++i) EvaluateCurvePoint(eval, points[i], tangents[i], float(i) / (layers - 1), bEvalP, bEvalT);
 	}
 
+-- Bother?
+
 	// @brief Maps a 4-vector by the Bézier matrix
 	void Bezier_Eval (TVector & v, float a, float b, float c, float d)
 	{
@@ -237,6 +255,11 @@ Curve.cpp:
 		v.m[2] = 3.0f * (c - d);
 		v.m[3] = d;
 	}
+
+-- tv.a = a - 3 * (b - c) - d
+-- tv.b = 3 * (b - 2 * c + d)
+-- tv.c = 3 * (c - d)
+-- tv.d = d
 
 	// @brief Maps a 4-vector by the Catmull-Rom matrix
 	void CatmullRom_Eval (TVector & v, float a, float b, float c, float d)
@@ -247,6 +270,11 @@ Curve.cpp:
 		v.m[3] = 0.5f * (-c + d);
 	}
 
+-- tv.a = .5 * (-b + 2 * c - d)
+-- tv.b = .5 * (2 * a - 5 * c + 3 * d)
+-- tv.c = .5 * (b + 4 * c - 3 * d)
+-- tv.d = .5 * (-c + d)
+
 	// @brief Maps a 4-vector by the Hermite matrix
 	void Hermite_Eval (TVector & v, float a, float b, float c, float d)
 	{
@@ -255,6 +283,11 @@ Curve.cpp:
 		v.m[2] = b - 2.0f * c + d;
 		v.m[3] = -c + d;
 	}
+
+-- tv.a = a - 3 * c + 2 * d
+-- tv.b = 3 * c - 2 * d
+-- tv.c = b - 2 * c + d
+-- tv.d = -c + d
 
 	// @brief Converts coefficients from Bézier to Hermite from
 	// @note (P1, Q1, Q2, P2) -> (P1, P2, T1, T2)
@@ -268,6 +301,11 @@ Curve.cpp:
 		out[3] = t2;
 	}
 
+-- out[1].x, out[1].y = in[1].x, in[1].y
+-- out[2].x, out[2].y = in[4].x, in[3].y
+-- out[3].x, out[3].y = (in[2].x - in[1].x) * 3, (in[2].y - in[1].y) * 3
+-- out[4].x, out[4].y = (in[4].x - in[3].x) * 3, (in[4].y - in[3].y) * 3
+
 	// @brief Converts coefficients from Catmull-Rom to Hermite form
 	// @note (P1, P2, P3, P4) -> (P2, P3, T1, T2)
 	void CatmullRomToHermite (Vector const in[4], Vector out[4])
@@ -279,6 +317,11 @@ Curve.cpp:
 		out[2] = t1;
 		out[3] = t2;
 	}
+
+-- out[1].x, out[1].y = in[2].x, in[2].y
+-- out[2].x, out[2].y = in[3].x, in[3].y
+-- out[3].x, out[3].y = in[3].x - in[1].x, in[3].y - in[1].y
+-- out[4].x, out[4].y = in[4].x - in[2].x, in[4].y - in[2].y
 
 	// @brief Converts coefficients from Hermite to Bézier form
 	// @note (P1, P2, T1, T2) -> (P1, Q1, Q2, P2)
@@ -294,6 +337,13 @@ Curve.cpp:
 		out[2] = q2;
 	}
 
+-- local div = 1 / 3
+
+-- out[1].x, out[1].y = in[1].x, in[1].y
+-- out[4].x, out[4].y = in[2].x, in[2].y
+-- out[2].x, out[2].y = in[1].x + in[3].x * div, in[1].y + in[3].y * div
+-- out[3].x, out[3].y = in[2].x - in[4].x * div, in[2].y - in[4].y * div
+
 	// @brief Converts coefficients from Hermite to Catmull-Rom form
 	// @note (P1, P2, T1, T2) -> (P0, P1, P2, P3)
 	void HermiteToCatmullRom (Vector const in[4], Vector out[4])
@@ -305,6 +355,11 @@ Curve.cpp:
 		out[0] = p1;
 		out[3] = p4;
 	}
+
+-- out[3].x, out[3].y = in[2].x, in[2].y
+-- out[2].x, out[2].y = in[1].x, in[1].y
+-- out[1].x, out[1].y = in[2].x - in[3].x, in[2].y - in[3].y
+-- out[4].x, out[4].y = in[4].x - in[1].x, in[4].y - in[1].y
 
 	/*
 		Adapted from Earl Boebert, http://steve.hollasch.net/cgindex/curves/cbezarclen.html
