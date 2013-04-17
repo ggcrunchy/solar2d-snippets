@@ -92,6 +92,13 @@ local Curve, CurvePP, N = {}, {}
 --
 local function AddToCurve (x, y)
 	Curve[N + 1], Curve[N + 2], N = x, y, N + 2
+if not XX then
+	XX, YY, LEN = x, y, 0
+else
+	local dx, dy = x-XX,y-YY
+	XX, YY = x, y
+	LEN = LEN + math.sqrt(dx*dx+dy*dy)
+end
 end
 
 --
@@ -104,58 +111,109 @@ local function SetH (value)
 	H = .2 + Scene.hscale.value * .5 / 100
 end
 
+--
+local function DupSome (arr, from)
+	arr[from + 0], arr[from + 1] = arr[1], arr[2]
+	arr[from + 2], arr[from + 3] = arr[3], arr[4]
+	arr[from + 4], arr[from + 5] = arr[5], arr[6]
+end
+
 -- --
-local Stages = 3
+local CurveMethods, Which = {}
+
+-- Naive curve method
+do
+	local DX, DY, NX, NY
+
+	--
+	local function Begin (x1, y1, x2, y2, x3, y3)
+		local B, x, y = 1 - A, x2, y2
+
+		x3, y3 = x2 + (x3 - x2) * A, y2 + (y3 - y2) * A
+		x2, y2 = x1 + (x2 - x1) * B, y1 + (y2 - y1) * B
+-- TODO: Tune these weights? (e.g. with processing considered...)
+		DX, DY = x3 - x2, y3 - y2
+
+		local t = ((x - x2) * DX + (y - y2) * DY) / (DX * DX + DY * DY)
+		local px, py = x2 + DX * t, y2 + DY * t
+
+		NX, NY = x - px, y - py
+
+		return x2, y2, DX, DY
+	end
+
+	--
+	local function Step (x, y, t)
+		local xc, yc = x + DX * t, y + DY * t
+
+		t = H * curves.OneMinusT3_ShiftedAbs(t) -- TODO: Alternatives?
+
+		return xc + NX * t, yc + NY * t
+	end
+
+	CurveMethods.naive = { Begin = Begin, Step = Step, nstages = 3 }
+end
+
+-- Catmull-Rom curve method
+do
+	local Pos, P1, P2, P3, P4 = {}, {}, {}, {}, {}
+
+	--
+	local function Begin (x1, y1, x2, y2, x3, y3, x4, y4)
+		P1.x, P1.y = x1, y1
+		P2.x, P2.y = x2, y2
+		P3.x, P3.y = x3, y3
+		P4.x, P4.y = x4, y4
+
+		return x2, y2, x3 - x2, y3 - y2
+	end
+
+	--
+	local function Step (_, _, t)
+		curves.EvaluateCurve(curves.CatmullRom_Eval, Pos, nil, t)
+
+		return curves.MapToCurve(Pos, P1, P2, P3, P4)
+	end
+
+	CurveMethods.catmull_rom = { Begin = Begin, Step = Step, nstages = 1 }
+end
 
 --
 local function MakeCurvedPolygon (group, points, n)
 	local B = 1 - A
 
 	--
-	for stage = 1, Stages do
-		N = 0
+	local nstages = CurveMethods[Which].nstages
 
+	for stage = 1, nstages do
+		N = 0
+XX,YY=nil
 		for i = 1, n - 1, 2 do
 			local x1, y1 = points[i + 0], points[i + 1]
 			local x2, y2 = points[i + 2], points[i + 3]
 			local x3, y3 = points[i + 4], points[i + 5]
-			local X, Y, d2 = x2, y2
-	-- TODO: Tune these weights? (e.g. with processing considered...)
-			x3, y3 = x2 + (x3 - x2) * A, y2 + (y3 - y2) * A
-			x2, y2 = x1 + (x2 - x1) * B, y1 + (y2 - y1) * B
+			local x4, y4 = points[i + 6], points[i + 7]
 
-			local dx, dy = x3 - x2, y3 - y2
+			--
+			local x, y, dx, dy = CurveMethods[Which].Begin(x1, y1, x2, y2, x3, y3, x4, y4)
+			local good = abs(dx) > Near or abs(dy) > Near
 
-			if abs(dx) > Near or abs(dy) > Near then
-				d2 = dx * dx + dy * dy
-			else
-				x2, y2 = X, Y
+			if good then
+				x2, y2 = x, y
 			end
 
 			AddToCurve(x2, y2)
 
-			if d2 then
-				local t = ((X - x2) * dx + (Y - y2) * dy) / d2
-				local px, py = x2 + dx * t, y2 + dy * t
-				local nx, ny = X - px, Y - py
-
-				for k = 1, NParts - 1 do
-					t = k / NParts
-
-					local xc, yc = x2 + dx * t, y2 + dy * t
-
-					t = H * curves.OneMinusT3_ShiftedAbs(t) -- TODO: Alternatives?
-
-					AddToCurve(xc + nx * t, yc + ny * t)
-				end
+			for k = 1, good and NParts - 1 or 0 do
+				AddToCurve(CurveMethods[Which].Step(x2, y2, k / NParts))
 			end
 		end
 
-		if stage < Stages then
+		--
+		if stage < nstages then
 			points, n = Curve, N
 
-			points[N + 1], points[N + 2] = points[1], points[2]
-			points[N + 3], points[N + 4] = points[3], points[4]
+			DupSome(points, N + 1)
 
 			Curve, CurvePP = CurvePP, Curve
 		end
@@ -191,7 +249,38 @@ end
 --
 local function EnterFrame ()
 	local scene, j, n, cx, cy = Scene, 1, 0, 0, 0
+if JJJ then
+	PPP:setColor(255, 0, 0)
 
+	local lr, len, len2, len3 = 0, 0, 0, 0
+
+	for i = 1, JJJ - 1, 2 do
+		Q1 = { x = scene[i + 0], y = scene[i + 1] }
+		Q2 = { x = scene[i + 2], y = scene[i + 3] }
+		T1 = { x = scene[i + 4], y = scene[i + 5] }
+		T2 = { x = scene[i + 6], y = scene[i + 7] }
+local dx, dy = T1.x - Q2.x, T1.y - Q2.y
+local befl = lr
+lr = lr + math.sqrt(dx * dx + dy * dy)
+local bef3 = len3
+		len3 = len3 + curves.CurveLength(curves.CatmullRom_Eval, { Q1, Q2, T1, T2 }, 0, 1, .005)
+		curves.CatmullRomToHermite(Q1, Q2, T1, T2)
+		curves.HermiteToBezier(Q1, Q2, T1, T2)
+local bef = len
+		len = len + curves.BezierLength({ Q1, Q2, T1, T2 }, .003)
+local bef2 = len2
+		len2 = len2 + curves.CurveLength(curves.Bezier_Eval, { Q1, Q2, T1, T2 }, 0, 1, .005)
+print("COMP", lr - befl, len3 - bef3, len - bef, len2 - bef2)
+	end
+
+	print("STRAIGHT-LINE LENGTH", lr)
+	print("LENGTH 3", len3)
+	print("LENGTH", len)
+	print("LENGTH 2", len2)
+	print("L E N", LEN)
+
+	JJJ = nil
+end
 	for _, point in ipairs(scene.points) do
 		local x, y = point.x, point.y
 		local angle = point.angle % (2 * pi)
@@ -204,8 +293,7 @@ local function EnterFrame ()
 	-- TODO: Add post-processing options...
 	
 	--
-	scene[j + 0], scene[j + 1] = scene[1], scene[2]
-	scene[j + 2], scene[j + 3] = scene[3], scene[4]
+	DupSome(scene, j)
 
 	--
 	if DoAgain then
@@ -219,10 +307,10 @@ local function EnterFrame ()
 
 		DoAgain = false
 	end
-
+if scene.polygon ~= PPP then
 	--
 	display.remove(scene.polygon)
-
+end
 	--
 	local maker
 
@@ -234,7 +322,11 @@ local function EnterFrame ()
 
 	--
 	scene.polygon = maker(scene.view, scene, j)
-
+if Which == "catmull_rom" and not PPP then
+	PPP = scene.polygon
+	JJJ = j
+	KKK = LEN
+end
 	--
 	if not scene.trace then
 		scene.trace = display.newCircle(scene.view, 0, 0, 10)
@@ -265,8 +357,37 @@ function Scene:enterScene ()
 	OnDone()
 
 	--
+	local tab_buttons = {
+		-- Naive curve smoothing --
+		{ 
+			label = "Naive",
+
+			onPress = function()
+				Which = "naive"
+			end
+		},
+
+		-- Catmull-Rom curve --
+		{
+			label = "Catmull-Rom",
+
+			onPress = function()
+				Which = "catmull_rom"
+			end
+		}
+	}
+
+	self.tabs = common.TabBar(self.view, tab_buttons, { top = display.contentHeight - 65, left = 200, width = 200 }, true)
+
+	self.tabs:setSelected(1, true)
+
+	--
 	self.points = points
-	self.smooth = common.CheckboxWithText(self.view, 20, display.contentHeight - 70, "Smooth polygon")
+	self.smooth = common.CheckboxWithText(self.view, 20, display.contentHeight - 70, "Smooth polygon", {
+		func = function(_, check)
+			self.tabs.isVisible = check
+		end
+	})
 
 	self.smooth.isVisible = true
 
@@ -289,6 +410,7 @@ function Scene:enterScene ()
 	SetA(self.acoeff.value)
 	SetH(self.hscale.value)
 
+	--
 	Runtime:addEventListener("enterFrame", EnterFrame)
 end
 
@@ -309,6 +431,7 @@ function Scene:exitScene ()
 	self.acoeff:removeSelf()
 	self.hscale:removeSelf()
 
+	--
 	Runtime:removeEventListener("enterFrame", EnterFrame)
 end
 

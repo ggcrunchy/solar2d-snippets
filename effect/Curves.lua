@@ -28,6 +28,7 @@
 
 -- Standard library imports --
 local abs = math.abs
+local ipairs = ipairs
 local sin = math.sin
 local sqrt = math.sqrt
 
@@ -89,7 +90,7 @@ end
 -- @param tan If present, tangent to evaluate at _t_.
 -- number t Time along curve, &isin [0, 1].
 -- TODO: Meaningful types for above?
-function  M.EvaluateCurve (eval, pos, tan, t)
+function M.EvaluateCurve (eval, pos, tan, t)
 	local t2 = t * t
 
 	if pos then
@@ -152,6 +153,188 @@ function M.HermiteToCatmullRom (src1, src2, src3, src4, dst1, dst2, dst3, dst4)
 	dst2.x, dst2.y = src1.x, src1.y
 	dst1.x, dst1.y = p1x, p1y
 	dst4.x, dst4.y = p4x, p4y
+end
+
+-- Length via quadrature
+do
+	-- --
+	local Tan = {}
+
+	--
+	local function Length (eval, coeffs, t)
+		M.EvaluateCurve(eval, nil, Tan, t)
+
+		local dx, dy = M.MapToCurve(Tan, coeffs[1], coeffs[2], coeffs[3], coeffs[4])
+
+		return sqrt(dx * dx + dy * dy)
+	end
+
+	-- --
+	local X = { 0.1488743389, 0.4333953941, 0.6794095692, 0.8650633666, 0.9739065285 }
+	local W = { 0.2966242247, 0.2692667193, 0.2190863625, 0.1494513491, 0.0666713443 }
+
+	--
+	local function Integrate (eval, coeffs, t1, t2)
+		local midt = t1--.5 * (t1 + t2)
+		local diff = .5 * (t2 - t1)
+		local length = 0
+
+		for i = 1, 5 do
+			local dx = diff * (X[i] + 1)
+
+			length = length + W[i] * (Length(eval, coeffs, midt - dx) + Length(eval, coeffs, midt + dx))
+		end
+
+		return length * diff
+	end
+-- ^^ This one never seemed to work...
+-- *Internet investigation...*
+-- Int(f(x) dx, x, a, b) ~ (b - a) / 2 * Sum[i, 1, n]{ wi * f(a + (xi + 1) * (b - a) / 2)}
+-- Didn't do +1...
+
+	--
+	local function Subdivide (eval, coeffs, t1, t2, len, tolerance)
+		local midt = .5 * (t1 + t2)
+
+		local llen = Integrate(eval, coeffs, t1, midt)
+		local rlen = Integrate(eval, coeffs, midt, t2)
+
+		if abs(len - (llen + rlen)) > tolerance then
+			return Subdivide(eval, coeffs, t1, midt, llen, tolerance) + Subdivide(eval, coeffs, midt, t2, rlen, tolerance)
+		else
+			return llen + rlen
+		end
+	end
+
+	--- Computes a curve length
+	-- @callable eval Evaluator function
+	-- @param coeffs Control coefficients
+	-- @number t1 Parameter #1
+	-- @number t2 Parameter #2
+	-- @number tolerance Evaluation tolerance
+	-- @treturn number Length of curve
+	-- TODO: DOCME better
+	function M.CurveLength (eval, coeffs, t1, t2, tolerance) -- Vector const coeffs[4]
+		return Subdivide(eval, coeffs, t1, t2, Integrate(eval, coeffs, t1, t2), tolerance)
+	end
+end
+
+-- Length via split method
+do
+	--[[
+		Adapted from Earl Boebert, http://steve.hollasch.net/cgindex/curves/cbezarclen.html
+
+		The last suggestion by Gravesen is pretty nifty, and I think it's a candidate for the
+		next Graphics Gems. I hacked out the following quick implementation, using the .h and
+		libraries definitions from Graphics Gems I (If you haven't got that book then you have
+		no business mucking with with this stuff :-)) The function "bezsplit" is lifted
+		shamelessly from Schneider's Bezier curve-fitter.
+	]]
+
+	-- --
+	local Temp = {}
+
+	for i = 1, 4 do
+		Temp[i] = {}
+
+		for j = 1, 4 do
+			Temp[i][j] = j <= 5 - i and {}
+		end
+	end
+
+	-- --
+	local V, Top = {}
+
+	--
+	local function AddPoint (point)
+		V[Top + 1], V[Top + 2], Top = point.x, point.y, Top + 2
+	end
+
+	-- Split a cubic bezier in two
+	local function BezSplit ()--V, L, R)--Vector const V[], Vector L[], Vector R[])
+		-- Copy control points.
+		local base = Top + 1
+
+		for _, temp in ipairs(Temp[1]) do
+			temp.x, temp.y, base = V[base], V[base + 1], base + 2
+		end
+
+		-- Triangle computation.
+		local prev_row = Temp[1]
+
+		for i = 2, 4 do
+			local row = Temp[i]
+
+			for j = 1, 5 - i do
+				local r, pr1, pr2 = row[j], prev_row[j], prev_row[j + 1]
+
+				r.x, r.y = .5 * (pr1.x + pr2.x), .5 * (pr1.y + pr2.y)
+			end
+
+			prev_row = row
+		end
+
+		-- L
+		for i = 1, 4 do
+			AddPoint(Temp[i][1])
+--[[
+			local l, ltemp = L[i], Temp[i][1]
+			local r, rtemp = R[i], Temp[5 - i][i]
+
+			l.x, l.y = ltemp.x, ltemp.y
+			r.x, r.y = rtemp.x, rtemp.y
+			]]
+		end
+
+		-- R
+		for i = 1, 4 do
+			AddPoint(Temp[5 - i][i])
+		end
+	end
+
+	-- Add polyline length if close enough
+	local function AddIfClose (--[[V, ]]length, err)--Vector const V[], double & length, double error)
+		Top = Top - 8
+
+		local base = Top + 1
+		local x, y = V[base], V[base + 1]
+		local dx, dy = V[base + 6] - x, V[base + 7] - y
+
+		local len, main_len = 0, sqrt(dx * dx + dy * dy)
+
+		for _ = 1, 3 do
+			dx, dy = V[base + 2] - x, V[base + 3] - y
+			len = len + sqrt(dx * dx + dy * dy)
+			base, x, y = base + 2, x + dx, y + dy
+		end
+
+		--
+		if len - main_len > err then
+			BezSplit()--V, L, R)
+
+			local ll = AddIfClose(--[[L, ]]length, err)
+			local lr = AddIfClose(--[[R, ]]length, err)
+			
+			len = ll + lr
+		end
+
+		return len
+	end
+
+	--- Computes a Bézier curve's length
+	-- @param coeffs Control coefficients
+	-- @number tolerance Evaluation tolerance
+	-- @treturn number Length of curve
+	-- TODO: DOCME better
+	function M.BezierLength (coeffs, tolerance)
+		Top = 0
+
+		for i = 1, 4 do
+			AddPoint(coeffs[i])
+		end
+
+		return AddIfClose(--[[coeffs, ]]0, tolerance)
+	end
 end
 
 --- Given some pre-computed coefficients, maps vectors to a curve.
@@ -302,140 +485,6 @@ end
 
 -- Export the module.
 return M
---[[
-Curve.cpp:
-	#include "GeometryEffects.h"
-
-	/*
-		Adapted from Earl Boebert, http://steve.hollasch.net/cgindex/curves/cbezarclen.html
-		The last suggestion by Gravesen is pretty nifty, and I think it's a candidate for the
-		next Graphics Gems. I hacked out the following quick implementation, using the .h and
-		libraries definitions from Graphics Gems I (If you haven't got that book then you have
-		no business mucking with with this stuff :-)) The function "bezsplit" is lifted
-		shamelessly from Schneider's Bezier curve-fitter.
-	*/
-
-	/************************ split a cubic bezier in two ***********************/
-	  
-	static void BezSplit (Vector const V[], Vector L[], Vector R[])
-	{
-		Vector Temp[4][4];
-
-		// Copy control points.
-		for (int i = 0; i < 4; ++i) Temp[0][i] = V[i];
-
-		// Triangle computation.
-		for (int i = 1; i < 4; ++i)
-		{
-			for (int j = 0; j < 4 - i; ++j) Temp[i][j] = (Temp[i - 1][j] + Temp[i - 1][j + 1]) * 0.5f;
-		}
-
-		for (int i = 0; i < 4; ++i) L[i] = Temp[i][0];
-		for (int i = 0; i < 4; ++i) R[i] = Temp[3 - i][i]; 
-	}
-
-	/********************** add polyline length if close enuf *******************/
-
-	static void AddIfClose (Vector const V[], double & length, double error) 
-	{
-		Vector L[4], R[4];// bez poly splits
-
-		double len = 0.0, main_len = (V[0] - V[3]).GetLen();
-
-		for (int i = 0; i <= 2; ++i) len = len + (V[i] - V[i + 1]).GetLen();
-
-		if (len - main_len > error)
-		{
-			BezSplit(V, L, R);
-
-			AddIfClose(L, length, error);
-			AddIfClose(R, length, error);
-		}
-
-		else length = length + len;
-	}
-
-	// @brief Computes a Bézier curve's length
-	// @param coeffs Control coefficients
-	// @param tolerance Evaluation tolerance
-	// @return Length of curve
-	float BezierLength (Vector const coeffs[4], float tolerance)
-	{
-		double length = 0.0;
-
-		AddIfClose(coeffs, length, double(tolerance));
-
-		return float(length);
-	}
-
-	// @brief Cubic curve state
-	struct CubicCurve {
-		// Members
-		Vector const * mCoeffs;	// Control coefficeints
-
-		// Lifetime
-		CubicCurve (Vector const coeffs[4]) : mCoeffs(coeffs) {}
-
-		// Methods
-		double Integrate (CurveEval eval, float t1, float t2)
-		{
-			const double x[] = { 0.1488743389, 0.4333953941, 0.6794095692, 0.8650633666, 0.9739065285 };
-			const double w[] = { 0.2966242247, 0.2692667193, 0.2190863625, 0.1494513491, 0.0666713443 };
-
-			double midt = (t1 + t2) / 2.0;
-			double diff = (t2 - t1) / 2.0;
-			double length = 0.0;
-
-			for (int i = 0; i < 5; ++i)
-			{
-				double dx = diff * x[i];
-
-				length += w[i] * (Length(eval, midt - dx) + Length(eval, midt + dx));
-			}
-
-			return length * diff;
-		}
--- ^^ This one never seemed to work...
--- *Internet investigation...*
--- Int(f(x) dx, x, a, b) ~ (b - a) / 2 * Sum[i, 1, n]{ wi * f(a + (xi + 1) * (b - a) / 2)}
--- Didn't do +1...
-		float Length (CurveEval eval, double t)
-		{
-			TVector Tan;
-
-			EvaluateCurvePoint(eval, Tan, Tan, float(t), false, true);
-
-			return Tan.Map(mCoeffs).GetLen();
-		}
-
-		double Subdivide (CurveEval eval, double t1, double t2, double len, double tolerance)
-		{
-			double midt = (t1 + t2) / 2.0;
-
-			double llen = Integrate(eval, t1, midt);
-			double rlen = Integrate(eval, midt, t2);
-
-			if (abs(len - (llen + rlen)) > tolerance) return Subdivide(eval, t1, midt, llen, tolerance) + Subdivide(eval, midt, t2, rlen, tolerance);
-
-			else return llen + rlen;
-		}
-	};
-
-	// @brief Computes a curve length
-	// @param eval Evaluator function
-	// @param coeffs Control coefficients
-	// @param t1 Parameter #1
-	// @param t2 Parameter #2
-	// @param tolerance Evaluation tolerance
-	// @return Length of curve
-	float CurveLength (CurveEval eval, Vector const coeffs[4], float t1, float t2, float tolerance)
-	{
-		CubicCurve cc(coeffs);
-
-		return (float)cc.Subdivide(eval, t1, t2, cc.Integrate(eval, t1, t2), tolerance);
-	}
-]]
-
 --[[
 CubicCurve.cpp:
 	// @brief Cubic curve representation
