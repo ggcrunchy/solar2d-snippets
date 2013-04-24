@@ -98,12 +98,12 @@ function Scene:enterScene ()
 	self.igroup.x, self.igroup.y = 20, 100
 
 	-- Rotate three ellipse points and iterate the triangle formed by them, lighting
-	-- up its pixels. Ignore out-of-bounds / unloaded columns and rows.
-	local pixels, row_loading, two_pi = {}, 1, 2 * math.pi
-	local r, g, b
+	-- up its pixels. Ignore out-of-bounds columns and rows.
+	local pixels, two_pi, r, g, b = {}, 2 * math.pi
+	local nloaded, nused = 0, 0
 
 	self.render = timer.performWithDelay(10, function(event)
-		if event.count % 5 == 0 then
+		if event.count % 15 == 0 then
 			r, g, b = random(255), random(255), random(255)
 		end
 
@@ -113,15 +113,36 @@ function Scene:enterScene ()
 		local x1, y1 = mx + floor(cos(a1) * 20), my + floor(sin(a1) * 40)
 		local x2, y2 = mx + floor(cos(a2) * 25), my + floor(sin(a2) * 50)
 		local x3, y3 = mx + floor(cos(a3) * 20), my + floor(sin(a3) * 45)
+		local y, was_used = (min(y1, y2, y3) - 1) * PixelHeight, nused
+
+		-- Lay out pixels until we run out or fill the (in bounds) triangle.
+		nused = 0
 
 		for row, left, right in grid_iterators.TriangleIter(x1, y1, x2, y2, x3, y3) do
-			if row >= 1 and row < row_loading then
-				local rpixels = pixels[row]
+			left = row <= NRows and max(left, 1) or right + 1
 
-				for col = max(left, 1), min(right, NCols) do
-					rpixels[col]:setFillColor(r, g, b)
+			local x = (left - 1) * PixelWidth
+
+			for col = left, min(right, NCols) do
+				if nused < nloaded then
+					local pixel = pixels[nused + 1]
+
+					pixel.x, pixel.y, pixel.isVisible = x, y, true
+
+					pixel:setFillColor(r, g, b)
+					
+					nused, x = nused + 1, x + PixelWidth
+				else
+					break
 				end
 			end
+
+			y = y + PixelHeight
+		end
+
+		-- Turn off any pixels still allocated from the last frame.
+		for i = nused + 1, was_used do
+			pixels[i].isVisible = false
 		end
 	end, 0)
 
@@ -129,37 +150,20 @@ function Scene:enterScene ()
 	-- too hard, so spread the work out over a few frames.
 	-- TODO: Do something else, e.g. with fatter pixels, for a while until this is complete in the background?
 	-- Another idea is to gauge the time taken by this and try to adapt, then loop inside the callback
-	local col_loading, xscale, yscale = 1, PixelWidth / SheetProps.width, PixelHeight / SheetProps.height
+	local area = NCols * NRows
 
 	self.t = timers.RepeatEx(function()
-		-- Load some columns.
-		local to_col = min(col_loading + NCols / 2, NCols)
-		local rpixels = pixels[row_loading] or {}
-		local x, y = (col_loading - 1) * PixelWidth, (row_loading - 1) * PixelHeight
-
-		for col = col_loading, to_col do
+		for _ = 1, min(nloaded + 20, area) - nloaded do
 			local pixel = display.newImage(self.igroup, self.isheet, 1)
 
 			pixel:setReferencePoint(display.TopLeftReferencePoint)
 
-			pixel.x, pixel.y, pixel.xScale, pixel.yScale = x, y, xscale, yscale
+			pixel.width, pixel.height, pixel.isVisible = PixelWidth, PixelHeight, false
 
-			rpixels[col], x = pixel, x + PixelWidth
+			nloaded, pixels[nloaded + 1] = nloaded + 1, pixel
 		end
 
-		col_loading, pixels[row_loading] = to_col + 1, rpixels
-
-		-- After the last column, advance the row (rewinding the column). If it was the last
-		-- row, kill the timer.
-		if col_loading > NCols then
-			row_loading = row_loading + 1
-
-			if row_loading > NRows then
-				return "cancel"
-			else
-				col_loading = 1
-			end
-		end
+		return nloaded == area and "cancel"
 	end)
 end
 

@@ -190,7 +190,7 @@ do
 -- ^^ This one never seemed to work...
 -- *Internet investigation...*
 -- Int(f(x) dx, x, a, b) ~ (b - a) / 2 * Sum[i, 1, n]{ wi * f(a + (xi + 1) * (b - a) / 2)}
--- Didn't do +1...
+-- Didn't do +1... (the midt, no +1 come from Rick Parent's "Computer Animation", possibly)
 
 	--
 	local function Subdivide (eval, coeffs, t1, t2, len, tolerance)
@@ -534,4 +534,10 @@ CubicCurve.cpp:
 
 		return 1;
 	}
+	
+-- TODO: Try Romberg? http://www.geometrictools.com/Documentation/NumericalIntegration.pdf
+
+-- TODO: Gaussian? http://www.geometrictools.com/LibMathematics/NumericalAnalysis/Wm5Integrate1.cpp
+
+-- TODO: Runge-Kutta... http://www.geometrictools.com/Documentation/MovingAlongCurveSpecifiedSpeed.pdf
 ]]
