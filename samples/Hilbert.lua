@@ -23,11 +23,20 @@
 -- [ MIT license: http://www.opensource.org/licenses/mit-license.php ]
 --
 
+-- Standard library imports --
+local pi = math.pi
+local random = math.random
+local remove = table.remove
+
 -- Modules --
 local buttons = require("ui.Button")
 local hilbert = require("fill.Hilbert")
 local scenes = require("game.Scenes")
 local timers = require("game.Timers")
+
+-- Corona globals --
+local display = display
+local transition = transition
 
 -- Corona modules --
 local storyboard = require("storyboard")
@@ -43,14 +52,34 @@ end
 Scene:addEventListener("createScene")
 
 --
+local function Rand (n)
+	return -n / 2 + random() * n
+end
+
+--
 function Scene:enterScene ()
+	self.trail = display.newGroup()
 	self.text = display.newText("", 130, 100, native.systemFontBold, 30)
+
+	self.view:insert(self.trail)
+
 	self.timer = timers.WrapEx(function()
-		local px, py
+		local cache, px, py = {}
+
+		local trail_params = {
+			time = 1100, alpha = .2,
+
+			onComplete = function(image)
+				image.isVisible = false
+
+				cache[#cache + 1] = image
+			end
+		}
 
 		hilbert.ForEach(6, function(s, x, y, way)
 			local wx, wy = 300 + x * 7, 470 - y * 7
 
+			-- Advance the line.
 			if self.line then -- Third point and on
 				self.line:append(wx, wy)
 			elseif px then -- Second point
@@ -61,6 +90,25 @@ function Scene:enterScene ()
 				px, py = wx, wy
 			end
 
+			-- Mark the line's trail.
+			local image = remove(cache)
+
+			if not image then
+				image = display.newRect(self.trail, 0, 0, 15, 15)
+
+				image:setFillColor(0, 0)
+				image:setStrokeColor(35 + random(185), 35 + random(185), 35 + random(185))
+
+				image.strokeWidth = 2
+			end
+
+			image.x, image.y, image.alpha, image.rotation, image.isVisible = wx, wy, .6, 0, true
+
+			trail_params.x, trail_params.y, trail_params.rotation = wx + Rand(10), wy + Rand(10), Rand(20 * pi)
+
+			transition.to(image, trail_params)
+
+			-- Update progress text.
 			self.text.text = string.format("(%i, %i), %i, %s", x, y, s, way)
 
 			coroutine.yield()
@@ -76,6 +124,7 @@ function Scene:exitScene ()
 	timer.cancel(self.timer)
 
 	self.text:removeSelf()
+	self.trail:removeSelf()
 
 	self.line, self.text, self.timer = nil
 end

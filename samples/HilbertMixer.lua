@@ -37,6 +37,7 @@ local common = require("editor.Common")
 local curves = require("effect.Curves")
 local hilbert = require("fill.Hilbert")
 local numeric_ops = require("numeric_ops")
+local pixels = require("effect.Pixels")
 local scenes = require("game.Scenes")
 local timers = require("game.Timers")
 
@@ -92,6 +93,7 @@ local Curve, CurvePP, N = {}, {}
 --
 local function AddToCurve (x, y)
 	Curve[N + 1], Curve[N + 2], N = x, y, N + 2
+-- TESTING
 if not XX then
 	XX, YY, LEN = x, y, 0
 else
@@ -99,6 +101,7 @@ else
 	XX, YY = x, y
 	LEN = LEN + math.sqrt(dx*dx+dy*dy)
 end
+-- /TESTING
 end
 
 --
@@ -187,7 +190,9 @@ local function MakeCurvedPolygon (group, points, n)
 
 	for stage = 1, nstages do
 		N = 0
+-- TESTING
 XX,YY=nil
+-- /TESTING
 		for i = 1, n - 1, 2 do
 			local x1, y1 = points[i + 0], points[i + 1]
 			local x2, y2 = points[i + 2], points[i + 3]
@@ -225,10 +230,57 @@ XX,YY=nil
 end
 
 --
-local function GetXY (t, div)
-	local x, y = hilbert.GetXY(6, numeric_ops.RoundTo(t / div) % 2^6)
-
+local function Pos (x, y)
 	return x * 33, 550 - y * 33
+end
+
+--
+local function GetXY (t, div, trail)
+	local s = numeric_ops.RoundTo(t / div) % 2^6
+	local x, y = hilbert.GetXY(6, s)
+	local px, py = Pos(x, y)
+
+	return px, py, x, y, s
+end
+
+--
+local function Delta (delta)
+	if delta ~= 0 then
+		return delta < 0 and -3 or 3
+	else
+		return 0
+	end
+end
+
+--
+local function UpdateTrail (trail, x, y, s)
+	local base, nrects = 1, #trail / 4
+	local curx, cury = x, y
+
+	for i = 1, 4 do
+		local rect = trail[i]
+		local valid = s - i > 0
+
+		if valid then
+			local px, py = hilbert.GetXY(6, s - i)
+			local dx, dy = Delta(px - curx), Delta(py - cury)
+			local sx, sy = Pos(curx, cury)
+
+			for j = base, base + nrects - 1 do
+				sx, sy = sx + dx, sy + dy
+
+				trail[j].x, trail[j].y = sx, sy
+			end
+
+			curx, cury = px, py
+		end
+
+		for j = base, base + nrects - 1 do
+			trail[j].isVisible = valid
+		end
+
+		base = base + nrects
+	end
 end
 
 -- --
@@ -249,6 +301,7 @@ end
 --
 local function EnterFrame ()
 	local scene, j, n, cx, cy = Scene, 1, 0, 0, 0
+-- TESTING...
 if JJJ then
 	PPP:setColor(255, 0, 0)
 
@@ -281,6 +334,7 @@ print("COMP", lr - befl, len3 - bef3, len - bef, len2 - bef2)
 
 	JJJ = nil
 end
+-- /TESTING
 	for _, point in ipairs(scene.points) do
 		local x, y = point.x, point.y
 		local angle = point.angle % (2 * pi)
@@ -300,17 +354,23 @@ end
 		for i, point in ipairs(scene.points) do
 			MoveParams.onComplete = i == 1 and OnDone or nil
 
-			MoveParams.angle, MoveParams.x, MoveParams.y = point.angle + point.da, GetXY(point.start + Now, point.div)
+			local px, py, x, y, s = GetXY(point.start + Now, point.div)
+
+			MoveParams.angle, MoveParams.x, MoveParams.y = point.angle + point.da, px, py
+
+			UpdateTrail(point.trail, x, y, s)
 
 			transition.to(point, MoveParams)
 		end
 
 		DoAgain = false
 	end
+-- TESTING
 if scene.polygon ~= PPP then
 	--
 	display.remove(scene.polygon)
 end
+-- /TESTING
 	--
 	local maker
 
@@ -322,11 +382,13 @@ end
 
 	--
 	scene.polygon = maker(scene.view, scene, j)
+-- TESTING
 if Which == "catmull_rom" and not PPP then
 	PPP = scene.polygon
 	JJJ = j
 	KKK = LEN
 end
+-- /TESTING
 	--
 	if not scene.trace then
 		scene.trace = display.newCircle(scene.view, 0, 0, 10)
@@ -339,14 +401,33 @@ end
 
 --
 function Scene:enterScene ()
+	self.isheet = pixels.GetPixelSheet()
+	self.igroup = display.newImageGroup(self.isheet)
+
+	self.view:insert(self.igroup)
+
 	local points = {}
 
 	for i = 1, 5 do
+		local trail = {}
+
 		points[i] = {
 			angle = 0, da = random(3, 7) * pi / 20,
 			start = random(Min, Max),
-			div = random(150, 600)
+			div = random(150, 600),
+			trail = trail
 		}
+
+		for i = 1, 44 do
+			local rect = display.newImage(self.igroup, self.isheet, 1)
+			local scale = (i - 1) / 44
+
+			rect.alpha = .6 - .4 * scale
+			rect.width, rect.height = 3, 3
+			rect.isVisible = false
+
+			trail[i] = rect
+		end
 
 		points[i].x, points[i].y = GetXY(points[i].start, points[i].div)
 	end
@@ -420,10 +501,13 @@ Scene:addEventListener("enterScene")
 function Scene:exitScene ()
 	self.points = nil
 
+	self.igroup:removeSelf()
+
 	display.remove(self.polygon)
 	display.remove(self.smooth)
 	display.remove(self.trace)
 
+	self.isheet = nil
 	self.polygon = nil
 	self.smooth = nil
 	self.trace = nil

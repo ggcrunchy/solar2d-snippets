@@ -262,7 +262,7 @@ do
 			end
 
 			if y2 == y3 and x3 < x2 then
-				x2, x3 = x3, x1
+				x2, x3 = x3, x2
 			end
 
 			ymid = y2

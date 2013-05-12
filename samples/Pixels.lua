@@ -24,38 +24,34 @@
 --
 
 -- Standard library imports --
+local abs = math.abs
+local ceil = math.ceil
 local cos = math.cos
 local floor = math.floor
 local max = math.max
 local min = math.min
+local pi = math.pi
 local random = math.random
 local sin = math.sin
+local sqrt = math.sqrt
 
 -- Modules --
 local buttons = require("ui.Button")
 local grid_iterators = require("grid_iterators")
+local pixels = require("effect.Pixels")
 local scenes = require("game.Scenes")
 local timers = require("game.Timers")
 
 -- Corona globals --
 local display = display
-local graphics = graphics
-local system = system
 local timer = timer
+local transition = transition
 
 -- Corona modules --
 local storyboard = require("storyboard")
 
--- Curves demo scene --
+-- Pixels demo scene --
 local Scene = storyboard.newScene()
-
--- --
-local SheetProps = { numFrames = 1 }
-
---
-local function File ()
-	return "_X_white_X_.png", system.TemporaryDirectory
-end
 
 -- --
 local PixelWidth, PixelHeight = 2, 2
@@ -63,21 +59,6 @@ local PixelWidth, PixelHeight = 2, 2
 --
 function Scene:createScene ()
 	buttons.Button(self.view, nil, 20, 20, 200, 50, scenes.Opener{ name = "scene.Choices" }, "Go Back")
-
-	-- Make a white image. This is tintable, and gives us access to image groups.
-	local temp = display.newGroup()
-
-	display.newRect(temp, 0, 0, PixelWidth, PixelHeight)
-	display.save(temp, File())
-
-	temp:removeSelf()
-
-	-- Find out the size of the saved image.
-	local dims = display.newImage(File())
-
-	SheetProps.width, SheetProps.height = dims.width, dims.height
-
-	dims:removeSelf()
 end
 
 Scene:addEventListener("createScene")
@@ -85,12 +66,29 @@ Scene:addEventListener("createScene")
 -- --
 local NCols, NRows = 200, 120
 
+-- --
+local CenterX, CenterY = 450, 150
+
+-- --
+local Radius = 35
+
+-- --
+local ColorParams = {
+	time = 900, transition = easing.inOutQuad,
+
+	onComplete = function(color)
+		color.waiting = true
+	end
+}
+
+--
+local function SetColor (color)
+	color.r, color.g, color.b = 20 + random(235), 20 + random(235), 20 + random(235)
+end
+
 --
 function Scene:enterScene ()
-	-- Make a single frame sheet from the white image, and associate an image group.
-	local name, base = File()
-
-	self.isheet = graphics.newImageSheet(name, base, SheetProps)
+	self.isheet = pixels.GetPixelSheet()
 	self.igroup = display.newImageGroup(self.isheet)
 
 	self.view:insert(self.igroup)
@@ -99,14 +97,35 @@ function Scene:enterScene ()
 
 	-- Rotate three ellipse points and iterate the triangle formed by them, lighting
 	-- up its pixels. Ignore out-of-bounds columns and rows.
-	local pixels, two_pi, r, g, b = {}, 2 * math.pi
-	local nloaded, nused = 0, 0
+	local pix, color, two_pi = {}, { waiting = true }, 2 * math.pi
+	local nloaded, nused, edges, pixel = 0, 0, {}
+
+	SetColor(color)
+
+	local function GetPixel ()
+		if nused < nloaded then
+			nused = nused + 1
+			pixel = pix[nused]
+
+			pixel.isVisible = true
+
+			return true
+		end
+	end
 
 	self.render = timer.performWithDelay(10, function(event)
-		if event.count % 15 == 0 then
-			r, g, b = random(255), random(255), random(255)
+		--
+		if color.waiting then
+			SetColor(ColorParams)
+
+			transition.to(color, ColorParams)
+
+			color.waiting = false
 		end
 
+		local r, g, b = color.r, color.g, color.b
+
+		--
 		local angle = event.time * two_pi / 3000
 		local a1, a2, a3 = angle + two_pi / 3, angle + 2 * two_pi / 3, angle + 2 * two_pi
 		local mx, my = NCols / 2, NRows / 2
@@ -124,14 +143,12 @@ function Scene:enterScene ()
 			local x = (left - 1) * PixelWidth
 
 			for col = left, min(right, NCols) do
-				if nused < nloaded then
-					local pixel = pixels[nused + 1]
-
-					pixel.x, pixel.y, pixel.isVisible = x, y, true
+				if GetPixel() then
+					pixel.x, pixel.y = x, y
 
 					pixel:setFillColor(r, g, b)
-					
-					nused, x = nused + 1, x + PixelWidth
+
+					x = x + PixelWidth
 				else
 					break
 				end
@@ -140,10 +157,78 @@ function Scene:enterScene ()
 			y = y + PixelHeight
 		end
 
+		--
+		local xc, yc, xp, yp = -1, 0, Radius * PixelHeight, 0
+
+		for x, y in grid_iterators.CircleOctant(Radius) do
+			if x ~= xc then
+				xc, xp = x, xp - PixelWidth
+			end
+
+			if y ~= yc then
+				yc, yp = y, yp + PixelWidth
+			end
+
+			edges[x + 1] = max(edges[x + 1] or 0, yp)
+			edges[y + 1] = max(edges[y + 1] or 0, xp)
+		end
+
+if not MMM then
+	MMM = { theta = 0, phi = 0}
+end
+if not MMM.on then
+	MMM.on=true
+	transition.to(MMM, {
+		time = 950, transition = easing.inOutExpo,
+		phi = random() * 2 * pi, theta = random() * pi,
+		onComplete = function(a) a.on = false end
+	})
+end
+
+local cphi, sphi = cos(MMM.phi), sin(MMM.phi)
+local ctheta, stheta = cos(MMM.theta), sin(MMM.theta)
+
+local X, Y, Z = 35 * stheta * cphi, 35 * stheta * sphi, 35 * ctheta
+		--
+		local dx, dy = 1 / (PixelWidth * Radius), 1 / Radius
+		local y, uy, zpart = CenterY - Radius * PixelHeight, 1, 0
+
+		for iy = -Radius, Radius do
+			local w = edges[abs(iy) + 1]
+			local ux = -w * dx
+
+			for x = -w, w, PixelWidth do
+				if GetPixel() then
+					pixel.x, pixel.y = CenterX + x, y
+
+					local uz = sqrt(max(zpart - ux * ux, 0))
+					local xx = X - Radius * ux
+					local yy = Y - Radius * uy
+					local zz = Z - Radius * uz
+					local len = sqrt(xx * xx + yy * yy + zz * zz)
+					local k = min(.5 * (ux * xx + uy * yy + uz * zz) / len + .5, 1)
+
+					pixel:setFillColor(20 + k * 235, 35 + k * 220, 20 + k * 235)
+
+					ux = ux + dx
+				end
+			end
+
+			y, uy = y + PixelHeight, uy - dy
+			zpart = 1 - uy * uy
+		end
+
+		--
+		for i = #edges, 1, -1 do
+			edges[i] = nil
+		end
+
 		-- Turn off any pixels still allocated from the last frame.
 		for i = nused + 1, was_used do
-			pixels[i].isVisible = false
+			pix[i].isVisible = false
 		end
+
+		pixel = nil
 	end, 0)
 
 	-- Creating too many images (the "frame buffer") at once seems to hit Corona a little
@@ -151,16 +236,17 @@ function Scene:enterScene ()
 	-- TODO: Do something else, e.g. with fatter pixels, for a while until this is complete in the background?
 	-- Another idea is to gauge the time taken by this and try to adapt, then loop inside the callback
 	local area = NCols * NRows
+	local circ = ceil(3.5 * Radius * Radius + 1)
 
 	self.t = timers.RepeatEx(function()
-		for _ = 1, min(nloaded + 20, area) - nloaded do
+		for _ = 1, min(nloaded + 20, area + circ) - nloaded do
 			local pixel = display.newImage(self.igroup, self.isheet, 1)
 
 			pixel:setReferencePoint(display.TopLeftReferencePoint)
 
 			pixel.width, pixel.height, pixel.isVisible = PixelWidth, PixelHeight, false
 
-			nloaded, pixels[nloaded + 1] = nloaded + 1, pixel
+			nloaded, pix[nloaded + 1] = nloaded + 1, pixel
 		end
 
 		return nloaded == area and "cancel"

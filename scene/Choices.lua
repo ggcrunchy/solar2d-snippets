@@ -48,7 +48,8 @@ local Scene = storyboard.newScene()
 
 -- Samples names --
 local Names = {
-	"Curves", -- These were mostly just for testing something... could be more interesting...
+	"Curves", -- These were mostly just for testing something... could be MUCH more interesting...
+	"Delaunay", -- Stub... idea forming
 	"Hilbert", -- I rather like this, nothing immediate to add...
 	"HilbertMixer", -- Done? See if smoothing would beautify it
 	"Hop", -- Was just to show an idea to a work colleague... has some "problems"... worth fixing?
@@ -58,6 +59,7 @@ local Names = {
 	"Pixels", -- Depending on how far I can squeeze this, look into a "3D engine" on top
 	"SlowMo", -- Explore the "copycat" idea I have here?
 	"Snowfall", -- In progress...
+	"Superformulae", -- Stub... idea forming
 	"Thoughts", -- Seems to need some fixing...
 	"Tiling", -- Image group? Do effects on these, once in play?
 	"Timers", -- Better examples?
@@ -162,7 +164,7 @@ function Scene:createScene ()
 			if name == "Game" then
 				storyboard.gotoScene("scene.Level", { params = 1 })
 			elseif name == "Editor" then
-				storyboard.gotoScene("scene.EditorSetup", "fade") -- Corona bug? Without some effect, doesn't work on second try...
+				storyboard.gotoScene("scene.EditorSetup")
 			else
 				storyboard.gotoScene("samples." .. name)
 			end
