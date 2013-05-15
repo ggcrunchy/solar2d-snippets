@@ -130,10 +130,35 @@ function M.Scale (qout, q, k)
 end
 
 do
+	--
 	local Qf, Qt = {}, {}
 
+	local function AuxSlerp (qout, q1, q2, t, can_flip)
+		local ilen1, ilen2 = 1 / _Length_(q1), 1 / _Length_(q2)
+		local dot, s = _Dot_(q1, q2) * ilen1 * ilen2, 1 - t
+
+		if dot < .97 then
+			local theta = acos(dot)
+
+			if can_flip and dot < 0 then
+				theta, ilen2 = pi - theta, -ilen2
+			end
+
+			local stheta = 1 / sin(theta)
+
+			_Add_(qout, _Scale_(Qf, q1, sin(s * theta) * stheta * ilen1), _Scale_(Qt, q2, sin(t * theta) * stheta * ilen2))
+		else
+			_Add_(qout, _Scale_(Qf, q1, s), _Scale_(Qt, q2, t))
+			_Normalize_(qout, qout)
+		end -- TODO: dot < -.985...
+
+		return qout--_Normalize_(qout, qout)--, flipped
+	end
+
 	--- DOCME
-	function M.Slerp (qout, q1, q2, t, mixed_flips)
+	function M.Slerp (qout, q1, q2, t)--, mixed_flips)
+		return AuxSlerp(qout, q1, q2, t, true)
+--[[
 		local ilen1, ilen2 = 1 / _Length_(q1), 1 / _Length_(q2)
 		local dot, s, flipped = _Dot_(q1, q2) * ilen1 * ilen2, 1 - t, false
 
@@ -151,7 +176,17 @@ do
 			_Add_(qout, _Scale_(Qf, q1, s), _Scale_(Qt, q2, t))
 		end -- TODO: dot < -.985...
 
-		return _Normalize_(qout, qout), flipped
+		return _Normalize_(qout, qout), flipped]]
+	end
+
+	local Qa, Qb = {}, {}
+
+	--- DOCME
+	function M.SquadQ2S2 (qout, q1, q2, s1, s2, t)
+--		local _, aflip = _Slerp_(Qa, q1, q2, t)
+--		local _, bflip = _Slerp_(Qb, s1, s2, t)
+
+		return AuxSlerp(qout, AuxSlerp(Qa, q1, q2, t), AuxSlerp(Qb, s1, s2, t), 2 * t * (1 - t), true)--, aflip ~= bflip)
 	end
 end
 
@@ -165,19 +200,7 @@ do
 		_Log_(Log2, _Multiply_(Log2, qnext, Qi))
 		_Scale_(Sum, _Add_(Sum, Log1, Log2), -.25)
 
-		return _Normalize_(qout, _Multiply_(qout, _Exp_(Sum, Sum), q))
-	end
-end
-
-do
-	local Qa, Qb = {}, {}
-
-	--- DOCME
-	function M.SquadQ2S2 (qout, q1, q2, s1, s2, t)
-		local _, aflip = _Slerp_(Qa, q1, q2, t)
-		local _, bflip = _Slerp_(Qb, s1, s2, t)
-
-		return _Slerp_(qout, Qa, Qb, 2 * t * (1 - t), aflip ~= bflip)
+		return --[[_Normalize_(qout, ]]_Multiply_(qout, q, _Exp_(Sum, Sum))--)
 	end
 end
 

@@ -326,9 +326,9 @@ if LX then
 		print(dlight.t, "vs.", T)
 		printf("ROTQ = (%.3f, %.3f, %.3f, %.3f) vs. (%.3f, %.3f, %.3f, %.3f)", rotq.x, rotq.y, rotq.z, rotq.w, RQX, RQY, RQZ, RQW)
 	--	vdump(Angles)
-	print("M1: ", AA, "->", MM[1])
-	print("M2: ", BB, "->", MM[2])
-	print("M3: ", CC, "->", MM[3])
+--	print("M1: ", AA, "->", MM[1])
+--	print("M2: ", BB, "->", MM[2])
+--	print("M3: ", CC, "->", MM[3])
 		print("")
 	end
 end
@@ -404,7 +404,7 @@ LX,LY,LZ,T,RQX,RQY,RQZ,RQW=light_x,light_y,light_z,dlight.t,rotq.x,rotq.y,rotq.z
 			pixel:setReferencePoint(display.TopLeftReferencePoint)
 
 			pixel.width, pixel.height, pixel.isVisible = PixelWidth, PixelHeight, false
-pixel.alpha = .2
+
 			nloaded, pix[nloaded + 1] = nloaded + 1, pixel
 		end
 
