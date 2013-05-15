@@ -28,6 +28,7 @@ local abs = math.abs
 local ceil = math.ceil
 local cos = math.cos
 local floor = math.floor
+local ipairs = ipairs
 local max = math.max
 local min = math.min
 local pi = math.pi
@@ -37,8 +38,11 @@ local sqrt = math.sqrt
 
 -- Modules --
 local buttons = require("ui.Button")
+local common = require("editor.Common")
+local curves = require("effect.Curves")
 local grid_iterators = require("grid_iterators")
 local pixels = require("effect.Pixels")
+local quaternion_ops = require("quaternion_ops")
 local scenes = require("game.Scenes")
 local timers = require("game.Timers")
 
@@ -86,19 +90,130 @@ local function SetColor (color)
 	color.r, color.g, color.b = 20 + random(235), 20 + random(235), 20 + random(235)
 end
 
+-- --
+local Angles = { { q = {} }, { q = {} }, { q = {} }, { q = {} } }
+
+--
+local function RandomAngles ()
+	return random() * 2 * pi, random() * pi
+end
+
+--
+local function NewAngle (index)
+	local phi_toler, theta_toler, i, phi, theta = .05 * 2 * pi, .05 * pi
+
+	repeat
+		i, phi, theta = 1, RandomAngles()
+
+		while i < index and abs(phi - Angles[i].x) >= phi_toler and abs(theta - Angles[i].y) >= theta_toler do
+			i = i + 1
+		end
+	until i == index
+
+	return phi, theta
+end
+
+--
+local function NewQuat (index, theta)
+	--
+	local qw = cos(theta / 2)
+
+	if abs(qw) > .97 then
+		theta = pi - qw + 1
+		qw = cos(theta / 2)
+	end
+
+	--
+	local stheta, qx, qy, qz = sin(theta / 2)
+
+	repeat
+		local i, x = 1, 2 * (random() - .5)
+		local y = 2 * (random() - .5) * sqrt(max(0, 1 - x * x))
+		local z = 2 * (random() - .5) * sqrt(max(0, 1 - x * x - y * y))
+
+		qx, qy, qz = stheta * x, stheta * y, stheta * z
+
+		while i < index do
+			local quat = Angles[i].q
+
+			if abs(quat.x * qx + quat.y * qy + quat.z * qz + quat.w * qw) > .97 then
+				break
+			end
+
+			i = i + 1
+		end
+	until i == index
+
+	--
+	local quat = Angles[index].q
+
+	quat.x, quat.y, quat.z, quat.w = qx, qy, qz, qw
+end
+
+-- --
+local LightParams = {
+	time = 1950, t = 1,
+
+	onComplete = function(light)
+		local prev, cur = Angles[1]
+		local q1 = prev.q
+
+		for i = 2, 4 do
+			cur = Angles[i]
+
+			prev.q, prev.x, prev.y, prev = cur.q, cur.x, cur.y, cur
+		end
+
+		cur.q, cur.x, cur.y = q1, NewAngle(4)
+
+		NewQuat(4, cur.x)
+	end,
+
+	onStart = function(light)
+		light.t = 0
+	end
+}
+
 --
 function Scene:enterScene ()
+	--
+	self.groups = display.newGroup()
+
+	self.view:insert(self.groups)
+
+	self.groups.x, self.groups.y = 20, 100
+
+	--
 	self.isheet = pixels.GetPixelSheet()
 	self.igroup = display.newImageGroup(self.isheet)
 
-	self.view:insert(self.igroup)
+	self.groups:insert(self.igroup)
 
-	self.igroup.x, self.igroup.y = 20, 100
+	--
+	self.text = display.newText(self.view, "Allocating pixels...", 0, 0, native.systemFontBold, 20)
+
+	self.text:setReferencePoint(display.BottomRightReferencePoint)
+
+	self.text.x, self.text.y = display.contentWidth - 20, display.contentHeight - 20
+
+	--
+	self.back = display.newGroup()
+	self.front = display.newGroup()
+
+	self.groups:insert(self.back)
+	self.groups:insert(self.front)
+
+	self.back:toBack()
+
+	--
+	self.use_quaternions = common.CheckboxWithText(self.view, 20, display.contentHeight - 70, "Use quaternions?")
+
+	self.use_quaternions.isVisible = true
 
 	-- Rotate three ellipse points and iterate the triangle formed by them, lighting
 	-- up its pixels. Ignore out-of-bounds columns and rows.
-	local pix, color, two_pi = {}, { waiting = true }, 2 * math.pi
-	local nloaded, nused, edges, pixel = 0, 0, {}
+	local pix, color, two_pi, rotq, conj, v = {}, { waiting = true }, 2 * math.pi, {}, {}, {}
+	local nloaded, nused, nturns, pixel = 0, 0, 0
 
 	SetColor(color)
 
@@ -158,69 +273,110 @@ function Scene:enterScene ()
 		end
 
 		--
-		local xc, yc, xp, yp = -1, 0, Radius * PixelHeight, 0
+		if nused < nloaded then
+			--
+			local dlight = self.light
 
-		for x, y in grid_iterators.CircleOctant(Radius) do
-			if x ~= xc then
-				xc, xp = x, xp - PixelWidth
-			end
+			if not dlight then
+				dlight = display.newCircle(0, 0, 15)
 
-			if y ~= yc then
-				yc, yp = y, yp + PixelWidth
-			end
+				dlight:setStrokeColor(255, 255, 255, 64)
 
-			edges[x + 1] = max(edges[x + 1] or 0, yp)
-			edges[y + 1] = max(edges[y + 1] or 0, xp)
-		end
+				dlight.strokeWidth, dlight.t = 3, 1
 
-if not MMM then
-	MMM = { theta = 0, phi = 0}
-end
-if not MMM.on then
-	MMM.on=true
-	transition.to(MMM, {
-		time = 950, transition = easing.inOutExpo,
-		phi = random() * 2 * pi, theta = random() * pi,
-		onComplete = function(a) a.on = false end
-	})
-end
+				self.light = dlight
 
-local cphi, sphi = cos(MMM.phi), sin(MMM.phi)
-local ctheta, stheta = cos(MMM.theta), sin(MMM.theta)
+				for i, angle in ipairs(Angles) do
+					angle.x, angle.y = NewAngle(i)
 
-local X, Y, Z = 35 * stheta * cphi, 35 * stheta * sphi, 35 * ctheta
-		--
-		local dx, dy = 1 / (PixelWidth * Radius), 1 / Radius
-		local y, uy, zpart = CenterY - Radius * PixelHeight, 1, 0
-
-		for iy = -Radius, Radius do
-			local w = edges[abs(iy) + 1]
-			local ux = -w * dx
-
-			for x = -w, w, PixelWidth do
-				if GetPixel() then
-					pixel.x, pixel.y = CenterX + x, y
-
-					local uz = sqrt(max(zpart - ux * ux, 0))
-					local xx = X - Radius * ux
-					local yy = Y - Radius * uy
-					local zz = Z - Radius * uz
-					local len = sqrt(xx * xx + yy * yy + zz * zz)
-					local k = min(.5 * (ux * xx + uy * yy + uz * zz) / len + .5, 1)
-
-					pixel:setFillColor(20 + k * 235, 35 + k * 220, 20 + k * 235)
-
-					ux = ux + dx
+					NewQuat(i, angle.x)
 				end
 			end
 
-			y, uy = y + PixelHeight, uy - dy
-			zpart = 1 - uy * uy
+			--
+			if dlight.t == 1 then
+				transition.to(dlight, LightParams)
+			end
+
+			--
+			local light_x, light_y, light_z
+
+			if self.use_quaternions:IsChecked() then
+				v.x, v.y, v.z, v.w = 0, 0, 1, 0
+
+				quaternion_ops.SquadQ4(rotq, Angles[1].q, Angles[2].q, Angles[3].q, Angles[4].q, dlight.t)
+				quaternion_ops.Multiply(v, quaternion_ops.Multiply(v, rotq, v), quaternion_ops.Conjugate(conj, rotq))
+
+				light_x, light_y, light_z = v.x, v.y, v.z
+
+			--
+			else
+				curves.EvaluateCurve(curves.CatmullRom_Eval, Angles, false, dlight.t)
+
+				local phi, theta = curves.MapToCurve(Angles, Angles[1], Angles[2], Angles[3], Angles[4])
+				local cphi, sphi = cos(phi), sin(phi)
+				local ctheta, stheta = cos(theta), sin(theta)
+
+				light_x, light_y, light_z = stheta * cphi, stheta * sphi, ctheta
+			end
+if LX then
+	local dx, dy, dz = LX-light_x,LY-light_y,LZ-light_z
+	local len = math.sqrt(dx*dx+dy*dy+dz*dz)
+	if len >= .9 then
+		print(dlight.t, "vs.", T)
+		printf("ROTQ = (%.3f, %.3f, %.3f, %.3f) vs. (%.3f, %.3f, %.3f, %.3f)", rotq.x, rotq.y, rotq.z, rotq.w, RQX, RQY, RQZ, RQW)
+	--	vdump(Angles)
+	print("M1: ", AA, "->", MM[1])
+	print("M2: ", BB, "->", MM[2])
+	print("M3: ", CC, "->", MM[3])
+		print("")
+	end
+end
+LX,LY,LZ,T,RQX,RQY,RQZ,RQW=light_x,light_y,light_z,dlight.t,rotq.x,rotq.y,rotq.z,rotq.w
+--AA,BB,CC=MM[1],MM[2],MM[3]
+			light_x, light_y, light_z = light_x * 35, light_y * 35, light_z * 35
+
+			--
+			self[light_z < 0 and "back" or "front"]:insert(dlight)
+
+			dlight.x, dlight.y = CenterX + 1.1 * PixelWidth * light_x, CenterY - 1.1 * PixelHeight * light_y
+
+			--
+			-- TODO: LOTS can be forward differenced still...
+			-- Move ambient, diffuse into vars, add sliders... (fix equation too)
+			local dx, dy, dxr = 1 / (PixelWidth * Radius), 1 / Radius, 1 / PixelWidth
+			local y, uy, uyr, zpart = CenterY - Radius * PixelHeight, 1, Radius, 0
+			local yy = light_y - Radius -- ??
+
+			for iy, w in grid_iterators.CircleSpans(Radius, PixelWidth) do
+				local ux, ydot, y2 = -w * dx, uy * yy, yy * yy
+				local xx = light_x - ux * Radius
+
+				for x = -w, w, PixelWidth do
+					if GetPixel() then
+						pixel.x, pixel.y = CenterX + x, y
+
+						local uz = sqrt(max(zpart - ux * ux, 0))
+						local zz = light_z - Radius * uz
+						local len = sqrt(xx * xx + y2 + zz * zz)
+						local k = min(.5 * (ux * xx + ydot + uz * zz) / len + .5, 1)
+
+						pixel:setFillColor(20 + k * 235, 35 + k * 220, 20 + k * 235)
+
+						ux, xx = ux + dx, xx + dxr
+					end
+				end
+
+				y, uy, yy = y + PixelHeight, uy - dy, yy + 1 -- ??
+				zpart = 1 - uy * uy
+			end
 		end
 
 		--
-		for i = #edges, 1, -1 do
-			edges[i] = nil
+		if nused < nloaded then
+			nturns = min(nturns + 1, 5)
+		else
+			nturns = 0
 		end
 
 		-- Turn off any pixels still allocated from the last frame.
@@ -234,22 +390,30 @@ local X, Y, Z = 35 * stheta * cphi, 35 * stheta * sphi, 35 * ctheta
 	-- Creating too many images (the "frame buffer") at once seems to hit Corona a little
 	-- too hard, so spread the work out over a few frames.
 	-- TODO: Do something else, e.g. with fatter pixels, for a while until this is complete in the background?
+	-- Maybe have this take a break when not taxed?
 	-- Another idea is to gauge the time taken by this and try to adapt, then loop inside the callback
-	local area = NCols * NRows
-	local circ = ceil(3.5 * Radius * Radius + 1)
+	local area_sum = NCols * NRows + ceil(3.5 * Radius * Radius + 1)
 
-	self.t = timers.RepeatEx(function()
-		for _ = 1, min(nloaded + 20, area + circ) - nloaded do
+	self.allocate_pixels = timers.RepeatEx(function()
+		--
+		local active = nturns < 5
+
+		for _ = 1, active and min(nloaded + 20, area_sum) - nloaded or 0 do
 			local pixel = display.newImage(self.igroup, self.isheet, 1)
 
 			pixel:setReferencePoint(display.TopLeftReferencePoint)
 
 			pixel.width, pixel.height, pixel.isVisible = PixelWidth, PixelHeight, false
-
+pixel.alpha = .2
 			nloaded, pix[nloaded + 1] = nloaded + 1, pixel
 		end
 
-		return nloaded == area and "cancel"
+		--
+		local done = nloaded == area_sum
+
+		self.text.isVisible = active and not done
+
+		return done and "cancel"
 	end)
 end
 
@@ -258,14 +422,20 @@ Scene:addEventListener("enterScene")
 --
 function Scene:exitScene ()
 	timer.cancel(self.render)
-	timer.cancel(self.t)
+	timer.cancel(self.allocate_pixels)
 
-	self.igroup:removeSelf()
+	display.remove(self.light)
 
+	self.groups:removeSelf()
+	self.text:removeSelf()
+
+	self.back = nil
+	self.front = nil
+	self.light = nil
 	self.igroup = nil
 	self.isheet = nil
 	self.render = nil
-	self.t = nil
+	self.allocate_pixels = nil
 end
 
 Scene:addEventListener("exitScene")

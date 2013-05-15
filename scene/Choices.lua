@@ -51,7 +51,7 @@ local Names = {
 	"Curves", -- These were mostly just for testing something... could be MUCH more interesting...
 	"Delaunay", -- Stub... idea forming
 	"Hilbert", -- I rather like this, nothing immediate to add...
-	"HilbertMixer", -- Done? See if smoothing would beautify it
+	"HilbertMixer", -- Getting there, maybe needs a little more polish and moving the test code elsewhere
 	"Hop", -- Was just to show an idea to a work colleague... has some "problems"... worth fixing?
 	"Marching", -- Better example? Better implementation?
 	"Nodes", -- Was incorporated into editor... though not quite like this... at very least, use LinkGroup?
@@ -59,7 +59,7 @@ local Names = {
 	"Pixels", -- Depending on how far I can squeeze this, look into a "3D engine" on top
 	"SlowMo", -- Explore the "copycat" idea I have here?
 	"Snowfall", -- In progress...
-	"Superformulae", -- Stub... idea forming
+	"Superformulae", -- Getting there... is there any way to analyze the formula (can get REALLY huge...)
 	"Thoughts", -- Seems to need some fixing...
 	"Tiling", -- Image group? Do effects on these, once in play?
 	"Timers", -- Better examples?

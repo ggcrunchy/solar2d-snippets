@@ -157,7 +157,7 @@ function M.GetXY (order, s)
 		x = bor(x + x, MaskedShift(0x936C, row, 1))
 		y = bor(y + y, MaskedShift(0x39C6, row, 1))
 
-		state = MaskedShift(0x3E6B93C1, row + row, 3)
+		state = MaskedShift(0x3E6B94C1, row + row, 3)
 	end
 
 	return x, y

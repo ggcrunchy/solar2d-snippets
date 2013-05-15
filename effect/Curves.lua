@@ -190,7 +190,7 @@ do
 -- ^^ This one never seemed to work...
 -- *Internet investigation...*
 -- Int(f(x) dx, x, a, b) ~ (b - a) / 2 * Sum[i, 1, n]{ wi * f(a + (xi + 1) * (b - a) / 2)}
--- Didn't do +1... (the midt, no +1 come from Rick Parent's "Computer Animation", possibly)
+-- Didn't do +1... (the midt, no +1 come from Rick Parent's "Computer Animation", possibly)... have to double-check, might be same equation
 
 	--
 	local function Subdivide (eval, coeffs, t1, t2, len, tolerance)

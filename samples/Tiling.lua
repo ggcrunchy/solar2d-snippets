@@ -28,6 +28,9 @@ local buttons = require("ui.Button")
 local scenes = require("game.Scenes")
 local sheet = require("ui.Sheet")
 
+-- Corona globals --
+local transition = transition
+
 -- Corona modules --
 local storyboard = require("storyboard")
 
@@ -40,6 +43,9 @@ function Scene:createScene ()
 end
 
 Scene:addEventListener("createScene")
+
+-- --
+local FadeInParams = { time = 700, alpha = 1, transition = easing.outQuad }
 
 --
 function Scene:enterScene ()
@@ -54,6 +60,9 @@ function Scene:enterScene ()
 		tile.yScale = 32 / tile.height
 		tile.x = 150 + col * 32
 		tile.y = 150 + row * 32
+		tile.alpha = .2
+
+		transition.to(tile, FadeInParams)
 
 		col = col + 1
 

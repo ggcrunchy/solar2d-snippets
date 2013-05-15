@@ -229,9 +229,15 @@ XX,YY=nil
 	return MakePolygon(group, Curve, N)
 end
 
+-- --
+local PixRes, Units = 3, 11
+
+-- --
+local PixUnits = PixRes * Units
+
 --
 local function Pos (x, y)
-	return x * 33, 550 - y * 33
+	return 200 + x * PixUnits, 100 + y * PixUnits
 end
 
 --
@@ -246,40 +252,41 @@ end
 --
 local function Delta (delta)
 	if delta ~= 0 then
-		return delta < 0 and -3 or 3
+		return delta < 0 and -PixRes or PixRes
 	else
 		return 0
 	end
 end
 
+-- --
+local NTrailParts = 6
+
 --
 local function UpdateTrail (trail, x, y, s)
-	local base, nrects = 1, #trail / 4
-	local curx, cury = x, y
+	local j, curx, cury = 1, x, y
 
-	for i = 1, 4 do
-		local rect = trail[i]
-		local valid = s - i > 0
+	for i = 1, NTrailParts do
+		local valid = s >= i
 
 		if valid then
 			local px, py = hilbert.GetXY(6, s - i)
 			local dx, dy = Delta(px - curx), Delta(py - cury)
 			local sx, sy = Pos(curx, cury)
 
-			for j = base, base + nrects - 1 do
+			for k = 0, Units - 1 do
+				local rect = trail[j + k]
+
 				sx, sy = sx + dx, sy + dy
 
-				trail[j].x, trail[j].y = sx, sy
+				rect.x, rect.y = sx, sy
 			end
 
 			curx, cury = px, py
 		end
 
-		for j = base, base + nrects - 1 do
-			trail[j].isVisible = valid
+		for _ = 1, Units do
+			trail[j].isVisible, j = valid, j + 1
 		end
-
-		base = base + nrects
 	end
 end
 
@@ -406,7 +413,7 @@ function Scene:enterScene ()
 
 	self.view:insert(self.igroup)
 
-	local points = {}
+	local points, nparts = {}, NParts * Units
 
 	for i = 1, 5 do
 		local trail = {}
@@ -418,9 +425,9 @@ function Scene:enterScene ()
 			trail = trail
 		}
 
-		for i = 1, 44 do
+		for i = 1, nparts do
 			local rect = display.newImage(self.igroup, self.isheet, 1)
-			local scale = (i - 1) / 44
+			local scale = (i - 1) / nparts
 
 			rect.alpha = .6 - .4 * scale
 			rect.width, rect.height = 3, 3

@@ -23,9 +23,18 @@
 -- [ MIT license: http://www.opensource.org/licenses/mit-license.php ]
 --
 
+-- Standard library imports --
+local ipairs = ipairs
+local random = math.random
+local sin = math.sin
+
 -- Modules --
 local buttons = require("ui.Button")
 local scenes = require("game.Scenes")
+
+-- Corona globals --
+local display = display
+local timer = timer
 
 -- Corona modules --
 local storyboard = require("storyboard")
@@ -40,36 +49,71 @@ end
 
 Scene:addEventListener("createScene")
 
+-- --
+local CenterX, CenterY = display.contentCenterX, display.contentCenterY
+
+--
+local function PutCircle (circ)
+	circ.x, circ.y = random(CenterX - 300, CenterX + 300), random(CenterY - 200, CenterY + 200)
+end
+
 --
 function Scene:enterScene ()
-	local group = display.newGroup()
+	self.group = display.newGroup()
 
-	self.view:insert(group)
+	self.view:insert(self.group)
 
-	group:toBack()
+	self.group:toBack()
 
-    self.object = display.newRect(group, 200, 200, 50, 50)
+	--
+	local circles = {}
 
-	self.object:setFillColor(0, 0, 255)
+	for _ = 1, 5 do
+		local circ = display.newCircle(self.group, 0, 0, 25)
 
-	self.timer1 = timer.performWithDelay(20, function(event)
-		self.object.rotation = self.object.rotation + 1.05
-		self.object.x = display.contentWidth / 2 + math.sin(event.time / 900) * display.contentWidth / 3
-	end, 0)
+		circ:setFillColor(random(64, 255), random(64, 255), random(64, 255))
 
-	self.timer2 = timer.performWithDelay(50, function()
-		local new = display.captureBounds(group.contentBounds)
+		PutCircle(circ)
 
-		if self.ghost then
-			self.ghost:removeSelf()
-		end
+		circles[#circles + 1] = circ
+	end
+
+	--
+    local object1 = display.newRect(self.group, 200, 200, 50, 50)
+    local object2 = display.newRect(self.group, 350, 200, 30, 60)
+
+	object1:setFillColor(0, 0, 255)
+	object2:setFillColor(128, 0, 96)
+	object2:setStrokeColor(0, 255, 0)
+
+	object2.strokeWidth = 3
+
+	--
+	self.accumulate = timer.performWithDelay(50, function()
+		local new = display.captureBounds(self.group.contentBounds)
+
+		display.remove(self.ghost)
 
 		self.ghost = new
 
-		group:insert(new)
-
+		self.group:insert(new)
 		new:toBack()
+
 		new.alpha = .9
+	end, 0)
+
+	--
+	self.update_objects = timer.performWithDelay(20, function(event)
+		object1.rotation = object1.rotation + 1.05
+		object1.x = CenterX + sin(event.time / 900) * display.contentWidth / 3
+		object1.y = CenterY + sin(event.time / 1400) * display.contentHeight / 3
+
+		object2.rotation = object2.rotation + 3.05
+		object2.y = CenterY + sin(event.time / 300) * display.contentHeight / 3
+
+		for _, circ in ipairs(circles) do
+			PutCircle(circ)
+		end
 	end, 0)
 end
 
@@ -77,21 +121,13 @@ Scene:addEventListener("enterScene")
 
 --
 function Scene:exitScene ()
-	display.remove(self.object)
-	display.remove(self.ghost)
+	timer.cancel(self.accumulate)
+	timer.cancel(self.update_objects)
 
-	if self.timer1 then
-		timer.cancel(self.timer1)
-	end
+	self.group:removeSelf()
 
-	if self.timer2 then
-		timer.cancel(self.timer2)
-	end
-
-	self.object = nil
 	self.ghost = nil
-	self.timer1 = nil
-	self.timer2 = nil
+	self.group = nil
 end
 
 Scene:addEventListener("exitScene")
