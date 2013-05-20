@@ -34,10 +34,13 @@ local tonumber = tonumber
 local type = type
 
 -- Modules --
+local adaptive_table_ops = require("adaptive_table_ops")
 local array_ops = require("array_ops")
 local button = require("ui.Button")
 local checkbox = require("ui.Checkbox")
 local sheet = require("ui.Sheet")
+local tags = lazy_require("editor.Tags")
+local touch = require("ui.Touch")
 
 -- Corona globals --
 local display = display
@@ -45,6 +48,7 @@ local native = native
 local transition = transition
 
 -- Corona modules --
+local storyboard = require("storyboard")
 local widget = require("widget")
 
 -- Exports --
@@ -337,6 +341,34 @@ end
 -- Common "current selection" position --
 local CurrentX, CurrentY
 
+--- DOCME
+function M.GetTag (etype, on_editor_event)
+	local tname = on_editor_event(etype, "get_tag")
+
+	if tname and not tags.Exists(tname) then
+		local topts, ret1, ret2 = on_editor_event(etype, "new_tag")
+
+		if topts == "sources_and_targets" then
+			local sub_links = {}
+
+			for k in adaptive_table_ops.IterSet(ret1) do
+				sub_links[k] = "event_target"
+			end
+
+			for k in adaptive_table_ops.IterSet(ret2) do
+				sub_links[k] = "event_source"
+			end
+
+			topts = { sub_links = sub_links }
+		-- Others?
+		end
+
+		tags.New(tname, topts)
+	end
+
+	return tname
+end
+
 --- Initializes various state used pervasively by the editor.
 -- @uint ncols How many columns will be in the working level...
 -- @uint nrows ...and how many rows?
@@ -376,6 +408,47 @@ end
 -- @see Verify
 function M.IsVerified ()
 	return IsVerified
+end
+
+-- --
+local OverlayArgs = { params = {}, isModal = true }
+
+--
+local LinkTouch = touch.TouchHelperFunc(function(_, link)
+	local params = OverlayArgs.params
+
+	params.x, params.y = link:localToContent(0, 0)
+	params.dialog = link.parent.parent
+	params.interfaces = link.m_interfaces
+	params.rep = link.m_rep
+	params.sub = link.m_sub
+	params.tags = link.m_tags
+end, nil, function(_, link)
+	storyboard.showOverlay("overlay.Link", OverlayArgs)
+
+	local params = OverlayArgs.params
+
+	params.dialog, params.interfaces, params.rep, params.sub, params.tags = nil
+end)
+
+--- DOCME
+function M.Link (group, options)
+	local link = display.newCircle(group, 0, 0, 20)
+
+	if options then
+		link.m_interfaces = options.interfaces
+		link.m_rep = options.rep
+		link.m_sub = options.sub
+		link.m_tags = options.tags
+	end
+
+	link:addEventListener("touch", LinkTouch)
+	link:setFillColor(0)
+	link:setStrokeColor(192)
+
+	link.strokeWidth = 6
+
+	return link
 end
 
 -- Each of the arguments is a function that takes _event_.**index** as argument, where
@@ -461,7 +534,7 @@ local RowAdder = {
 	rowColor = {
 		default = { 255, 255, 255 },
 		over = { 0, 0, 255, 192 }
- 	}
+	}
 }
 
 --- DOCME

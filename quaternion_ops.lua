@@ -31,7 +31,7 @@ local sin = math.sin
 local sqrt = math.sqrt
 
 -- Cached module references --
-local _Add_, _Conjugate_, _Dot_, _Exp_, _Inverse_, _Length_, _Log_, _Multiply_, _Normalize_, _Scale_, _Slerp_, _SquadAuxQuats_, _SquadQ2S2_ 
+local _Add_, _Conjugate_, _Dot_, _Exp_, _Inverse_, _Length_, _Log_, _Multiply_, _Normalize_, _Scale_, _SquadAuxQuats_, _SquadQ2S2_ 
 
 -- Exports --
 local M = {}
@@ -65,15 +65,16 @@ end
 -- q = [0, theta * v] -> [cos(theta), sin(theta) * v]
 function M.Exp (qout, q)
 	local x, y, z = q.x, q.y, q.z
-	local vmag2 = x * x + y * y + z * z
+	local theta = sqrt(x * x + y * y + z * z)
 
-	if vmag2 > .01 then
-		local theta = sqrt(vmag2)
+	qout.w = cos(theta)
+
+	if abs(theta) > 1e-9 then
 		local coeff = sin(theta) / theta
 
-		qout.x, qout.y, qout.z, qout.w = coeff * x, coeff * y, coeff * z, cos(theta)
+		qout.x, qout.y, qout.z = coeff * x, coeff * y, coeff * z
 	else
-		qout.x, qout.y, qout.z, qout.w = x, y, z, 1
+		qout.x, qout.y, qout.z = x, y, z
 	end
 
 	return qout
@@ -92,11 +93,24 @@ end
 --- DOCME
 -- q = [cos(theta), sin(theta) * v] -> [0, theta * v]
 function M.Log (qout, q)
-	local ilen = 1 / _Length_(q)
-	local ctheta = q.w * ilen
-	local coeff = .5 * acos(ctheta) * ilen / sqrt(1 - ctheta * ctheta)
+	local qw, coeff = q.w
 
-	qout.x, qout.y, qout.z, qout.w = coeff * q.x, coeff * q.y, coeff * q.z, 0
+	if abs(qw) < 1 then
+		local theta = acos(qw)
+		local stheta = sin(theta)
+
+		if abs(stheta) > 1e-9 then
+			coeff = theta / stheta
+		end
+	end
+
+	qout.w = 0
+
+	if coeff then
+		qout.x, qout.y, qout.z = coeff * q.x, coeff * q.y, coeff * q.z
+	else
+		qout.x, qout.y, qout.z = q.x, q.y, q.z
+	end
 
 	return qout
 end
@@ -150,43 +164,21 @@ do
 		else
 			_Add_(qout, _Scale_(Qf, q1, s), _Scale_(Qt, q2, t))
 			_Normalize_(qout, qout)
-		end -- TODO: dot < -.985...
+		end -- TODO: dot < -.97...
 
-		return qout--_Normalize_(qout, qout)--, flipped
+		return qout
 	end
 
 	--- DOCME
-	function M.Slerp (qout, q1, q2, t)--, mixed_flips)
+	function M.Slerp (qout, q1, q2, t)
 		return AuxSlerp(qout, q1, q2, t, true)
---[[
-		local ilen1, ilen2 = 1 / _Length_(q1), 1 / _Length_(q2)
-		local dot, s, flipped = _Dot_(q1, q2) * ilen1 * ilen2, 1 - t, false
-
-		if dot < .97 then
-			local theta = acos(dot)
-
-			if dot < 0 and not mixed_flips then
-				theta, ilen2, flipped = pi - theta, -ilen2, true
-			end
-
-			local stheta = 1 / sin(theta)
-
-			_Add_(qout, _Scale_(Qf, q1, sin(s * theta) * stheta * ilen1), _Scale_(Qt, q2, sin(t * theta) * stheta * ilen2))
-		else
-			_Add_(qout, _Scale_(Qf, q1, s), _Scale_(Qt, q2, t))
-		end -- TODO: dot < -.985...
-
-		return _Normalize_(qout, qout), flipped]]
 	end
 
 	local Qa, Qb = {}, {}
 
 	--- DOCME
 	function M.SquadQ2S2 (qout, q1, q2, s1, s2, t)
---		local _, aflip = _Slerp_(Qa, q1, q2, t)
---		local _, bflip = _Slerp_(Qb, s1, s2, t)
-
-		return AuxSlerp(qout, AuxSlerp(Qa, q1, q2, t), AuxSlerp(Qb, s1, s2, t), 2 * t * (1 - t), true)--, aflip ~= bflip)
+		return AuxSlerp(qout, AuxSlerp(Qa, q1, q2, t), AuxSlerp(Qb, s1, s2, t), 2 * t * (1 - t), true)
 	end
 end
 
@@ -196,11 +188,11 @@ do
 	--- DOCME
 	function M.SquadAuxQuats (qout, qprev, q, qnext)
 		_Inverse_(Qi, q)
-		_Log_(Log1, _Multiply_(Log1, qprev, Qi))
-		_Log_(Log2, _Multiply_(Log2, qnext, Qi))
+		_Log_(Log1, _Multiply_(Log1, Qi, qprev))
+		_Log_(Log2, _Multiply_(Log2, Qi, qnext))
 		_Scale_(Sum, _Add_(Sum, Log1, Log2), -.25)
 
-		return --[[_Normalize_(qout, ]]_Multiply_(qout, q, _Exp_(Sum, Sum))--)
+		return _Multiply_(qout, q, _Exp_(Sum, Sum))
 	end
 end
 
@@ -224,7 +216,6 @@ _Log_ = M.Log
 _Multiply_ = M.Multiply
 _Normalize_ = M.Normalize
 _Scale_ = M.Scale
-_Slerp_ = M.Slerp
 _SquadAuxQuats_ = M.SquadAuxQuats
 _SquadQ2S2_ = M.SquadQ2S2
 

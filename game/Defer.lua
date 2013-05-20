@@ -24,30 +24,26 @@
 --
 
 -- Standard library imports --
+local format = string.format
 local ipairs = ipairs
 local rawget = rawget
 local type = type
 
 -- Modules --
+local adaptive_table_ops = require("adaptive_table_ops")
 local lazy_tables = require("lazy_tables")
 
 -- Exports --
 local M = {}
 
 --
-function M.AddId (elem, key, id)
-	local cur = elem[key]
+local function ComposeId (id, sub)
+	return format("%i:%s", id, sub)
+end
 
-	if cur then
-		if type(cur) ~= "table" then
-			cur = { cur }
-			elem[key] = cur
-		end
-
-		cur[#cur + 1] = id
-	else
-		elem[key] = id
-	end
+--- DOCME
+function M.AddId (elem, key, id, sub)
+	adaptive_table_ops.Append(elem, key, ComposeId(id, sub))
 end
 
 -- --
@@ -66,12 +62,8 @@ function M.Await (name, id, func, arg)
 
 	local dt = Deferred[name]
 
-	if type(id) == "table" then
-		for _, v in ipairs(id) do
-			Add(dt, v, func, arg)
-		end
-	else
-		Add(dt, id, func, arg)
+	for _, v in adaptive_table_ops.IterArray(id) do
+		Add(dt, v, func, arg)
 	end
 end
 
@@ -80,6 +72,7 @@ function M.BindBroadcast (what)
 	local list
 
 	return function(func, arg)
+		--
 		local curf = arg[what]
 
 		if curf then
@@ -100,6 +93,8 @@ function M.BindBroadcast (what)
 			end
 
 			list[#list + 1] = func
+
+		--
 		else
 			arg[what] = func
 		end
@@ -107,11 +102,11 @@ function M.BindBroadcast (what)
 end
 
 --- DOCME
-function M.Defer (name, item, id)
+function M.Defer (name, item, id, sub)
 	if id then
-		local dt = Deferred[name]
+		id = ComposeId(id, sub)
 
-		dt[-id] = item
+		Deferred[name][id] = item
 	end
 end
 
@@ -130,6 +125,19 @@ function M.IterEvents (event)
 end
 
 --- DOCME
+function M.LinkActionsAndEvents (elem, other, esub, osub, events, actions, akey)
+	if events[esub] then
+		M.AddId(elem, esub, other.uid, osub)
+	elseif actions[esub] then
+		local actions = elem[akey] or {}
+
+		actions[esub] = true
+
+		elem[akey] = actions
+	end
+end
+
+--- DOCME
 function M.Reset (name)
 	Deferred[name] = nil
 end
@@ -141,7 +149,7 @@ function M.Resolve (name)
 	for i = 1, #(dt or ""), 3 do
 		local id, func, arg = dt[i], dt[i + 1], dt[i + 2]
 
-		func(dt[-id], arg)
+		func(dt[id], arg)
 	end
 
 	M.Reset(name)

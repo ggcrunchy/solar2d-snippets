@@ -94,65 +94,38 @@ end
 local Angles = { { q = {} }, { q = {} }, { q = {} }, { q = {} } }
 
 --
-local function RandomAngles ()
-	return random() * 2 * pi, random() * pi
-end
-
---
 local function NewAngle (index)
-	local phi_toler, theta_toler, i, phi, theta = .05 * 2 * pi, .05 * pi
+	local phi, theta = random() * 2 * pi, random() * pi
 
-	repeat
-		i, phi, theta = 1, RandomAngles()
+	if index > 1 then
+		local prev = Angles[index - 1]
+		local kp, kt = .1 + random() * .15, .2 + (random() - .5) * .1
 
-		while i < index and abs(phi - Angles[i].x) >= phi_toler and abs(theta - Angles[i].y) >= theta_toler do
-			i = i + 1
-		end
-	until i == index
+		phi, theta = (prev.x + kp * phi) % (2 * pi), prev.y + kt * theta
+	end
 
 	return phi, theta
 end
 
 --
-local function NewQuat (index, theta)
-	--
-	local qw = cos(theta / 2)
-
-	if abs(qw) > .97 then
-		theta = pi - qw + 1
-		qw = cos(theta / 2)
-	end
-
-	--
-	local stheta, qx, qy, qz = sin(theta / 2)
-
-	repeat
-		local i, x = 1, 2 * (random() - .5)
-		local y = 2 * (random() - .5) * sqrt(max(0, 1 - x * x))
-		local z = 2 * (random() - .5) * sqrt(max(0, 1 - x * x - y * y))
-
-		qx, qy, qz = stheta * x, stheta * y, stheta * z
-
-		while i < index do
-			local quat = Angles[i].q
-
-			if abs(quat.x * qx + quat.y * qy + quat.z * qz + quat.w * qw) > .97 then
-				break
-			end
-
-			i = i + 1
-		end
-	until i == index
-
-	--
+local function NewQuat (index)
 	local quat = Angles[index].q
+	local x = 2 * (random() - .5)
+	local y = 2 * (random() - .5) * sqrt(max(0, 1 - x * x))
+	local z = (random() < .5 and -1 or 1) * sqrt(max(0, 1 - x * x - y * y))
+	local theta = (pi / 6 + random() * pi / 3) * (random() < .5 and -1 or 1)
+	local stheta = sin(theta)
 
-	quat.x, quat.y, quat.z, quat.w = qx, qy, qz, qw
+	quat.x, quat.y, quat.z, quat.w = stheta * x, stheta * y, stheta * z, cos(theta)
+
+	if index > 1 then
+		quaternion_ops.Multiply(quat, quat, Angles[index - 1].q)
+	end
 end
 
 -- --
 local LightParams = {
-	time = 1950, t = 1,
+	time = 750, t = 1,
 
 	onComplete = function(light)
 		local prev, cur = Angles[1]
@@ -166,7 +139,7 @@ local LightParams = {
 
 		cur.q, cur.x, cur.y = q1, NewAngle(4)
 
-		NewQuat(4, cur.x)
+		NewQuat(4)
 	end,
 
 	onStart = function(light)
@@ -289,7 +262,7 @@ function Scene:enterScene ()
 				for i, angle in ipairs(Angles) do
 					angle.x, angle.y = NewAngle(i)
 
-					NewQuat(i, angle.x)
+					NewQuat(i)
 				end
 			end
 
@@ -319,21 +292,7 @@ function Scene:enterScene ()
 
 				light_x, light_y, light_z = stheta * cphi, stheta * sphi, ctheta
 			end
-if LX then
-	local dx, dy, dz = LX-light_x,LY-light_y,LZ-light_z
-	local len = math.sqrt(dx*dx+dy*dy+dz*dz)
-	if len >= .9 then
-		print(dlight.t, "vs.", T)
-		printf("ROTQ = (%.3f, %.3f, %.3f, %.3f) vs. (%.3f, %.3f, %.3f, %.3f)", rotq.x, rotq.y, rotq.z, rotq.w, RQX, RQY, RQZ, RQW)
-	--	vdump(Angles)
---	print("M1: ", AA, "->", MM[1])
---	print("M2: ", BB, "->", MM[2])
---	print("M3: ", CC, "->", MM[3])
-		print("")
-	end
-end
-LX,LY,LZ,T,RQX,RQY,RQZ,RQW=light_x,light_y,light_z,dlight.t,rotq.x,rotq.y,rotq.z,rotq.w
---AA,BB,CC=MM[1],MM[2],MM[3]
+
 			light_x, light_y, light_z = light_x * 35, light_y * 35, light_z * 35
 
 			--

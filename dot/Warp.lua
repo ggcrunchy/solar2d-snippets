@@ -314,30 +314,41 @@ local function OnEditorEvent (what, arg1, arg2, arg3)
 
 	-- Get Tag --
 	elseif what == "get_tag" then
-		if not tags.Exists("warp") then
-			tags.New("warp", {
-				can_link = function(warp, other, wsub, osub)
-					if wsub == "from" or wsub == "to" then
-						if links.GetTag(other) ~= "warp" then
-							return false, "Non-warp partner", true
-						elseif osub ~= "from" and osub ~= "to" then
-							return false, "Non-source / target sublink", true
-						elseif wsub == osub then
-							return false, "Source must pair with target", true
-						elseif links.HasLinks(warp, wsub) then
-							return false, "Source / target already paired"
-						end
-					end
+		return "warp"
 
-					return true
-				end,
+	-- New Tag --
+	elseif what == "new_tag" then
+		--
+		local function Pair (warp, other, wsub, osub, link_to)
+			if links.GetTag(other) ~= "warp" then
+				return false, "Non-warp partner", true
+			elseif osub:GetName() ~= link_to then
+				return false, "Expects `" .. link_to .. "` sublink", true
+			end
 
-				sub_links = { "from", "to" }
-				-- ^^ ? for fire, etc...
-			})
+			return true
 		end
 
-		return "warp"
+		--
+		return {
+			sub_links = {
+				-- From --
+				from = function(warp, other, wsub, osub)
+					return Pair(warp, other, wsub, osub, "to")
+				end,
+
+				-- To --
+				to = function(warp, other, wsub, osub)
+					local passed, why, is_cont = Pair(warp, other, wsub, osub, "from")
+
+					if passed and links.HasLinks(warp, "to") then
+						passed, why, is_cont = false, "Already targeting a warp"
+					end
+
+					return passed, why, is_cont
+				end
+			}
+		}
 
 	-- Prep Link --
 	elseif what == "prep_link" then
@@ -350,12 +361,22 @@ local function OnEditorEvent (what, arg1, arg2, arg3)
 	elseif what == "verify" then
 		local warp = arg2[arg3]
 		local rep = common.GetBinding(warp, true)
+		local nfrom = links.CountLinks(rep, "from")
 
-		if links.HasLinks(rep, "to") or (links.HasLinks(rep, "from") and warp.reciprocal_link) then
+		if links.HasLinks(rep, "to") or (warp.reciprocal_link and nfrom == 1) then
 			return
+		elseif warp.reciprocal_link then
+			if nfrom == 0 then
+				arg[#arg + 1] = "Missing back-link"
+			elseif nfrom > 1 then
+				arg[#arg + 1] = "Ambiguous back-link"
+			end
 		else
-			arg1[#arg1 + 1] = "Warp `" .. warp.name .. "` no target" .. (warp.recriprocal_link and " (or source to back-link)" or "")
+			arg1[#arg1 + 1] = "Missing target"
 		end
+
+		--
+		arg1[#arg1] = "Warp `" .. warp.name .. "`: " .. arg1[#arg1]
 	end
 end
 

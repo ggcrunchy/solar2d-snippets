@@ -64,7 +64,7 @@ local Levels = {
 		dots = {
 			{ type = "warp", col = 4, row = 5, uid = 1, to = 2 },
 			{ type = "warp", col = 7, row = 8, uid = 2, to = 1 },
-			{ type = "switch", col = 7, row = 3, target = 3 },
+			{ type = "switch", col = 7, row = 3, target = "3:fire" },
 		},
 
 		-- Event Blocks --

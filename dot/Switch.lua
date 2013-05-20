@@ -26,11 +26,11 @@
 -- Modules --
 local audio = require("game.Audio")
 local common = lazy_require("editor.Common")
-local common_tags = require("editor.CommonTags")
 local collision = require("game.Collision")
 local defer = require("game.Defer")
 local dispatch_list = require("game.DispatchList")
 local links = lazy_require("editor.Links")
+local tags = lazy_require("editor.Tags")
 local utils = require("utils")
 
 -- Corona globals --
@@ -158,9 +158,10 @@ collision.AddHandler("switch", function(phase, switch, _, other_type)
 end)
 
 --
-local function LinkSwitch (switch, other, sub1, _)
-	-- sub1 == ?
-	defer.AddId(switch, "target", other.uid)
+local function LinkSwitch (switch, other, sub, other_sub)
+	if sub == "trip" then
+		defer.AddId(switch, "target", other.uid, other_sub)
+	end
 end
 
 -- Handler for switch-specific editor events, cf. game.Dots.EditorEvent
@@ -182,13 +183,17 @@ local function OnEditorEvent (what, arg1, arg2, arg3)
 	-- arg1: Dialog
 	-- arg2: Representative object
 	elseif what == "enum_props" then
-		arg1:AddLink{ text = "Link to event target", rep = arg2, tags = "event_target" }
+		arg1:AddLink{ text = "Link to event target", rep = arg2, sub = "trip", interfaces = "event_target" }
 		arg1:AddCheckbox{ text = "Starts forward?", value_name = "forward" }
 		arg1:AddCheckbox{ text = "Reverse on trip?", value_name = "reverses" }
 
 	-- Get Tag --
 	elseif what == "get_tag" then
-		return common_tags.EnsureLoaded("event_source")
+		return "switch"
+
+	-- New Tag --
+	elseif what == "new_tag" then
+		return "sources_and_targets", "trip", nil
 
 	-- Prep Link --
 	elseif what == "prep_link" then
@@ -202,7 +207,7 @@ local function OnEditorEvent (what, arg1, arg2, arg3)
 		local switch = arg2[arg3]
 		local rep = common.GetBinding(switch, true)
 
-		if not links.HasLinks(rep, nil) then
+		if not links.HasLinks(rep, "trip") then
 			arg1[#arg1 + 1] = "Switch `" .. switch.name .. "` has no event targets"
 		end
 	end

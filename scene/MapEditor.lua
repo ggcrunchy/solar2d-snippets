@@ -52,6 +52,7 @@ local iterators = require("iterators")
 local ops = require("editor.Ops")
 local persistence = require("game.Persistence")
 local scenes = require("game.Scenes")
+local tags = lazy_require("editor.Tags")
 local timers = require("game.Timers")
 
 -- Corona globals --
@@ -84,7 +85,7 @@ end
 local EditorView = {}
 
 -- Names of editor views --
-local Names = { "General", "Ambience", "Dots", "EventBlocks", "Tiles", "Settings" }
+local Names = require("config.EditorViews")
 
 -- Tab buttons to choose views... --
 local TabButtons = {}
@@ -135,9 +136,24 @@ local RestoreState
 -- Name used to store working version of level (WIP and build) in the database --
 local TestLevelName = "?TEST?"
 
+-- --
+local CommonTagsLoaded
+
 -- Enter Scene --
 function Scene:enterScene (event)
 	scenes.SetListenFunc(Listen)
+
+	--
+	if not CommonTagsLoaded then
+		for k, v in pairs{
+			event_source = "event_target",
+			event_target = "event_source"
+		} do
+			tags.ImpliesInterface(k, v)
+		end
+
+		CommonTagsLoaded = true
+	end
 
 	-- We may enter the scene one of two ways: from the editor setup menu, in which case
 	-- we use the provided scene parameters; or returning from a test, in which case we

@@ -51,7 +51,7 @@ local Dots = {}
 local Remaining
 
 -- Dot type lookup table --
-local DotList = {}
+local DotList
 
 -- Dummy properties
 local function NOP () end
@@ -109,6 +109,7 @@ end
 -- @param arg1 Argument #1.
 -- @param arg2 Argument #2.
 -- @param arg3 Argument #3.
+-- @return Result(s) of the event, if any.
 function M.EditorEvent (type, what, arg1, arg2, arg3)
 	local cons = DotList[type]
 
@@ -142,13 +143,13 @@ function M.EditorEvent (type, what, arg1, arg2, arg3)
 			-- COMMON STUFF... nothing yet, I don't think, assuming well-formed editor
 		end
 
-		local event, result = cons("editor_event")
+		local event, result, r2, r3 = cons("editor_event")
 
 		if event then
-			result = event(what, arg1, arg2, arg3)
+			result, r2, r3 = event(what, arg1, arg2, arg3)
 		end
 
-		return result
+		return result, r2, r3
 	end
 end
 
@@ -266,8 +267,7 @@ dispatch_list.AddToMultipleLists{
 }
 
 -- Install various types of dots.
-DotList.switch = require("dot.Switch")
-DotList.warp = require("dot.Warp")
+DotList = require_list("config.Dots")
 
 -- Export the module.
 return M

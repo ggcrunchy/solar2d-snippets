@@ -43,10 +43,10 @@ local function HasAny (rep)
 	local tag = links.GetTag(rep)
 
 	if tag then
-		local f, s, v0, reclaim = tags.Sublinks(tag, true)
+		local f, s, v0, reclaim = tags.Sublinks(tag)
 
 		for _, sub in f, s, v0 do
-			if links.HasLinks(rep, sub or nil) then
+			if links.HasLinks(rep, sub) then
 				reclaim()
 
 				return true
@@ -197,7 +197,7 @@ local function ReadLinks (level, on_element, on_pair)
 	local list, index, elem, sub = level.links, 1
 
 	for i = 1, #list, 2 do
-		local item, other = list[i], list[i + 1] or nil
+		local item, other = list[i], list[i + 1]
 
 		--
 		if item == "element" then
@@ -266,15 +266,15 @@ function M.ResolveLinks (level, save)
 				new[#new + 1] = "element"
 				new[#new + 1] = element.uid
 
-				for _, sub in tags.Sublinks(links.GetTag(rep), true) do
+				for _, sub in tags.Sublinks(links.GetTag(rep)) do
 					new[#new + 1] = "sub"
-					new[#new + 1] = sub or false
+					new[#new + 1] = sub
 
-					for link in links.Links(rep, sub or nil) do
+					for link in links.Links(rep, sub) do
 						local obj, osub = link:GetOtherObject(rep)
 
 						new[#new + 1] = list[obj]
-						new[#new + 1] = osub or false
+						new[#new + 1] = osub
 					end
 				end
 			end

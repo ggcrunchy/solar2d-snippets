@@ -177,18 +177,13 @@ local function SetText (str, x, y, text)
 end
 
 --
-local function FixSub (sub)
-	return sub ~= true and sub or nil
-end
-
---
 local function Item (from, to, inc)
 	for i = from, to, inc do
 		local item = Box[i]
 		local sub = item.m_sub
 
 		if sub then
-			return i, item, Box[i + 1], FixSub(sub)
+			return i, item, Box[i + 1], sub
 		end
 	end
 end
@@ -212,7 +207,7 @@ end
 
 --
 local function SubLinkText (sub)
-	return "(" .. (sub and "Sublink: " .. sub or "General link") .. ")"
+	return "(Sublink: " .. sub .. ")"
 end
 
 --
@@ -264,7 +259,7 @@ end
 --
 local function Connect (_, obj1, obj2, node)
 	-- One object is the rep, but the other will have some data and need some treatment.
-	local object, sub = Box.m_object, FixSub(obj1.m_sub or obj2.m_sub)
+	local object, sub = Box.m_object, obj1.m_sub or obj2.m_sub
 
 	node.m_link = links.LinkObjects(Rep, object, Sub, sub)
 
@@ -306,7 +301,7 @@ local function AddToBox (object, sub, node)
 
 	link.x, link.y = 35, BoxHeight()
 
-	link.m_sub = sub or true
+	link.m_sub = sub
 
 	--
 	display.newText(Box, "", 0, link.y, native.systemFont, 16)
@@ -354,7 +349,7 @@ end
 
 --
 local function CouldPass (object, sub)
-	local passed, _, is_cont = links.CanLink(Rep, object, Sub, sub or nil)
+	local passed, _, is_cont = links.CanLink(Rep, object, Sub, sub)
 
 	return passed or not is_cont
 end
@@ -368,7 +363,7 @@ end
 
 --
 local function MayLink (object, tag)
-	for _, sub in tags.Sublinks(tag, true) do
+	for _, sub in tags.Sublinks(tag) do
 		if CouldPass(object, sub) then
 			return true
 		end
@@ -441,9 +436,9 @@ function SetCurrent (group, object, node)
 		--
 		Box.m_count = 0
 
-		for _, sub in tags.Sublinks(links.GetTag(object), true) do
+		for _, sub in tags.Sublinks(links.GetTag(object)) do
 			if CouldPass(object, sub) then
-				AddToBox(object, sub or nil, node)
+				AddToBox(object, sub, node)
 			end
 		end
 
@@ -510,7 +505,7 @@ function Overlay:enterScene (event)
 	local params = event.params
 
 	Rep, Sub = params.rep, params.sub
-
+-- TODO: make this optional...
 	--
 	params.dialog.alpha = .35
 
@@ -520,11 +515,16 @@ function Overlay:enterScene (event)
 	self.m_choices:deleteAllRows()
 
 	List = {}
-
+-- TODO: (optionally) add icon from one (both?) link objects into dialogs?
+-- For that matter, link images...
 	--
-	local iter = "TagAndChildren" .. (type(params.tags) ~= "string" and "_Multi" or "")
+	local iter, set = tags.TagAndChildren, params.tags
 
-	for _, name in tags[iter](params.tags) do
+	if params.interfaces then
+		iter, set = tags.Implementors, params.interfaces
+	end
+
+	for _, name in iter(set) do
 		for object in links.Tagged(name) do
 			if object ~= Rep and MayLink(object, name) then
 				local name = ElementName(object)
@@ -549,15 +549,6 @@ function Overlay:enterScene (event)
 	local has_links = #List > 0
 
 	if has_links then
---[[		local add_row = common.ListboxRowAdder(function(index)
-			SetCurrent(self.view, List[index].object, node)
-		end, nil, function(index)
-			local item = List[index]
-			local count = List[item.object]
-
-			return item.text .. (count and (" - %i link%s"):format(count, count > 1 and "s" or "") or "")
-		end)
-]]
 		-- Make a note of whichever objects already link to the representative.
 		for link in links.Links(Rep, Sub) do
 			AddObject(link:GetOtherObject(Rep))

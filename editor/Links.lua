@@ -135,6 +135,38 @@ function M.CleanUp (from, count)
 	return to + 1
 end
 
+--
+local function Match1 (link, proxy, sub)
+	return link.m_proxy1 == proxy and link.m_sub1 == sub
+end
+
+--
+local function Match2 (link, proxy, sub)
+	return link.m_proxy2 == proxy and link.m_sub2 == sub
+end
+
+-- Helper to get a proxy (if valid) from an object
+local function Proxy (object)
+	return object and object.parent and Proxies[object]
+end
+
+---@pobject object
+-- @string sub
+-- @treturn integer C
+function M.CountLinks (object, sub)
+	local proxy, count = Proxy(object), 0
+
+	for _, v in LinkKeys(proxy) do
+		for _, link in pairs(Links[v]) do
+			if Match1(link, proxy, sub) or Match2(link, proxy, sub) then
+				count = count + 1
+			end
+		end
+	end
+
+	return count
+end
+
 -- Gets the key for a proxy pairing
 local function GetKey (p1, p2)
 	return p1[p2.id]
@@ -148,27 +180,12 @@ local function LinksIter (p1, p2)
 end
 
 --
-local function Match1 (link, proxy, sub)
-	return link.m_proxy1 == proxy and link.m_sub1 == sub
-end
-
---
-local function Match2 (link, proxy, sub)
-	return link.m_proxy2 == proxy and link.m_sub2 == sub
-end
-
---
 local function AlreadyLinked (p1, p2, sub1, sub2)
 	for _, link in LinksIter(p1, p2) do
 		if Match1(link, p1, sub1) and Match2(link, p2, sub2) then
 			return true
 		end
 	end
-end
-
--- Helper to get a proxy (if valid) from an object
-local function Proxy (object)
-	return object and object.parent and Proxies[object]
 end
 
 --
@@ -180,67 +197,44 @@ local function SortProxies (p1, p2, sub1, sub2, obj1, obj2)
 	end
 end
 
-do
-	--
-	local function CheckLinks (proxy, obj1, obj2, sub1, sub2)
-		local f, s, v0, reclaim = tags.TagAndParents(proxy.name)
+--- DOCME
+-- @pobject object1
+-- @pobject object2
+-- @string sub1
+-- @string sub2
+-- @treturn boolean X If true, this is the only return value.
+-- @treturn ?string Reason link cannot be formed.
+-- @treturn ?boolean This is a contradiction or "strong" failure, i.e. the predicate will
+-- *always* fail, given the inputs?
+function M.CanLink (object1, object2, sub1, sub2)
+	local p1, p2 = Proxy(object1), Proxy(object2)
 
-		for _, tname in f, s, v0 do
-			local can_link = tags.GetProperty(tname, "can_link")
+	-- Both objects are still valid?
+	if p1 and p2 then
+		p1, p2, sub1, sub2, object1, object2 = SortProxies(p1, p2, sub1, sub2, object1, object2)
 
-			if can_link then
-				local passed, why, is_cont = can_link(obj1, obj2, sub1, sub2)
+		if p1 == p2 or AlreadyLinked(p1, p2, sub1, sub2) then
+			return false, p1 == p2 and "Same object" or "Already linked"
 
-				if not passed then
-					reclaim()
+		-- ...and not already linked?
+		else
+			-- ...pass all object1-object2 predicates?
+			local passed, why, is_cont = tags.CanLink(p1.name, p2.name, object1, object2, sub1, sub2)
 
-					return false, why or "Can't link", is_cont
-				end
-			end
-		end
-
-		return true
-	end
-
-	--- DOCME
-	-- @pobject object1
-	-- @pobject object2
-	-- @string sub1
-	-- @string sub2
-	-- @treturn boolean X If true, this is the only return value.
-	-- @treturn ?string Reason link cannot be formed.
-	-- @treturn ?boolean This is a contradiction or "strong" failure, i.e. the predicate will
-	-- *always* fail, given the inputs?
-	function M.CanLink (object1, object2, sub1, sub2)
-		local p1, p2 = Proxy(object1), Proxy(object2)
-
-		-- Both objects are still valid?
-		if p1 and p2 then
-			p1, p2, sub1, sub2, object1, object2 = SortProxies(p1, p2, sub1, sub2, object1, object2)
-
-			if p1 == p2 or AlreadyLinked(p1, p2, sub1, sub2) then
-				return false, p1 == p2 and "Same object" or "Already linked"
-
-			-- ...and not already linked?
-			else
-				-- ...pass all object1-object2 predicates?
-				local passed, why, is_cont = CheckLinks(p1, object1, object2, sub1, sub2)
+			if passed then
+				-- ...and object2-object1 ones too?
+				passed, why, is_cont = tags.CanLink(p2.name, p1.name, object2, object1, sub2, sub1)
 
 				if passed then
-					-- ...and object2-object1 ones too?
-					passed, why, is_cont = CheckLinks(p2, object2, object1, sub2, sub1)
-
-					if passed then
-						return true
-					end
+					return true
 				end
-
-				return false, why, is_cont
 			end
-		end
 
-		return false, "Invalid object", true
+			return false, why, is_cont
+		end
 	end
+
+	return false, "Invalid object", true
 end
 
 ---@pobject object
@@ -340,8 +334,8 @@ end
 -- When **false**, this is the only return value.
 -- @treturn ?pobject Linked object #1...
 -- @treturn ?pobject ...and #2.
--- @treturn ?string Sublink of object #1, or **nil** if absent...
--- @treturn ?string ...ditto for object #2.
+-- @treturn ?string Sublink of object #1...
+-- @treturn ?string ...and object #2.
 -- @see Link:IsValid
 function Link:GetObjects ()
 	local obj1, obj2 = Object(self.m_proxy1), Object(self.m_proxy2)
@@ -354,9 +348,9 @@ function Link:GetObjects ()
 end
 
 --- @pobject object Object, which may be paired in the link.
--- @treturn pobject If the link is valid and _object_ was one of its linked objects, the
+-- @treturn ?pobject If the link is valid and _object_ was one of its linked objects, the
 -- other object; otherwise, **nil**.
--- @treturn string If an object was returned, its sublink; if absent, **nil**.
+-- @treturn ?string If an object was returned, its sublink; if absent, **nil**.
 function Link:GetOtherObject (object)
 	local _, obj1, obj2, sub1, sub2 = self:GetObjects()
 
@@ -381,8 +375,7 @@ end
 -- Called as
 --    func(link, object1, object2, sub1, sub2),
 -- where _object1_ and _object2_ were the linked objects and _sub1_ and _sub2_ were their
--- respective sublinks (or **nil**, if absent). In the case that _object*_ has been removed,
--- it will be **nil**
+-- respective sublinks. In the case that _object*_ has been removed, it will be **nil**.
 --
 -- **N.B.** This may be triggered lazily, i.e. outside of @{Link:Break}, either via one of
 -- the other link methods or @{CleanUp}.

@@ -45,9 +45,6 @@ local graphics = graphics
 local native = native
 local system = system
 
--- Corona modules --
-local storyboard = require("storyboard")
-
 -- Exports --
 local M = {}
 
@@ -65,6 +62,16 @@ local function GetDialog (object)
 	return object.parent.parent
 end
 
+-- Get the dialog's back widget
+local function Back (dialog)
+	return dialog[1]
+end
+
+-- Get the dialog's item group
+local function ItemGroup (dialog)
+	return dialog[2]
+end
+
 -- Updates the mask coordinates to stay over the visible region
 local function UpdateMask (back, igroup)
 	igroup.maskX = -igroup.x + back.width / 2
@@ -74,12 +81,12 @@ end
 -- Scrolls the dialog
 local function Scroll (button)
 	local dialog = GetDialog(button)
-	local igroup = dialog[2]
+	local igroup = ItemGroup(dialog)
 
 	igroup.x = min(0, max(igroup.x - button.m_dc * XSpeed, WMax - dialog.m_xmax))
 	igroup.y = min(0, max(igroup.y - button.m_dr * YSpeed, HMax - dialog.m_ymax))
 
-	UpdateMask(dialog[1], igroup)
+	UpdateMask(Back(dialog), igroup)
 end
 
 -- Helper to add new scroll buttons
@@ -105,7 +112,7 @@ end
 
 -- Fixes up various dialog state when its size changes
 local function ResizeBack (dialog)
-	local back, igroup = dialog[1], dialog[2]
+	local back, igroup = Back(dialog), ItemGroup(dialog)
 	local w, h, full = dialog.m_xmax, dialog.m_ymax
 
 	-- Expand the back. If the width and / or height overflowed certain bounds, add some
@@ -177,7 +184,7 @@ end
 
 -- Fixes up separators to fit the dialog dimensions
 local function ResizeSeparators (dialog)
-	local igroup = dialog[2]
+	local igroup = ItemGroup(dialog)
 
 	for i = 2, igroup.numChildren do
 		local item = igroup[i]
@@ -212,7 +219,7 @@ local function Update (dialog, object, addx)
 		CR(dialog)
 
 		if new_line == "separator" then
-			local sep = display.newRect(dialog[2], 0, 0, dialog.m_xmax - XSep * 2, 8)
+			local sep = display.newRect(ItemGroup(dialog), 0, 0, dialog.m_xmax - XSep * 2, 8)
 
 			sep:setFillColor(16)
 
@@ -259,7 +266,7 @@ local function NewLine (dialog, what)
 	if dialog.m_new_line ~= what then
 		local line = dialog.m_line_id or 0
 		local ymid = (dialog.m_peny + dialog.m_ymax) / 2
-		local igroup = dialog[2]
+		local igroup = ItemGroup(dialog)
 
 		for i = igroup.numChildren, 1, -1 do
 			local item = igroup[i]
@@ -280,7 +287,6 @@ end
 -- Updates the value bound to an object (dirties the editor state)
 local function UpdateObject (object, value)
 	local values = GetDialog(object).m_values
-
 	local value_name = GetProperty(object, "value_name")
 
 	if values and value_name then
@@ -313,7 +319,7 @@ local function CommonAdd (dialog, object, options, static_text)
 			local button
 
 			if static_text then
-				text = display.newText(dialog[2], options.text, 0, 0, native.systemFontBold, 22)
+				text = display.newText(ItemGroup(dialog), options.text, 0, 0, native.systemFontBold, 22)
 			else
 				if not dialog.m_keys then
 					dialog.m_keys = keyboard.Keyboard(dialog.parent, nil, nil, 0, 0)
@@ -322,7 +328,7 @@ local function CommonAdd (dialog, object, options, static_text)
 					dialog.m_keys:toFront()
 				end
 
-				text, button = common.EditableString(dialog[2], dialog.m_keys, 0, 0, { text = options.text, font = native.systemFontBold, size = 22 })
+				text, button = common.EditableString(ItemGroup(dialog), dialog.m_keys, 0, 0, { text = options.text, font = native.systemFontBold, size = 22 })
 			end
 
 			Update(dialog, text, button and 50)
@@ -386,35 +392,6 @@ end
 -- --
 local DirTabs
 
--- --
-local OverlayArgs = { params = {}, isModal = true }
-
---
-local LinkTouch = touch.TouchHelperFunc(function(_, link)
-	local params = OverlayArgs.params
-
-	params.x, params.y = link:localToContent(0, 0)
-	params.dialog = link.parent.parent
-	params.rep = link.m_rep
-	params.sub = link.m_sub
-	params.tags = link.m_tags
-end, nil, function(_, link)
-	-- Inside? (Add another helper?)
--- Link to: 
-	-- Sublink
-	-- Text
-	-- ID? (Trying to decide how this stays intact in event blocks)
-	-- Object? (Same issue as ID...)
-	-- Rect? (Measure object?)
-	-- How do links get saved / loaded? (SHOULD be okay with keys...)
-
-	storyboard.showOverlay("overlay.Link", OverlayArgs)
-
-	local params = OverlayArgs.params
-
-	params.dialog, params.rep, params.sub, params.tags = nil
-end)
-
 --- DOCME
 -- @pgroup group Group to which the dialog will be inserted.
 -- @ptable options
@@ -452,7 +429,7 @@ function M.Dialog (group, options)
 	--- DOCME
 	-- @ptable options
 	function dgroup:AddCheckbox (options)
-		local cb = checkbox.Checkbox(self[2], nil, 0, 0, 40, 40, OnCheck)
+		local cb = checkbox.Checkbox(ItemGroup(self), nil, 0, 0, 40, 40, OnCheck)
 
 		CommonAdd(self, cb, options, true)
 
@@ -486,7 +463,7 @@ function M.Dialog (group, options)
 		local image
 
 		if options and options.file then
-			image = display.newImage(self[2], options.file, 0, 0)
+			image = display.newImage(ItemGroup(self), options.file, 0, 0)
 		end
 
 		if image then
@@ -502,19 +479,9 @@ function M.Dialog (group, options)
 	--- DOCME
 	-- @ptable options
 	function dgroup:AddLink (options)
-		local link = display.newCircle(self[2], 0, 0, 20)
+		local link = common.Link(ItemGroup(self), options)
 
-		if options then
-			link.m_rep = options.rep
-			link.m_sub = options.sub
-			link.m_tags = options.tags
-		end
-
-		link:addEventListener("touch", LinkTouch)
-		link:setFillColor(0)
-		link:setStrokeColor(192)
-
-		link.strokeWidth = 6
+		-- TODO: Use stored rep, infer interfaces (might need some work in tags)...
 
 		CommonAdd(self, link, options, true)
 	end
@@ -522,7 +489,7 @@ function M.Dialog (group, options)
 	--- DOCME
 	-- @ptable options
 	function dgroup:AddListbox (options)
-		local listbox = common.Listbox(self[2], 0, 0)
+		local listbox = common.Listbox(ItemGroup(self), 0, 0)
 
 		Props[listbox].type = "widget"
 
@@ -561,7 +528,7 @@ function M.Dialog (group, options)
 
 		self:AddString(sopts)
 
-		CommonAdd(self, button.Button(self[2], nil, 0, 0, 40, 30, function()
+		CommonAdd(self, button.Button(ItemGroup(self), nil, 0, 0, 40, 30, function()
 			local str = self:Find(name)
 
 			repeat
@@ -576,7 +543,7 @@ function M.Dialog (group, options)
 
 			str.text = value .. ""
 		end, "-"), { continue_line = true })
-		CommonAdd(self, button.Button(self[2], nil, 0, 0, 40, 30, function()
+		CommonAdd(self, button.Button(ItemGroup(self), nil, 0, 0, 40, 30, function()
 			local str = self:Find(name)
 
 			repeat
@@ -627,7 +594,7 @@ function M.Dialog (group, options)
 			options.width = options.width or #(options.buttons or "") * 90
 			options.buttons = TabButtonsFromLabels(options.buttons)
 
-			local tabs = common.TabBar(self[2], options.buttons, options, false)
+			local tabs = common.TabBar(ItemGroup(self), options.buttons, options, false)
 			local choice = self:GetValue(options.value_name)
 
 			for i = 1, #(options.buttons or "") do
@@ -641,8 +608,8 @@ function M.Dialog (group, options)
 			Props[tabs].type = "widget"
 
 			CommonAdd(self, tabs, options)
--- TODO: HACK! (tab hit tests don't seem to be relative / dynamic or whatever...)
-local rect, n = display.newRect(self[2], 0, 0, tabs.width, tabs.height), #options.buttons
+-- TODO: HACK! (tabs seem to 
+local rect, n = display.newRect(ItemGroup(self), 0, 0, tabs.width, tabs.height), #options.buttons
 
 rect:setReferencePoint(display.TopLeftReferencePoint)
 
@@ -683,7 +650,7 @@ end)
 	-- the name was **true**, the final name will be the value of **value\_name**.
 	-- @treturn DisplayObject Object, or **nil** if not found.
 	function dgroup:Find (name)
-		local igroup, item = self[2]
+		local igroup, item = ItemGroup(self)
 
 		for i = 1, igroup.numChildren do
 			item = igroup[i]
@@ -733,7 +700,7 @@ end)
 			self:m_before_remove()
 		end
 
-		local igroup = self[2]
+		local igroup = ItemGroup(self)
 
 		for i = igroup.numChildren, 1, -1 do
 			if GetProperty(igroup[i], "type") == "widget" then
@@ -750,7 +717,7 @@ end)
 	end
 
 	--- DOCME
-	-- TODO: I don't think this respects separators...
+	-- @todo I don't think this respects separators...
 	function dgroup:Spacer ()
 		local new_line = self.m_new_line
 
@@ -766,10 +733,10 @@ end)
 	-- @string dir
 	-- @string type
 	function dgroup:StockElements (dir, type)
-		CommonAdd(self, button.Button(self[2], nil, 0, 0, 25, 25, function()
+		CommonAdd(self, button.Button(ItemGroup(self), nil, 0, 0, 25, 25, function()
 			self:RemoveSelf()
 		end, "X"), { continue_line = true })
-
+	
 		self:AddImage{ file = format("%s_Assets/%s_Thumb.png", dir, type), continue_line = true }
 		self:AddString{ value_name = "name" }
 		self:AddCoordinates{ text = "Pos", is_static = true, name = "current" }
@@ -807,7 +774,7 @@ function M.DialogWrapper (on_editor_event)
 		--
 		-- arg1: Element type
 		elseif what == "get_tag" then
-			return on_editor_event(arg1, "get_tag")
+			return common.GetTag(arg1, on_editor_event)
 
 		--
 		-- arg1: Element type

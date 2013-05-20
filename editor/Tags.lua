@@ -24,13 +24,14 @@
 --
 
 -- Standard library imports --
+local ipairs = ipairs
 local pairs = pairs
-local types = types
+local type = type
 
 -- Modules --
+local adaptive_table_ops = require("adaptive_table_ops")
 local common = require("editor.Common")
 local iterators = require("iterators")
-local table_ops = require("table_ops")
 
 -- Exports --
 local M = {}
@@ -40,7 +41,7 @@ local Tags = {}
 
 -- Helper to resolve tags during iteration
 local function Name (tag, i)
-	local name = tag[i]
+	local name = tag and tag[i]
 
 	if name then
 		return i, name
@@ -117,18 +118,65 @@ do
 		--
 		local sub_links = Tags[name].sub_links
 
-		if sub_links and table_ops.Find(sub_links, sub, true) then
-			return true
+		if sub_links then
+			local sublink = sub_links[sub]
+
+			if sublink then
+				return sublink
+			end
 		end
 
 		--
 		for _, tname in M.Parents(name) do
-			if AuxHasSublink(tname, sub) then
-				return true
+			local sublink = AuxHasSublink(tname, sub)
+
+			if sublink then
+				return sublink
 			end
 		end
+	end
 
-		return false
+	-- --
+	local Name1, Sub1, Sublink1
+	local Name2, Sub2, Sublink2
+
+	--
+	local function FindSublink (name, sub)
+		if name == Name1 and sub == Sub1 then
+			return Sublink1
+		elseif name == Name2 and sub == Sub2 then
+			return Sublink2
+		else
+			local sublink = AuxHasSublink(name, sub)
+
+			Name1, Sub1, Sublink1 = name, sub, sublink
+			Name2, Sub2, Sublink2 = Name1, Sub1, Sublink1
+
+			return sublink
+		end
+	end
+
+	--- DOCME
+	function M.CanLink (name1, name2, object1, object2, sub1, sub2)
+		local so1, is_cont, passed, why = FindSublink(name1, sub1), true
+
+		if so1 then
+			local so2 = FindSublink(name2, sub2)
+
+			if so2 then
+				passed, why, is_cont = so1.m_can_link(object1, object2, so1, so2)
+			else
+				why = "Missing sublink #2: `" .. (sub2 or "?") .. "`"
+			end
+		else
+			why = "Missing sublink #1: `" .. (sub1 or "?") .. "`"
+		end
+
+		if passed then
+			return true
+		else
+			return false, why or "", not not is_cont
+		end
 	end
 
 	--- DOCME
@@ -137,7 +185,8 @@ do
 		name, -- MURBLE
 		sub -- BURBLE
 		)
-		return sub == nil or AuxHasSublink(name, sub)
+
+		return FindSublink(name, sub) ~= nil
 	end
 end
 
@@ -162,43 +211,152 @@ do
 	end
 end
 
---- DOCME
--- @string name
--- @ptable options
-function M.New (name, options)
-	assert(not Tags[name], "Tag already exists")
+do
+	--
+	local function AddInterface (sub, what)
+		adaptive_table_ops.AddToSet(sub, "m_interfaces", what)
+	end
 
-	local tag = { nparents = #(options or "") }
+	--
+	local function GetName (sub)
+		return sub.m_name
+	end
 
-	if options then
-		-- We track the tag's parent and child tag names, so that these may be iterated.
-		-- The parents are only assigned at tag creation, so we can safely put these at
-		-- the beginning of the tag's info array; whereas child tags may be added over
-		-- time. By making note of how many parents there were, however, we can append
-		-- the children to the same array: namely, the new tag name itself is here added
-		-- to each of its parents.
-		for _, pname in ipairs(options) do
-			local ptag = assert(Tags[pname], "Invalid parent")
+	--
+	local function Implements (sub, what)
+		return adaptive_table_ops.InSet(sub.m_interfaces, what)
+	end
 
-			assert(ptag[#ptag] ~= name, "Duplicate parent")
+	--
+	local function LinkToAny () return true end
 
-			ptag[#ptag + 1], tag[#tag + 1] = name, pname
-		end
-
-		-- Add any sublinks.
-		if options.sub_links then
-			tag.sub_links = table_ops.Copy(options.sub_links)
-		end
-
-		-- Record anything else that could be a property.
-		for k, v in pairs(options) do
-			if IsProp(k) then
-				tag[k] = v
-			end
+	--
+	local function CanLinkTo (_, _, sub, other_sub)
+		if Implements(other_sub, sub.m_link_to) then
+			return true
+		else
+			return false, "Expected `" .. sub.m_link_to .. "`", true
 		end
 	end
 
-	Tags[name] = tag
+	-- --
+	local Implies = {}
+
+	--- DOCME
+	function M.ImpliesInterface (name, what)
+		adaptive_table_ops.AddToSet(Implies, name, what)
+	end
+
+	-- --
+	local ImplementedBy = {}
+
+	--- DOCME
+	function M.Implementors (what)
+		return M.TagAndChildren(ImplementedBy[what], true)
+	end
+
+	--
+	local function AddImplementor (name, what)
+		for impl_by in adaptive_table_ops.IterSet(ImplementedBy[what]) do
+			if M.Is(name, impl_by) then
+				return
+			end
+		end
+
+		adaptive_table_ops.AddToSet(ImplementedBy, what, name)
+	end
+
+	--- DOCME
+	-- @string name
+	-- @ptable options
+	function M.New (name, options)
+		assert(not Tags[name], "Tag already exists")
+
+		local tag, new = {}
+
+		if options then
+			-- We track the tag's parent and child tag names, so that these may be iterated.
+			-- The parents are only assigned at tag creation, so we can safely put these at
+			-- the beginning of the tag's info array; whereas child tags may be added over
+			-- time. By making note of how many parents there were, however, we can append
+			-- the children to the same array: namely, the new tag name itself is here added
+			-- to each of its parents.
+			for _, pname in ipairs(options) do
+				local ptag = assert(Tags[pname], "Invalid parent")
+
+				assert(ptag[#ptag] ~= name, "Duplicate parent")
+
+				ptag[#ptag + 1], tag[#tag + 1] = name, pname
+			end
+
+			-- Add any sublinks.
+			local sub_links = options.sub_links
+
+			if sub_links then
+				new = {}
+
+				for name, sub in pairs(sub_links) do
+					local stype, obj, link_to = type(sub), {}
+
+					--
+					if stype == "table" then
+						for _, v in ipairs(sub) do
+							AddInterface(obj, v)
+						end
+
+						--
+						link_to = sub.link_to
+
+					--
+					elseif sub then
+						link_to = sub ~= true and sub
+					end
+					
+					--
+					obj.m_name = name
+
+					if type(link_to) == "string" then
+						obj.m_can_link, obj.m_link_to = CanLinkTo, link_to
+
+						--
+						for interface in adaptive_table_ops.IterSet(Implies[link_to]) do
+							AddInterface(obj, interface)
+						end
+
+					--
+					elseif link_to ~= nil then
+						obj.m_can_link = link_to or LinkToAny
+					end
+
+					--- DOCME
+					obj.GetName = GetName
+
+					--- DOCME
+					obj.Implements = Implements
+
+					--
+					new[name] = obj
+				end
+			end
+
+			--
+			for _, sub in common.PairsIf(new) do
+				for what in adaptive_table_ops.IterSet(sub.m_interfaces) do
+					AddImplementor(name, what)
+				end
+			end
+
+			-- Record anything else that could be a property.
+			for k, v in pairs(options) do
+				tag[k] = v
+			end
+		end
+
+		--
+		tag.nparents, tag.sub_links = #(options or ""), new
+
+		Tags[name] = tag
+	end
 end
 
 do
@@ -235,30 +393,28 @@ local IterStrList = iterators.InstancedAutocacher(function()
 	end,
 
 	-- Setup --
-	function(enum, name_, is_multi, extra)
+	function(enum, name_, as_set)
 		--
-		local count
+		local count = 0
 
-		if is_multi then
-			count = 0
-
-			for _, base in ipairs(name_) do
+		if as_set then
+			for base in adaptive_table_ops.IterSet(name_) do
 				count = enum(str_list, base, count)
 			end
 		else
-			count = enum(str_list, name_, 0)
+			for _, base in adaptive_table_ops.IterArray(name_) do
+				count = enum(str_list, base, count)
+			end
 		end
 
-		--
+		-- Enumeration will overwrite the old elements, but if the previous iteration was
+		-- longer than this one, the list will still contain leftover elements at the tail
+		-- end, so trim the list as needed. Remove any duplicates to get the final list.
 		for i = #str_list, count + 1, -1 do
 			str_list[i] = nil
 		end
 
 		common.RemoveDups(str_list)
-
-		if extra then
-			str_list[#str_list + 1] = false
-		end
 
 		return nil, 0
 	end
@@ -272,8 +428,8 @@ do
 		end
 
 		--
-		for _, v in common.IpairsIf(Tags[name].sub_links) do
-			str_list[count + 1], count = v, count + 1
+		for _, v in common.PairsIf(Tags[name].sub_links) do
+			str_list[count + 1], count = v:GetName(), count + 1
 		end
 
 		return count
@@ -281,10 +437,9 @@ do
 
 	--- DOCME
 	-- @string name
-	-- @bool add_nil
 	-- @treturn iterator I
-	function M.Sublinks (name, add_nil)
-		return IterStrList(EnumSublinks, name, false, add_nil)
+	function M.Sublinks (name)
+		return IterStrList(EnumSublinks, name)
 	end
 end
 
@@ -302,16 +457,10 @@ do
 
 	--- DOCME
 	-- @string name
+	-- @bool as_set
 	-- @treturn iterator I
-	function M.TagAndChildren (name)
-		return IterStrList(EnumTagAndChildren, name)
-	end
-
-	--- DOCME
-	-- @array names
-	-- @treturn iterator I
-	function M.TagAndChildren_Multi (names)
-		return IterStrList(EnumTagAndChildren, names, true)
+	function M.TagAndChildren (name, as_set)
+		return IterStrList(EnumTagAndChildren, name, as_set)
 	end
 end
 
@@ -328,20 +477,14 @@ do
 	end
 
 	---@string name Tag name.
+	-- @bool as_set
 	-- @treturn iterator Supplies, in some order without duplication, at each iteration:
 	--
 	-- * Iteration variable, of dubious practical use.
 	-- * Tag name, which may be _name_ itself; a parent tag name, as assigned in @{New} for
 	-- _name_; the parent tag name, in turn, of such a parent, etc.
-	function M.TagAndParents (name)
-		return IterStrList(EnumTagAndParents, name)
-	end
-
-	---@array names Tag names.
-	-- @treturn iterator As per @{TagAndParents}, but with iteration domain consisting of the
-	-- union of all tags in _names_.
-	function M.TagAndParents_Multi (names)
-		return IterStrList(EnumTagAndParents, names, true)
+	function M.TagAndParents (name, as_set)
+		return IterStrList(EnumTagAndParents, name, as_set)
 	end
 end
 

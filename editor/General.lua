@@ -25,11 +25,16 @@
 
 -- Modules --
 local common = require("editor.Common")
+local config = require("config.GlobalEvents")
+local events = require("editor.Events")
+local global_events = require("game.GlobalEvents")
 local grid = require("editor.Grid")
+local links = require("editor.Links")
 local dispatch_list = require("game.DispatchList")
 
 -- Corona globals --
 local display = display
+local native = native
 
 -- Exports --
 local M = {}
@@ -39,6 +44,12 @@ local Option
 
 -- --
 local StartPos
+
+-- --
+local Events
+
+-- --
+local Global
 
 -- --
 local Tabs
@@ -68,7 +79,7 @@ end
 -- @pgroup view X
 function M.Load (view)
 	--
-	local tab_buttons = { "Start", "Objective" }
+	local tab_buttons = { "Start", "Events" }
 
 	for i, label in ipairs(tab_buttons) do
 		tab_buttons[i] = {
@@ -82,21 +93,65 @@ function M.Load (view)
 						grid.Show(false)
 
 					--
-					elseif Option == "Objective" then -- (all dots, wait for flag, etc.)
-
+					elseif Option == "Events" then
+						Events.isVisible = false
 					end
 
 					--
 					if label == "Start" then
 						grid.Show(GridFunc)
+					elseif label == "Events" then
+						Events.isVisible = true
 					end
 
 					Option = label
-
-					return true
 				end
+
+				return true
 			end
 		}
+	end
+
+	--
+	Events = display.newGroup()
+
+	view:insert(Events)
+
+	--
+	Global = {}
+
+	local tag, rep = common.GetTag(false, global_events.EditorEvent), Events
+
+	if tag then
+		common.BindToElement(rep, Global)
+
+		links.SetTag(rep, tag)
+	end
+
+	--
+	local x, y, link_opts = 140, 95, { rep = rep }
+
+	local function AddLink (sub, interface)
+		link_opts.interfaces = interface
+		link_opts.sub = sub
+
+		local link = common.Link(Events, link_opts)
+
+		link.x, link.y = x, y
+
+		display.newText(Events, (interface == "event_source" and "Target: " or "Source: ") .. sub, x + 30, y - 10, native.systemFontBold, 20)
+
+		y = y + 50
+	end
+
+	for _, v in ipairs(config.actions) do
+		AddLink(v, "event_source")
+	end
+
+	x, y = x + 250, 95
+
+	for _, v in ipairs(config.events) do
+		AddLink(v, "event_target")
 	end
 
 	--
@@ -116,12 +171,12 @@ function M.Enter ()
 
 	-- Zoom factors?
 
-	Tabs.isVisible = true
+	Events.isVisible, Tabs.isVisible = Option == "Events", true
 end
 
 ---
 function M.Exit ()
-	Tabs.isVisible = false
+	Events.isVisible, Tabs.isVisible = false, false
 
 	grid.Show(false)
 end
@@ -130,14 +185,14 @@ end
 function M.Unload ()
 	Tabs:removeSelf()
 
-	Option, StartPos, Tabs = nil
+	Events, Global, Option, StartPos, Tabs = nil
 end
 
 -- Listen to events.
 dispatch_list.AddToMultipleLists{
 	-- Build Level --
 	build_level = function(level)
-		-- Anything?
+		level.global_events = events.BuildElement(level, global_events, level.global_events, nil)[1]
 	end,
 
 	-- Load Level WIP --
@@ -149,6 +204,9 @@ dispatch_list.AddToMultipleLists{
 
 			grid.Show(false)
 		end
+
+		--
+		events.SaveOrLoad(level, global_events, level.global_events, Global, false)
 	end,
 
 	-- Save Level WIP --
@@ -159,6 +217,13 @@ dispatch_list.AddToMultipleLists{
 			level.player.col = StartPos.m_col
 			level.player.row = StartPos.m_row
 		end
+
+		--
+		local global = { version = 1 }
+
+		events.SaveOrLoad(level, global_events, Global, global, true)
+
+		level.global_events = global
 	end,
 
 	-- Verify Level WIP --

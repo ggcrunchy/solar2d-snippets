@@ -39,6 +39,7 @@ local defer = require("game.Defer")
 local dispatch_list = require("game.DispatchList")
 local dots = require("game.Dots")
 local event_blocks = require("game.EventBlocks")
+local global_events = require("game.GlobalEvents")
 local level_list = require("game.LevelsList")
 local persistence = require("game.Persistence")
 local player = require("game.Player")
@@ -222,7 +223,8 @@ function M.LoadLevel (view, which)
 			enemies.SpawnEnemy(CurrentLevel.things_layer, enemy)
 		end
 
-		-- Built-ins...
+		-- ...and any global events.
+		global_events.AddEvents(level.global_events)
 
 		-- Patch up deferred objects.
 		defer.Resolve("loading_level")
@@ -275,25 +277,21 @@ function M.UnloadLevel (why)
 	end
 end
 
+-- On(win): unload the level and do win-related logic
+global_events.ExtendAction("win", function()
+	timer.performWithDelay(Values.wait_to_end, function()
+		M.UnloadLevel("won")
+	end)
+end)
+
 -- Listen to events.
-dispatch_list.AddToMultipleLists{
-	-- All Dots Removed --
-	all_dots_removed = function()
-		timer.performWithDelay(Values.wait_to_end, function()
-			-- TODO: this should send a message to something, instead (somewhere hooked up to an objective...)
-			M.UnloadLevel("won")
-		end)
-	end,
-
-	-- Enter Menus --
-	enter_menus = function()
-		for _, name in ipairs(Groups) do
-			display.remove(CurrentLevel and CurrentLevel[name])
-		end
-
-		CurrentLevel = nil
+dispatch_list.AddToList("enter_menus", function()
+	for _, name in ipairs(Groups) do
+		display.remove(CurrentLevel and CurrentLevel[name])
 	end
-}
+
+	CurrentLevel = nil
+end)
 
 -- Export the module.
 return M

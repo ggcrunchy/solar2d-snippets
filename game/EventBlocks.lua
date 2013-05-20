@@ -42,7 +42,6 @@ local random = math.random
 local yield = coroutine.yield
 
 -- Modules --
-local common_tags = require("editor.CommonTags")
 local coroutine_ex = require("coroutine_ex")
 local defer = require("game.Defer")
 local dispatch_list = require("game.DispatchList")
@@ -367,7 +366,7 @@ end
 local Events
 
 -- Event block type lookup table --
-local EventBlockList = {}
+local EventBlockList
 
 --- Adds a block to the level and registers an event for it.
 -- @ptable info Block info, with at least the following properties:
@@ -378,12 +377,12 @@ local EventBlockList = {}
 -- * **col1**, **row1**, **col2**, **row2**: **int** Columns and rows defining the block.
 -- These will be sorted and clamped, as with block operations.
 --
--- **TODO**: Detect null blocks? Mention construction, block:Reset
+-- @todo Detect null blocks? Mention construction, block:Reset
 function M.AddBlock (info)
 	local block = NewBlock(info.col1, info.row1, info.col2, info.row2)
 	local event = assert(EventBlockList[info.type], "Invalid event block")(info, block)
 
-	defer.Defer("loading_level", event, info.uid)
+	defer.Defer("loading_level", event, info.uid, "fire")
 
 	Events[#Events + 1] = event -- TODO: Forgo this when not debugging?
 end
@@ -400,6 +399,7 @@ local BlockKeys = { "type", "col1", "row1", "col2", "row2" }
 -- @param arg1 Argument #1.
 -- @param arg2 Argument #2.
 -- @param arg3 Argument #3.
+-- @return Result(s) of the event, if any.
 function M.EditorEvent (type, what, arg1, arg2, arg3)
 	local factory = EventBlockList[type]
 
@@ -424,20 +424,18 @@ function M.EditorEvent (type, what, arg1, arg2, arg3)
 		elseif what == "enum_props" then
 			arg1:Spacer()
 			arg1:StockElements("EventBlock", type)
-			arg1:AddLink{ text = "Link to event source", rep = arg2, tags = "event_source" }
+			arg1:AddLink{ text = "Link to event source", rep = arg2, sub = "fire", interfaces = "event_source" }
 			arg1:AddSeparator()
 --			arg1:AddCheckbox{ text = "On By Default?", value_name = "starts_on" }
 --			arg1:AddSeparator()
 
 		-- Get Tag --
 		elseif what == "get_tag" then
-			common_tags.EnsureLoaded("event_target")
-
-			if not tags.Exists("event_block") then
-				tags.New("event_block", { "event_target" })
-			end
-
 			return "event_block"
+
+		-- New Tag --
+		elseif what == "new_tag" then
+			return "sources_and_targets", nil, "fire"
 
 		-- Prep Link --
 		elseif what == "prep_link" then
@@ -448,11 +446,13 @@ function M.EditorEvent (type, what, arg1, arg2, arg3)
 			-- Has one or more source...
 		end
 
-		local event = factory("editor_event")
+		local event, result, r2, r3 = factory("editor_event")
 
 		if event then
-			event(what, arg1, arg2, arg3)
+			result, r2, r3 = event(what, arg1, arg2, arg3)
 		end
+
+		return result, r2, r3
 	end
 end
 
@@ -473,7 +473,7 @@ end
 -- the only one we care about so far)... or maybe JUST the forward boolean, since the
 -- hint might as well be compatible with can\_fire / fire?
 function M.GetEvent (name)
-	return Events[name] or function() end
+	return Events[name] or function() end -- TODO: Remove this function?
 end
 
 --- Fires all events.
@@ -554,7 +554,7 @@ dispatch_list.AddToMultipleLists{
 }
 
 -- Install various types of events.
-EventBlockList.maze = require("event_block.Maze")
+EventBlockList = require_list("config.EventBlocks")
 
 -- Export the module.
 return M

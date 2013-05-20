@@ -41,7 +41,6 @@ local timer = timer
 
 -- Corona modules --
 local lfs = require("lfs")
-local crypto = require("crypto")
 
 -- Cached module references --
 local _TestFlag_
@@ -170,9 +169,7 @@ function M.EnumerateFiles (path, options, into)
 	into = into or {}
 	path = system.pathForFile(path, base)
 
-	if path then
-		(EnumFiles[type(exts)] or EnumAll)(into, path, exts)
-	end
+	;(EnumFiles[type(exts)] or EnumAll)(into, path, exts)
 
 	return into
 end
@@ -217,22 +214,19 @@ end
 local NameID = 0
 
 -- A basic salt to avoid name clashes with leftovers from a previous session --
-local Prefix = os.date()
+local Prefix = {}
 
--- TODO: Get to the bottom of this... just Android? bug?
-local digest = crypto.digest
-
-if system.getInfo("environment") == "device" then
-	function digest (_, n)
-		return ":3KJFDASD:" .. n -- Sophisticated generator!
-	end
+for str in os.date():gmatch(".") do
+	Prefix[#Prefix + 1] = format("%x", str:byte() % 16)
 end
+
+Prefix = table.concat(Prefix, "") .. "__"
 
 ---@treturn string A reasonably unique name.
 function M.NewName ()
 	NameID = NameID + 1
 
-	return crypto.digest(crypto.md4, format("%s%i", Prefix, NameID - 1))
+	return format("%s%i", Prefix, NameID - 1)
 end
 
 -- Operation used to round for quantization --
@@ -278,23 +272,18 @@ end
 -- @param base Directory base. If absent, **system.ResourceDirectory**.
 -- @treturn TimerHandle A timer, which may be cancelled.
 function M.WatchForFileModification (path, func, base)
-	local respath, watch = system.pathForFile(path, base)
+	local respath = system.pathForFile(path, base)
+	local modtime = lfs.attributes(respath, "modification")
 
-	if respath then
-		local modtime = lfs.attributes(respath, "modification")
+	return timer.performWithDelay(50, function()
+		local now = lfs.attributes(respath, "modification")
 
-		function watch ()
-			local now = lfs.attributes(respath, "modification")
+		if now ~= modtime then
+			func(path)
 
-			if now ~= modtime then
-				func(path)
-
-				modtime = now
-			end
+			modtime = now
 		end
-	end
-
-	return timer.performWithDelay(50, watch or function() end, 0)
+	end, 0)
 end
 
 -- Cache module members.

@@ -24,6 +24,7 @@
 --
 
 -- Standard library imports --
+local pairs = pairs
 local print = print
 local require = require
 local setmetatable = setmetatable
@@ -102,6 +103,22 @@ end
 
 -- Install printf as the default var dump routine.
 var_dump.SetDefaultOutf(printf)
+
+--- DOCME
+function require_list (name)
+	local from = require(name)
+	local prefix, list = from._prefix, {}
+
+	prefix = prefix and prefix .. "." or ""
+
+	for k, v in pairs(from) do
+		if k ~= "_prefix" then
+			list[k] = require(prefix .. v)
+		end
+	end
+
+	return list
+end
 
 -- Checks for vdump --
 local Checks
