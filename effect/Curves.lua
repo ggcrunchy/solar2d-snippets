@@ -31,6 +31,7 @@ local abs = math.abs
 local ipairs = ipairs
 local sin = math.sin
 local sqrt = math.sqrt
+local unpack = unpack
 
 -- Exports --
 local M = {}
@@ -42,6 +43,22 @@ function M.Bezier_Eval (coeffs, a, b, c, d)
 	coeffs.b = 3 * (b - 2 * c + d)
 	coeffs.c = 3 * (c - d)
 	coeffs.d = d
+end
+
+-- "Inverted" eval functions --
+-- General idea: Given geometry matrix [P1 P2 P3 P4], and eval matrix (i.e. what gets
+-- multiplied by [a, b, c, d]), compute a row of the 2x4 product matrix. Reorder the
+-- components (since the quadrature uses [t^3, t^2, t, 1], and drop the last one since
+-- it gets culled by differentiation.
+local Invert = {}
+
+-- Inverted Bezier
+Invert[M.Bezier_Eval] = function(a, b, c, d)
+	local B = 3 * (b - a)
+	local C = 3 * (a + c - 2 * b)
+	local D = -a + 3 * (b - c) + d
+
+	return D, C, B
 end
 
 --- Converts coefficients from Bézier to Hermite form.
@@ -84,18 +101,13 @@ function M.CatmullRom_Eval (coeffs, a, b, c, d)
 	coeffs.d = .5 * (-c + d)
 end
 
--- --
-local X, Y = {}, {}
+-- Inverted Catmull-Rom
+Invert[M.CatmullRom_Eval] = function(a, b, c, d)
+	local B = .5 * (-a + c)
+	local C = .5 * (2 * a - 5 * b + 4 * c - d)
+	local D = .5 * (-a + 3 * (b - c) + d)
 
---- DOCME
-function M.EvaluateCoeffs (eval, coeffs, a, b, c, d)
-	eval(X, a.x, b.x, c.x, d.x)
-	eval(Y, a.y, b.y, c.y, d.y)
-
-	coeffs[1].x, coeffs[1].y = X.a, Y.a
-	coeffs[2].x, coeffs[2].y = X.b, Y.b
-	coeffs[3].x, coeffs[3].y = X.c, Y.c
-	coeffs[4].x, coeffs[4].y = X.d, Y.d
+	return D, C, B
 end
 
 --- Evaluates curve coefficents, for use with @{M.MapToCurve}.
@@ -136,7 +148,16 @@ function M.Hermite_Eval (coeffs, a, b, c, d)
 	coeffs.d = -c + d
 end
 
--- --
+-- Inverted Hermite
+Invert[M.Hermite_Eval] = function(a, b, c, d)
+	local B = c
+	local C = 3 * (b - a) - 2 * c - d
+	local D = 2 * (a - b) + c + d
+
+	return D, C, B
+end
+
+-- Tangent scale factor --
 local Div = 1 / 3
 
 --- Converts coefficients from Hermite to Bézier form.
@@ -171,51 +192,45 @@ end
 
 -- Length via quadrature
 do
-	-- --
---	local Tan = {}
-local Poly = {}
+	local Poly = {}
+
 	--
-	local function Length (eval, coeffs, t)
+	local function Length (t)
 		return sqrt(t * (t * (t * (t * Poly[1] + Poly[2]) + Poly[3]) + Poly[4]) + Poly[5])
 	end
 
-	-- --
+	-- Quadrature offsets and weights --
 	local X = { 0.1488743389, 0.4333953941, 0.6794095692, 0.8650633666, 0.9739065285 }
 	local W = { 0.2966242247, 0.2692667193, 0.2190863625, 0.1494513491, 0.0666713443 }
 
 	--
-	local function Integrate (eval, coeffs, t1, t2)
+	local function Integrate (t1, t2)
 		local midt = .5 * (t1 + t2)
 		local diff = .5 * (t2 - t1)
-		local length = 0
+		local len = 0
 
 		for i = 1, 5 do
 			local dx = diff * X[i]
 
-			length = length + W[i] * (Length(eval, coeffs, midt - dx) + Length(eval, coeffs, midt + dx))
+			len = len + W[i] * (Length(midt - dx) + Length(midt + dx))
 		end
 
-		return length * diff
+		return len * diff
 	end
--- ^^ This one never seemed to work...
--- *Internet investigation...*
--- Int(f(x) dx, x, a, b) ~ (b - a) / 2 * Sum[i, 1, n]{ wi * f(a + (xi + 1) * (b - a) / 2)}
--- Didn't do +1... (the midt, no +1 come from Rick Parent's "Computer Animation", possibly)... have to double-check, might be same equation
 
 	--
-	local function Subdivide (eval, coeffs, t1, t2, len, tolerance)
+	local function Subdivide (t1, t2, len, tolerance)
 		local midt = .5 * (t1 + t2)
-
-		local llen = Integrate(eval, coeffs, t1, midt)
-		local rlen = Integrate(eval, coeffs, midt, t2)
+		local llen = Integrate(t1, midt)
+		local rlen = Integrate(midt, t2)
 
 		if abs(len - (llen + rlen)) > tolerance then
-			return Subdivide(eval, coeffs, t1, midt, llen, tolerance) + Subdivide(eval, coeffs, midt, t2, rlen, tolerance)
+			return Subdivide(t1, midt, llen, tolerance) + Subdivide(midt, t2, rlen, tolerance)
 		else
 			return llen + rlen
 		end
 	end
-local K={ {}, {}, {}, {} }
+
 	--- Computes a curve length
 	-- @callable eval Evaluator function
 	-- @param coeffs Control coefficients
@@ -224,11 +239,13 @@ local K={ {}, {}, {}, {} }
 	-- @number tolerance Evaluation tolerance
 	-- @treturn number Length of curve
 	-- TODO: DOCME better
-	function M.CurveLength (eval, coeffs, t1, t2, tolerance) -- Vector const coeffs[4]
-M.EvaluateCoeffs(eval, K, coeffs[1], coeffs[2], coeffs[3], coeffs[4])
-		local ax, ay = K[1].x, K[1].y
-		local bx, by = K[2].x, K[2].y
-		local cx, cy = K[3].x, K[3].y
+	function M.CurveLength (eval, coeffs, t1, t2, tolerance)
+		local inverted, a, b, c, d = Invert[eval], unpack(coeffs)
+
+		-- Given curve Ax^3 + Bx^2 + Cx + D, the derivative is 3Ax^2 + 2Bx + C, which
+		-- when squared (in the arc length formula) yields these coefficients. 
+		local ax, bx, cx = inverted(a.x, b.x, c.x, d.x)
+		local ay, by, cy = inverted(a.y, b.y, c.y, d.y)
 
 		Poly[1] = 9 * (ax * ax + ay * ay)
 		Poly[2] = 12 * (ax * bx + ay * by)
@@ -236,7 +253,7 @@ M.EvaluateCoeffs(eval, K, coeffs[1], coeffs[2], coeffs[3], coeffs[4])
 		Poly[4] = 4 * (bx * cx + by * cy)
 		Poly[5] = cx * cx + cy * cy
 
-		return Subdivide(eval, coeffs, t1, t2, Integrate(eval, coeffs, t1, t2), tolerance)
+		return Subdivide(t1, t2, Integrate(t1, t2), tolerance)
 	end
 end
 
@@ -272,7 +289,7 @@ do
 	end
 
 	-- Split a cubic bezier in two
-	local function BezSplit ()--V, L, R)--Vector const V[], Vector L[], Vector R[])
+	local function BezSplit ()
 		-- Copy control points.
 		local base = Top + 1
 
@@ -298,13 +315,6 @@ do
 		-- L
 		for i = 1, 4 do
 			AddPoint(Temp[i][1])
---[[
-			local l, ltemp = L[i], Temp[i][1]
-			local r, rtemp = R[i], Temp[5 - i][i]
-
-			l.x, l.y = ltemp.x, ltemp.y
-			r.x, r.y = rtemp.x, rtemp.y
-			]]
 		end
 
 		-- R
@@ -314,7 +324,7 @@ do
 	end
 
 	-- Add polyline length if close enough
-	local function AddIfClose (--[[V, ]]length, err)--Vector const V[], double & length, double error)
+	local function AddIfClose (length, err)
 		Top = Top - 8
 
 		local base = Top + 1
@@ -331,10 +341,10 @@ do
 
 		--
 		if len - main_len > err then
-			BezSplit()--V, L, R)
+			BezSplit()
 
-			local ll = AddIfClose(--[[L, ]]length, err)
-			local lr = AddIfClose(--[[R, ]]length, err)
+			local ll = AddIfClose(length, err)
+			local lr = AddIfClose(length, err)
 			
 			len = ll + lr
 		end
@@ -354,7 +364,7 @@ do
 			AddPoint(coeffs[i])
 		end
 
-		return AddIfClose(--[[coeffs, ]]0, tolerance)
+		return AddIfClose(0, tolerance)
 	end
 end
 
@@ -507,58 +517,5 @@ end
 -- Export the module.
 return M
 --[[
-CubicCurve.cpp:
-	// @brief Cubic curve representation
-	struct CubicCurve {
-		CurveEval mEval;// Curve evaluation method
-		Vector mCoeffs[4];// Coefficients set
-		float mTolerance;	// Curve fitting tolerance
-		float mU1;	// Start of curve interval
-		float mU2;	// End of curve interval
-
-		CubicCurve (void) : mEval(Hermite_Eval), mTolerance(0.5f), mU1(0.0f), mU2(1.0f) {}
-	};
-
-	//
-	// CubicCurve / RCubicCurve metamethods
-	//
-	static int _len (lua_State * L)
-	{
-		CubicCurve * C = _pT<CubicCurve>(L, 1);
-
-		lua_pushnumber(L, CurveLength(C->mEval, C->mCoeffs, C->mU1, C->mU2, C->mTolerance));// C, len
-
-		return 1;
-	}
-
-	//
-	// CubicCurve / RCubicCurve methods
-	//
-	static int BezierLen (lua_State * L)
-	{
-		CubicCurve * C = _pT<CubicCurve>(L, 1);
-
-		Vector coeffs[4], * pcoeffs = C->mCoeffs;
-
-		if (C->mEval != Bezier_Eval)
-		{
-			bool bCatmullRom = CatmullRom_Eval == C->mEval;
-
-			if (bCatmullRom) CatmullRomToHermite(C->mCoeffs, coeffs);
-
-			HermiteToBezier(bCatmullRom ? coeffs : C->mCoeffs, coeffs);
-
-			pcoeffs = coeffs;
-		}
-
-		lua_pushnumber(L, BezierLength(pcoeffs, C->mTolerance));
-
-		return 1;
-	}
-	
 -- TODO: Try Romberg? http://www.geometrictools.com/Documentation/NumericalIntegration.pdf
-
--- TODO: Gaussian? http://www.geometrictools.com/LibMathematics/NumericalAnalysis/Wm5Integrate1.cpp
-
--- TODO: Runge-Kutta... http://www.geometrictools.com/Documentation/MovingAlongCurveSpecifiedSpeed.pdf
 ]]
