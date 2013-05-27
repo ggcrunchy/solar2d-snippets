@@ -147,6 +147,9 @@ local LightParams = {
 	end
 }
 
+-- --
+local Length, Poly = curves.LineIntegrand()
+
 --
 function Scene:enterScene ()
 	--
@@ -273,9 +276,9 @@ function Scene:enterScene ()
 				if use_quats then
 					LightParams.time = 750
 				else
-					local len = curves.CurveLength(curves.CatmullRom_Eval, Angles, 0, 1, .005)
+					curves.SetPoly_EvalArray(Poly, curves.CatmullRom_Eval, Angles)
 
-					LightParams.time = ceil(max(.3, len) * 200)
+					LightParams.time = ceil(max(.3, curves.Romberg(Length, 0, 1, .005)) * 200)
 				end
 
 				transition.to(dlight, LightParams)

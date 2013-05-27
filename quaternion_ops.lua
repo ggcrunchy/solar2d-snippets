@@ -219,5 +219,50 @@ _Scale_ = M.Scale
 _SquadAuxQuats_ = M.SquadAuxQuats
 _SquadQ2S2_ = M.SquadQ2S2
 
+--[[
+--
+	local Neighborhood = .959066
+	local Scale = 1.000311
+	local AddK = Scale / math.sqrt(Neighborhood)
+	local Factor = Scale * (-.5 / (Neighborhood * math.sqrt(Neighborhood))) 
+
+	local function Norm (x, y)
+		local s = x * x + y * y
+		local k1 = AddK + Factor * (s - Neighborhood)
+		local k = k1
+
+		if s < .83042395 then
+			k = k * k1
+
+			if s < .30174562 then
+				k = k * k1
+			end
+		end
+
+		return x * k, y * k, k, s
+	end
+
+	for i = 1, 20 do
+		local x1 = random() --i / 21
+		local x2 = random()
+
+		for _ = 1, 10 do
+			local y1 = math.sqrt(math.max(1 - x1 * x1, 0))
+			local y2 = math.sqrt(math.max(1 - x2 * x2, 0))
+			local t = random()
+			local x, y = (1 - t) * x1 + t * x2, (1 - t) * y1 + t * y2
+			local nx, ny, k, s = Norm(x, y)
+			local len = math.sqrt(nx * nx + ny * ny)
+
+	if len < .95 or len > 1.05 then
+	--	printf("K = %.4f, S = %.4f, t = %.3f, got len = %.4f", k, s, t, len)
+	--	print("")
+	end
+
+		--	printf("Started with (%.4f, %.4f), got (%.4f, %.4f), len = %.6f", x, y, nx, ny, len)
+		end
+	end
+]]
+
 -- Export the module.
 return M

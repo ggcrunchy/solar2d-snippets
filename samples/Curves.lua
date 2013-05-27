@@ -82,64 +82,6 @@ function Scene:enterScene ()
 			self[what]:append(300 + a * x, 300 + a * y)
 		end
 	end, 30)
-
---[[
-	local A = display.newCircle(50, 90, 15)
-	local B = display.newCircle(205, 100, 15)
-	local C = display.newCircle(100, 210, 15)
-	local D = display.newCircle(250, 130, 15)
-
-	local Ha, Hb, Hc, Hd = {}, {}, {}, {}
-	local Ba, Bb, Bc, Bd = {}, {}, {}, {}
-
-	curves.CatmullRomToHermite(A, B, C, D, Ha, Hb, Hc, Hd)
-	curves.HermiteToBezier(Ha, Hb, Hc, Hd, Ba, Bb, Bc, Bd)
-
-	T = {}
-
-	local kCR, kH, kB = {}, {}, {}
-
-	for t = 0, 50 do
-		local tt = t / 50
-
-		curves.EvaluateCurve(curves.CatmullRom_Eval, kCR, false, tt)
-		curves.EvaluateCurve(curves.Hermite_Eval, kH, false, tt)
-		curves.EvaluateCurve(curves.Bezier_Eval, kB, false, tt)
-
-		local cx, cy = curves.MapToCurve(kCR, A, B, C, D)
-		local hx, hy = curves.MapToCurve(kH, Ha, Hb, Hc, Hd)
-		local bx, by = curves.MapToCurve(kB, Ba, Bb, Bc, Bd)
-
-		hx = hx + 300
-		bx, by = bx + 300, by + 200
-
-		if t == 0 then
-			kCR.x, kCR.y = cx, cy
-			kH.x, kH.y = hx, hy
-			kB.x, kB.y = bx, by
-		elseif t == 1 then
-			LINE = display.newLine(kCR.x, kCR.y, cx, cy)
-			LINE2 = display.newLine(kH.x, kH.y, hx, hy)
-			LINE3 = display.newLine(kB.x, kB.y, bx, by)
-
-			LINE:setColor(255, 0, 0)
-			LINE2:setColor(0, 255, 0)
-			LINE3:setColor(0, 0, 255)
-
-			LINE.width = 3
-			LINE2.width = 3
-			LINE3.width = 3
-		else
-			LINE:append(cx, cy)
-			LINE2:append(hx, hy)
-			LINE3:append(bx, by)
-		end
-	end
-]]
-
-
-
-
 end
 
 Scene:addEventListener("enterScene")

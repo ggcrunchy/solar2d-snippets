@@ -48,23 +48,23 @@ local Scene = storyboard.newScene()
 
 -- Samples names --
 local Names = {
-	"Curves", -- These were mostly just for testing something... could be MUCH more interesting...
-	"Delaunay", -- Stub... idea forming
+	"Curves", -- These were mostly just for testing something... could be MUCH more interesting... (editor?)
+	"Delaunay", -- Stub... idea forming ("gas" fills chamber, then pathfind along it?)
 	"Hilbert", -- I rather like this, nothing immediate to add...
-	"HilbertMixer", -- Getting there, maybe needs a little more polish and moving the test code elsewhere
+	"HilbertMixer", -- Getting there, maybe some afterimages? Do smoothing or simplification?
 	"Hop", -- Was just to show an idea to a work colleague... has some "problems"... worth fixing?
 	"Marching", -- Better example? Better implementation?
 	"Nodes", -- Was incorporated into editor... though not quite like this... at very least, use LinkGroup?
 	"OrbitsAndLattices", -- In progress...
-	"Pixels", -- Depending on how far I can squeeze this, look into a "3D engine" on top
+	"Pixels", -- Depending on how far I can squeeze this, look into a "3D engine" on top (actually, move that elsewhere and do fire, plasma, etc. here)
 	"SlowMo", -- Explore the "copycat" idea I have here?
 	"Snowfall", -- In progress...
-	"Superformulae", -- Getting there... is there any way to analyze the formula (can get REALLY huge...)
+	"Superformulae", -- Getting there... is there any way to analyze the formula? (can get REALLY huge...)
 	"Thoughts", -- Seems to need some fixing...
-	"Tiling", -- Image group? Do effects on these, once in play?
+	"Tiling", -- Do effects on these, once in play?
 	"Timers", -- Better examples?
 	"Game", -- Having actual game ideas... explore? Which are best?
-	"Editor" -- Ongoing (better way to do this? somewhat hard to port changes... submodule?)
+	"Editor" -- Ongoing (fairly easy to port now, owing to config directory)
 }
 
 --[[
@@ -116,27 +116,33 @@ local Names = {
 
 	* Approximate crumble effect from Vektor Space / Icebreakers (need general quads to get it right)
 
-	* Do something with some of the curve code from Icebreakers? (If nothing else, a nice contribution
-	  to the curves module)
-
 	* Go to town with the grid iterators, e.g. to make masks or general art... could amortize costs
 	  by iteratively capturing completed sections and compositing them? (Ditto)
 
 	* Projectile targeting, with gravity (maybe with some of the competing teams stuff from WAY back...)
 
 	* Try to do 8- or 16-bit style of 3D, like World Runner or Panorama Cotton (proof of concept)
+
+	* Ray tracer
 ]]
+
+-- --
+local CX
 
 --
 local function SetCurrent (current, index)
 	current.text = "Current: " .. Names[index]
+
+	current:setReferencePoint(display.CenterLeftReferencePoint)
+
+	current.x = CX
 
 	current.m_id = index
 end
 
 --
 function Scene:createScene ()
-	local Current = display.newText(self.view, "", 480, 50, native.systemFont, 35)
+	local Current = display.newText(self.view, "", 0, 50, native.systemFont, 35)
 	local Choices = common.Listbox(self.view, 20, 20, {
 		-- --
 		get_text = function(index)
@@ -155,9 +161,11 @@ function Scene:createScene ()
 		Choices:insertRow(add_row)
 	end
 
+	CX = Choices.contentBounds.xMax + 20
+
 	SetCurrent(Current, 1)
 
-	layout.VBox(self.view, nil, false, display.contentCenterY, 400, 50, 25,
+	local box = layout.VBox(self.view, nil, false, display.contentCenterY, 400, 50, 25,
 		function()
 			local name = Names[Current.m_id]
 
