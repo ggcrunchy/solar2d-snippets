@@ -51,10 +51,14 @@ local FadeInParams = { time = 700, alpha = 1, transition = easing.outQuad }
 function Scene:enterScene ()
 	local images = sheet.TileImage("Background_Assets/Background.png", 15, 10, 120, 80, 330, 200)
 
+	self.tiles = display.newImageGroup(images)
+
+	self.view:insert(self.tiles)
+
 	local index, row, col = 1, 0, 0
 
 	self.timer = timer.performWithDelay(80, function()
-		local tile = display.newImage(self.view, images, index)
+		local tile = display.newImage(self.tiles, images, index)
 
 		tile.xScale = 32 / tile.width
 		tile.yScale = 32 / tile.height
@@ -73,6 +77,7 @@ function Scene:enterScene ()
 
 		index = index + 1
 	end, 150)
+	-- ^ TODO: and then, fancy effects... ripples, streamers, curves?
 end
 
 Scene:addEventListener("enterScene")
@@ -81,9 +86,10 @@ Scene:addEventListener("enterScene")
 function Scene:exitScene ()
 	timer.cancel(self.timer)
 
-	for i = self.view.numChildren, 2, -1 do
-		self.view[i]:removeSelf()
-	end
+	self.tiles:removeSelf()
+
+	self.tiles = nil
+	self.timer = nil
 end
 
 Scene:addEventListener("exitScene")

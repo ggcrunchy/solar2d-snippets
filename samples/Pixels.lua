@@ -125,7 +125,7 @@ end
 
 -- --
 local LightParams = {
-	time = 750, t = 1,
+	t = 1,
 
 	onComplete = function(light)
 		local prev, cur = Angles[1]
@@ -267,14 +267,24 @@ function Scene:enterScene ()
 			end
 
 			--
+			local use_quats = self.use_quaternions:IsChecked()
+
 			if dlight.t == 1 then
+				if use_quats then
+					LightParams.time = 750
+				else
+					local len = curves.CurveLength(curves.CatmullRom_Eval, Angles, 0, 1, .005)
+
+					LightParams.time = ceil(max(.3, len) * 200)
+				end
+
 				transition.to(dlight, LightParams)
 			end
 
 			--
 			local light_x, light_y, light_z
 
-			if self.use_quaternions:IsChecked() then
+			if use_quats then
 				v.x, v.y, v.z, v.w = 0, 0, 1, 0
 
 				quaternion_ops.SquadQ4(rotq, Angles[1].q, Angles[2].q, Angles[3].q, Angles[4].q, dlight.t)

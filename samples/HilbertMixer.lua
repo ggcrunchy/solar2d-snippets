@@ -323,13 +323,13 @@ local dx, dy = T1.x - Q2.x, T1.y - Q2.y
 local befl = lr
 lr = lr + math.sqrt(dx * dx + dy * dy)
 local bef3 = len3
-		len3 = len3 + curves.CurveLength(curves.CatmullRom_Eval, { Q1, Q2, T1, T2 }, 0, 1, .005)
+		len3 = len3 + curves.CurveLength(curves.CatmullRom_Eval, { Q1, Q2, T1, T2 }, 0, 1, 1e-7)--.005)
 		curves.CatmullRomToHermite(Q1, Q2, T1, T2)
 		curves.HermiteToBezier(Q1, Q2, T1, T2)
 local bef = len
 		len = len + curves.BezierLength({ Q1, Q2, T1, T2 }, .003)
 local bef2 = len2
-		len2 = len2 + curves.CurveLength(curves.Bezier_Eval, { Q1, Q2, T1, T2 }, 0, 1, .005)
+		len2 = len2 + curves.CurveLength(curves.Bezier_Eval, { Q1, Q2, T1, T2 }, 0, 1, 1e-7)--.005)
 print("COMP", lr - befl, len3 - bef3, len - bef, len2 - bef2)
 	end
 
@@ -527,5 +527,48 @@ function Scene:exitScene ()
 end
 
 Scene:addEventListener("exitScene")
+
+--
+local Neighborhood = .959066
+local Scale = 1.000311
+local AddK = Scale / math.sqrt(Neighborhood)
+local Factor = Scale * (-.5 / (Neighborhood * math.sqrt(Neighborhood))) 
+
+local function Norm (x, y)
+	local s = x * x + y * y
+	local k1 = AddK + Factor * (s - Neighborhood)
+	local k = k1
+
+	if s < .83042395 then
+		k = k * k1
+
+		if s < .30174562 then
+			k = k * k1
+		end
+	end
+
+	return x * k, y * k, k, s
+end
+
+for i = 1, 20 do
+	local x1 = random() --i / 21
+	local x2 = random()
+
+	for _ = 1, 10 do
+		local y1 = math.sqrt(math.max(1 - x1 * x1, 0))
+		local y2 = math.sqrt(math.max(1 - x2 * x2, 0))
+		local t = random()
+		local x, y = (1 - t) * x1 + t * x2, (1 - t) * y1 + t * y2
+		local nx, ny, k, s = Norm(x, y)
+		local len = math.sqrt(nx * nx + ny * ny)
+
+if len < .95 or len > 1.05 then
+--	printf("K = %.4f, S = %.4f, t = %.3f, got len = %.4f", k, s, t, len)
+--	print("")
+end
+
+	--	printf("Started with (%.4f, %.4f), got (%.4f, %.4f), len = %.6f", x, y, nx, ny, len)
+	end
+end
 
 return Scene

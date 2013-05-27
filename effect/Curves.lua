@@ -84,6 +84,20 @@ function M.CatmullRom_Eval (coeffs, a, b, c, d)
 	coeffs.d = .5 * (-c + d)
 end
 
+-- --
+local X, Y = {}, {}
+
+--- DOCME
+function M.EvaluateCoeffs (eval, coeffs, a, b, c, d)
+	eval(X, a.x, b.x, c.x, d.x)
+	eval(Y, a.y, b.y, c.y, d.y)
+
+	coeffs[1].x, coeffs[1].y = X.a, Y.a
+	coeffs[2].x, coeffs[2].y = X.b, Y.b
+	coeffs[3].x, coeffs[3].y = X.c, Y.c
+	coeffs[4].x, coeffs[4].y = X.d, Y.d
+end
+
 --- Evaluates curve coefficents, for use with @{M.MapToCurve}.
 -- @callable eval Evaluator function, with signature as per @{M.Bezier_Eval}.
 -- @param pos If present, position coefficients to evaluate at _t_.
@@ -158,15 +172,11 @@ end
 -- Length via quadrature
 do
 	-- --
-	local Tan = {}
-
+--	local Tan = {}
+local Poly = {}
 	--
 	local function Length (eval, coeffs, t)
-		M.EvaluateCurve(eval, nil, Tan, t)
-
-		local dx, dy = M.MapToCurve(Tan, coeffs[1], coeffs[2], coeffs[3], coeffs[4])
-
-		return sqrt(dx * dx + dy * dy)
+		return sqrt(t * (t * (t * (t * Poly[1] + Poly[2]) + Poly[3]) + Poly[4]) + Poly[5])
 	end
 
 	-- --
@@ -175,12 +185,12 @@ do
 
 	--
 	local function Integrate (eval, coeffs, t1, t2)
-		local midt = t1--.5 * (t1 + t2)
+		local midt = .5 * (t1 + t2)
 		local diff = .5 * (t2 - t1)
 		local length = 0
 
 		for i = 1, 5 do
-			local dx = diff * (X[i] + 1)
+			local dx = diff * X[i]
 
 			length = length + W[i] * (Length(eval, coeffs, midt - dx) + Length(eval, coeffs, midt + dx))
 		end
@@ -205,7 +215,7 @@ do
 			return llen + rlen
 		end
 	end
-
+local K={ {}, {}, {}, {} }
 	--- Computes a curve length
 	-- @callable eval Evaluator function
 	-- @param coeffs Control coefficients
@@ -215,6 +225,17 @@ do
 	-- @treturn number Length of curve
 	-- TODO: DOCME better
 	function M.CurveLength (eval, coeffs, t1, t2, tolerance) -- Vector const coeffs[4]
+M.EvaluateCoeffs(eval, K, coeffs[1], coeffs[2], coeffs[3], coeffs[4])
+		local ax, ay = K[1].x, K[1].y
+		local bx, by = K[2].x, K[2].y
+		local cx, cy = K[3].x, K[3].y
+
+		Poly[1] = 9 * (ax * ax + ay * ay)
+		Poly[2] = 12 * (ax * bx + ay * by)
+		Poly[3] = 6 * (ax * cx + ay * cy) + 4 * (bx * bx + by * by)
+		Poly[4] = 4 * (bx * cx + by * cy)
+		Poly[5] = cx * cx + cy * cy
+
 		return Subdivide(eval, coeffs, t1, t2, Integrate(eval, coeffs, t1, t2), tolerance)
 	end
 end
