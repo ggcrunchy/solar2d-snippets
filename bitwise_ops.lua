@@ -23,6 +23,10 @@
 -- [ MIT license: http://www.opensource.org/licenses/mit-license.php ]
 --
 
+-- Standard library imports --
+local floor = math.floor
+local log = math.log
+
 -- Modules --
 local has_bit, bit = pcall(require, "bit") -- Prefer BitOp
 
@@ -32,37 +36,74 @@ end
 
 -- Forward references --
 local band
+local rshift
 
 -- Imports --
 if bit then -- Bit library available
 	band = bit.band
+	rshift = bit.rshift
 else -- Otherwise, make equivalents for low-bit purposes
 	local Bits, NI -- One-deep memoization
 
+	local ldexp = math.ldexp
+
+	local function ntz (x)
+		if x == 0 then
+			return 32
+		else
+			local n, s = 31, 16
+
+			repeat
+				local y = ldexp(x, s) % 2^32
+
+				if y ~= 0 then
+					n, x = n - s, y
+				end
+
+				s = .5 * s
+			until s < 1
+
+			return n
+	   end
+	end
+
 	function band (x)
-		local n = Bits == x and NI or 1
+		local n, tries = Bits == x and NI or ldexp(1, ntz(x)), 0
 
 		repeat
 			local next = n + n
 
-			if x % next == n then
-				Bits = x - n
-				NI = n + n
+			if tries == 3 or x % next == n then
+				if tries == 3 then
+					n = ldexp(1, ntz(x))
+					next = n + n
+				end
+
+				Bits, NI = x - n, next
 
 				return n
 			end
 
-			n = next
-		until n == 2^32
+			n, tries = next, tries + 1
+		until x < n
 
 		Bits = nil
 
 		return 0
 	end
+
+	function rshift (x, n)
+		return floor(ldexp(x, -n))
+	end
 end
 
 -- Exports --
 local M = {}
+
+--- DOCME
+function M.DivU_MP (x, m, p)
+	return rshift(x * m, p)
+end
 
 ---@uint n Integer.
 -- @treturn uint If _n_ > 0, lowest power of 2 in _n_; otherwise, 0.
@@ -91,6 +132,28 @@ end
 -- @treturn uint Binary logarithm of _n_.
 function M.Lg_PowerOf2 (n)
 	return Lg[n % 59]
+end
+
+-- Cached denominator --
+local InvLg2 = 1 / log(2)
+
+--- DOCME
+-- "Simple code in Python" from Hacker's Delight
+function M.MagicGU (nmax, d)
+	local nc, two_p = floor(nmax / d) * d - 1, 1
+	local nbits = floor(log(nmax) * InvLg2) + 1
+
+	for p = 0, 2 * nbits + 1 do
+		local q = d - 1 - (two_p - 1) % d
+
+		if twop > nc * q then
+			local m = floor((two_p + q) / d)
+
+			return m, p
+		end
+
+		two_p = two_p + two_p
+	end
 end
 
 -- Helper to iterates powers of 2

@@ -39,8 +39,9 @@ local sqrt = math.sqrt
 -- Modules --
 local buttons = require("ui.Button")
 local common = require("editor.Common")
-local curves = require("effect.Curves")
+local cubic_spline = require("effect.CubicSpline")
 local grid_iterators = require("grid_iterators")
+local integrators = require("effect.Integrators")
 local pixels = require("effect.Pixels")
 local quaternion_ops = require("quaternion_ops")
 local scenes = require("game.Scenes")
@@ -148,7 +149,7 @@ local LightParams = {
 }
 
 -- --
-local Length, Poly = curves.LineIntegrand()
+local Length, Poly = integrators.LineIntegrand()
 
 --
 function Scene:enterScene ()
@@ -276,9 +277,9 @@ function Scene:enterScene ()
 				if use_quats then
 					LightParams.time = 750
 				else
-					curves.SetPoly_EvalArray(Poly, curves.CatmullRom_Eval, Angles)
+					integrators.SetPoly_Coeffs(Poly, cubic_spline.GetPolyCoeffs_Array("catmull_rom", Angles))
 
-					LightParams.time = ceil(max(.3, curves.Romberg(Length, 0, 1, .005)) * 200)
+					LightParams.time = ceil(max(.3, integrators.Romberg(Length, 0, 1, .005)) * 200)
 				end
 
 				transition.to(dlight, LightParams)
@@ -297,9 +298,7 @@ function Scene:enterScene ()
 
 			--
 			else
-				curves.EvaluateCurve(curves.CatmullRom_Eval, Angles, false, dlight.t)
-
-				local phi, theta = curves.MapToCurve(Angles, Angles[1], Angles[2], Angles[3], Angles[4])
+				local phi, theta = cubic_spline.GetPosition("catmull_rom", Angles[1], Angles[2], Angles[3], Angles[4], dlight.t)
 				local cphi, sphi = cos(phi), sin(phi)
 				local ctheta, stheta = cos(theta), sin(theta)
 

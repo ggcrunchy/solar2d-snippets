@@ -34,6 +34,7 @@ local sin = math.sin
 -- Modules --
 local buttons = require("ui.Button")
 local common = require("editor.Common")
+local cubic_spline = require("effect.CubicSpline")
 local curves = require("effect.Curves")
 local hilbert = require("fill.Hilbert")
 local numeric_ops = require("numeric_ops")
@@ -150,7 +151,7 @@ end
 
 -- Catmull-Rom curve method
 do
-	local Pos, P1, P2, P3, P4 = {}, {}, {}, {}, {}
+	local P1, P2, P3, P4 = {}, {}, {}, {}
 
 	--
 	local function Begin (x1, y1, x2, y2, x3, y3, x4, y4)
@@ -164,9 +165,7 @@ do
 
 	--
 	local function Step (_, _, t)
-		curves.EvaluateCurve(curves.CatmullRom_Eval, Pos, nil, t)
-
-		return curves.MapToCurve(Pos, P1, P2, P3, P4)
+		return cubic_spline.GetPosition("catmull_rom", P1, P2, P3, P4, t)
 	end
 
 	CurveMethods.catmull_rom = { Begin = Begin, Step = Step, nstages = 1 }
@@ -293,9 +292,6 @@ local MoveParams = { time = 100, transition = easing.inOutQuad }
 local function OnDone (event)
 	DoAgain, Now = true, Now + MoveParams.time
 end
-
--- --
-local Length, Poly = curves.LineIntegrand()
 
 --
 local function EnterFrame ()
