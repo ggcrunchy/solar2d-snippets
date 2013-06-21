@@ -1,4 +1,11 @@
 --- Various cubic splines and related functionality.
+--
+-- In several of the routines, the spline type will be one of **"bezier"**, **"catmull_rom"**,
+-- or **"hermite"**.
+--
+-- For purposes of this module, an instance of type **Coeffs** is a value, e.g. a table,
+-- that has and / or receives members **a**, **b**, **c**, **d**, whereas for a **Vector**
+-- the members are **x** and **y**.
 
 --
 -- Permission is hereby granted, free of charge, to any person obtaining
@@ -60,9 +67,18 @@ function RHS.bezier (coeffs, a, b, c, d)
 	coeffs.d = d
 end
 
---- Converts coefficients from Bézier to Hermite form.
--- (P1, Q1, Q2, P2) -> (P1, P2, T1, T2)
--- TODO: DOCME more
+--- Converts coefficients from Bézier (P1, Q1, Q2, P2) to Hermite (P1, P2, T1, T2) form.
+--
+-- This (and the similar functions in this module) are written so that output coefficients
+-- may safely overwrite the inputs, i.e. if _src*_ = _dst*_.
+-- @Vector src1 Vector #1 (i.e. P1)...
+-- @Vector src2 ...#2 (Q1)...
+-- @Vector src3 ...#3 (Q2)...
+-- @Vector src4 ...and #4 (P2).
+-- @Vector? dst1 Target vector #1 (i.e. will receive P1); if absent, _src1_.
+-- @Vector? dst2 ...#2 (P2), or _src2_...
+-- @Vector? dst3 ...#3 (T1), or _src3_...
+-- @Vector? dst4 ...and #4 (T2), or _src4_.
 function M.BezierToHermite (src1, src2, src3, src4, dst1, dst2, dst3, dst4)
 	dst1, dst2, dst3, dst4 = dst1 or src1, dst2 or src2, dst3 or src3, dst4 or src4
 
@@ -75,9 +91,15 @@ function M.BezierToHermite (src1, src2, src3, src4, dst1, dst2, dst3, dst4)
 	dst4.x, dst4.y = t2x, t2y
 end
 
---- Converts coefficients from Catmull-Rom to Hermite form.
--- (P1, P2, P3, P4) -> (P2, P3, T1, T2)
--- TODO: DOCME more
+--- Converts coefficients from Catmull-Rom (P1, P2, P3, P4) to Hermite (P2, P3, T1, T2) form.
+-- @Vector src1 Vector #1 (i.e. P1)...
+-- @Vector src2 ...#2 (P2)...
+-- @Vector src3 ...#3 (P3)...
+-- @Vector src4 ...and #4 (P4).
+-- @Vector? dst1 Target vector #1 (i.e. will receive P2); if absent, _src1_.
+-- @Vector? dst2 ...#2 (P3), or _src2_...
+-- @Vector? dst3 ...#3 (T1), or _src3_...
+-- @Vector? dst4 ...and #4 (T2), or _src4_.
 function M.CatmullRomToHermite (src1, src2, src3, src4, dst1, dst2, dst3, dst4)
 	dst1, dst2, dst3, dst4 = dst1 or src1, dst2 or src2, dst3 or src3, dst4 or src4
 
@@ -107,14 +129,13 @@ function RHS.catmull_rom (coeffs, a, b, c, d)
 	coeffs.d = .5 * (-c + d)
 end
 
---- Evaluates coefficents for use with @{M.MapCoeffsToSpline}.
--- @string what One of **"bezier"**, **"catmull_rom"**, or **"hermite"**.
--- @param pos If present, position coefficients to evaluate at _t_.
--- @param tan If present, tangent to evaluate at _t_.
--- number t Time along spline, &isin [0, 1].
--- TODO: Meaningful types for above? Update docs...
-function M.EvaluateCoeffs (what, pos, tan, t)
-	local eval, t2 = RHS[what], t * t
+--- Evaluates coefficents for use with @{MapCoeffsToSpline}.
+-- @string stype Spline type.
+-- @Coeffs? pos If present, position coefficients to evaluate at _t_.
+-- @Coeffs? tan If present, tangent coefficients to evaluate at _t_.
+-- @number t Interpolation time, &isin [0, 1].
+function M.EvaluateCoeffs (stype, pos, tan, t)
+	local eval, t2 = RHS[stype], t * t
 
 	if pos then
 		eval(pos, 1, t, t2, t2 * t)
@@ -125,9 +146,25 @@ function M.EvaluateCoeffs (what, pos, tan, t)
 	end
 end
 
---- DOCME
-function M.GetPolyCoeffs (what, a, b, c, d)
-	local eval = LHS[what]
+--- Gets polynomial coefficients for calculating line integrands.
+-- 
+-- A given cubic spline can be written as a polynomial _A_x^3 + _B_x^2 + _C_x + _D_, for
+-- both its x- and y-components. Furthermore, its derivative is useful for computing the
+-- arc length of the spline.
+-- @string stype Spline type.
+-- @Vector a Vector #1 defining the spline...
+-- @Vector b ...#2...
+-- @Vector c ...#3...
+-- @Vector d ...and #4.
+-- @treturn number _A_, for x...
+-- @treturn number ...and y.
+-- @treturn number _B_, for x...
+-- @treturn number ...and y.
+-- @treturn number _C_, for x...
+-- @treturn number ...and y.
+-- @see effect.Integrators.LineIntegrand, effect.SetPolyFromCoeffs
+function M.GetPolyCoeffs (stype, a, b, c, d)
+	local eval = LHS[stype]
 
 	-- Given spline Ax^3 + Bx^2 + Cx + D, the derivative is 3Ax^2 + 2Bx + C, which when
 	-- squared (in the arc length formula) yields these coefficients. 
@@ -137,28 +174,79 @@ function M.GetPolyCoeffs (what, a, b, c, d)
 	return ax, ay, bx, by, cx, cy
 end
 
---- DOCME
-function M.GetPolyCoeffs_Array (what, coeffs)
-	return M.GetPolyCoeffs(what, unpack(coeffs))
+--- Array variant of @{GetPolyCoeffs}.
+-- @string stype Spline type.
+-- @array spline Elements 1, 2, 3, 4 are interpreted as arguments _a_, _b_, _c_, _d_
+-- respectively from @{GetPolyCoeffs}.
+-- @return As per @{GetPolyCoeffs}.
+function M.GetPolyCoeffs_Array (stype, spline)
+	return M.GetPolyCoeffs(stype, unpack(spline))
 end
 
--- --
+-- Intermediate coefficients --
 local Coeffs = {}
 
---- DOCME
-function M.GetPosition (what, a, b, c, d, t)
-	M.EvaluateCoeffs(what, Coeffs, nil, t)
+--- Gets the position along the spline at time _t_.
+--
+-- This is a convenience wrapper around the common case that the user does not need to
+-- consider @{EvaluateCoeffs} and @{MapCoeffsToSpline} separately.
+-- @string stype Spline type.
+-- @Vector a Vector #1 defining the spline...
+-- @Vector b ...#2...
+-- @Vector c ...#3...
+-- @Vector d ...and #4.
+-- @number t Interpolation time, &isin [0, 1].
+-- @treturn number Position x-coordinate...
+-- @treturn number ...and y-coordinate.
+function M.GetPosition (stype, a, b, c, d, t)
+	M.EvaluateCoeffs(stype, Coeffs, nil, t)
 
 	return M.MapCoeffsToSpline(Coeffs, a, b, c, d)
 end
 
---- DOCME
-function M.GetTangent (what, a, b, c, d, t)
-	M.EvaluateCoeffs(what, nil, Coeffs, t)
+--- Array variant of @{GetPosition}.
+-- @string stype Spline type.
+-- @array pos Elements 1, 2, 3, 4 are interpreted as arguments _a_, _b_, _c_, _d_
+-- from @{GetPosition}.
+-- @number t Interpolation time, &isin [0, 1].
+-- @treturn number Position x-coordinate...
+-- @treturn number ...and y-coordinate.
+function M.GetPosition_Array (stype, pos, t)
+	local a, b, c, d = unpack(pos)
+
+	return M.GetPosition(stype, a, b, c, d, t)
+end
+
+--- Gets the tangent to the spline at time _t_.
+--
+-- This is a convenience wrapper around the common case that the user does not need to
+-- consider @{EvaluateCoeffs} and @{MapCoeffsToSpline} separately.
+-- @string stype Spline type.
+-- @Vector a Vector #1 defining the spline...
+-- @Vector b ...#2...
+-- @Vector c ...#3...
+-- @Vector d ...and #4.
+-- @number t Interpolation time, &isin [0, 1].
+-- @treturn number Tangent x-component...
+-- @treturn number ...and y-component.
+function M.GetTangent (stype, a, b, c, d, t)
+	M.EvaluateCoeffs(stype, nil, Coeffs, t)
 
 	return M.MapCoeffsToSpline(Coeffs, a, b, c, d)
 end
 
+--- Array variant of @{GetTangent}.
+-- @string stype Spline type.
+-- @array tan Elements 1, 2, 3, 4 are interpreted as arguments _a_, _b_, _c_, _d_
+-- from @{GetTangent}.
+-- @number t Interpolation time, &isin [0, 1].
+-- @treturn number Tangent x-component...
+-- @treturn number ...and y-component.
+function M.GetTangent_Array (stype, tan, t)
+	local a, b, c, d = unpack(tan)
+
+	return M.GetTangent(stype, a, b, c, d, t)
+end
 
 -- Left-hand side Hermite evaluator
 function LHS.hermite (a, b, c, d)
@@ -180,9 +268,15 @@ end
 -- Tangent scale factor --
 local Div = 1 / 3
 
---- Converts coefficients from Hermite to Bézier form.
--- (P1, P2, T1, T2) -> (P1, Q1, Q2, P2)
--- DOCME more
+--- Converts coefficients from Hermite (P1, P2, T1, T2) to Bézier (P1, Q1, Q2, P2) form.
+-- @Vector src1 Vector #1 (i.e. P1)...
+-- @Vector src2 ...#2 (P2)...
+-- @Vector src3 ...#3 (T1)...
+-- @Vector src4 ...and #4 (T2).
+-- @Vector? dst1 Target vector #1 (i.e. will receive P1); if absent, _src1_.
+-- @Vector? dst2 ...#2 (Q1), or _src2_...
+-- @Vector? dst3 ...#3 (Q2), or _src3_...
+-- @Vector? dst4 ...and #4 (P2), or _src4_.
 function M.HermiteToBezier (src1, src2, src3, src4, dst1, dst2, dst3, dst4)
 	dst1, dst2, dst3, dst4 = dst1 or src1, dst2 or src2, dst3 or src3, dst4 or src4
 
@@ -195,9 +289,15 @@ function M.HermiteToBezier (src1, src2, src3, src4, dst1, dst2, dst3, dst4)
 	dst3.x, dst3.y = q2x, q2y
 end
 
---- Converts coefficients from Hermite to Catmull-Rom form.
--- (P1, P2, T1, T2) -> (P0, P1, P2, P3)
--- DOCME more
+--- Converts coefficients from Hermite (P1, P2, T1, T2) to Catmull-Rom (P0, P1, P2, P3) form.
+-- @Vector src1 Vector #1 (i.e. P1)...
+-- @Vector src2 ...#2 (P2)...
+-- @Vector src3 ...#3 (T1)...
+-- @Vector src4 ...and #4 (T2).
+-- @Vector? dst1 Target vector #1 (i.e. will receive P0); if absent, _src1_.
+-- @Vector? dst2 ...#2 (P1), or _src2_...
+-- @Vector? dst3 ...#3 (P2), or _src3_...
+-- @Vector? dst4 ...and #4 (P3), or _src4_.
 function M.HermiteToCatmullRom (src1, src2, src3, src4, dst1, dst2, dst3, dst4)
 	dst1, dst2, dst3, dst4 = dst1 or src1, dst2 or src2, dst3 or src3, dst4 or src4
 
@@ -211,14 +311,13 @@ function M.HermiteToCatmullRom (src1, src2, src3, src4, dst1, dst2, dst3, dst4)
 end
 
 --- Given some spline geometry, maps pre-computed coefficients to a spline.
--- @param coeffs Coefficients generated e.g. by @{M.EvaluateCoeffs}.
--- @param a Vector #1...
--- @param b ...#2...
--- @param c ...#3...
--- @param d ...and #4.
+-- @Coeffs coeffs Coefficients generated e.g. by @{EvaluateCoeffs}.
+-- @Vector a Vector #1 defining the spline...
+-- @Vector b ...#2...
+-- @Vector c ...#3...
+-- @Vector d ...and #4.
 -- @treturn number x-component...
 -- @treturn number ...and y-component.
--- TODO: Meaningful types
 function M.MapCoeffsToSpline (coeffs, a, b, c, d)
 	local x = coeffs.a * a.x + coeffs.b * b.x + coeffs.c * c.x + coeffs.d * d.x
 	local y = coeffs.a * a.y + coeffs.b * b.y + coeffs.c * c.y + coeffs.d * d.y

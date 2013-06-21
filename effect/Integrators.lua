@@ -204,7 +204,11 @@ do
 	end
 end
 
---- DOCME
+--- http://en.wikipedia.org/wiki/Arc_length#Finding_arc_lengths_by_integrating
+-- @ptable? poly
+-- @treturn function X
+-- @treturn ptable P
+-- TODO: Better name, e.g. "cubic" integrand? (depends if there are other useful ones...)
 function M.LineIntegrand (poly)
 	poly = poly or {}
 
@@ -231,21 +235,21 @@ do
 
 	--- [Romberg integration](http://www.geometrictools.com/Documentation/NumericalIntegration.pdf)
 	-- @callable func
-	-- @number a
-	-- @number b
+	-- @number t1
+	-- @number t2
 	-- @treturn number X
-	function M.Romberg (func, a, b)
-		local ipower, h = 1, b - a
+	function M.Romberg (func, t1, t2)
+		local ipower, h = 1, t2 - t1
 
 		-- Initialize T_{1,1} entry.
-		Rom0[1] = .5 * (func(a) + func(b))
+		Rom0[1] = .5 * (func(t1) + func(t2))
 
 		for i = 2, Order do
 			-- Calculate summation in recursion formula for T_{k, 1}.
 			local sum = 0
 
 			for j = 1, ipower do
-				sum = sum + func(a + h * (j - .5))
+				sum = sum + func(t1 + h * (j - .5))
 			end
 
 			-- Trapezoidal approximations.
@@ -274,7 +278,8 @@ do
 end
 
 --- DOCME
-function M.SetPoly_Coeffs (poly, ax, ay, bx, by, cx, cy)
+-- TODO: See note on LineIntegrand
+function M.SetPolyFromCoeffs (poly, ax, ay, bx, by, cx, cy)
 	-- Given curve Ax^3 + Bx^2 + Cx + D, the derivative is 3Ax^2 + 2Bx + C, which
 	-- when squared (in the arc length formula) yields these coefficients. 
 	poly[1] = 9 * (ax * ax + ay * ay)

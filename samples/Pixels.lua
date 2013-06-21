@@ -277,7 +277,7 @@ function Scene:enterScene ()
 				if use_quats then
 					LightParams.time = 750
 				else
-					integrators.SetPoly_Coeffs(Poly, cubic_spline.GetPolyCoeffs_Array("catmull_rom", Angles))
+					integrators.SetPolyFromCoeffs(Poly, cubic_spline.GetPolyCoeffs_Array("catmull_rom", Angles))
 
 					LightParams.time = ceil(max(.3, integrators.Romberg(Length, 0, 1, .005)) * 200)
 				end
@@ -298,7 +298,7 @@ function Scene:enterScene ()
 
 			--
 			else
-				local phi, theta = cubic_spline.GetPosition("catmull_rom", Angles[1], Angles[2], Angles[3], Angles[4], dlight.t)
+				local phi, theta = cubic_spline.GetPosition_Array("catmull_rom", Angles, dlight.t)
 				local cphi, sphi = cos(phi), sin(phi)
 				local ctheta, stheta = cos(theta), sin(theta)
 
