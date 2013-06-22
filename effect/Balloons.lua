@@ -60,8 +60,9 @@ local function AddDots (group, list, ndots, x, y)
 		local dot = Circle(group, 6)
 
 		dot.isVisible = false
-		dot.xScale = 1 + (i - .5) / ndots
-		dot.yScale = 1 + i / (ndots * 4)
+
+		dot.x_scale = 1 + (i - .5) / ndots
+		dot.y_scale = 1 + i / (ndots * 4)
 
 		AddPart(list, dot, x, y)
 
@@ -96,6 +97,9 @@ local CharTime = 180
 
 -- Time per dot to fade in --
 local DotTime = 260
+
+-- Scale bubble / boundary params --
+local ScaleParams = { time = 75, transition = easing.inOutExpo }
 
 --- Creates a thought balloon with some text.
 -- @pgroup group Group to which the balloon will be inserted.
@@ -190,8 +194,19 @@ function M.Thought (group, x, y, text, ndots)
 				local part = parts[i]
 				local x, y = parts[i + 1], parts[i + 2]
 
-				part.x = x + 5 * (random() - .5)
-				part.y = y + 5 * (random() - .5)
+				if part.x_scale then
+					local scale = .9 + random() * .2
+
+					ScaleParams.x, ScaleParams.xScale = x + 5 * (random() - .5), scale * part.x_scale
+					ScaleParams.y, ScaleParams.yScale = y + 5 * (random() - .5), scale * part.y_scale
+				else
+					local scale = .875 + random() * .25
+
+					ScaleParams.xScale, ScaleParams.x = scale
+					ScaleParams.yScale, ScaleParams.y = scale
+				end
+
+				transition.to(part, ScaleParams)
 			end
 
 		else
