@@ -48,23 +48,25 @@ local Scene = storyboard.newScene()
 
 -- Samples names --
 local Names = {
-	"Curves", -- These were mostly just for testing something... could be MUCH more interesting... (editor?)
-	"Delaunay", -- Stub... idea forming ("gas" fills chamber, then pathfind along it?)
-	"Hilbert", -- I rather like this, nothing immediate to add...
-	"HilbertMixer", -- Getting there, maybe some afterimages? Do smoothing or simplification?
-	"Hop", -- Was just to show an idea to a work colleague... has some "problems"... worth fixing?
-	"Marching", -- Better example? Better implementation?
-	"Nodes", -- Was incorporated into editor... though not quite like this... at very least, use LinkGroup?
-	"OrbitsAndLattices", -- In progress...
-	"Pixels", -- Depending on how far I can squeeze this, look into a "3D engine" on top (actually, move that elsewhere and do fire, plasma, etc. here)
-	"SlowMo", -- Explore the "copycat" idea I have here?
-	"Snowfall", -- In progress...
-	"Superformulae", -- Getting there... is there any way to analyze the formula? (can get REALLY huge...)
-	"Thoughts", -- Seems to need some fixing...
-	"Tiling", -- Do effects on these, once in play?
-	"Timers", -- Better examples?
-	"Game", -- Having actual game ideas... explore? Which are best?
-	"Editor" -- Ongoing (fairly easy to port now, owing to config directory)
+	-- "Corridor", -- as alluded in "Pixels" and note further down, some kind of corridor scrolling
+	"Curves", -- v 0.1: These were mostly just for testing something... could be MUCH more interesting... (editor?)
+	"Delaunay", -- v 0.0: Stub... idea forming ("gas" fills chamber, then pathfind along it?)
+	"Hilbert", -- v 1.0: I rather like this, nothing immediate to add...
+	"HilbertMixer", -- v 0.9: Getting there, maybe some afterimages? Do smoothing or simplification?
+	"Hop", -- v 0.9: Was just to show an idea to a work colleague... has some "problems"... worth fixing?
+	"Marching", -- v 0.4: Better example? Better implementation? (Not really very general / adaptable)
+	"Nodes", -- v 0.8: Was incorporated into editor... though not quite like this... at very least, use LinkGroup?
+	"OrbitsAndLattices", -- v 0.8: In progress... Probably mostly needs some blending, transitions, etc.
+	"Pixels", -- v 0.9: Depending on how far I can squeeze this, look into a "3D engine" on top (actually, move that elsewhere and do fire, plasma, etc. here)
+	-- "Ray Tracer", -- Some sort of scene, Hilbert-iterated, save / load sessions?
+	"SlowMo", -- v 0.9: Explore the "copycat" idea I have here?
+	"Snowfall", -- v 0.3: In progress... Already in, e.g. CBEffects... anyhow, see if adapting the (abandoned) Icebreakers stuff would look decent for ash, leaves, snow, etc.
+	"Superformulae", -- v 0.8: Getting there... is there any way to analyze the formula? (can get REALLY huge...)
+	"Thoughts", -- v 0.6: Seems to need some fixing...
+	"Tiling", -- v 0.5: Do effects on these, once in play?
+	"Timers", -- v 0.3: Better examples?
+	"Game", -- v 0.7: Having actual game ideas... explore? Which are best?
+	"Editor" -- v 0.6: Ongoing (fairly easy to port now, owing to config directory)
 }
 
 --[[
@@ -112,9 +114,10 @@ local Names = {
 
 	* Timeline / ladder queue stuff? (ditto)
 
-	* Theta* or Phi* demo (not sure off-hand if both would be redundant)
+	* Theta* or Phi* demo (not sure off-hand if both would be redundant) (Already done in Jumper?)
 
-	* Approximate crumble effect from Vektor Space / Icebreakers (need general quads to get it right)
+	* Approximate crumble effect from Vektor Space / Icebreakers (need general quads to get it right...
+	  update: "general" quads upcoming in Graphics 2.0... not sure about texels)
 
 	* Go to town with the grid iterators, e.g. to make masks or general art... could amortize costs
 	  by iteratively capturing completed sections and compositing them? (Ditto)

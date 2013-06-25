@@ -149,7 +149,7 @@ local LightParams = {
 }
 
 -- --
-local Length, Poly = integrators.LineIntegrand()
+local Length, Poly = integrators.LineIntegrand_Cubic()
 
 --
 function Scene:enterScene ()
@@ -277,7 +277,7 @@ function Scene:enterScene ()
 				if use_quats then
 					LightParams.time = 750
 				else
-					integrators.SetPolyFromCoeffs(Poly, cubic_spline.GetPolyCoeffs_Array("catmull_rom", Angles))
+					integrators.SetPolyFromCoeffs_Cubic(Poly, cubic_spline.GetPolyCoeffs_Array("catmull_rom", Angles))
 
 					LightParams.time = ceil(max(.3, integrators.Romberg(Length, 0, 1, .005)) * 200)
 				end
