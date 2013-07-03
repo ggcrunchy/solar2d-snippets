@@ -4,8 +4,8 @@
 -- or **"hermite"**.
 --
 -- For purposes of this module, an instance of type **Coeffs** is a value, e.g. a table,
--- that has and / or receives members **a**, **b**, **c**, **d**, whereas for a **Vector**
--- the members are **x** and **y**.
+-- that has and / or receives **number** members **a**, **b**, **c**, **d**, whereas for a
+-- **Vector** the members are **x** and **y**.
 
 --
 -- Permission is hereby granted, free of charge, to any person obtaining
@@ -35,6 +35,13 @@ local unpack = unpack
 
 -- Exports --
 local M = {}
+
+-- Cached module references --
+local _EvaluateCoeffs_
+local _GetPolyCoeffs_
+local _GetPosition_
+local _GetTangent_
+local _MapCoeffsToSpline_
 
 -- "Left-hand side" eval functions --
 -- General idea: Given geometry matrix [P1 P2 P3 P4] and eval matrix (i.e. the constant
@@ -180,7 +187,7 @@ end
 -- respectively from @{GetPolyCoeffs}.
 -- @return As per @{GetPolyCoeffs}.
 function M.GetPolyCoeffs_Array (stype, spline)
-	return M.GetPolyCoeffs(stype, unpack(spline))
+	return _GetPolyCoeffs_(stype, unpack(spline))
 end
 
 -- Intermediate coefficients --
@@ -199,9 +206,9 @@ local Coeffs = {}
 -- @treturn number Position x-coordinate...
 -- @treturn number ...and y-coordinate.
 function M.GetPosition (stype, a, b, c, d, t)
-	M.EvaluateCoeffs(stype, Coeffs, nil, t)
+	_EvaluateCoeffs_(stype, Coeffs, nil, t)
 
-	return M.MapCoeffsToSpline(Coeffs, a, b, c, d)
+	return _MapCoeffsToSpline_(Coeffs, a, b, c, d)
 end
 
 --- Array variant of @{GetPosition}.
@@ -214,7 +221,7 @@ end
 function M.GetPosition_Array (stype, pos, t)
 	local a, b, c, d = unpack(pos)
 
-	return M.GetPosition(stype, a, b, c, d, t)
+	return _GetPosition_(stype, a, b, c, d, t)
 end
 
 --- Gets the tangent to the spline at time _t_.
@@ -230,9 +237,9 @@ end
 -- @treturn number Tangent x-component...
 -- @treturn number ...and y-component.
 function M.GetTangent (stype, a, b, c, d, t)
-	M.EvaluateCoeffs(stype, nil, Coeffs, t)
+	_EvaluateCoeffs_(stype, nil, Coeffs, t)
 
-	return M.MapCoeffsToSpline(Coeffs, a, b, c, d)
+	return _MapCoeffsToSpline_(Coeffs, a, b, c, d)
 end
 
 --- Array variant of @{GetTangent}.
@@ -245,7 +252,7 @@ end
 function M.GetTangent_Array (stype, tan, t)
 	local a, b, c, d = unpack(tan)
 
-	return M.GetTangent(stype, a, b, c, d, t)
+	return _GetTangent_(stype, a, b, c, d, t)
 end
 
 -- Left-hand side Hermite evaluator
@@ -324,6 +331,58 @@ function M.MapCoeffsToSpline (coeffs, a, b, c, d)
 
 	return x, y
 end
+
+-- Intermediate coefficients --
+local Pos, Tan = {}, {}
+
+--- Truncates a Bézier spline, i.e. the part of the spline &isin; [_t1_, _t2_] becomes
+-- a new Bézier spline, reparameterized to the interval [0, 1].
+-- @tparam Vector src1 Vector #1 (i.e. P1)...
+-- @tparam Vector src2 ...#2 (Q1)...
+-- @tparam Vector src3 ...#3 (Q2)...
+-- @tparam Vector src4 ...and #4 (P2).
+-- @number t1 Lower bound of new interval, &isin; [0, _t2_).
+-- @number t2 Upper bound of new interval, &isin; (_t1_, 1].
+-- @tparam Vector? dst1 Target vector #1 (i.e. will receive P1); if absent, _src1_.
+-- @tparam Vector? dst2 ...#2 (Q1), or _src2_...
+-- @tparam Vector? dst3 ...#3 (Q2), or _src3_...
+-- @tparam Vector? dst4 ...and #4 (P2), or _src4_.
+function M.Truncate (src1, src2, src3, src4, t1, t2, dst1, dst2, dst3, dst4)
+	dst1, dst2, dst3, dst4 = dst1 or src1, dst2 or src2, dst3 or src3, dst4 or src4
+
+	-- The basic idea (see e.g. Eric Lengyel's "Mathematics for 3D Game Programming and
+	-- Computer Graphics") is to do an implicit Hermite-to-Bézier conversion. The two
+	-- endpoints are simply found by evaluating the spline at the ends of the interval.
+	_EvaluateCoeffs_("bezier", Pos, Tan, t1)
+
+	local p1x, p1y = _MapCoeffsToSpline_(Pos, src1, src2, src3, src4)
+	local t1x, t1y = _MapCoeffsToSpline_(Tan, src1, src2, src3, src4)
+
+	_EvaluateCoeffs_("bezier", Pos, Tan, t2)
+
+	local p2x, p2y = _MapCoeffsToSpline_(Pos, src1, src2, src3, src4)
+	local t2x, t2y = _MapCoeffsToSpline_(Tan, src1, src2, src3, src4)
+
+	-- The new 0 <= u <= 1 interval is related to the old interval by t(u) = t1 + (t2 - t1)u.
+	-- The truncated spline, being "in" the old spline, is given by Trunc(u) = B(t(u)).
+	-- Differentiating with respect to u gives (t2 - t1) * B'(t1) and (t2 - t1) * B'(t2) at
+	-- the ends of the interval, i.e. the tangents of the implicit Hermite spline.
+	local dt = (t2 - t1) / 3
+
+	dst1.x, dst1.y = p1x, p1y
+	dst2.x, dst2.y = p1x + t1x * dt, p1y + t1y * dt
+	dst3.x, dst3.y = p2x - t2x * dt, p2y - t2y * dt
+	dst4.x, dst4.y = p2x, p2y
+end
+
+-- TODO: TCB, uniform B splines?
+
+-- Cache module members.
+_EvaluateCoeffs_ = M.EvaluateCoeffs
+_GetPolyCoeffs_ = M.GetPolyCoeffs
+_GetPosition_ = M.GetPosition
+_GetTangent_ = M.GetTangent
+_MapCoeffsToSpline_ = M.MapCoeffsToSpline
 
 -- Export the module.
 return M

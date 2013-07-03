@@ -1,4 +1,7 @@
 --- Various numerical integrators.
+--
+-- For purposes of this module, an instance of type **Vector** is a value, e.g. a table,
+-- that has **number** members **x** and **y**.
 
 --
 -- Permission is hereby granted, free of charge, to any person obtaining
@@ -26,10 +29,50 @@
 -- Standard library imports --
 local abs = math.abs
 local ipairs = ipairs
+local log = math.log
 local sqrt = math.sqrt
 
 -- Exports --
 local M = {}
+
+-- Cached module references --
+local _BezierLength2_
+
+--- Computes a (degree 2) [Bézier spline's length](http://malczak.info/blog/quadratic-bezier-curve-length/).
+-- @tparam Vector p1 Endpoint #1 of control polygon...
+-- @tparam Vector q ...interior control point...
+-- @tparam Vector p2 ...and endpoint #2.
+-- @treturn number Approximate arc length.
+function M.BezierLength2 (p1, q, p2)
+	local p1x, p1y = p1.x, p1.y
+	local qpx, qpy = 2 * q.x - p1x, 2 * q.y - p1y
+	local ax, bx = p2.x - qpx, qpx - p1x
+	local ay, by = p2.y - qpy, qpy - p1y
+
+	local A = ax * ax + ay * ay
+	local C = bx * bx + by * by
+
+	if A > 1e-9 then
+		A = 4 * A
+
+		local B = 4 * (ax * bx + ay * by)
+		local Sabc = 2 * sqrt(A + B + C)
+		local A_2, C_2 = sqrt(A), 2 * sqrt(C)
+		local A_32, BA = 2 * A * A_2, B / A_2
+
+		return (A_32 * Sabc + A_2 * B * (Sabc - C_2) + (4 * C * A - B * B) * log((2 * A_2 + BA + Sabc) / (BA + C_2))) / (4 * A_32)
+	else
+		return sqrt(C)
+	end
+end
+
+--- Array variant of @{BezierLength2}.
+-- @array bezier Elements 1, 2, 3 are interpreted as arguments _p1_, _q_, _p2_ from
+-- @{BezierLength2}.
+-- @treturn number Approximate arc length.
+function M.BezierLength2_Array (bezier)
+	return _BezierLength2_(bezier[1], bezier[2], bezier[3])
+end
 
 -- Length via split method
 do
@@ -127,14 +170,14 @@ do
 		return len
 	end
 
-	--- Computes a [Bézier spline's length](http://steve.hollasch.net/cgindex/curves/cbezarclen.html)
+	--- Computes a (degree 3) [Bézier spline's length](http://steve.hollasch.net/cgindex/curves/cbezarclen.html).
 	-- @tparam Vector p1 Endpoint #1 of control polygon...
 	-- @tparam Vector q1 ...interior control point #1...
 	-- @tparam Vector q2 ...interior control point #2...
 	-- @tparam Vector p2 ...and endpoint #2.
 	-- @number tolerance "Close enough" separation between arc estimates and chord lengths.
 	-- @treturn number Approximate arc length.
-	function M.BezierLength (p1, q1, q2, p2, tolerance)
+	function M.BezierLength3 (p1, q1, q2, p2, tolerance)
 		Top = 0
 
 		AddPoint(p1)
@@ -145,12 +188,12 @@ do
 		return AddIfClose(0, tolerance)
 	end
 
-	--- Array variant of @{BezierLength}.
+	--- Array variant of @{BezierLength3}.
 	-- @array bezier Elements 1, 2, 3, 4 are interpreted as arguments _p1_, _q1_, _q2_, _p2_
-	-- from @{BezierLength}.
+	-- from @{BezierLength3}.
 	-- @number tolerance "Close enough" separation between arc estimates and chord lengths.
 	-- @treturn number Approximate arc length.
-	function M.BezierLength_Array (bezier, tolerance)
+	function M.BezierLength3_Array (bezier, tolerance)
 		Top = 0
 
 		for i = 1, 4 do
@@ -211,11 +254,11 @@ end
 
 --- [Line integrand](http://en.wikipedia.org/wiki/Arc_length#Finding_arc_lengths_by_integrating)
 -- for a cubic polynomial.
--- @ptable? poly The underlying polynomial, (dx/dt)^2 + (dy/dt)^2: elements 1 to 5 are the
+-- @array? poly The underlying polynomial, (dx/dt)^2 + (dy/dt)^2: elements 1 to 5 are the
 -- x^4, x^3, x^2, x, and constant coefficients, respectively. If absent, a table is supplied.
 -- @treturn function Integrand function, which may be passed e.g. as the _func_ argument to
 -- the various integrators.
--- @treturn ptable _poly_.
+-- @treturn array _poly_.
 -- @see SetPolyFromCoeffs_Cubic
 function M.LineIntegrand_Cubic (poly)
 	poly = poly or {}
@@ -252,7 +295,7 @@ do
 		local ipower, h = 1, b - a
 
 		-- Initialize T_{1,1} entry.
-		Rom0[1] = .5 * (func(a) + func(b))
+		Rom0[1] = .5 * h * (func(a) + func(b))
 
 		for i = 2, Order do
 			-- Calculate summation in recursion formula for T_{k, 1}.
@@ -288,9 +331,9 @@ do
 end
 
 --- Assigns integrand coefficents (in particular, as expected by @{LineIntegrand_Cubic}'s
--- function result), given a cubic polynomial's derivatives: dx/dt = 3_Ax^2_ + 2_Bx_ + _C_,
--- dy/dt = 3_Dy^2_ + 2_Ey_ + F.
--- @ptable poly Polynomial.
+-- integrand function), given a cubic polynomial's derivatives: dx/dt = 3_Ax^2_ + 2_Bx_ +
+-- _C_, dy/dt = 3_Dy^2_ + 2_Ey_ + F.
+-- @array poly Polynomial.
 -- @number ax _Ax^2_.
 -- @number ay _Dy^2_.
 -- @number bx _Bx_.
@@ -306,6 +349,9 @@ function M.SetPolyFromCoeffs_Cubic (poly, ax, ay, bx, by, cx, cy)
 	poly[4] = 4 * (bx * cx + by * cy)
 	poly[5] = cx * cx + cy * cy
 end
+
+-- Cache module members.
+_BezierLength2_ = M.BezierLength2
 
 -- Export the module.
 return M

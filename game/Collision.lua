@@ -27,6 +27,7 @@
 local assert = assert
 
 -- Modules --
+local adaptive_table_ops = require("adaptive_table_ops")
 local dispatch_list = require("game.DispatchList")
 local iterators = require("iterators")
 local table_ops = require("table_ops")
@@ -42,9 +43,6 @@ local physics = require("physics")
 -- Exports --
 local M = {}
 
--- Collision handlers --
-local Handlers = {}
-
 --- Activate or deactivate of a physics object, via a 0-lapse timer.
 -- @pobject object Physics object.
 -- @bool active Activate? Otherwise, deactivate.
@@ -55,14 +53,17 @@ function M.Activate (object, active)
 	end)
 end
 
+-- Collision handlers --
+local Handlers = {}
+
 --- Defines a collision handler for objects of a given collision type with other objects.
 --
 -- When two objects collide, each is checked for a handler. Each handler that exists is
 -- called as
---    handler(phase, object, other, other_type),
+--    handler(phase, object, other, other_type, contact),
 -- where _phase_ is **"began"** or **"ended"**, _object_ is what supplied _handler_, _other_
--- is what collided with _object_, and _other_type_ is the collision type of _other_ (may be
--- **nil**).
+-- is what collided with _object_, _other_type_ is the collision type of _other_ (may be
+-- **nil**), and _contact_ is the physics object passed via the event.
 --
 -- The collision type of _object_ is not supplied, being implicit in the handler itself. For
 -- all practical purposes, _type_ is just a convenient name for _func_; there is no real
@@ -71,6 +72,29 @@ end
 -- @callable func Handler function, or **nil** to remove the handler.
 function M.AddHandler (type, func)
 	Handlers[type] = func
+end
+
+-- --
+local InterfacePreds, Interfaces = {}, {}
+
+--- DOCME
+function M.AddInterfaces (type, ...)
+	for _, v in iterators.Args(...) do
+		adaptive_table_ops.AddToSet(Interfaces, type, v)
+	end
+end
+
+--- DOCME
+function M.AddInterfaces_Pred (type, ...)
+	local preds = InterfacePreds[type] or {}
+
+	for _, what, pred in iterators.ArgsByN(2, ...) do
+		adaptive_table_ops.AddToSet(Interfaces, type, what)
+
+		preds[what] = pred
+	end
+
+	InterfacePreds[type] = preds
 end
 
 -- --
@@ -117,6 +141,92 @@ function M.Border (group, x, y, w, h, rdim, sep)
 	BorderRect(group, xl, yb, bw, rdim)
 end
 
+-- --
+local IsHidden
+
+-- --
+local Partners
+
+--
+local function Find (list, object)
+	for i = 1, #(list or ""), 2 do
+		if list[i] == object then
+			return i, list
+		end
+	end
+
+	return nil, list
+end
+
+--
+local function RemoveFrom (object, other, index)
+	local list = index and other or Partners[other]
+	local i, n = index or Find(list, object), #list
+
+	list[i], list[i + 1] = list[n - 1], list[n]
+	list[n], list[n - 1] = nil
+end
+
+--
+local function Cleanup (object)
+	if not object.parent then
+		local list = Partners[object]
+
+		for i = 1, #(list or ""), 2 do
+			RemoveFrom(object, list[i])
+		end
+
+		Partners[object] = nil
+	end
+end
+
+--
+local function DefAction () end
+
+--
+local function AddToList (object, other, func)
+	local index, list = Find(Partners[object] or {}, other)
+
+	if not index then
+		list[#list + 1] = other
+		list[#list + 1] = func
+	elseif list[index + 1] == DefAction then
+		list[index + 1] = func
+	end
+
+	Partners[object] = list
+end
+
+-- Types used to manage physics interactions --
+local Types = table_ops.Weak("k")
+
+--- DOCME
+function M.DoOrDefer (object, other, phase, func)
+	local intact = object.parent and other.parent
+
+	-- Phase "began", objects intact: if at least one of the objects is hidden, defer the
+	-- action; otherwise, perform it immediately.
+	if intact and phase == "began" then
+		if IsHidden[object] or IsHidden[other] then
+			AddToList(object, other, func)
+			AddToList(other, object, DefAction)
+		else
+			func(object, other, Types[other])
+		end
+
+	-- Phase "ended", objects intact: break pairings.
+	elseif intact then
+		for i = #(list or "") - 1, 1, -2 do
+			RemoveFrom(object, list[i])
+		end
+
+	-- One or both objects dead: break pairings and remove dead objects.
+	else
+		Cleanup(object)
+		Cleanup(other)
+	end
+end
+
 -- Next mask to allocate --
 local Mask = 0x1
 
@@ -153,14 +263,42 @@ function M.FilterBits (...)
 	return bits
 end
 
--- Types used to manage physics interactions --
-local Types = table_ops.Weak("k")
-
 ---@param object Object to query.
 -- @return Collision type of _object_, or **nil** if absent.
 -- @see SetType
 function M.GetType (object)
 	return Types[object]
+end
+
+--- DOCME
+function M.Implements (object, what)
+	return adaptive_table_ops.InSet(Interfaces[Types[object]], what)
+end
+
+--- DOCME
+function M.Implements_Pred (object, what, def, ...)
+	local type = Types[object]
+	local implements = adaptive_table_ops.InSet(Interfaces[type], what)
+
+	if implements then
+		local preds = InterfacePreds[type]
+		local func = preds and preds[what]
+
+		if func then
+			return func(...) and "passed" or "failed"
+		else
+			return "no_predicate"
+		end
+	end
+
+	return "does_not_implement"
+end
+
+---@pobject object Object to poll about visibility.
+-- @treturn boolean Is _object_ visible?
+-- @see @{SetVisibility}
+function M.IsVisible (object)
+	return not IsHidden[object]
 end
 
 --- Assigns a sensor body to an object.
@@ -195,23 +333,67 @@ function M.SetType (object, type)
 	Types[object] = type
 end
 
+--- DOCME
+function M.SetVisibility (object, show)
+	--
+	if object.parent then
+		if IsHidden[object] and show then
+			local list1, t1 = Partners[object], Types[object]
+
+			for i = #(list1 or "") - 1, 1, -2 do
+				local other = list1[i]
+
+				if other.parent and not IsHidden[other] then
+					local t2, j, list2 = Types[other], Find(Partners[other], object)
+
+					list1[i + 1](object, other, t2)
+					list2[j + 1](other, object, t1)
+
+					RemoveFrom(nil, list1, i)
+					RemoveFrom(nil, list2, j)
+				end
+			end
+		end
+
+		IsHidden[object] = not show
+
+	--
+	else
+		Cleanup(object)
+	end
+end
+
 -- "collision" listener --
 Runtime:addEventListener("collision", function(event)
 	local o1, o2 = event.object1, event.object2
 	local t1, t2 = Types[o1], Types[o2]
 	local h1, h2 = Handlers[t1], Handlers[t2]
+	local phase, contact = event.phase, event.contact
 
 	if h1 then
-		h1(event.phase, o1, o2, t2)
+		h1(phase, o1, o2, t2, contact)
 	end
 
 	if h2 then
-		h2(event.phase, o2, o1, t1)
+		h2(phase, o2, o1, t1, contact)
 	end
 end)
 
 -- Listen to events.
 dispatch_list.AddToMultipleLists{
+	-- Enter Level --
+	enter_level = function()
+		IsHidden, Partners = {}, {}
+	end,
+
+	-- Leave Level --
+	leave_level = function()
+		IsHidden, Partners = nil
+	end,
+
+	-- Reset Level --
+	reset_level = "enter_level",
+
 	-- Things Loaded --
 	things_loaded = function(level)
 		-- Add a "net" around the level to deal with things that fly away.
