@@ -30,6 +30,7 @@ local pi = math.pi
 local sin = math.sin
 
 -- Modules --
+local line_ex = require("ui.LineEx")
 local timers = require("game.Timers")
 
 -- Corona globals --
@@ -64,17 +65,16 @@ end
 function M.Star (group, x, y, radius, angle)
 	angle = -Angle / 4 + (angle or 0)
 
-	local x1, y1 = Point(x, y, angle, radius, 0)
-	local star = display.newLine(group, x1, y1, Point(x, y, angle, radius, 1))
+	local star = line_ex.NewLine(group)
 
-	for i = 2, 5 do
+	for i = 0, 5 do
 		star:append(Point(x, y, angle, radius, i))
 	end
 
-	star.xReference = x - x1
-	star.yReference = y - y1
+	star.xReference = x - star.m_x0
+	star.yReference = y - star.m_y0
 
-	return star
+	return star.m_object
 end
 
 -- --

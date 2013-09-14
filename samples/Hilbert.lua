@@ -31,6 +31,7 @@ local remove = table.remove
 -- Modules --
 local buttons = require("ui.Button")
 local hilbert = require("fill.Hilbert")
+local line_ex = require("ui.LineEx")
 local scenes = require("game.Scenes")
 local timers = require("game.Timers")
 
@@ -76,19 +77,15 @@ function Scene:enterScene ()
 			end
 		}
 
+		self.line = line_ex.NewLine()
+
+		self.line.width = 4
+
 		hilbert.ForEach(6, function(s, x, y, way)
 			local wx, wy = 300 + x * 7, 470 - y * 7
 
 			-- Advance the line.
-			if self.line then -- Third point and on
-				self.line:append(wx, wy)
-			elseif px then -- Second point
-				self.line = display.newLine(px, py, wx, wy)
-
-				self.line.width = 4
-			else -- First point
-				px, py = wx, wy
-			end
+			self.line:append(wx, wy)
 
 			-- Mark the line's trail.
 			local image = remove(cache)

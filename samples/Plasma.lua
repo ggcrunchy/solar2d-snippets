@@ -1,4 +1,4 @@
---- Superformulae demo.
+--- Plasma demo.
 
 --
 -- Permission is hereby granted, free of charge, to any person obtaining
@@ -21,30 +21,35 @@
 -- SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 --
 -- [ MIT license: http://www.opensource.org/licenses/mit-license.php ]
---
+--	
 
 -- Standard library imports --
 local abs = math.abs
-local cos = math.cos
+local floor = math.floor
+local min = math.min
 local pi = math.pi
 local random = math.random
 local sin = math.sin
+local yield = coroutine.yield
 
 -- Modules --
 local buttons = require("ui.Button")
-local line_ex = require("ui.LineEx")
+local pixels = require("effect.Pixels")
 local scenes = require("game.Scenes")
+local timers = require("game.Timers")
 
 -- Corona globals --
 local display = display
 local timer = timer
-local transition = transition
 
 -- Corona modules --
 local storyboard = require("storyboard")
 
--- Superformulae demo scene --
+-- Pixels demo scene --
 local Scene = storyboard.newScene()
+
+-- --
+local PixelWidth, PixelHeight = 3, 3
 
 --
 function Scene:createScene ()
@@ -54,75 +59,67 @@ end
 Scene:addEventListener("createScene")
 
 -- --
-local CenterX, CenterY = display.contentCenterX, display.contentCenterY
-
--- --
-local A, B = 30, 30
-
--- --
-local InputParams = {
-	time = 1100, transition = easing.inOutQuad,
-
-	onComplete = function(inputs)
-		inputs.waiting = true
-	end
-}
-
--- --
-local N = 200
-
+local NCols, NRows = 120, 115
+local AA
 --
 function Scene:enterScene ()
-	-- One going on its own, transition among parameters... (mostly working)
-	-- Another that can be edited
-	-- Squircles or superellipses to round it out
+	--
+	self.isheet = pixels.GetPixelSheet()
+	self.igroup = display.newImageGroup(self.isheet)
 
-	local inputs = { m = 2, n1 = 2, n2 = 2, n3 = 2, r = 0, g = 0, b = 255, a = 255, waiting = true }
-  
-	self.render = timer.performWithDelay(30, function()
-		--
-		if inputs.waiting then
-			inputs.waiting = false
+	self.view:insert(self.igroup)
 
-			InputParams.m = 1 + random() * 19
-			InputParams.n1 = 5 + random() * 9
-			InputParams.n2 = 1 + random() * 19
-			InputParams.n3 = 1 + random() * 19
-			InputParams.r = random(0, 255)
-			InputParams.g = random(0, 255)
-			InputParams.b = random(0, 255)
-			InputParams.a = random(128, 255)
+	--
+	self.render = timer.performWithDelay(10, function(event)
+		local index, t = 1, .125 * pi * event.time / 1000
+		local t1, t2, t3 = t * 1.4, t * 1.2, t * 3.7
+		local pix = self.igroup
+		local nloaded = pix.numChildren
 
-			transition.to(inputs, InputParams)
+		for row = 1, NRows do
+			for col = 1, NCols do
+				if index > nloaded then
+					return
+				end
+
+			--	local s1 = sin(3.1 + t1 * row)
+--				local s2 = sin(1.7 + t2 * col)
+	--			local s3 = sin(1.2 + t3 * (row + col))
+local A = math.sqrt((col - 16 + t)^2 + (row - 65)^2) / 128
+local B = math.sqrt((col - 106)^2 + (row - 32 + t / 3)^2) / 2
+local C = (col + row) / 8
+				local rc = 128 + 42.333 * (sin(t1 * A) + sin(t2 * A) + sin(t3 * A))
+				local gc = 128 + 42.333 * (sin(t1 * B) + sin(t2 * B) + sin(t3 * B))
+				local bc = 128 + 42.333 * (sin(t1 * C) + sin(t2 * C) + sin(t3 * C))
+
+				pix[index]:setFillColor(rc, gc, bc)
+
+				index = index + 1
+			end
 		end
-
-		--
-		display.remove(self.curve)
-
-		--
-		local m, n1, n2, n3 = .25 * inputs.m, -1 / inputs.n1, inputs.n2, inputs.n3
-		local da = 2 * pi / N
-		local dp_r, dp_i, cphi, sphi = cos(da), sin(da), 1, 0
-		local dmp_r, dmp_i, cmphi, smphi = cos(m * da), sin(m * da), 1, 0
-
-		self.curve = line_ex.NewLine(self.view)
-
-		self.curve:setColor(inputs.r, inputs.g, inputs.b, inputs.a)
-
-		self.curve.width = 3	
-
-		for _ = 1, N do
-			local r = (abs(cmphi / A)^n2 + abs(smphi / B)^n3)^n1
-			local x, y = CenterX + r * cphi, CenterY + r * sphi
-
-			self.curve:append(x, y)
-
-			cphi, sphi = dp_r * cphi - dp_i * sphi, dp_i * cphi + dp_r * sphi
-			cmphi, smphi = dmp_r * cmphi - dmp_i * smphi, dmp_i * cmphi + dmp_r * smphi
-		end
-
-		self.curve:close()
 	end, 0)
+
+	self.allocate_pixels = timers.WrapEx(function()
+		local count = 30
+
+		for row = 1, NRows do
+			for col = 1, NCols do
+				local pixel = display.newImage(self.igroup, self.isheet, 1)
+
+				pixel.x = 200 + col * PixelWidth
+				pixel.y = 100 + row * PixelHeight
+				pixel.width, pixel.height = PixelWidth, PixelHeight
+
+				count = count - 1
+
+				if count == 0 then
+					count = 30
+
+					yield()
+				end
+			end
+		end
+	end)
 end
 
 Scene:addEventListener("enterScene")
@@ -130,11 +127,14 @@ Scene:addEventListener("enterScene")
 --
 function Scene:exitScene ()
 	timer.cancel(self.render)
+	timer.cancel(self.allocate_pixels)
 
-	display.remove(self.curve)
+	self.igroup:removeSelf()
 
-	self.curve = nil
+	self.igroup = nil
+	self.isheet = nil
 	self.render = nil
+	self.allocate_pixels = nil
 end
 
 Scene:addEventListener("exitScene")

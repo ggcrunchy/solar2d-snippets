@@ -49,15 +49,17 @@ local Scene = storyboard.newScene()
 -- Samples names --
 local Names = {
 	-- "Corridor", -- as alluded in "Pixels" and note further down, some kind of corridor scrolling
-	"Curves", -- v 0.1: These were mostly just for testing something... could be MUCH more interesting... (editor?)
-	"Delaunay", -- v 0.0: Stub... idea forming ("gas" fills chamber, then pathfind along it?)
+	"Curves", -- v 0.1: These were mostly just for testing something... could be MUCH more interesting... (editor? splines?)
+	"Delaunay", -- v 0.0: Stub... idea forming ("gas" fills chamber, then pathfind along it? Or maybe just show the construction happening.)
+	-- "Fire", -- Just hashing out the basic idea so far
 	"Hilbert", -- v 1.0: I rather like this, nothing immediate to add...
-	"HilbertMixer", -- v 0.9: Getting there, maybe some afterimages? Do smoothing or simplification?
+	"HilbertMixer", -- v 0.9: Getting there. Do smoothing or simplification?
 	"Hop", -- v 0.9: Was just to show an idea to a work colleague... has some "problems"... worth fixing?
 	"Marching", -- v 0.4: Better example? Better implementation? (Not really very general / adaptable)
 	"Nodes", -- v 0.8: Was incorporated into editor... though not quite like this... at very least, use LinkGroup?
 	"OrbitsAndLattices", -- v 0.8: In progress... Probably mostly needs some blending, transitions, etc.
 	"Pixels", -- v 0.9: Depending on how far I can squeeze this, look into a "3D engine" on top (actually, move that elsewhere and do fire, plasma, etc. here)
+	"Plasma", -- v 0.2: Very basic, just trying to get something up and running
 	-- "Ray Tracer", -- Some sort of scene, Hilbert-iterated, save / load sessions?
 	"SlowMo", -- v 0.9: Explore the "copycat" idea I have here?
 	"Snowfall", -- v 0.3: In progress... Already in, e.g. CBEffects... anyhow, see if adapting the (abandoned) Icebreakers stuff would look decent for ash, leaves, snow, etc.
@@ -75,7 +77,7 @@ local Names = {
 
 	Prospects for future additions:
 
-	* Ramer-Douglas-Peucker algorithm
+	* Ramer-Douglas-Peucker algorithm (note: saw that somebody else had this, possibly on the Code Exchange)
 
 		function DouglasPeucker(PointList[], epsilon)
 			//Find the point with the maximum distance
@@ -112,7 +114,7 @@ local Names = {
 
 	* Play with some priority queues (sort of alluded to in Tektite wiki)
 
-	* Timeline / ladder queue stuff? (ditto)
+	* Timeline / ladder queue stuff? (ditto... need to reread latter paper, pseudo-code not so helpful :P)
 
 	* Theta* or Phi* demo (not sure off-hand if both would be redundant) (Already done in Jumper?)
 
@@ -120,9 +122,11 @@ local Names = {
 	  update: "general" quads upcoming in Graphics 2.0... not sure about texels)
 
 	* Go to town with the grid iterators, e.g. to make masks or general art... could amortize costs
-	  by iteratively capturing completed sections and compositing them? (Ditto)
+	  by iteratively capturing completed sections and compositing them? (Ditto, would be a lot easier
+	  with render textures)
 
 	* Projectile targeting, with gravity (maybe with some of the competing teams stuff from WAY back...)
+	  (Also came up on forums)
 
 	* Try to do 8- or 16-bit style of 3D, like World Runner or Panorama Cotton (proof of concept)
 

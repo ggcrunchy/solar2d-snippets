@@ -35,6 +35,7 @@ local sqrt = math.sqrt
 -- Modules --
 local dispatch_list = require("game.DispatchList")
 local glow = require("effect.Glow")
+local line_ex = require("ui.LineEx")
 local timers = require("game.Timers")
 local utils = require("utils")
 
@@ -268,13 +269,9 @@ end
 -- @int width
 -- @treturn DisplayGroup I
 function M.StraightArrow (group, dir, x, y, width)
-	local xform = Arrows[dir]
-	local x1, y1 = xform(Arrows[1], Arrows[2])
-	local x2, y2 = xform(Arrows[3], Arrows[4])
+	local line, xform = line_ex.NewLine(group), Arrows[dir]
 
-	local line = display.newLine(group, x + x1, y + y1, x + x2, y + y2)
-
-	for i = 5, #Arrows, 2 do
+	for i = 1, #Arrows, 2 do
 		local xi, yi = xform(Arrows[i], Arrows[i + 1])
 
 		line:append(x + xi, y + yi)
@@ -282,7 +279,7 @@ function M.StraightArrow (group, dir, x, y, width)
 
 	line.width = width
 
-	return line
+	return line.m_object
 end
 
 -- Direction to feed to MakeColumn (since not available through ArrowGroupMaker) --

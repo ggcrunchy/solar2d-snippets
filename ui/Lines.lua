@@ -31,6 +31,7 @@ local sqrt = math.sqrt
 local array_ops = require("array_ops")
 local curves = require("effect.Curves")
 local color = require("ui.Color")
+local line_ex = require("ui.LineEx")
 local timers = require("game.Timers")
 
 -- Corona globals --
@@ -115,15 +116,15 @@ local function UpdateLines ()
 					second = CurveCount
 				end
 
-				-- Build up the curve, starting with the first-to-second point segment.
-				local seg = display.newLine(group, p1x, p1y, CurveXY(p1x, p1y, dx, dy, second))
+				-- Build up the curve, starting with the first point.
+				local seg = line_ex.NewLine(group, p1x, p1y)
 
 				seg:setColor(color.GetColor(line.color))
 
 				seg.width = line.width
 
-				-- Add the third through n-th points.
-				for i = second + 1, CurveCount do
+				-- Add the second through n-th points.
+				for i = second, CurveCount do
 					seg:append(CurveXY(p1x, p1y, dx, dy, i))
 				end
 

@@ -37,6 +37,7 @@ local common = require("editor.Common")
 local cubic_spline = require("effect.CubicSpline")
 local curves = require("effect.Curves")
 local hilbert = require("fill.Hilbert")
+local line_ex = require("ui.LineEx")
 local numeric_ops = require("numeric_ops")
 local pixels = require("effect.Pixels")
 local scenes = require("game.Scenes")
@@ -65,13 +66,13 @@ local R, G, B
 
 --
 local function MakePolygon (group, points, n)
-	local polygon = display.newLine(group, points[1], points[2], points[3], points[4])
+	local polygon = line_ex.NewLine(group)
 
-	for i = 5, n - 1, 2 do
-		polygon:append(points[i + 0], points[i + 1])
+	for i = 1, n - 1, 2 do
+		polygon:append(points[i], points[i + 1])
 	end
 
-	polygon:append(points[1], points[2])
+	polygon:close()
 	polygon:setColor(R, G, B)
 
 	polygon.width = 3

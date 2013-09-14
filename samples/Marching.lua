@@ -23,12 +23,19 @@
 -- [ MIT license: http://www.opensource.org/licenses/mit-license.php ]
 --
 
+-- Standard library imports --
+local floor = math.floor
+
 -- Modules --
 local buttons = require("ui.Button")
 local circle = require("fill.Circle")
+local line_ex = require("ui.LineEx")
 local marching_squares = require("fill.MarchingSquares")
 local scenes = require("game.Scenes")
 local timers = require("game.Timers")
+
+-- Corona globals --
+local display = display
 
 -- Corona modules --
 local storyboard = require("storyboard")
@@ -43,79 +50,77 @@ end
 
 Scene:addEventListener("createScene")
 
+--
 local function XY (x, y)
 	return display.contentCenterX + x * 30, display.contentCenterY + y * 30
 end
 
+--
 local function Rect (group, x, y, fr, fg, fb)
-	local r = display.newRect(group, 0, 0, 30, 30)
+	local rect = display.newRect(group, 0, 0, 30, 30)
 
-	r:setFillColor(fr, fg, fb)
-	r:setStrokeColor(0, 0, 255)
+	rect:setFillColor(fr, fg, fb)
+	rect:setStrokeColor(0, 0, 255)
 
-	r.strokeWidth = 3
+	rect.strokeWidth = 3
 
-	r.x, r.y = XY(x, y)
+	rect.x, rect.y = XY(x, y)
 
-	return r
+	return rect
 end
 
-local GGROUP, RGROUP, LINE, PX, PY
+-- --
+local Boundary
 
-local function AddElem (x, y)
-	x, y = XY(x, y)
+-- --
+local RectGroup
 
-	if LINE then
-		LINE:append(x, y)
-	elseif PX then
-		LINE = display.newLine(GGROUP, PX, PY, x, y)
-		LINE:setColor(0, 255, 0)
-		LINE.width = 5
-	else
-		PX, PY = x, y
-	end
-end
-
+-- --
 local HalfX, HalfY = 10, 10
 
+-- --
 local Next, How = { perimeter = "inside", inside = "outside" }
 
+-- --
 local Setter, Marcher
 
+--
 local function LaunchTimer ()
 	How = Next[How] or "perimeter"
 
-	RGROUP = display.newGroup()
+	RectGroup = display.newGroup()
 	
-	Scene.view:insert(RGROUP)
+	Scene.view:insert(RectGroup)
 
-	RGROUP:toFront()
+	RectGroup:toFront()
 
-	display.newText(RGROUP, "Method: " .. How, 250, 20, native.systemFontBold, 30)
+	display.newText(RectGroup, "Method: " .. How, 250, 20, native.systemFontBold, 30)
 
-	Setter, Marcher = marching_squares.Boundary(HalfX, HalfY, AddElem)
+	Setter, Marcher = marching_squares.Boundary(HalfX, HalfY, function(x, y)
+		Boundary:append(XY(x, y))
+	end)
 
 	local spread = circle.SpreadOut(HalfX, HalfY, function(x, y, radius)
-		local r = Rect(RGROUP, x, y, 255, 0, 0)
+		local rect = Rect(RectGroup, x, y, 255, 0, 0)
 
 		Setter(x, y, radius)
 
-		local t = display.newText(RGROUP, ("%i"):format(radius), 0, 0, native.systemFontBold, 20)
+		local text = display.newText(RectGroup, ("%i"):format(radius), 0, 0, native.systemFontBold, 20)
 
-		t:setTextColor(0, 255)
+		text:setTextColor(0, 255)
 
-		t.x, t.y = r.x, r.y
+		text.x, text.y = rect.x, rect.y
 	end)
 
 	Scene.timer1 = timers.RepeatEx(function(event)
-		local radius = math.floor(event.m_elapsed / 900)
+		local radius = floor(event.m_elapsed / 900)
 
 		spread(radius)
 
 		if radius >= 5 then
-			RGROUP:removeSelf()
+			RectGroup:removeSelf()
 
-			RGROUP = nil
+			RectGroup = nil
 
 			Scene.timer1 = timers.Defer(LaunchTimer)
 
@@ -129,14 +134,14 @@ function Scene:enterScene ()
 	LaunchTimer()
 
 	self.timer2 = timer.performWithDelay(350, function()
-		display.remove(GGROUP)
-		
-		GGROUP = display.newGroup()
-		
-		self.view:insert(GGROUP)
-		
-		LINE, PX, PY = nil
-		
+		display.remove(Boundary)
+
+		Boundary = line_ex.NewLine(self.view)
+
+		Boundary:setColor(0, 255, 0)
+
+		Boundary.width = 5	
+
 		Marcher(How, 99)
 	end, 0)
 end
@@ -145,10 +150,10 @@ Scene:addEventListener("enterScene")
 
 --
 function Scene:exitScene ()
-	display.remove(GGROUP)
-	display.remove(RGROUP)
+	display.remove(Boundary)
+	display.remove(RectGroup)
 
-	GGROUP, RGROUP, LINE, PX, PY = nil
+	Boundary, RectGroup = nil
 
 	timer.cancel(self.timer1)
 	timer.cancel(self.timer2)
