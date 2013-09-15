@@ -25,9 +25,13 @@
 
 -- Standard library imports --
 local cos = math.cos
+local deg = math.deg
 local ipairs = ipairs
+local min = math.min
 local pi = math.pi
+local random = math.random
 local sin = math.sin
+local type = type
 
 -- Modules --
 local line_ex = require("ui.LineEx")
@@ -80,6 +84,20 @@ end
 -- --
 local RotateSpeed = .45 * _2pi
 
+-- --
+local StarFuncs = {
+	-- Mild rocking --
+	mild_rocking = function(star, t, i)
+		local angle = (t + i) % pi
+
+		if angle > pi / 2 then
+			angle = pi - angle
+		end
+
+		star.rotation = deg(angle)
+	end
+}
+
 --- DOCME
 -- @pgroup group
 -- @uint nstars
@@ -87,10 +105,10 @@ local RotateSpeed = .45 * _2pi
 -- @number y
 -- @number dx
 -- @number dy
--- @callable func
+-- @ptable? options
 -- @treturn DisplayGroup X
 -- @treturn DisplayGroup Y
-function M.RingOfStars (group, nstars, x, y, dx, dy, func)
+function M.RingOfStars (group, nstars, x, y, dx, dy, options)
 	local front = display.newGroup()
 	local back = display.newGroup()
 
@@ -98,6 +116,15 @@ function M.RingOfStars (group, nstars, x, y, dx, dy, func)
 	group:insert(back)
 
 	back:toBack()
+
+	--
+	local file, func
+
+	if options then
+		file = options.file
+		func = options.func
+		func = StarFuncs[func] or func
+	end
 
 	--
 	local function Update (star, angle, index)
@@ -117,7 +144,17 @@ function M.RingOfStars (group, nstars, x, y, dx, dy, func)
 	local stars = {}
 
 	for i = 1, nstars do
-		stars[i] = M.Star(front, x, y, 10, 0)
+		if file then
+			local name = type(file) == "table" and file[random(#file)] or file
+			local size = .75 * min(dx, dy) + .25 * (dx + dy)
+
+			stars[i] = display.newImage(front, name)
+
+			stars[i].width, stars[i].height = size, size
+
+		else
+			stars[i] = M.Star(front, x, y, 10, 0)
+		end
 
 		Update(stars[i], 0, i)
 	end

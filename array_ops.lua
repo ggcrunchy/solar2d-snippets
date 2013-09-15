@@ -55,7 +55,7 @@ end
 --- Iterates from _i_ = 1 to _count_ and reports whether **any** `arr[i]` is true.
 -- @array arr Array to test.
 -- @uint count Number of tests to perform. If absent, `#arr`.
--- @treturn boolean Some test passed?
+-- @treturn boolean Any test passed?
 function M.Any (arr, count)
 	for i = 1, count or #arr do
 		if arr[i] then
@@ -201,6 +201,25 @@ function M.ShallowEqual (arr1, arr2)
 	until v == nil
 
 	return true
+end
+
+--- Iterates from _i_ = 1 to _count_ and reports whether **some** `arr[i]` are true, i.e.
+-- 0 < _n_ < _count_, where _n_ is the number of true `arr[i]`.
+-- @array arr Array to test.
+-- @uint count Number of tests to perform. If absent, `#arr`.
+-- @treturn boolean Some tests passed?
+function M.Some (arr, count)
+	count = count or #arr
+
+	local n = 0
+
+	for i = 1, count do
+		if arr[i] then
+			n = n + 1
+		end
+	end
+
+	return n > 0 and n < count
 end
 
 -- Register bound-table functions.

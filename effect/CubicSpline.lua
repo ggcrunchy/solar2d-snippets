@@ -48,7 +48,7 @@ local _MapCoeffsToSpline_
 -- matrix defined by the particular spline), compute a row of the 2x4 product matrix. This
 -- will produce the polynomial coefficients for that row (x- or y-components), for spline
 -- length purposes. The components are reordered (since the quadrature algorithms expect
--- [t^3, t^2, t, 1], dropping the constant which goes to 0 during differentiation.
+-- [t^3, t^2, t, 1]), dropping the constant which goes to 0 during differentiation.
 local LHS = {}
 
 -- "Right-hand side" eval functions --

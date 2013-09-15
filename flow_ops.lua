@@ -1,6 +1,6 @@
 --- This module defines some control-flow operations for use inside coroutines.
 --
--- **TODO**: Signals terminology needs revision, also too heavyweight
+-- @todo Signals terminology needs revision, also too heavyweight
 
 --
 -- Permission is hereby granted, free of charge, to any person obtaining
@@ -77,16 +77,19 @@ do
 		-- Any signals set --
 		any = array_ops.Any,
 
-		-- Any signals not set --
-		any_not = array_ops.All,
-
 		-- No signal set --
-		none = array_ops.Any
+		none = array_ops.Any,
+
+		-- Any signals not set --
+		not_all = array_ops.All,
+
+		-- Some signals set --
+		some = array_ops.Some
 	}
 
 	-- Config setup helper
 	local function Setup (config, pred)
-		config.negate_done = pred == "any_not" or pred == "none"
+		config.negate_done = pred == "not_all" or pred == "none"
 
 		return assert(Predicates[pred], "Invalid predicate")
 	end
@@ -103,8 +106,9 @@ do
 	--
 	-- * **"all"**: All tests must pass.
 	-- * **"any"**: At least one test must pass.
-	-- * **"any_not**: At least one test must not pass.
 	-- * **"none"**: No test may pass.
+	-- * **"not_all**: At least one test must not pass.
+	-- * **"some"**: Some, but not all, tests must pass.
 	-- @callable update Optional update logic, called as
 	--    update(signals, count, arg).
 	-- @param arg Argument.
