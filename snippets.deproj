@@ -34,6 +34,9 @@
     <filename>ui\Color.lua</filename>
   </file>
   <file>
+    <filename>..\so-so-squirrel\ui\ColorPicker.lua</filename>
+  </file>
+  <file>
     <filename>editor\Common.lua</filename>
   </file>
   <file>
@@ -109,10 +112,10 @@
     <filename>effect\Generators.lua</filename>
   </file>
   <file>
-    <filename>game\GlobalEvents.lua</filename>
+    <filename>config\GlobalEvents.lua</filename>
   </file>
   <file>
-    <filename>config\GlobalEvents.lua</filename>
+    <filename>game\GlobalEvents.lua</filename>
   </file>
   <file>
     <filename>effect\Glow.lua</filename>
@@ -220,16 +223,19 @@
     <filename>game\Persistence.lua</filename>
   </file>
   <file>
-    <filename>samples\Pixels.lua</filename>
+    <filename>effect\Pixels.lua</filename>
   </file>
   <file>
-    <filename>effect\Pixels.lua</filename>
+    <filename>samples\Pixels.lua</filename>
   </file>
   <file>
     <filename>samples\Plasma.lua</filename>
   </file>
   <file>
     <filename>game\Player.lua</filename>
+  </file>
+  <file>
+    <filename>README.md</filename>
   </file>
   <file>
     <filename>game\Scenes.lua</filename>
@@ -298,10 +304,10 @@
     <filename>class\Timer.lua</filename>
   </file>
   <file>
-    <filename>game\Timers.lua</filename>
+    <filename>samples\Timers.lua</filename>
   </file>
   <file>
-    <filename>samples\Timers.lua</filename>
+    <filename>game\Timers.lua</filename>
   </file>
   <file>
     <filename>ui\Touch.lua</filename>
@@ -331,10 +337,16 @@
     <filename>bound_args.lua</filename>
   </file>
   <file>
+    <filename>build.settings</filename>
+  </file>
+  <file>
     <filename>cache_ops.lua</filename>
   </file>
   <file>
     <filename>class.lua</filename>
+  </file>
+  <file>
+    <filename>config.ld</filename>
   </file>
   <file>
     <filename>config.lua</filename>

@@ -44,18 +44,32 @@ local M = {}
 -- Which way are we trying to move?; which way were we moving? --
 local Dir, Was
 
+-- A second held direction, to change to if Dir is released (seems to smooth out key input) --
+local ChangeTo
+
 -- Begins input in a given direction
 local function BeginDir (_, target)
-	Dir = Dir or target.m_dir
-	Was = Dir
+	if not Dir then
+		Dir = target.m_dir
+		Was = Dir
 
-	player.CancelPath()
+		player.CancelPath()
+	elseif not ChangeTo then
+		ChangeTo = target.m_dir
+	end
 end
 
 -- Ends input in a given direction
 local function EndDir (_, target)
-	if Dir == target.m_dir then
-		Dir = nil
+	local dir = target.m_dir
+
+	if Dir == dir or ChangeTo == dir then
+		if Dir == dir then
+			Dir = ChangeTo
+			Was = Dir or Was
+		end
+
+		ChangeTo = nil
 	end
 end
 
@@ -108,7 +122,7 @@ local function KeyEvent (event)
 	-- Directional keys from D-pad or trackball: move in the corresponding direction.
 	-- The trackball seems to produce the "down" phase followed immediately by "up",
 	-- so we let the player coast along for a few frames unless interrupted.
-	-- TODO: Secure a Play or at least a tester, try out the D-pad
+	-- TODO: Secure a Play or at least a tester, try out the D-pad (add bindings)
 	if key == "up" or key == "down" or key == "left" or key == "right" then
 		PushDir.m_dir = key
 
@@ -121,7 +135,8 @@ local function KeyEvent (event)
 		end
 
 	-- Confirm key or trackball press: attempt to perform player actions.
-	elseif key == "center" then
+	-- TODO: Add bindings
+	elseif key == "center" or key == "space" then
 		if phase == "down" then
 			DoActions()
 		end
@@ -139,6 +154,7 @@ local function ResetState ()
 	Active = true
 	FramesLeft = 0
 	Dir, Was = nil
+	ChangeTo = nil
 end
 
 -- Traps touches to the screen and interprets any taps
