@@ -226,10 +226,12 @@ return function (group, info)
 
 	group:insert(switch)
 
-	display.newImage(switch, "Dot_Assets/Switch-1.png")
-	display.newImage(switch, "Dot_Assets/Switch-2.png")
+	local image1 = display.newImage(switch, "Dot_Assets/Switch-1.png")
+	local image2 = display.newImage(switch, "Dot_Assets/Switch-2.png")
 
-	switch[2].isVisible = false
+	image1.xOrigin, image1.yOrigin = 0, 0
+	image2.xOrigin, image2.yOrigin = 0, 0
+	image2.isVisible = false
 
 	switch:scale(.5, .5)
 

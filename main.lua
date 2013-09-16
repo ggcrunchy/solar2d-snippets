@@ -54,21 +54,24 @@ Runtime:addEventListener("enterFrame", function()
 end)
 
 -- "key" listener --
-Runtime:addEventListener("key", function(event)
-	local key = event.keyName
+if system.getInfo("environment") == "simulator" or system.getInfo("platformName") == "Android" then
+	Runtime:addEventListener("key", function(event)
+		local key = event.keyName
+		local go_back = key == "back" or key == "deleteBack"
 
-	if key == "back" or key == "volumeUp" or key == "volumeDown" then
-		if event.phase == "down" then
-			if key == "back" then
-				scenes.Send("message:wants_to_go_back")
-			else
-				-- VOLUME
+		if go_back or key == "volumeUp" or key == "volumeDown" then
+			if event.phase == "down" then
+				if go_back then
+					scenes.Send("message:wants_to_go_back")
+				else
+					-- VOLUME
+				end
 			end
-		end
 
-		return true
-	end
-end)
+			return true
+		end
+	end)
+end
 
 -- "unhandledError" listener --
 if system.getInfo("environment") == "device" then
