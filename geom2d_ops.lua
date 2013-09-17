@@ -26,6 +26,7 @@
 -- Standard library imports --
 local max = math.max
 local min = math.min
+local sqrt = math.sqrt
 
 -- Cached module references --
 local _BoxesIntersect_
@@ -81,6 +82,32 @@ function M.BoxIntersection (x1, y1, w1, h1, x2, y2, w2, h2)
 	local sx, sy = max(x1, x2), max(y1, y2)
 
 	return true, sx, sy, min(x1 + w1, x2 + w2) - sx, min(y1 + h1, y2 + h2) - sy
+end
+
+--- DOCME
+-- Cf. David Eberly's "Geometric Tools for Computer Graphics" (C.2.2)
+function M.Circumcircle (x1, y1, x2, y2, x3, y3)
+	--
+	local dx12, dy12 = x2 - x1, y2 - y1
+	local dx13, dy13 = x3 - x1, y3 - y1
+	local dx23, dy23 = x3 - x2, y3 - y2
+
+	--
+	local d_ca = dx13 * dx12 + dy13 * dy12
+	local d_ba = -(dx23 * dx12 + dy23 * dy12)
+	local d_cb = dx13 * dx23 + dy13 * dy23
+
+	--
+	local n1, n2, n3 = d_ba * d_cb, d_cb * d_ca, d_ca * d_ba
+	local n12, n13, n23 = n1 + n2, n1 + n3, n2 + n3
+	local in123 = 1 / (n12 + n3)
+
+	--
+	local radius = .5 * sqrt((d_ca + d_ba) * (d_ba + d_cb) * (d_cb + d_ca) * in123)
+
+	in123 = .5 * in123
+
+	return in123 * (n23 * x1 + n13 * x2 + n12 * x3), in123 * (n23 * y1 + n13 * y2 + n12 * y3), radius
 end
 
 ---@number px Point x-coordinate...

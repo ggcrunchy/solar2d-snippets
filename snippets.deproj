@@ -112,10 +112,10 @@
     <filename>effect\Generators.lua</filename>
   </file>
   <file>
-    <filename>config\GlobalEvents.lua</filename>
+    <filename>game\GlobalEvents.lua</filename>
   </file>
   <file>
-    <filename>game\GlobalEvents.lua</filename>
+    <filename>config\GlobalEvents.lua</filename>
   </file>
   <file>
     <filename>effect\Glow.lua</filename>
@@ -304,10 +304,10 @@
     <filename>class\Timer.lua</filename>
   </file>
   <file>
-    <filename>samples\Timers.lua</filename>
+    <filename>game\Timers.lua</filename>
   </file>
   <file>
-    <filename>game\Timers.lua</filename>
+    <filename>samples\Timers.lua</filename>
   </file>
   <file>
     <filename>ui\Touch.lua</filename>
@@ -395,6 +395,9 @@
   </file>
   <file>
     <filename>main.lua</filename>
+  </file>
+  <file>
+    <filename>mesh_ops.lua</filename>
   </file>
   <file>
     <filename>mwc_rng.lua</filename>

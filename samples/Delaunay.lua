@@ -26,7 +26,6 @@
 -- Standard library imports --
 local floor = math.floor
 local huge = math.huge
-local ipairs = ipairs
 local max = math.max
 local min = math.min
 local random = math.random
@@ -35,7 +34,9 @@ local yield = coroutine.yield
 
 -- Modules --
 local buttons = require("ui.Button")
+local geom2d_ops = require("geom2d_ops")
 local line_ex = require("ui.LineEx")
+local mesh_ops = require("mesh_ops")
 local scenes = require("game.Scenes")
 local timers = require("game.Timers")
 
@@ -142,6 +143,86 @@ local function Polyline (name, x, y, to, r, g, b, t1, t2, close)
 end
 
 --
+local function AddTriangle (mesh, tri, ti, i, stack, si)
+	local tri = mesh_ops.InsertTriangle(mesh, ti, mesh_ops.GetIndex(tri, i), mesh_ops.GetIndex(tri, i + 1))
+	local adj = mesh_ops.GetAdjacentTriangle_Tri(mesh, tri, i)
+
+	if adj then
+		stack[si + 1], stack[si + 2], si = tri, adj, si + 2
+	end
+
+	return si
+end
+
+--
+local function BuildMesh (points, super_tri, show_text)
+	show_text("Building mesh")
+
+	local mesh, stack, si = mesh_ops.NewMesh(), {}, 0
+	local st1 = mesh_ops.AddVertex(mesh, super_tri[1], super_tri[2])
+	local st2 = mesh_ops.AddVertex(mesh, super_tri[3], super_tri[4])
+	local st3 = mesh_ops.AddVertex(mesh, super_tri[5], super_tri[6])
+
+	mesh_ops.InsertTriangle(mesh, st1, st2, st3)
+
+	for i = 1, #points do
+		local point = points[i]
+		local cont, what = mesh_ops.Container(mesh, point.x, point.y)
+
+		if cont then
+			local ti = mesh_ops.AddVertex(mesh, point.x, point.y)
+
+			--
+			if what == "tri" then
+				for j = 1, 3 do
+					si = AddTriangle(mesh, cont, ti, j, stack, si)
+				end
+
+				mesh_ops.RemoveTriangle(mesh, cont)
+
+			--
+			else
+				for j = 1, 2 do
+					local etri = mesh_ops.GetAdjacentTriangle_Edge(cont, j)
+
+					if etri then
+						for k = 1, 3 do
+							local edge = mesh_ops.GetEdge(mesh, etri, k)
+
+							if edge ~= cont then
+								si = AddTriangle(mesh, etri, ti, k, stack, si)
+							end
+						end
+					end
+
+					mesh_ops.RemoveTriangle(mesh, etri)
+				end
+			end
+
+			--
+			while si > 0 do
+				si = si - 2
+
+				local tri, adj = stack[si + 1], stack[si + 2]
+				--[[
+					i0, i1, i2, i3 with T.v(i1) = A.v(i2) and T.v(i2) = A.v(i1)
+					if T.v(i0) in circumcircle(A) then
+						-- swap must occur
+						N0 = mesh.Insert(T.v(i0), T.v(i1), A.v(i3))
+						B0 = A.adj(i1)
+						if B0 then
+							stack.push(N0, B0) -- now <N0, B0> might need swapping
+						N1 = mesh.Insert(T.v(i0), A.v(i3), A.v(i2)
+						B1 = A.adj(i3)
+						if B1 then
+							stack.push(N1, B1) -- ditto
+				]]
+			end
+		end
+	end
+end
+
+--
 function Scene:enterScene ()
 
 	--
@@ -180,11 +261,11 @@ function Scene:enterScene ()
 
 		local x1, y1 = floor(.3 * Width), floor(.2 * Height)
 		local x2, y2 = floor(.7 * Width), floor(.9 * Height)
-		local points = {}
+		local indices, points = {}, {}
 
 		LeftToFade = 50
 
-		for _ = 1, LeftToFade do
+		for i = 1, LeftToFade do
 			local point = display.newCircle(self.point_cloud, random(x1, x2), random(y1, y2), 7)
 
 			point:setFillColor(GetColor())
@@ -193,7 +274,7 @@ function Scene:enterScene ()
 
 			Fade(point, 500, 1400)
 
-			points[#points + 1] = point
+			indices[i], points[i] = i, point
 		end
 
 		repeat yield() until LeftToFade == 0
@@ -218,19 +299,19 @@ function Scene:enterScene ()
 		FadeInParams.delay = nil
 
 		local minx, miny, maxx, maxy = huge, huge, -huge, -huge
-		local npoints = #points
+		local nindices = #indices
 
 		repeat
 			for i = 1, self.highlights.numChildren do
 				local highlight = self.highlights[i]
 
-				if npoints == 0 then
+				if nindices == 0 then
 					highlight.isVisible = false
 				elseif highlight.m_done then
-					local index = random(npoints)
-					local point = points[index]
+					local slot = random(nindices)
+					local point = points[indices[slot]]
 
-					points[index] = points[npoints]
+					indices[slot] = indices[nindices]
 
 					highlight:setStrokeColor(GetColor())
 
@@ -244,12 +325,12 @@ function Scene:enterScene ()
 
 					Fade(highlight, 300, 700)
 
-					npoints = npoints - 1
+					nindices = nindices - 1
 				end
 			end
 
 			yield()
-		until npoints == 0
+		until nindices == 0
 
 		self.highlights:removeSelf()
 
@@ -284,15 +365,16 @@ function Scene:enterScene ()
 
 		local yb = dy + dx * (dx / dy) -- Solve t, then Y for (x, y) + (-y, x) * t = (0, Y)
 		local xr = dx + dy * (radius + dy) / dx -- Solve t, then X for (x, y) + (-y, x) * t = (X, -r)
-
-		Polyline("supertriangle", cx, cy, {
+		local super_tri = {
 			cx, cy + yb,
 			cx + xr, cy - radius,
 			cx - xr, cy - radius
-		}, 128, 0, 128, 700, 900, true)
+		}
+
+		Polyline("supertriangle", cx, cy, super_tri, 128, 0, 128, 700, 900, true)
 
 		-- Uff...
-		ShowText("Building mesh")
+	--	BuildMesh(points, super_tri, ShowText)
 
 		--
 		ShowText(nil)
