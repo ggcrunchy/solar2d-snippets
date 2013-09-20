@@ -34,7 +34,7 @@
     <filename>ui\Color.lua</filename>
   </file>
   <file>
-    <filename>..\so-so-squirrel\ui\ColorPicker.lua</filename>
+    <filename>ui\ColorPicker.lua</filename>
   </file>
   <file>
     <filename>editor\Common.lua</filename>
@@ -112,10 +112,10 @@
     <filename>effect\Generators.lua</filename>
   </file>
   <file>
-    <filename>game\GlobalEvents.lua</filename>
+    <filename>config\GlobalEvents.lua</filename>
   </file>
   <file>
-    <filename>config\GlobalEvents.lua</filename>
+    <filename>game\GlobalEvents.lua</filename>
   </file>
   <file>
     <filename>effect\Glow.lua</filename>
@@ -128,6 +128,9 @@
   </file>
   <file>
     <filename>ui\Grid2D.lua</filename>
+  </file>
+  <file>
+    <filename>ui\HSV.lua</filename>
   </file>
   <file>
     <filename>samples\Hilbert.lua</filename>

@@ -108,7 +108,18 @@ end
 --
 -- You may simulate a touch by feeding an **id** of **"ignore_me"** through _event_, all
 -- other fields being normal. Otherwise, the focus of the id'touch is updated.
+-- DOCMEMORE
 function M.TouchHelperFunc (began, moved, ended)
+	if moved == "began" then
+		moved = began
+	end
+
+	if ended == "began" then
+		ended = began
+	elseif ended == "moved" then
+		ended = moved
+	end
+
 	return function(event)
 		local target = event.target
 
