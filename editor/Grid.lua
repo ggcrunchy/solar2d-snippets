@@ -67,7 +67,7 @@ function M.CleanUp ()
 		Grid.reserve:removeSelf()
 	end
 
-	Grid, Offset, Targets = nil
+	Grid, GrixProxy, Offset, ScrollProxy, Targets = nil
 end
 
 --- Common logic for the **PAINT** / **EDIT** / **ERASE** combination of grid operations.
@@ -191,6 +191,9 @@ function M.EditErase (dialog_wrapper, types)
 
 			common.ShowCurrent(current, false)
 
+			--
+			common.AddHelp(col_, { current = current, tabs = tabs })
+
 		-- Enter --
 		-- col_: Grid func
 		elseif what == "enter" then
@@ -228,6 +231,13 @@ end
 ---@treturn DisplayObject The global editor @{ui.Grid2D} widget.
 function M.Get ()
 	return Grid.grid
+end
+
+--- DOCME
+function M.GetHelp (func)
+	if Grid.grid.parent.isVisible then
+		common.GetHelp(func, "_Grid_")
+	end
 end
 
 -- Column and row of upper-left cell --
@@ -439,6 +449,8 @@ function M.Init (view)
 
 	common.WallInRect(Grid.group, x, y, gw, gh)
 
+	local grid_proxy = common.Proxy(view, Grid.grid)
+
 	-- Add scroll buttons for each dimension where the level exceeds the grid.
 	local x, y = display.contentWidth - 100, display.contentHeight - 230
 
@@ -454,10 +466,22 @@ function M.Init (view)
 		AddButton("rscroll", x, y + 65)
 	end
 
+	local n = Grid.group.numChildren
+	local scroll_proxy = common.Proxy(view, Grid.group[n - 3], Grid.group[n - 2], Grid.group[n - 1], Grid.group[n])
+
 	-- Add the offset text and initialize it and the scroll button opacities.
 	Offset = display.newText(Grid.group, "", display.contentWidth - 170, display.contentHeight - 40, native.systemFont, 24)
 
 	UpdateCoord(Col, Row, -1)
+
+	--
+	common.AddHelp("_Grid_", {
+		grid = "A marked cell on the grid indicates where the current selection will be appear.",
+		offset = "Offset of upper-left cell in grid, from (0, 0)",
+		scroll = "Scrolls the grid, i.e. updates the offset"
+	})
+
+	common.AddHelp("_Grid_", { grid = grid_proxy, offset = Offset, scroll = scroll_proxy })
 
 	-- Start out in the hidden state.
 	M.Show(false)

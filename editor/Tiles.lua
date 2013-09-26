@@ -99,6 +99,14 @@ function M.Load (view)
 	CurrentTile:Bind(TileImages, #TileNames - 4) -- 4 for (unimplemented) up, left, right, down...
 
 	CurrentTile.isVisible = false
+
+	--
+	common.AddHelp("Tiles", { current = CurrentTile, grid = grid.Get(), tabs = Tabs })
+	common.AddHelp("Tiles", {
+		current = "The current tile. When painting, cells are populated with this tile.",
+		["tabs:1"] = "'Paint Mode' is used to add new tiles to the level, by clicking a grid cell or dragging across the grid.",
+		["tabs:2"] = "'Erase Mode' is used to remove tiles from the level, by clicking an occupied grid cell or dragging across the grid."
+	})
 end
 
 --
@@ -148,6 +156,8 @@ function M.Enter ()
 	common.ShowCurrent(CurrentTile, not Erase)
 
 	Tabs.isVisible = true
+
+	common.SetHelpContext("Tiles")
 end
 
 --- DOCMAYBE

@@ -27,6 +27,8 @@
 local format = string.format
 local ipairs = ipairs
 local match = string.match
+local max = math.max
+local min = math.min
 local next = next
 local pairs = pairs
 local sort = table.sort
@@ -66,16 +68,62 @@ function M.AddButton (name, button)
 	Buttons[name] = button
 end
 
+-- --
+local Help
+
+--- DOCME
+function M.AddHelp (name, help)
+	local page = Help[name] or {}
+
+	for k, v in pairs(help) do
+		local vtype, tk = type(v)
+
+		if vtype == "string" then
+			local colon = k:find(":")
+
+			if colon then
+				k, tk = k:sub(1, colon - 1), tonumber(k:sub(colon + 1))
+			end
+		end
+
+		local entry = page[k] or {}
+
+		if vtype == "string" then
+			if tk then
+				local tarr = entry.text or {}
+
+				tarr[tk], v = v, tarr
+			end
+
+			entry.text = v
+		else
+			entry.binding = v or nil
+		end
+
+		page[k] = entry
+	end
+	
+	Help[name] = page
+end
+
 -- Full-screen dummy widgets used to implement modal behavior --
 -- CONSIDER: Can the use cases be subsumed into an overlay?
 local Nets
 
 -- Nets intercept all input
-local function NetTouch () return true end
+local function NetTouch (event)
+	event.target.m_caught = true
+
+	return true
+end
 
 -- Removes nets whose object is invisible or has been removed
 local function WatchNets ()
 	for net, object in pairs(Nets) do
+		if net.m_caught and net.m_hide_object then
+			object.isVisible = false
+		end
+
 		if not object.isVisible then
 			net:removeSelf()
 
@@ -87,7 +135,8 @@ end
 --- DOCMAYBE
 -- @pgroup group
 -- @pobject object
-function M.AddNet (group, object)
+-- @bool hide
+function M.AddNet (group, object, hide)
 	if not Nets then
 		Nets = {}
 
@@ -95,6 +144,8 @@ function M.AddNet (group, object)
 	end
 
 	local net = display.newRect(group, 0, 0, display.contentWidth, display.contentHeight)
+
+	net.m_hide_object = not not hide
 
 	net:addEventListener("touch", NetTouch)
 	net:setFillColor(255, 32)
@@ -192,7 +243,7 @@ function M.CleanUp ()
 		Runtime:removeEventListener("enterFrame", WatchNets)
 	end
 
-	BackBindings, Bindings, Buttons, Nets = nil
+	BackBindings, Bindings, Buttons, Help, Nets = nil
 end
 
 --- Copies into one table from another.
@@ -291,7 +342,7 @@ end
 -- @pobject object Object to frame.
 -- @byte r Red...
 -- @byte g ...green...
--- @byte b ...and blue components
+-- @byte b ...and blue components.
 -- @pgroup group Group to which frame is added; if absent, _object_'s parent.
 -- @treturn DisplayObject Rect object.
 function M.Frame (object, r, g, b, group)
@@ -338,8 +389,17 @@ function M.GetDims ()
 	return NCols, NRows
 end
 
--- Common "current selection" position --
-local CurrentX, CurrentY
+-- --
+local HelpContext
+
+--- DOCME
+function M.GetHelp (func, context)
+	for k, v in M.PairsIf(Help[context or HelpContext]) do
+		local text = v.text
+
+		func(k, type(text) == "table" and M.CopyInto({}, text) or text, v.binding)
+	end
+end
 
 --- DOCME
 function M.GetTag (etype, on_editor_event)
@@ -369,6 +429,9 @@ function M.GetTag (etype, on_editor_event)
 	return tname
 end
 
+-- Common "current selection" position --
+local CurrentX, CurrentY
+
 --- Initializes various state used pervasively by the editor.
 -- @uint ncols How many columns will be in the working level...
 -- @uint nrows ...and how many rows?
@@ -383,7 +446,7 @@ function M.Init (ncols, nrows)
 		Buttons.Verify.alpha = .4
 	end
 
-	BackBindings, Bindings, IsDirty, IsVerified = {}, {}, false, false
+	BackBindings, Bindings, Help, IsDirty, IsVerified = {}, {}, {}, false, false
 end
 
 --
@@ -569,6 +632,31 @@ function M.PairsIf (t, ktype)
 	end
 end
 
+--- DOCME
+function M.Proxy (group, ...)
+	local minx, miny, maxx, maxy
+
+	for _, widget in M.IpairsIf{ ... } do
+		local bounds = widget.contentBounds
+
+		if minx then
+			minx, miny, maxx, maxy = min(minx, bounds.xMin), min(miny, bounds.yMin), max(maxx, bounds.xMax), max(maxy, bounds.yMax)
+		else
+			minx, miny, maxx, maxy = bounds.xMin, bounds.yMin, bounds.xMax, bounds.yMax
+		end
+	end
+
+	if minx then
+		local rect = display.newRect(group, minx, miny, maxx - minx, maxy - miny)
+
+		rect.isVisible = false
+
+		rect.m_is_proxy = true
+
+		return rect
+	end
+end
+
 --- Gets the content rect of an object.
 -- @pobject object Reference object.
 -- @treturn number Upper-left x-coordinate...
@@ -626,6 +714,15 @@ end
 --- DOCME
 function M.SetChoice (choice)
 	CurrentChoice = choice
+end
+
+--- DOCME
+function M.SetHelpContext (what)
+	local cur = HelpContext
+
+	HelpContext = what
+
+	return cur
 end
 
 --- Shows or hides the current selection widget. As a convenience, the last position of a

@@ -47,6 +47,13 @@ local CommonOps = grid.EditErase(Dialog, dots.GetTypes())
 -- @pgroup view X
 function M.Load (view)
 	CommonOps("load", view, "Dot", "Current dot")
+
+	common.AddHelp("Dot", {
+		current = "The current dot type. When painting, cells are populated with this dot.",
+		["tabs:1"] = "'Paint Mode' is used to add new dots to the level, by clicking a grid cell or dragging across the grid.",
+		["tabs:2"] = "'Edit Mode' lets the user edit a dot's properties. Clicking an occupied grid cell will call up a dialog.",
+		["tabs:3"] = "'Erase Mode' is used to remove dots from the level, by clicking an occupied grid cell or dragging across the grid."
+	})
 end
 
 --
@@ -58,6 +65,8 @@ end
 -- @pgroup view
 function M.Enter (view)
 	CommonOps("enter", view, GridFunc)
+
+	common.SetHelpContext("Dot")
 end
 
 --- DOCME

@@ -13,7 +13,7 @@
 -- building blocks in @{editor.Common} and @{editor.Dialog}. View-agnostic operations are
 -- found in @{editor.Ops} and are used to implement various core behaviors in this scene.
 --
--- TODO: Mention enter_menus; also load_level_wip, save_level_wip, level_wip_opened, level_wip_closed events...
+-- @todo Mention enter_menus; also load_level_wip, save_level_wip, level_wip_opened, level_wip_closed events...
 
 --
 -- Permission is hereby granted, free of charge, to any person obtaining
@@ -139,6 +139,9 @@ local TestLevelName = "?TEST?"
 -- --
 local CommonTagsLoaded
 
+-- --
+local HelpOpts = { isModal = true }
+
 -- Enter Scene --
 function Scene:enterScene (event)
 	scenes.SetListenFunc(Listen)
@@ -175,6 +178,8 @@ function Scene:enterScene (event)
 	end
 
 	-- Load sidebar buttons for editor operations.
+	local sidebar = {}
+
 	for i, func, text in iterators.ArgsByN(2,
 		scenes.WantsToGoBack, "Back",
 
@@ -232,9 +237,18 @@ function Scene:enterScene (event)
 		ops.Verify, "Verify",
 
 		-- Save the working version of the level --
-		ops.Save, "Save"
+		ops.Save, "Save",
+
+		-- Bring up a help overlay --
+		function()
+			storyboard.showOverlay("overlay.Help", HelpOpts)
+		end, "Help"
 	) do
 		local button = button.Button(self.view, nil, 10, display.contentHeight - i * 65 - 5, 100, 50, func, text)
+
+		if text ~= "Help" and text ~= "Back" then
+			sidebar[text] = button
+		end
 
 		-- Add some buttons to a list for e.g. graying out.
 		if text == "Save" or text == "Verify" then
@@ -249,6 +263,15 @@ function Scene:enterScene (event)
 	common.Init(params.main[1], params.main[2])
 	grid.Init(self.view)
 	ops.Init(self.view)
+
+	--
+	common.AddHelp("Common", {
+		Test = "Builds the level. If successful, launches the level in the game.",
+		Build = "Verifies the scene. If is passes, builds it in game-loadable form.",
+		Verify = "Checks the scene for errors that would prevent a build.",
+		Save = "Saves the current work-in-progress scene."
+	})
+	common.AddHelp("Common", sidebar)
 
 	-- Install the views.
 	for _, view in pairs(EditorView) do

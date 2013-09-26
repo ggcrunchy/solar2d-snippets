@@ -47,20 +47,24 @@ function M.Load (view)
 		is_checked = true
 	})
 	-- Warning level?
+	-- Replicate save to clipboard, console, log file, nothing?
 	-- Other?
+	-- common.AddHelp("settings", ...)
 end
 
----
+--- DOCMAYBE
 function M.Enter ()
 	ShowLayers.isVisible = true
+
+	common.SetHelpContext("settings")
 end
 
----
+--- DOCMAYBE
 function M.Exit ()
 	ShowLayers.isVisible = false
 end
 
----
+--- DOCMAYBE
 function M.Unload ()
 	ShowLayers = nil
 end

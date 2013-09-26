@@ -92,35 +92,46 @@ local function FitTo (rep, ul, lr)
 end
 
 --
-local function SetColors (handle, grabbed)
-	local comp = grabbed and 0 or 255
-
-	handle:setFillColor(255, comp, comp, 64)
-	handle:setStrokeColor(comp, comp, 255, 128)
+local function SetHandle (handle, tile, scale)
+	handle.x = tile.x + scale * (tile.contentWidth - handle.width)
+	handle.y = tile.y + scale * (tile.contentHeight - handle.height)
 end
 
 --
-local function SetHandle (handle, x, y, w, h)
-	handle.x, handle.width = x, w
-	handle.y, handle.height = y, h
+local function GetCorners (block)
+	local ul = Tiles[common.ToKey(block.col1, block.row1)].image
+	local lr = Tiles[common.ToKey(block.col2, block.row2)].image
+
+	return ul, lr
+end
+
+--
+local function CenterRect (rect, ul, lr)
+	rect.x, rect.width = (ul.x + lr.x) / 2, lr.x - ul.x + lr.contentWidth
+	rect.y, rect.height = (ul.y + lr.y) / 2, lr.y - ul.y + lr.contentHeight
 end
 
 --
 local function UpdateHandles (block)
-	local ul = Tiles[common.ToKey(block.col1, block.row1)].image
-	local lr = Tiles[common.ToKey(block.col2, block.row2)].image
-	local midx, w = (ul.x + lr.x) / 2, max(lr.x - ul.x, 35)
-	local midy, h = (ul.y + lr.y) / 2, max(lr.y - ul.y, 25)
+	local ul, lr = GetCorners(block)
 
-	SetHandle(block[1], midx, ul.y - 5, w, 15)
-	SetHandle(block[2], ul.x - 20, midy, 15, h)
-	SetHandle(block[3], lr.x + 20, midy, 15, h)
-	SetHandle(block[4], midx, lr.y + 5, w, 15)
+	if ID then
+		CenterRect(block.selection, ul, lr)
+	else
+		SetHandle(block[1], ul, -.5)
+		SetHandle(block[2], lr, .5)
+	end
 
-	for i = 1, 4 do
-		ul.parent:insert(block[i])
+	if not block[3] then
+		block[3] = display.newGroup()
 
-		block[i]:toBack()
+		ul.parent:insert(block[3])
+	
+		block[3]:toBack()
+
+		for i = 1, 2 do
+			block[3]:insert(block[i])
+		end
 	end
 
 	if block.rep then
@@ -128,32 +139,103 @@ local function UpdateHandles (block)
 	end
 end
 
+-- --
+local Col1, Col2, Row1, Row2
+
+--
+local function GetColsRows ()
+	return min(Col1, Col2), min(Row1, Row2), max(Col1, Col2), max(Row1, Row2)
+end
+
+--
+local function WipeBlock (block)
+	for row = block.row1, block.row2 do
+		for col = block.col1, block.col2 do
+			local key = common.ToKey(col, row)
+			local tile = Tiles[key]
+
+			if tile then
+				block.cache:insert(tile.image)
+				block.cache:insert(tile.id_str)
+
+				Tiles[key] = nil
+			end
+		end
+	end
+end
+
+--
+local function TouchBlock (block, name, old_name)
+	Name = name
+
+	local coffset, roffset = grid.GetOffsets()
+	local cells = grid.Get()
+
+	for row = block.row1, block.row2 do
+		for col = block.col1, block.col2 do
+			cells:TouchCell(col - coffset, row - roffset)
+		end
+	end
+
+	Name = old_name
+end
+
+--
+local function UpdateBlock (block)
+	WipeBlock(block)
+
+	block.col1, block.row1, block.col2, block.row2 = GetColsRows()
+
+	TouchBlock(block, "fill", Name)
+
+	common.Dirty()
+end
+
 --
 local HandleTouch = touch.TouchHelperFunc(function(event, handle)
 	handle.m_x, handle.m_y = event.x, event.y
 
-	SetColors(handle, true)
+	local block = Blocks[handle.m_id]
+	local hgroup = block[3]
+
+	block.selection = display.newRoundedRect(hgroup.parent, 0, 0, 35, 35, 15)
+
+	CenterRect(block.selection, GetCorners(block))
+
+	block.selection:setFillColor(224, 0, 0, 16)
+	block.selection:setStrokeColor(255, 0, 0)
+	block.selection:toBack()
+
+	block.selection.strokeWidth = 5
+
+	hgroup.isVisible, Col1, Col2, Row1, Row2 = false, block.col1, block.col2, block.row1, block.row2
 end, function(event, handle)
 	CanFill, ID, Name = true, handle.m_id, handle.m_name
 
 	grid.Get():TouchXY(handle.m_x, handle.m_y, event.x, event.y)
 
+	UpdateBlock(Blocks[ID])
 	UpdateHandles(Blocks[ID])
 end, function(_, handle)
-	CanFill, ID, Name = nil
+	local block = Blocks[ID]
+	local hgroup = block[3]
 
-	SetColors(handle, false)
+	block.selection:removeSelf()
+
+	hgroup.isVisible, CanFill, ID, Name = true
+
+	UpdateHandles(block)
 end)
 
 --
 local function AddHandle (block, name, id)
-	local handle = display.newRoundedRect(0, 0, 20, 20, 12)
+	local handle = display.newCircle(0, 0, 12)
 
 	handle:addEventListener("touch", HandleTouch)
+	handle:setFillColor(255, 0, 0, 64)
+	handle:setStrokeColor(0, 0, 255, 128)
 
-	handle.strokeWidth = 2
-
-	SetColors(handle, false)
+	handle.strokeWidth = 3
 
 	handle.m_id = id
 	handle.m_name = name
@@ -168,10 +250,8 @@ local function ShowHandles (block, group, id)
 	
 	--
 	elseif group then
-		AddHandle(block, "row1", id)
-		AddHandle(block, "col1", id)
-		AddHandle(block, "col2", id)
-		AddHandle(block, "row2", id)
+		AddHandle(block, "ul", id)
+		AddHandle(block, "lr", id)
 
 		UpdateHandles(block)
 
@@ -257,21 +337,57 @@ function M.Load (view)
 	CurrentEvent:toFront()
 
 	common.ShowCurrent(CurrentEvent, false)
+
+	--
+	common.AddHelp("EventBlock", { current = CurrentEvent, tabs = Tabs })
+	common.AddHelp("EventBlock", {
+		current = "The current event block type. When painting, cells are populated with this event block.",
+		["tabs:1"] = "'Paint Mode' is used to add new event blocks to the level, by clicking an unoccupied grid cell or dragging across the grid.",
+		["tabs:2"] = "'Edit Mode' lets the user edit an event block's properties. Clicking any occupied grid cell will call up a dialog.",
+		["tabs:3"] = "'Stretch Mode' is used to change an event block's area. Click and drag either of the two handles at the current corners.",
+		["tabs:4"] = "'Erase Mode' is used to remove event blocks from the level, by clicking any occupied grid cell or dragging across the grid."
+	})
+end
+
+--
+local function GetCache (block, group)
+	local cache, n = block.cache
+
+	if not cache then
+		cache, n = display.newGroup(), 0
+
+		group:insert(cache)
+
+		block.cache, cache.isVisible = cache, false
+	else
+		n = cache.numChildren
+	end
+
+	return cache, n
 end
 
 --
 local function AddImage (group, key, id, x, y, w, h, hide)
-	local image = sheet.NewImage(group, TileImages, x, y, w, h)
+	local block, cx, cy = Blocks[id], x + w / 2, y + h / 2
+	local cache, n = GetCache(block, group)
+	local image = n > 0 and cache[n - 1] or sheet.NewImage(group, TileImages, 0, 0, w, h)
 
-	sheet.SetSpriteSetImageFrame(image, events.GetIndex(Types, Blocks[id].info.type))
+	image.x, image.y = cx, cy
+
+	sheet.SetSpriteSetImageFrame(image, events.GetIndex(Types, block.info.type))
 
 	image.isVisible = not hide
+-- TODO (make this a block thing? the rep?)
+	local id_str = n > 0 and cache[n] or display.newText(group, id, 0, 0, native.systemFontBold, 32)
 
-	local id_str = display.newText(group, id, 0, y, native.systemFontBold, 32)
-
-	id_str.x = x + w / 2
+	id_str.x, id_str.y = cx, cy
 
 	id_str:setTextColor(0, 255, 0)
+-- /TODO
+	if n > 0 then
+		group:insert(image)
+		group:insert(id_str)
+	end
 
 	Tiles[key] = { image = image, id_str = id_str, id = id }
 
@@ -333,39 +449,6 @@ local function FindFreeID ()
 end
 
 --
-local function WipeBlock (block)
-	for row = block.row1, block.row2 do
-		for col = block.col1, block.col2 do
-			local key = common.ToKey(col, row)
-			local tile = Tiles[key]
-
-			if tile then
-				tile.image:removeSelf()
-				tile.id_str:removeSelf()
-
-				Tiles[key] = nil
-			end
-		end
-	end
-end
-
---
-local function TouchBlock (block, name, old_name)
-	Name = name
-
-	local coffset, roffset = grid.GetOffsets()
-	local cells = grid.Get()
-
-	for row = block.row1, block.row2 do
-		for col = block.col1, block.col2 do
-			cells:TouchCell(col - coffset, row - roffset)
-		end
-	end
-
-	Name = old_name
-end
-
---
 local function GridFunc (group, col, row, x, y, w, h)
 	local key = common.ToKey(col, row)
 	local tile = Tiles[key]
@@ -408,6 +491,8 @@ local function GridFunc (group, col, row, x, y, w, h)
 			common.BindToElement(Blocks[id].rep, nil)
 			display.remove(Blocks[id].rep)
 
+			Blocks[id].cache:removeSelf()
+
 			Blocks[id] = false
 
 			common.Dirty()
@@ -419,38 +504,16 @@ local function GridFunc (group, col, row, x, y, w, h)
 
 	--
 	elseif CanFill then
-		--
-		local block, value = Blocks[ID]
+		local col1, row1, col2, row2 = GetColsRows()
 
-		if Name == "col1" or Name == "col2" then
-			if Name == "col1" then
-				CanFill = col <= block.col2
+		CanFill = CheckCol(col, row1, row2) and CheckRow(row, col1, col2)
+
+		if CanFill then
+			if Name == "ul" then
+				Col1, Row1 = col, row
 			else
-				CanFill = col >= block.col1 
+				Col2, Row2 = col, row
 			end
-
-			CanFill, value = CanFill and CheckCol(col, block.row1, block.row2), col
-
-		else
-			if Name == "row1" then
-				CanFill = row <= block.row2
-			else
-				CanFill = row >= block.row1
-			end
-
-			CanFill, value = CanFill and CheckRow(row, block.col1, block.col2), row
-		end
-
-		--
-		if CanFill and value ~= block[Name] then
-			WipeBlock(block)
-
-			--
-			block[Name] = value
-
-			TouchBlock(block, "fill", Name)
-
-			common.Dirty()
 		end
 	end
 end
@@ -462,6 +525,8 @@ function M.Enter ()
 	common.ShowCurrent(CurrentEvent, Option == "Paint")
 
 	Tabs.isVisible = true
+
+	common.SetHelpContext("EventBlock")
 end
 
 --- DOCMAYBE

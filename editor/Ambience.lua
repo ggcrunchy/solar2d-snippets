@@ -31,7 +31,13 @@
 -- Pick background pattern?
 -- Song??? Non-pattern background???
 
+-- Could add sound effects, other music with event_target tags
+
 -- BACKGROUND: full image, part of image, full image in zone, part of image in zone
+
+-- ^^ Wrap up audio stuff from this module into "music" object?
+-- ^^ Then use in game, hook up here in editor to events
+-- ^^ Try some of the ideas I've been thinking of, for patterns
 
 -- Standard library imports --
 local ipairs = ipairs
@@ -97,7 +103,6 @@ end
 -- --
 local Base = system.getInfo("platformName") == "Android" and system.DocumentsDirectory or system.ResourceDirectory
 -- ^^ TODO: Documents -> Caches?
-
 -- --
 local Names
 
@@ -200,6 +205,10 @@ function M.Load (view)
 
 	SetCurrent(nil)
 
+	local widgets, n = {
+		current = CurrentText, list = Songs, play_or_stop = PlayOrStop
+	}, Group.numChildren
+
 	button.Button(Group, nil, w - 280, h - 70, 120, 50, function()
 		SetCurrent(Offset)
 	end, "Set")
@@ -208,11 +217,12 @@ function M.Load (view)
 		SetCurrent(nil)
 	end, "Clear")
 
-	-- TODO: Might need adjusting
-	utils.AddDirectory("Music", Base)
+	widgets.set, widgets.clear = Group[n + 1], Group[n + 2]
 
 	--
 	if OnDevice then -- TODO: Make this handle non-Android intelligently too...
+		utils.AddDirectory("Music", system.DocumentsDirectory)
+
 		--
 		local ipath = system.pathForFile("MusicIndex.txt") -- TODO: Formalize in persistence?
 		local ifile = ipath and open(ipath, "rt")
@@ -242,6 +252,8 @@ function M.Load (view)
 				ifile:close()
 			end
 		end, "Bake index file")
+
+		widgets.bake = Group[n + 3]
 	end
 
 	--
@@ -257,6 +269,17 @@ function M.Load (view)
 	Group.isVisible = false
 
 	view:insert(Group)
+
+	--
+	common.AddHelp("Ambience", widgets)
+	common.AddHelp("Ambience", {
+		bake = "Bakes a list of available songs for Android, to account for no resource directory.",
+		current = "What is the 'current' selection?",
+		list = "A list of available songs.",
+		play_or_stop = "If music is playing, stops it. Otherwise, plays the 'current' selection, if available.",
+		set = "Make the selected item in the songs list into the 'current' selection.",
+		clear = "Clear the 'current' selection."
+	})
 end
 
 ---
@@ -274,16 +297,18 @@ function M.Enter (view)
 	SetText(PlayOrStop[2], "Play")
 
 	Group.isVisible = true
+
+	common.SetHelpContext("Ambience")
 end
 
----
+--- DOCMAYBE
 function M.Exit ()
 	CloseStream()
 
 	Group.isVisible = false
 end
 
----
+--- DOCMAYBE
 function M.Unload ()
 	timer.cancel(WatchMusicFolder)
 

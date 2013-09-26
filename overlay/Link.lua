@@ -113,7 +113,7 @@ local List, Node
 local SetCurrent
 
 --
-function Overlay:createScene (event)
+function Overlay:createScene ()
 	--
 	self.m_shade = display.newRect(self.view, 0, 0, display.contentWidth, display.contentHeight)
 

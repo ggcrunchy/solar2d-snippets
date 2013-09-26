@@ -23,6 +23,9 @@
 -- [ MIT license: http://www.opensource.org/licenses/mit-license.php ]
 --
 
+-- Standard library imports --
+local ipairs = ipairs
+
 -- Modules --
 local common = require("editor.Common")
 local config = require("config.GlobalEvents")
@@ -59,17 +62,16 @@ local function GridFunc (group, col, row, x, y, w, h)
 	--
 	if group ~= "show" and group ~= "hide" then
 		if not StartPos then
-			StartPos = display.newCircle(group, 0, 0, 14)
+			StartPos = display.newImage(group, "SoSo_Assets/StartPos.png", 0, 0)
 
-			StartPos.strokeWidth = 3
-
-			StartPos:setStrokeColor(255, 0, 0)
+			StartPos.xScale = w / StartPos.width
+			StartPos.yScale = h / StartPos.height
 		end
 
 		if col ~= StartPos.m_col or row ~= StartPos.m_row then
 			StartPos.m_col, StartPos.x = col, x + w / 2
 			StartPos.m_row, StartPos.y = row, y + h / 2
-
+-- grid event?
 			common.Dirty()
 		end
 	end
@@ -161,9 +163,16 @@ function M.Load (view)
 
 	--
 	grid.Show(false)
+
+	--
+	common.AddHelp("General", { tabs = Tabs })
+	common.AddHelp("General", {
+		["tabs:1"] = "'Start' is used to choose where the player will first appear in the level.",
+		["tabs:2"] = "'Events' lists the global event sources and targets available for linking. Clicking on one will open the link dialog."
+	})
 end
 
----
+--- DOCMAYBE
 function M.Enter ()
 	if Option == "Start" then
 		grid.Show(GridFunc)
@@ -172,16 +181,18 @@ function M.Enter ()
 	-- Zoom factors?
 
 	Events.isVisible, Tabs.isVisible = Option == "Events", true
+
+	common.SetHelpContext("General")
 end
 
----
+--- DOCMAYBE
 function M.Exit ()
 	Events.isVisible, Tabs.isVisible = false, false
 
 	grid.Show(false)
 end
 
----
+--- DOCMAYBE
 function M.Unload ()
 	Tabs:removeSelf()
 
