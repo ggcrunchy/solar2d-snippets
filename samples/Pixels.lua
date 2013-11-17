@@ -88,7 +88,7 @@ local ColorParams = {
 
 --
 local function SetColor (color)
-	color.r, color.g, color.b = 20 + random(235), 20 + random(235), 20 + random(235)
+	color.r, color.g, color.b = random(20, 255) / 255, random(20, 255) / 255, random(20, 255) / 255
 end
 
 -- --
@@ -162,16 +162,15 @@ function Scene:enterScene ()
 
 	--
 	self.isheet = pixels.GetPixelSheet()
-	self.igroup = display.newImageGroup(self.isheet)
+	self.igroup = display.newGroup()--ImageGroup(self.isheet)
 
 	self.groups:insert(self.igroup)
 
 	--
 	self.text = display.newText(self.view, "Allocating pixels...", 0, 0, native.systemFontBold, 20)
 
-	self.text:setReferencePoint(display.BottomRightReferencePoint)
-
-	self.text.x, self.text.y = display.contentWidth - 20, display.contentHeight - 20
+	self.text.anchorX, self.text.x = 1, display.contentWidth - 20
+	self.text.anchorY, self.text.y = 1, display.contentHeight - 20
 
 	--
 	self.back = display.newGroup()
@@ -205,7 +204,7 @@ function Scene:enterScene ()
 		end
 	end
 
-	self.render = timer.performWithDelay(10, function(event)
+	self.render = timer.performWithDelay(80, function(event)
 		--
 		if color.waiting then
 			SetColor(ColorParams)
@@ -257,7 +256,7 @@ function Scene:enterScene ()
 			if not dlight then
 				dlight = display.newCircle(0, 0, 15)
 
-				dlight:setStrokeColor(255, 255, 255, 64)
+				dlight:setStrokeColor(1, 1, 1, .25)--255, 255, 255, 64)
 
 				dlight.strokeWidth, dlight.t = 3, 1
 
@@ -332,7 +331,7 @@ function Scene:enterScene ()
 						local len = sqrt(xx * xx + y2 + zz * zz)
 						local k = min(.5 * (ux * xx + ydot + uz * zz) / len + .5, 1)
 
-						pixel:setFillColor(20 + k * 235, 35 + k * 220, 20 + k * 235)
+						pixel:setFillColor(.09 + k * .91, .11 + k * .89, .09 + k * .91)
 
 						ux, xx = ux + dx, xx + dxr
 					end
@@ -372,7 +371,8 @@ function Scene:enterScene ()
 		for _ = 1, active and min(nloaded + 20, area_sum) - nloaded or 0 do
 			local pixel = display.newImage(self.igroup, self.isheet, 1)
 
-			pixel:setReferencePoint(display.TopLeftReferencePoint)
+			pixel.anchorX = 0
+			pixel.anchorY = 0
 
 			pixel.width, pixel.height, pixel.isVisible = PixelWidth, PixelHeight, false
 

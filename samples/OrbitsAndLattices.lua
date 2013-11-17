@@ -118,7 +118,7 @@ local function SetupCircle (circle, w, h, ignore_put)
 	local path = display.newCircle(circle.parent, circle.m_cx, circle.m_cy, circle.m_radius)
 
 	path:setFillColor(0, 0)
-	path:setStrokeColor(0, 128, 128)
+	path:setStrokeColor(0, .5, .5)
 
 	path.strokeWidth = 2
 
@@ -207,12 +207,12 @@ function Scene:enterScene ()
 		if not mid then
 			mid = display.newCircle(self.view, 0, 0, 8)
 
-			mid.m_r, mid.m_g, mid.m_b = 32 + random(128), 32 + random(128), 32 + random(128)
+			mid.m_r, mid.m_g, mid.m_b = .125 + random() * .5, .125 + random() * .5, .125 + random() * .5
 			mid.m_group = display.newGroup()
 
 			self.view:insert(mid.m_group)
 
-			mid:setFillColor(192, 0, 192)
+			mid:setFillColor(.75, 0, .75)
 		end
 
 		--

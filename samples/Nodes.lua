@@ -75,7 +75,7 @@ end
 -- Highlights / de-highlights a link
 local function Highlight (link, is_over)
 	if link then
-		link:setStrokeColor(is_over and 255 or 0, 255, 0)
+		link:setStrokeColor(is_over and 1 or 0, 1, 0)
 	end
 end
  
@@ -126,11 +126,11 @@ end, nil, function(_, node)
 end)
  
 -- Options for a temporary line --
-local LineOptsMaybe = { color = { 255, 64, 64, 192 } }
+local LineOptsMaybe = { color = { 1, .25, .25, .75 } }
  
 -- Options for established lines --
 local LineOpts = {
-	color = { 255, 255, 255, 128 },
+	color = { 1, 1, 1, .5 },
 
 	keep = function(_, _, node)
 		return not node.m_broken
@@ -169,7 +169,7 @@ local LinkTouch = touch.TouchHelperFunc(function(event, link)
 
 	Temp = display.newCircle(event.x, event.y, 5)
 
-	Temp:setFillColor(255, 32)
+	Temp:setFillColor(1, .125)
 
 	Temp.strokeWidth = 2
 
@@ -188,8 +188,8 @@ end, function(event, link)
 		local node = display.newCircle(0, 0, 16)
 
 		node:addEventListener("touch", NodeTouch)
-		node:setFillColor(255, 0, 0, 128)
-		node:setStrokeColor(0, 192)
+		node:setFillColor(1, 0, 0, .5)
+		node:setStrokeColor(0, .75)
 
 		node.strokeWidth = 3
 
@@ -210,14 +210,14 @@ end)
 -- Builds a receive- or send-type link
 local function NewLink (group, type, x, row)
 	local link = display.newCircle(group, x, -12 + row * 55, 25)
-	local r, b = 255, 32
+	local r, b = 1, .125
 
 	if type == "send" then
 			r, b = b, r
 	end
 
 	link:addEventListener("touch", LinkTouch)
-	link:setFillColor(r, 32, b, 192)
+	link:setFillColor(r, .125, b, .75)
 
 	link.strokeWidth = 4
 
@@ -233,13 +233,17 @@ local DragTouch = touch.DragParentTouch()
 local function NewState (group, text)
 	local state = display.newRoundedRect(group, 0, 0, 100, 70, 12)
 
-	display.newText(group, text, 20, 10, native.systemFont, 20)
-
 	state:addEventListener("touch", DragTouch)
-	state:setFillColor(64)
-	state:setStrokeColor(32)
+	state:setFillColor(.25)
+	state:setStrokeColor(.125)
 
+	state.anchorX, state.anchorY = 0, 0
 	state.strokeWidth = 2
+
+	local text = display.newText(group, text, 0,0, native.systemFont, 20)
+
+	text.anchorX, text.x = 0, 20
+	text.anchorY, text.y = 0, 10
 end
  
 --

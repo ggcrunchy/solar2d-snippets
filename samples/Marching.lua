@@ -101,13 +101,13 @@ local function LaunchTimer ()
 	end)
 
 	local spread = circle.SpreadOut(HalfX, HalfY, function(x, y, radius)
-		local rect = Rect(RectGroup, x, y, 255, 0, 0)
+		local rect = Rect(RectGroup, x, y, 1, 0, 0)
 
 		Setter(x, y, radius)
 
 		local text = display.newText(RectGroup, ("%i"):format(radius), 0, 0, native.systemFontBold, 20)
 
-		text:setTextColor(0, 255)
+		text:setFillColor(0, 1)
 
 		text.x, text.y = rect.x, rect.y
 	end)
@@ -138,9 +138,9 @@ function Scene:enterScene ()
 
 		Boundary = line_ex.NewLine(self.view)
 
-		Boundary:setColor(0, 255, 0)
+		Boundary:setStrokeColor(0, 1, 0)
 
-		Boundary.width = 5	
+		Boundary.strokeWidth = 5	
 
 		Marcher(How, 99)
 	end, 0)

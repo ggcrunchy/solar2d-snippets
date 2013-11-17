@@ -359,7 +359,9 @@ local function NewWord (view, params)
 	WordFade = transition.to(text, params)
 
 	-- Line the word up.
-	text:setReferencePoint(display.BottomLeftReferencePoint)
+	text.anchorX = 0
+	text.anchorY = 1
+--	text:setReferencePoint(display.BottomLeftReferencePoint)
 
 	local left = Right + WordPadding
 

@@ -54,13 +54,13 @@ function Scene:enterScene ()
 			return "cancel"
 		elseif event.m_elapsed > 7000 then
 			what, t = "tschir2", (event.m_elapsed - 7000) / 3000
-			r, g, b = 255, 0, 0
+			r, g, b = 1, 0, 0
 		elseif event.m_elapsed > 3500 then
 			what, t = "tschir", (event.m_elapsed - 3500) / 3000
-			r, g, b = 0, 255, 0
+			r, g, b = 0, 1, 0
 		else
 			what, t = "scubic", event.m_elapsed / 3000
-			r, g, b = 0, 0, 255
+			r, g, b = 0, 0, 1
 		end
 
 		if what == "scubic" then
@@ -74,8 +74,8 @@ function Scene:enterScene ()
 		if what ~= self.last then
 			display.remove(self.text)
 			self[what] = display.newLine(self.view, 300, 300, 300 + a * x, 300 + a * y)
-			self[what]:setColor(r, g, b)
-			self[what].width = 4
+			self[what]:setStrokeColor(r, g, b)
+			self[what].strokeWidth = 4
 			self.text = display.newText(self.view, "Current curve: " .. what, 250, 30, native.systemFont, 20)
 			self.last = what
 		else

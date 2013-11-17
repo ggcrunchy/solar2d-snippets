@@ -120,7 +120,7 @@ end
 -- Main checkbox skin --
 skins.AddToDefaultSkin("checkbox", {
 	backcolor = "white",
-	bordercolor = { 128, 0, 128 },
+	bordercolor = { .5, 0, .5 },
 	borderwidth = 4,
 	image = "UI_Assets/Check.png",
 	radius = 12

@@ -140,9 +140,7 @@ local CX
 local function SetCurrent (current, index)
 	current.text = "Current: " .. Names[index]
 
-	current:setReferencePoint(display.CenterLeftReferencePoint)
-
-	current.x = CX
+	current.anchorX, current.x = 0, CX
 
 	current.m_id = index
 end

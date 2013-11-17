@@ -348,7 +348,7 @@ local function EnterFrame ()
 	if not scene.trace then
 		scene.trace = display.newCircle(scene.view, 0, 0, 10)
 
-		scene.trace:setFillColor(0, 0, 255)
+		scene.trace:setFillColor(0, 0, 1)
 	end
 
 	scene.trace.x, scene.trace.y = cx / n, cy / n
@@ -357,7 +357,7 @@ end
 --
 function Scene:enterScene ()
 	self.isheet = pixels.GetPixelSheet()
-	self.igroup = display.newImageGroup(self.isheet)
+	self.igroup = display.newGroup()--ImageGroup(self.isheet)
 
 	self.view:insert(self.igroup)
 

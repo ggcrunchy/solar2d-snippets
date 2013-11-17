@@ -84,7 +84,7 @@ local function GetLevelName (func, wip)
 					local str = display.newText(View, "LEVEL NAME", 0, 0, native.systemFontBold, 28)
 
 					keys:SetTarget(str)
-					str:setTextColor(255, 0, 0)
+					str:setFillColor(1, 0, 0)
 
 					common.AddNet(View, keys)
 

@@ -382,7 +382,7 @@ local function AddImage (group, key, id, x, y, w, h, hide)
 
 	id_str.x, id_str.y = cx, cy
 
-	id_str:setTextColor(0, 255, 0)
+	id_str:setFillColor(0, 1, 0)
 -- /TODO
 	if n > 0 then
 		group:insert(image)

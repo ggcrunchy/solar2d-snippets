@@ -301,7 +301,7 @@ function M.Keyboard (group, skin, type, x, y, no_drag)
 			end
 
 			select:setFillColor(0, 0)
-			select:setStrokeColor(0, 255, 0, 192)
+			select:setStrokeColor(0, 1, 0, .75)
 
 			select.strokeWidth = 2
 
@@ -326,7 +326,7 @@ end
 
 -- Main keyboard skin --
 skins.AddToDefaultSkin("keyboard", {
-	backdropcolor = graphics.newGradient({ 64, 64, 64 }, { 192, 192, 192 }, "up"),
+	backdropcolor = graphics.newGradient({ .25, .25, .25 }, { .75, .75, .75 }, "up"),
 	backdropbordercolor = "white",
 	backdropborderwidth = 2,
 	keyskin = nil,

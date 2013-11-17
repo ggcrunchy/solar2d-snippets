@@ -248,8 +248,7 @@ function Scene:enterScene ()
 
 			self.text.text = ("%s%s"):format(text_body, ("."):rep(ndots))
 
-			self.text:setReferencePoint(display.CenterLeftReferencePoint)
-
+			self.text.anchorX = 0
 			self.text.x = 50
 		end
 	end, 50)
@@ -337,7 +336,10 @@ function Scene:enterScene ()
 		--
 		ShowText("Adding bounding rectangle")
 
-		self.rectangle = display.newRect(self.view, minx, miny, maxx - minx, maxy - miny)
+		self.rectangle = display.newRect(self.view, 0, 0, maxx - minx, maxy - miny)
+
+		self.rectangle.anchorX, self.rectangle.x = 0, minx
+		self.rectangle.anchorY, self.rectangle.y = 0, miny
 
 		Hollow(self.rectangle, 255, 0, 0)
 		FadeAndWait(self.rectangle, 400, 600)

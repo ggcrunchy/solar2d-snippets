@@ -104,9 +104,9 @@ end)
 local function AddGridLine (group, skin, x1, y1, x2, y2)
 	local line = display.newLine(group, x1, y1, x2, y2)
 
-	line.width = skin.grid2d_linewidth
+	line.strokeWidth = skin.grid2d_linewidth
 
-	line:setColor(colors.GetColor(skin.grid2d_linecolor))
+	line:setStrokeColor(colors.GetColor(skin.grid2d_linecolor))
 end
 
 -- Cache of simulated touch events --
@@ -241,7 +241,7 @@ end
 
 -- Main 2D grid skin --
 skins.AddToDefaultSkin("grid2d", {
-	backcolor = { 96, 96, 96, 192 },
+	backcolor = { .3, .3, .3, .75 },
 	backopaque = true,
 	linecolor = "white",
 	linewidth = 2

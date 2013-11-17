@@ -32,12 +32,12 @@ local M = {}
 
 -- Registered colors --
 local Colors = {
-	black = { 0, 0, 0, 255 },
+	black = { 0, 0, 0, 1 },
 	clear = { 0, 0, 0, 0 },
-	blue = { 0, 0, 255, 255 },
-	green = { 0, 255, 0, 255 },
-	red = { 255, 0, 0, 255 },
-	white = { 255, 255, 255, 255 }
+	blue = { 0, 0, 1, 1 },
+	green = { 0, 1, 0, 1 },
+	red = { 1, 0, 0, 1 },
+	white = { 1, 1, 1, 1 }
 }
 
 --- WIP

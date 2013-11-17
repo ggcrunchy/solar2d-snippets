@@ -77,7 +77,7 @@ function Scene:enterScene ()
 	-- Another that can be edited
 	-- Squircles or superellipses to round it out
 
-	local inputs = { m = 2, n1 = 2, n2 = 2, n3 = 2, r = 0, g = 0, b = 255, a = 255, waiting = true }
+	local inputs = { m = 2, n1 = 2, n2 = 2, n3 = 2, r = 0, g = 0, b = 1, a = 1, waiting = true }
   
 	self.render = timer.performWithDelay(30, function()
 		--
@@ -88,10 +88,10 @@ function Scene:enterScene ()
 			InputParams.n1 = 5 + random() * 9
 			InputParams.n2 = 1 + random() * 19
 			InputParams.n3 = 1 + random() * 19
-			InputParams.r = random(0, 255)
-			InputParams.g = random(0, 255)
-			InputParams.b = random(0, 255)
-			InputParams.a = random(128, 255)
+			InputParams.r = random()
+			InputParams.g = random()
+			InputParams.b = random()
+			InputParams.a = .5 + random() * .5
 
 			transition.to(inputs, InputParams)
 		end

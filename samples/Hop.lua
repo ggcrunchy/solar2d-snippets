@@ -149,7 +149,7 @@ local function Launch ()
 
 			r.name = "blade"
 
-			r:setFillColor(0, 255 - (i - 1) * 35, 0)
+			r:setFillColor(0, 1 - (i - 1) * .12, 0)
 		end
 		
 		Layers[i] = group
@@ -160,7 +160,7 @@ local function Launch ()
 	--	
 	local ground = display.newRect(Groups, 0, DH - 50, DW, 50)
 
-	ground:setFillColor(128, 32, 32)
+	ground:setFillColor(.5, .125, .125)
 	ground:toFront()
 
 	physics.addBody(ground, "static")
@@ -170,7 +170,7 @@ local function Launch ()
 	--
 	local hopper = display.newRect(Layers[2], 50, DH - 75, 50, 25)
 
-	hopper:setFillColor(32, 128, 32)
+	hopper:setFillColor(.125, .5, .125)
 
 	physics.addBody(hopper)
 
@@ -201,7 +201,7 @@ local function BlowUp (enemy)
 		local burst = display.newCircle(Layers[2], enemy.x + random(-15, 15), enemy.y + random(-15, 15), 5)
 		local scale = 1.5 + random() * 2
 
-		burst:setFillColor(192, 0, random(16, 64))
+		burst:setFillColor(.75, 0, random(.06, .25))
 
 		transition.to(burst, {
 			xScale = scale, yScale = scale,
@@ -223,7 +223,7 @@ local function TakeOff (hopper)
 		physics.removeBody(hopper)
 
 		for i, group in ipairs(Layers) do
-			group:setReferencePoint(display.BottomCenterReferencePoint)
+			group.anchorY = 1
 
 			transition.to(group, HalfScaleParams)
 		end
@@ -245,7 +245,7 @@ local function TakeOff (hopper)
 					})
 
 					while abs(y - hopper.y) > .5 do
-						hopper:setStrokeColor(random(256) - 1, random(256) - 1, random(256) - 1)
+						hopper:setStrokeColor(random(), random(), random())
 
 						yield()
 					end
@@ -276,7 +276,7 @@ local function TakeOff (hopper)
 
 				physics.addBody(enemy)
 
-				enemy:setFillColor(255, random(40, 120), 0)
+				enemy:setFillColor(1, random(.13, .95), 0)
 				enemy:setLinearVelocity(-DW / .5, 0)
 				enemy:applyLinearImpulse(-.175, 0)
 			end

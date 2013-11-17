@@ -91,7 +91,7 @@ local function SetDirections (keep)
 			for dir in movement.Ways(tile) do
 				local arrow = markers.StraightArrow(DebugLayer, dir, x, y, 3)
 
-				arrow:setColor(unpack(Colors[dir]))
+				arrow:setStrokeColor(unpack(Colors[dir]))
 			end
 		end
 	end

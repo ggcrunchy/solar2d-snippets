@@ -51,7 +51,7 @@ local FadeInParams = { time = 700, alpha = 1, transition = easing.outQuad }
 function Scene:enterScene ()
 	local images = sheet.TileImage("Background_Assets/Background.png", 15, 10, 120, 80, 330, 200)
 
-	self.tiles = display.newImageGroup(images)
+	self.tiles = display.newGroup()--ImageGroup(images)
 
 	self.view:insert(self.tiles)
 

@@ -540,8 +540,9 @@ function M.Listbox (group, x, y, options)
 	function lopts.onRowRender (event)
 		local text = display.newText(get_text(event.row.index), 0, 0, native.systemFont, 20)
 
-		text:setReferencePoint(display.CenterLeftReferencePoint)
-		text:setTextColor(0)
+	--	text:setReferencePoint(display.CenterLeftReferencePoint)
+		text.anchorX=0
+		text:setFillColor(0)--TextColor(0)
 
 		text.x, text.y = 15, event.row.height / 2
 

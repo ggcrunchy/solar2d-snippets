@@ -125,11 +125,11 @@ function LineMethods:removeSelf ()
 end
 
 --- DOCME
-function LineMethods:setColor (...)
+function LineMethods:setStrokeColor (...)
 	local n, object = select("#", ...), Object(self)
 
 	if IsLine(object) then
-		object:setColor(...)
+		object:setStrokeColor(...)
 	elseif n > 0 then
 		object.m_r, object.m_g, object.m_b, object.m_a = ...
 		object.m_ncomps = n

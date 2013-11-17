@@ -1,5 +1,5 @@
 --- Slow-mo demo.
- 
+
 --
 -- Permission is hereby granted, free of charge, to any person obtaining
 -- a copy of this software and associated documentation files (the
@@ -44,7 +44,7 @@ local Scene = storyboard.newScene()
 
 --
 function Scene:createScene ()
-	buttons.Button(self.view, nil, 20, 20, 200, 50, scenes.Opener{ name = "scene.Choices" }, "Go Back")
+	buttons.Button(self.view, nil, 120, 75, 200, 50, scenes.Opener{ name = "scene.Choices" }, "Go Back")
 end
 
 Scene:addEventListener("createScene")
@@ -71,7 +71,7 @@ function Scene:enterScene ()
 	for _ = 1, 5 do
 		local circ = display.newCircle(self.group, 0, 0, 25)
 
-		circ:setFillColor(random(64, 255), random(64, 255), random(64, 255))
+		circ:setFillColor(random(.25, 1), random(.25, 1), random(.25, 1))
 
 		PutCircle(circ)
 
@@ -82,9 +82,9 @@ function Scene:enterScene ()
     local object1 = display.newRect(self.group, 200, 200, 50, 50)
     local object2 = display.newRect(self.group, 350, 200, 30, 60)
 
-	object1:setFillColor(0, 0, 255)
-	object2:setFillColor(128, 0, 96)
-	object2:setStrokeColor(0, 255, 0)
+	object1:setFillColor(0, 0, 1)
+	object2:setFillColor(.5, 0, .375)
+	object2:setStrokeColor(0, 1, 0)
 
 	object2.strokeWidth = 3
 
@@ -99,11 +99,12 @@ function Scene:enterScene ()
 		self.group:insert(new)
 		new:toBack()
 
+		new.anchorX, new.anchorY = 0, 0
 		new.alpha = .9
 	end, 0)
 
 	--
-	self.update_objects = timer.performWithDelay(20, function(event)
+	self.update_objects = timer.performWithDelay(50, function(event)
 		object1.rotation = object1.rotation + 1.05
 		object1.x = CenterX + sin(event.time / 900) * display.contentWidth / 3
 		object1.y = CenterY + sin(event.time / 1400) * display.contentHeight / 3

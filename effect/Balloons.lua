@@ -131,7 +131,7 @@ function M.Thought (group, x, y, text, ndots)
 	local ttext = display.newText(tgroup, text, 0, 0, native.systemFontBold, 30)
 	local tw, th = ttext.width, ttext.height
 
-	ttext:setTextColor(0)
+	ttext:setFillColor(0)
 
 	back.x, back.width = x, tw + Diameter
 	back.y, back.height = y - th / 2 - 25, th + Diameter
@@ -183,10 +183,8 @@ function M.Thought (group, x, y, text, ndots)
 
 				ttext.text = text:sub(1, ntext)
 
-				ttext:setReferencePoint(display.TopLeftReferencePoint)
-
-				ttext.x = bounds.xMin + Radius
-				ttext.y = bounds.yMin + Radius
+				ttext.anchorX, ttext.x = 0, bounds.xMin + Radius
+				ttext.anchorY, ttext.y = 0, bounds.yMin + Radius
 			end
 
 			-- Add a little random jitter to each of the dots and edge circles.

@@ -169,7 +169,7 @@ function M.OptionsHGrid (group, skin, x, y, w, h, text)
 	backdrop:setFillColor(GetColor(skin.optiongrid_backdropcolor))
 	backdrop:setStrokeColor(GetColor(skin.optiongrid_backdropbordercolor))
 	choice:setFillColor(GetColor(skin.optiongrid_choicecolor))
-	string:setTextColor(GetColor(skin.optiongrid_textcolor))
+	string:setFillColor(GetColor(skin.optiongrid_textcolor))
 
 	--
 	string.y = string.y - string.height / 2
@@ -309,11 +309,11 @@ end
 
 -- Main option grid skin --
 skins.AddToDefaultSkin("optiongrid", {
-	barcolor = graphics.newGradient({ 0, 0, 64 }, { 0, 0, 255 }),
+	barcolor = graphics.newGradient({ 0, 0, .25 }, { 0, 0, 1 }),
 	barbordercolor = "red",
 	barborderwidth = 2,
-	backdropcolor = graphics.newGradient({ 0, 64, 0 }, { 0, 255, 0 }, "up"),
-	backdropbordercolor = graphics.newGradient({ 64, 0, 0 }, { 255, 0, 0 }, "up"),
+	backdropcolor = graphics.newGradient({ 0, .25, 0 }, { 0, 1, 0 }, "up"),
+	backdropbordercolor = graphics.newGradient({ .25, 0, 0 }, { 1, 0, 0 }, "up"),
 	backdropborderwidth = 2,
 	choicecolor = "red",
 	font = native.systemFont,

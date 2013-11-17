@@ -85,7 +85,7 @@ function C ()
 
 		obj.x = obj.x + 35
 
-		obj:setFillColor(0, 0, 100 + step * 12)
+		obj:setFillColor(0, 0, .4 + step * .04)
 
 		if step == 5 then
 			print("WAITING")

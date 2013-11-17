@@ -43,7 +43,10 @@ function Scene:enterScene ()
 		local x = 25
 
 		for _, item in ipairs{ "Welcome", "To", "The", "Demos!" } do
-			local text = display.newText(self.view, item, x, 20, native.systemFont, 24)
+			local text = display.newText(self.view, item, 0, 20, native.systemFont, 24)
+
+			text.anchorX = 0
+			text.x = x
 
 			flow_ops.Wait(.2)
 

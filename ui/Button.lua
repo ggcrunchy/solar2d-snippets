@@ -222,18 +222,14 @@ function M.Button (group, skin, x, y, w, h, func, text)
 
 	-- Add the button and (partially centered) text, in that order, to the group.
 	local button = Factories[skin.button_type](bgroup, skin, w, h)
-	local string = display.newText(bgroup, text or "", w / 2, h / 2, skin.button_font, skin.button_textsize)
+	local string = display.newText(bgroup, text or "", button.x, button.y, skin.button_font, skin.button_textsize)
 
-	string:setTextColor(GetColor(skin.button_textcolor))
+	string:setFillColor(GetColor(skin.button_textcolor))
 
 	-- Apply any properties to the 
 	button.rotation = skin.button_angle or 0
 	button.xScale = skin.button_xscale or 1
 	button.yScale = skin.button_yscale or 1
-
-	-- Correct the text's centering, now that the dimensions are available.
-	string.x = string.x - string.width / 2
-	string.y = string.y - string.height / 2
 
 	-- Install common button logic.
 	button:addEventListener("touch", OnTouch)
@@ -270,9 +266,9 @@ skins.AddToDefaultSkin("button", {
 
 -- Add some button-specific skins.
 skins.RegisterSkin("rscroll", {
-	normal = { 0, 127, 255 },
-	held = { 255, 63, 0 },
-	touch = { 0, 255, 127 },
+	normal = { 0, .5, 1 },
+	held = { 1, .25, 0 },
+	touch = { 0, 1, .5 },
 	image = "UI_Assets/Arrow.png",
 	type = "image",
 	timeout = .4,

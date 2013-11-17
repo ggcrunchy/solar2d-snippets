@@ -65,7 +65,7 @@ local AA
 function Scene:enterScene ()
 	--
 	self.isheet = pixels.GetPixelSheet()
-	self.igroup = display.newImageGroup(self.isheet)
+	self.igroup = display.newGroup()--ImageGroup(self.isheet)
 
 	self.view:insert(self.igroup)
 
@@ -92,7 +92,7 @@ local C = (col + row) / 8
 				local gc = 128 + 42.333 * (sin(t1 * B) + sin(t2 * B) + sin(t3 * B))
 				local bc = 128 + 42.333 * (sin(t1 * C) + sin(t2 * C) + sin(t3 * C))
 
-				pix[index]:setFillColor(rc, gc, bc)
+				pix[index]:setFillColor(rc / 255, gc / 255, bc / 255)
 
 				index = index + 1
 			end

@@ -199,7 +199,7 @@ end
 function M.NewImageGroup ()
 	ImageSheet = ImageSheet or graphics.newImageSheet("GameTiles/Tiles.png", GameTiles)
 
-	return display.newImageGroup(ImageSheet)
+	return display.newGroup()--ImageGroup(ImageSheet)
 end
 
 ---@uint index Tile index (see the caveat for @{GetTilePos}).
