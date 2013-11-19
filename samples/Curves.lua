@@ -35,6 +35,9 @@ local storyboard = require("storyboard")
 -- Curves demo scene --
 local Scene = storyboard.newScene()
 
+-- HACK! --
+local FIXES = require("FIXES")
+
 --
 function Scene:createScene ()
 	buttons.Button(self.view, nil, 20, 20, 200, 50, scenes.Opener{ name = "scene.Choices" }, "Go Back")
@@ -44,6 +47,10 @@ Scene:addEventListener("createScene")
 
 --
 function Scene:enterScene ()
+	self.cgroup = display.newGroup()
+
+	self.view:insert(self.cgroup)
+
 	self.last = nil
 	self.t = timers.RepeatEx(function(event)
 		local what, t, a, x, y, r, g, b
@@ -73,7 +80,7 @@ function Scene:enterScene ()
 
 		if what ~= self.last then
 			display.remove(self.text)
-			self[what] = display.newLine(self.view, 300, 300, 300 + a * x, 300 + a * y)
+			self[what] = FIXES.LineShim--[[display.newLine]] (self.cgroup, 300, 300, 300 + a * x, 300 + a * y)
 			self[what]:setStrokeColor(r, g, b)
 			self[what].strokeWidth = 4
 			self.text = display.newText(self.view, "Current curve: " .. what, 250, 30, native.systemFont, 20)
@@ -91,11 +98,12 @@ function Scene:exitScene ()
 	timer.cancel(self.t)
 
 	self.t = nil
-
+--[[
 	display.remove(self.scubic)
 	display.remove(self.tschir)
 	display.remove(self.tschir2)
-	display.remove(self.text)
+	display.remove(self.text)]]
+	self.cgroup:removeSelf()
 
 	self.scubic = nil
 	self.tschir = nil

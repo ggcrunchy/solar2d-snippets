@@ -39,7 +39,6 @@ local curves = require("effect.Curves")
 local hilbert = require("fill.Hilbert")
 local line_ex = require("ui.LineEx")
 local numeric_ops = require("numeric_ops")
-local pixels = require("effect.Pixels")
 local scenes = require("game.Scenes")
 local timers = require("game.Timers")
 
@@ -73,9 +72,9 @@ local function MakePolygon (group, points, n)
 	end
 
 	polygon:close()
-	polygon:setColor(R, G, B)
+	polygon:setStrokeColor(R, G, B)
 
-	polygon.width = 3
+	polygon.strokeWidth = 3
 
 	return polygon
 end
@@ -356,8 +355,7 @@ end
 
 --
 function Scene:enterScene ()
-	self.isheet = pixels.GetPixelSheet()
-	self.igroup = display.newGroup()--ImageGroup(self.isheet)
+	self.igroup = display.newGroup()
 
 	self.view:insert(self.igroup)
 
@@ -374,11 +372,9 @@ function Scene:enterScene ()
 		}
 
 		for i = 1, nparts do
-			local rect = display.newImage(self.igroup, self.isheet, 1)
-			local scale = (i - 1) / nparts
+			local rect = display.newRect(self.igroup, 0, 0, 3, 3)
 
 			rect.alpha = .6 - .4 * scale
-			rect.width, rect.height = 3, 3
 			rect.isVisible = false
 
 			trail[i] = rect
@@ -462,7 +458,6 @@ function Scene:exitScene ()
 	display.remove(self.smooth)
 	display.remove(self.trace)
 
-	self.isheet = nil
 	self.polygon = nil
 	self.smooth = nil
 	self.trace = nil

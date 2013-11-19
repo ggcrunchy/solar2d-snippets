@@ -45,6 +45,9 @@ local storyboard = require("storyboard")
 -- Hilbert curve demo scene --
 local Scene = storyboard.newScene()
 
+-- HACK! --
+local FIXES = require("FIXES")
+
 --
 function Scene:createScene ()
 	buttons.Button(self.view, nil, 20, 20, 200, 50, scenes.Opener{ name = "scene.Choices" }, "Go Back")
@@ -77,9 +80,9 @@ function Scene:enterScene ()
 			end
 		}
 
-		self.line = line_ex.NewLine()
+		self.line = FIXES.LineShim(self.view)--line_ex.NewLine()
 
-		self.line.width = 4
+		self.line.strokeWidth = 4
 
 		hilbert.ForEach(6, function(s, x, y, way)
 			local wx, wy = 300 + x * 7, 470 - y * 7
@@ -94,7 +97,7 @@ function Scene:enterScene ()
 				image = display.newRect(self.trail, 0, 0, 15, 15)
 
 				image:setFillColor(0, 0)
-				image:setStrokeColor(35 + random(185), 35 + random(185), 35 + random(185))
+				image:setStrokeColor(.125 + random() * .7, .125 + random() * .7, .125 + random() * .7)
 
 				image.strokeWidth = 2
 			end
@@ -117,7 +120,10 @@ Scene:addEventListener("enterScene")
 
 --
 function Scene:exitScene ()
-	display.remove(self.line)
+	if self.line then
+		self.line:removeSelf()
+	end
+--	display.remove(self.line)
 	timer.cancel(self.timer)
 
 	self.text:removeSelf()

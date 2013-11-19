@@ -42,7 +42,6 @@ local common = require("editor.Common")
 local cubic_spline = require("effect.CubicSpline")
 local grid_iterators = require("grid_iterators")
 local integrators = require("effect.Integrators")
-local pixels = require("effect.Pixels")
 local quaternion_ops = require("quaternion_ops")
 local scenes = require("game.Scenes")
 local timers = require("game.Timers")
@@ -161,8 +160,7 @@ function Scene:enterScene ()
 	self.groups.x, self.groups.y = 20, 100
 
 	--
-	self.isheet = pixels.GetPixelSheet()
-	self.igroup = display.newGroup()--ImageGroup(self.isheet)
+	self.igroup = display.newGroup()
 
 	self.groups:insert(self.igroup)
 
@@ -369,12 +367,10 @@ function Scene:enterScene ()
 		local active = nturns < 5
 
 		for _ = 1, active and min(nloaded + 20, area_sum) - nloaded or 0 do
-			local pixel = display.newImage(self.igroup, self.isheet, 1)
+			local pixel = display.newRect(self.igroup, 0, 0, PixelWidth, PixelHeight)
 
-			pixel.anchorX = 0
-			pixel.anchorY = 0
-
-			pixel.width, pixel.height, pixel.isVisible = PixelWidth, PixelHeight, false
+			pixel.anchorX, pixel.anchorY = 0, 0
+			pixel.isVisible = false
 
 			nloaded, pix[nloaded + 1] = nloaded + 1, pixel
 		end
@@ -404,7 +400,6 @@ function Scene:exitScene ()
 	self.front = nil
 	self.light = nil
 	self.igroup = nil
-	self.isheet = nil
 	self.render = nil
 	self.allocate_pixels = nil
 end
