@@ -119,9 +119,9 @@ local function UpdateLines ()
 				-- Build up the curve, starting with the first point.
 				local seg = line_ex.NewLine(group, p1x, p1y)
 
-				seg:setColor(color.GetColor(line.color))
+				seg:setStrokeColor(color.GetColor(line.color))
 
-				seg.width = line.width
+				seg.strokeWidth = line.width
 
 				-- Add the second through n-th points.
 				for i = second, CurveCount do

@@ -55,7 +55,7 @@ local Scene = storyboard.newScene()
 
 --
 function Scene:createScene ()
-	buttons.Button(self.view, nil, 20, 20, 200, 50, scenes.Opener{ name = "scene.Choices" }, "Go Back")
+	buttons.Button(self.view, nil, 120, 75, 200, 50, scenes.Opener{ name = "scene.Choices" }, "Go Back")
 end
 
 Scene:addEventListener("createScene")
@@ -98,7 +98,7 @@ end
 
 --
 local function GetColor ()
-	return random(32, 255), random(32, 255), random(32, 255)
+	return .125 + random() * .875, .125 + random() * .875, .125 + random() * .875
 end
 
 --
@@ -123,10 +123,10 @@ local function Polyline (name, x, y, to, r, g, b, t1, t2, close)
 
 		local line, xs, ys = line_ex.NewLine(Scene.view), dummy.xScale, dummy.yScale
 
-		line:setColor(r, g, b)
+		line:setStrokeColor(r, g, b)
 
 		line.alpha = dummy.alpha
-		line.width = 3
+		line.strokeWidth = 3
 
 		for i = 1, #to, 2 do
 			line:append(x + (to[i] - x) * xs, y + (to[i + 1] - y) * ys)

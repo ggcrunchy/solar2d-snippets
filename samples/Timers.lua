@@ -36,7 +36,7 @@ local Scene = storyboard.newScene()
 
 --
 function Scene:createScene ()
-	buttons.Button(self.view, nil, 20, 20, 200, 50, scenes.Opener{ name = "scene.Choices" }, "Go Back")
+	buttons.Button(self.view, nil, 120, 75, 200, 50, scenes.Opener{ name = "scene.Choices" }, "Go Back")
 end
 
 Scene:addEventListener("createScene")

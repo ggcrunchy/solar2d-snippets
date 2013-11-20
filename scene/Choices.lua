@@ -49,10 +49,10 @@ local Scene = storyboard.newScene()
 -- Samples names --
 local Names = {
 	-- "Corridor", -- as alluded in "Pixels" and note further down, some kind of corridor scrolling
-	"Curves", -- v 0.1: These were mostly just for testing something... could be MUCH more interesting... (editor? splines?)
-	"Delaunay", -- v 0.0: Stub... idea forming ("gas" fills chamber, then pathfind along it? Or maybe just show the construction happening.)
+	"Curves", -- v 0.1 (N.B. HOTFIXED): These were mostly just for testing something... could be MUCH more interesting... (editor? splines?)
+	"Delaunay", -- v 0.3: Much of build process working... need to work out the mesh ops to show more
 	-- "Fire", -- Just hashing out the basic idea so far
-	"Hilbert", -- v 1.0: I rather like this, nothing immediate to add...
+	"Hilbert", -- v 1.0 (N.B. HOTFIXED): I rather like this, nothing immediate to add...
 	"HilbertMixer", -- v 0.9: Getting there. Do smoothing or simplification?
 	"Hop", -- v 0.9: Was just to show an idea to a work colleague... has some "problems"... worth fixing?
 	"Marching", -- v 0.4: Better example? Better implementation? (Not really very general / adaptable)

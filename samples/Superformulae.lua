@@ -48,7 +48,7 @@ local Scene = storyboard.newScene()
 
 --
 function Scene:createScene ()
-	buttons.Button(self.view, nil, 20, 20, 200, 50, scenes.Opener{ name = "scene.Choices" }, "Go Back")
+	buttons.Button(self.view, nil, 120, 75, 200, 50, scenes.Opener{ name = "scene.Choices" }, "Go Back")
 end
 
 Scene:addEventListener("createScene")
@@ -107,9 +107,9 @@ function Scene:enterScene ()
 
 		self.curve = line_ex.NewLine(self.view)
 
-		self.curve:setColor(inputs.r, inputs.g, inputs.b, inputs.a)
+		self.curve:setStrokeColor(inputs.r, inputs.g, inputs.b, inputs.a)
 
-		self.curve.width = 3	
+		self.curve.strokeWidth = 3	
 
 		for _ = 1, N do
 			local r = (abs(cmphi / A)^n2 + abs(smphi / B)^n3)^n1

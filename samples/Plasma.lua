@@ -53,19 +53,21 @@ local PixelWidth, PixelHeight = 3, 3
 
 --
 function Scene:createScene ()
-	buttons.Button(self.view, nil, 20, 20, 200, 50, scenes.Opener{ name = "scene.Choices" }, "Go Back")
+	buttons.Button(self.view, nil, 120, 75, 200, 50, scenes.Opener{ name = "scene.Choices" }, "Go Back")
 end
 
 Scene:addEventListener("createScene")
 
 -- --
 local NCols, NRows = 120, 115
-local AA
+
+-- --
+local Distance = 12
+
 --
 function Scene:enterScene ()
 	--
-	self.isheet = pixels.GetPixelSheet()
-	self.igroup = display.newGroup()--ImageGroup(self.isheet)
+	self.igroup = display.newGroup()
 
 	self.view:insert(self.igroup)
 
@@ -76,6 +78,14 @@ function Scene:enterScene ()
 		local pix = self.igroup
 		local nloaded = pix.numChildren
 
+		--
+		t = t % Distance
+
+		if t > Distance / 2 then
+			t = Distance - t
+		end
+
+		--
 		for row = 1, NRows do
 			for col = 1, NCols do
 				if index > nloaded then
@@ -88,11 +98,11 @@ function Scene:enterScene ()
 local A = math.sqrt((col - 16 + t)^2 + (row - 65)^2) / 128
 local B = math.sqrt((col - 106)^2 + (row - 32 + t / 3)^2) / 2
 local C = (col + row) / 8
-				local rc = 128 + 42.333 * (sin(t1 * A) + sin(t2 * A) + sin(t3 * A))
-				local gc = 128 + 42.333 * (sin(t1 * B) + sin(t2 * B) + sin(t3 * B))
-				local bc = 128 + 42.333 * (sin(t1 * C) + sin(t2 * C) + sin(t3 * C))
+				local rc = .5 + .1667 * (sin(t1 * A) + sin(t2 * A) + sin(t3 * A))
+				local gc = .5 + .1667 * (sin(t1 * B) + sin(t2 * B) + sin(t3 * B))
+				local bc = .5 + .1667 * (sin(t1 * C) + sin(t2 * C) + sin(t3 * C))
 
-				pix[index]:setFillColor(rc / 255, gc / 255, bc / 255)
+				pix[index]:setFillColor(rc, gc, bc)
 
 				index = index + 1
 			end
@@ -104,11 +114,10 @@ local C = (col + row) / 8
 
 		for row = 1, NRows do
 			for col = 1, NCols do
-				local pixel = display.newImage(self.igroup, self.isheet, 1)
+				local pixel = display.newRect(self.igroup, 0, 0, PixelWidth, PixelHeight)
 
-				pixel.x = 200 + col * PixelWidth
-				pixel.y = 100 + row * PixelHeight
-				pixel.width, pixel.height = PixelWidth, PixelHeight
+				pixel.anchorX, pixel.x = 0, 200 + col * PixelWidth
+				pixel.anchorY, pixel.y = 0, 100 + row * PixelHeight
 
 				count = count - 1
 
@@ -132,7 +141,6 @@ function Scene:exitScene ()
 	self.igroup:removeSelf()
 
 	self.igroup = nil
-	self.isheet = nil
 	self.render = nil
 	self.allocate_pixels = nil
 end

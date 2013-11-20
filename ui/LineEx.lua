@@ -38,7 +38,7 @@ local display = display
 -- Exports --
 local M = {}
 
--- Intermediate storage, used to pass varargs to line:setColor() via unpack() --
+-- Intermediate storage, used to pass varargs to line:setStrokeColor() via unpack() --
 local Color = {}
 
 -- Get the wrapped object
@@ -91,7 +91,7 @@ function LineMethods:append (x, y)
 		if object.m_ncomps then
 			Color[1], Color[2], Color[3], Color[4] = object.m_r, object.m_g, object.m_b, object.m_a
 
-			line:setColor(unpack(Color, 1, object.m_ncomps))
+			line:setStrokeColor(unpack(Color, 1, object.m_ncomps))
 
 			Color[1], Color[2], Color[3], Color[4] = nil
 		end

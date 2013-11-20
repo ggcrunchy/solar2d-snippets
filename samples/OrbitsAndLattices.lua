@@ -52,7 +52,7 @@ local Scene = storyboard.newScene()
 
 --
 function Scene:createScene ()
-	button.Button(self.view, nil, 20, 20, 200, 50, scenes.Opener{ name = "scene.Choices" }, "Go Back")
+	button.Button(self.view, nil, 120, 75, 200, 50, scenes.Opener{ name = "scene.Choices" }, "Go Back")
 end
 
 Scene:addEventListener("createScene")
@@ -78,7 +78,7 @@ end
 local function Line (group, x1, y1, x2, y2)
 	local line = display.newLine(group, x1, y1, x2, y2)
 
-	line.width = 2
+	line.strokeWidth = 2
 end
 
 --

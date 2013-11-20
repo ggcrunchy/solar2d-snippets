@@ -52,7 +52,7 @@ local Scene = storyboard.newScene()
 
 --
 function Scene:createScene ()
-	buttons.Button(self.view, nil, 20, 20, 200, 50, scenes.Opener{ name = "scene.Choices" }, "Go Back")
+	buttons.Button(self.view, nil, 120, 75, 200, 50, scenes.Opener{ name = "scene.Choices" }, "Go Back")
 end
 
 Scene:addEventListener("createScene")
@@ -126,8 +126,11 @@ local function Launch ()
 	Layers = {}
 
 	for i = 1, 5 do
-		local group = display.newGroup()
-		local ymin
+		local group, ymin = display.newGroup()
+
+		group.anchorChildren = true
+		group.anchorX, group.x = .5, display.contentCenterX
+		group.anchorY, group.y = 1, display.contentHeight
 
 		if i == 1 then
 			group:toFront()
@@ -140,9 +143,10 @@ local function Launch ()
 		end
 
 		for j = 1, 9 + i * 4 do
-			local x = 10 + random(DW - 20)
+			local r = display.newRect(group, 0, 0, 27 - i * 3.5, 200 + (i - 1) * 15)
 
-			local r = display.newRect(group, x, ymin, 27 - i * 3.5, 200 + (i - 1) * 15)
+			r.anchorX, r.x = 0, 10 + random(DW - 20)
+			r.anchorY, r.y = 0, ymin
 
 			r.m_offset = random(AngleDelta * 4)
 			r.m_speed = random(7, 29)
@@ -158,17 +162,19 @@ local function Launch ()
 	end
 
 	--	
-	local ground = display.newRect(Groups, 0, DH - 50, DW, 50)
+	local ground = display.newRect(Groups, display.contentCenterX, 0, DW, 50)
 
 	ground:setFillColor(.5, .125, .125)
 	ground:toFront()
+
+	ground.anchorY, ground.y = 0, DH - 50
 
 	physics.addBody(ground, "static")
 
 	ground.name = "ground"
 
 	--
-	local hopper = display.newRect(Layers[2], 50, DH - 75, 50, 25)
+	local hopper = display.newRect(Layers[2], 50, DH - 60, 50, 25)
 
 	hopper:setFillColor(.125, .5, .125)
 
@@ -177,8 +183,14 @@ local function Launch ()
 	hopper.name = "hopper"
 
 	--
-	local wall1 = display.newRect(Groups, -DW * 2, 0, DW, DH)
-	local wall2 = display.newRect(Groups, DW * 3, 0, DW, DH)
+	local wall1 = display.newRect(Groups, 0, 0, DW, DH)
+	local wall2 = display.newRect(Groups, 0, 0, DW, DH)
+
+	wall1.anchorX, wall1.x = 0, -DW * 2
+	wall1.anchorY, wall1.y = 0, 0
+
+	wall2.anchorX, wall2.x = 0, DW * 3
+	wall2.anchorY, wall2.y = 0, 0
 
 	physics.addBody(wall1, "static")
 	physics.addBody(wall2, "static")
@@ -223,8 +235,6 @@ local function TakeOff (hopper)
 		physics.removeBody(hopper)
 
 		for i, group in ipairs(Layers) do
-			group.anchorY = 1
-
 			transition.to(group, HalfScaleParams)
 		end
 
@@ -276,7 +286,7 @@ local function TakeOff (hopper)
 
 				physics.addBody(enemy)
 
-				enemy:setFillColor(1, random(.13, .95), 0)
+				enemy:setFillColor(1, .13 + random() * .82, 0)
 				enemy:setLinearVelocity(-DW / .5, 0)
 				enemy:applyLinearImpulse(-.175, 0)
 			end

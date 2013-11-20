@@ -103,6 +103,9 @@ end
 -- --
 local Width, Height = display.contentWidth, display.contentHeight
 
+-- --
+local Diameter = 30
+
 --- DOCME
 -- @pgroup group
 -- @array images
@@ -126,7 +129,7 @@ function M.Snowfall (group, images, max)
 
 	-- 
 	for _ = 1, max do
-		local flake = display.newCircle(snowfall, 0, 0, 15)--display.newImage(snowfall, images[random(#images)])
+		local flake = display.newCircle(snowfall, 0, 0, Diameter / 2)--display.newImage(snowfall, images[random(#images)])
 
 		flake.isVisible = false
 	end
@@ -172,7 +175,7 @@ function M.Snowfall (group, images, max)
 				-- Choose a position above the screen at the current slot. Choose another
 				-- below the screen, displaced a bit horizontally from the first. Assign a
 				-- random square size to the flake.
-				local size, state, path, count = random(32, 110), GetState(state_cache)
+				local size, state, path, count = random(32, 110) / Diameter, GetState(state_cache)
 				local x1, y1 = RBy(sw * (slot - .5), sw), -size * Rand(2, 6)
 				local x2, y2 = RBy(x1, size * 3), Height + size * 2
 
@@ -196,7 +199,7 @@ function M.Snowfall (group, images, max)
 
 				-- Assign flake mask properties.
 				flake.alpha = random(32, 100) / 255
-				flake.width, flake.height = size, size
+				flake.xScale, flake.yScale = size, size
 				flake.x, flake.y = x1, y1
 
 --				flake:SetRotationCenter(Rand(0, size), Rand(0, size))
