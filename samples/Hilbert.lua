@@ -45,9 +45,6 @@ local storyboard = require("storyboard")
 -- Hilbert curve demo scene --
 local Scene = storyboard.newScene()
 
--- HACK! --
-local FIXES = require("FIXES")
-
 --
 function Scene:createScene ()
 	buttons.Button(self.view, nil, 120, 75, 200, 50, scenes.Opener{ name = "scene.Choices" }, "Go Back")
@@ -80,7 +77,7 @@ function Scene:enterScene ()
 			end
 		}
 
-		self.line = FIXES.LineShim(self.view)--line_ex.NewLine()
+		self.line = line_ex.NewLine()
 
 		self.line.strokeWidth = 4
 

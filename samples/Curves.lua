@@ -35,9 +35,6 @@ local storyboard = require("storyboard")
 -- Curves demo scene --
 local Scene = storyboard.newScene()
 
--- HACK! --
-local FIXES = require("FIXES")
-
 --
 function Scene:createScene ()
 	buttons.Button(self.view, nil, 120, 75, 200, 50, scenes.Opener{ name = "scene.Choices" }, "Go Back")
@@ -80,7 +77,7 @@ function Scene:enterScene ()
 
 		if what ~= self.last then
 			display.remove(self.text)
-			self[what] = FIXES.LineShim--[[display.newLine]] (self.cgroup, 300, 300, 300 + a * x, 300 + a * y)
+			self[what] = display.newLine(self.cgroup, 300, 300, 300 + a * x, 300 + a * y)
 			self[what]:setStrokeColor(r, g, b)
 			self[what].strokeWidth = 4
 			self.text = display.newText(self.view, "Current curve: " .. what, 250, 30, native.systemFont, 20)
