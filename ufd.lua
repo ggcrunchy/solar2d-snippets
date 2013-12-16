@@ -1,4 +1,7 @@
---- This module implements a union-find-delete disjoint set data structure.
+--- This module implements a disjoint set data structure, based on the union-find-delete
+-- algorithm of Ben-Amram and Yoffe.
+--
+-- See: [the paper](http://www2.mta.ac.il/~amirben/downloadable/ufd.pdf) and [corrigendum](http://www2.mta.ac.il/~amirben/downloadable/UFDCorrigendum.pdf)
 
 --
 -- Permission is hereby granted, free of charge, to any person obtaining
@@ -23,6 +26,12 @@
 -- [ MIT license: http://www.opensource.org/licenses/mit-license.php ]
 --
 
+-- Standard library imports --
+local max = math.max
+
+-- Cached module references --
+local _Find_
+
 -- Exports --
 local M = {}
 
@@ -31,44 +40,56 @@ local function NodeFromElem (elem)
 	-- ?
 end
 
+--
 local function ElemFromNode (node)
 	-- ?
 end
 
+-- Parent references --
+local Parent = setmetatable({}, { __mode = "k" })
+
+--
 local function IsLeaf (node)
 	return not node.children -- or rank == 0?
 end
 
+--
 local function IsRoot (node)
-	return node.parent == node
+	return Parent[node] == node
 end
 
+--
 local function NewNode (elem)
 	local node = MakeNode()
 
 	Associate(node, elem)
 
-	node.parent, node.rank = node, 0
+	Parent[node], node.rank = node, 0
 
 	return node
 end
 
+--
 local function SelfRef (node, pkey, nkey)
 	node[pkey], node[nkey] = node, node
 end
 
+--
 local function InsertInto (head, node, pkey, nkey)
 	--
 end
 
+--
 local function InsertBefore (head, node, pkey, nkey)
 	-- ?
 end
 
+--
 local function InsertAfter (head, node, pkey, nkey)
 	-- ?
 end
 
+--
 local function RemoveFrom (head, node, pkey, nkey)
 	local prev, next = node[pkey], node[nkey]
 
@@ -81,7 +102,8 @@ local function RemoveFrom (head, node, pkey, nkey)
 	end
 end
 
-function M.MakeSet (elem)
+--- DOCME
+function M.MakeSet (F, elem)
 	local node = NewNode(elem)
 
 	SelfRef(node, "dfs_prev", "dfs_next") -- ?
@@ -91,13 +113,13 @@ end
 local function LeftSibling (node)
 	local left = node.c_prev -- ?
 
-	return left ~= node.parent.children.c_next and left -- ?
+	return left ~= Parent[node].children.c_next and left -- ?
 end
 
 --
 local function Relink (node)
-	local parent = node.parent
-	local gp = parent.parent
+	local parent = Parent[node]
+	local gp = Parent[parent]
 
 	parent.children = RemoveFrom(parent.children, node, "c_prev", "c_next")
 
@@ -129,20 +151,24 @@ local function Relink (node)
 	end
 end
 
+--- DOCME
 function M.Find (elem)
 	local node = NodeFromElem(elem)
 
-	while not IsRoot(node.parent) do
-		local t = node.parent
+	while true do
+		local parent = Parent[node]
 
-		Relink(node)
+		if IsRoot(parent) then
+			return parent
+		else
+			Relink(node)
 
-		node = t
+			node = parent
+		end
 	end
-
-	return node.parent
 end
 
+--
 local function IsSmall (r, eq4)
 	local a = r.dfs_next
 	local b = a.dfs_next
@@ -151,9 +177,14 @@ local function IsSmall (r, eq4)
 	return r == a or r == b or r == c or (eq4 and r == c.dfs_next)
 end
 
-function M.Union (A, B)
-	local ra = A.root
-	local rb = B.root
+--- DOCME
+function M.Union (a, b)
+	local ra = _Find_(a)
+	local rb = _Find_(b)
+
+	if ra == rb then
+		return
+	end
 
 	--
 	local small = IsSmall(ra)
@@ -166,7 +197,7 @@ function M.Union (A, B)
 		local node = rb
 
 		repeat
-			node.parent, node.rank = ra, 0
+			Parent[node], node.rank = ra, 0
 
 			node = node.dfs_next
 		until node == rb
@@ -180,7 +211,7 @@ function M.Union (A, B)
 			ra, rb = rb, ra
 		end
 
-		rb.parent = ra
+		Parent[rb] = ra
 
 		if ra.rank == rb.rank then
 			ra.rank = ra.rank + 1
@@ -254,7 +285,7 @@ end
 
 --
 local function DeleteLeaf (node)
-	local parent = node.parent
+	local parent = Parent[node]
 
 	-- remove from parent.children
 	-- Remove node
@@ -262,8 +293,8 @@ local function DeleteLeaf (node)
 		-- LocalRebuild(parent)
 end
 
---
-function M.Delete (elem)
+--- DOCME
+function M.Delete (F, elem)
 	local node = NodeFromElem(elem)
 
 	if IsSmall(node, true) then
@@ -278,6 +309,14 @@ function M.Delete (elem)
 		DeleteLeaf(leaf)
 	end
 end
+
+--- DOCME
+function M.NewForest (bind_element_op)
+	--
+end
+
+-- Cache module members.
+_Find_ = M.Find
 
 -- Export the module.
 return M
