@@ -35,22 +35,20 @@ local _Find_
 -- Exports --
 local M = {}
 
---
-local function NodeFromElem (elem)
-	-- ?
-end
-
---
-local function ElemFromNode (node)
-	-- ?
-end
+-- --
+local SelfRefMT = {
+	__index = function(node, _)
+		return node
+	end,
+	__mode = "k"
+}
 
 -- Parent references --
-local Parent = setmetatable({}, { __mode = "k" })
+local Parent = setmetatable({}, SelfRefMT)
 
 --
 local function IsLeaf (node)
-	return not node.children -- or rank == 0?
+	return node.rank == 0
 end
 
 --
@@ -59,19 +57,8 @@ local function IsRoot (node)
 end
 
 --
-local function NewNode (elem)
-	local node = MakeNode()
-
-	Associate(node, elem)
-
-	Parent[node], node.rank = node, 0
-
-	return node
-end
-
---
 local function SelfRef (node, pkey, nkey)
-	node[pkey], node[nkey] = node, node
+	node[pkey], node[nkey] = false, false
 end
 
 --
@@ -95,8 +82,7 @@ local function RemoveFrom (head, node, pkey, nkey)
 
 	if node ~= next then
 		prev[nkey], next[pkey] = next, prev
-
-		SelfRef(node, pkey, nkey) -- ? or nil?
+		node[pkey], node[nkey] = nil -- todo: add left, right stuff
 
 		return node ~= head and head or next
 	end
@@ -104,7 +90,11 @@ end
 
 --- DOCME
 function M.MakeSet (F, elem)
-	local node = NewNode(elem)
+	local node = F.new_node()
+
+	F.bind(elem, node)
+
+	node.rank = 0
 
 	SelfRef(node, "dfs_prev", "dfs_next") -- ?
 end
@@ -134,7 +124,7 @@ local function Relink (node)
 
 	if left then
 		-- Insert after parent in dfs
-		-- ^^^ Corrig: BEFORE
+		-- Corrig: ^^^ BEFORE
 	end
 
 	--
@@ -152,8 +142,8 @@ local function Relink (node)
 end
 
 --- DOCME
-function M.Find (elem)
-	local node = NodeFromElem(elem)
+function M.Find (F, elem)
+	local node = F.node_from_elem(elem)
 
 	while true do
 		local parent = Parent[node]
@@ -177,56 +167,50 @@ local function IsSmall (r, eq4)
 	return r == a or r == b or r == c or (eq4 and r == c.dfs_next)
 end
 
+--
+local function SmallUnion (ra, rb)
+	local node = rb
+
+	repeat
+		Parent[node], node.rank = ra, 0
+
+		node = node.dfs_next
+	until node == rb
+
+	ra.rank = max(ra.rank, 1)
+
+	-- Update children, dfs_list
+end
+
 --- DOCME
 function M.Union (a, b)
-	local ra = _Find_(a)
-	local rb = _Find_(b)
+	local ra, rb = _Find_(a), _Find_(b)
 
-	if ra == rb then
-		return
-	end
+	if ra ~= rb then
+		if IsSmall(ra) then
+			SmallUnion(rb, ra)
+		elseif IsSmall(rb) then
+			SmallUnion(ra, rb)
+		else
+			if ra.rank < rb.rank then
+				ra, rb = rb, ra
+			end
 
-	--
-	local small = IsSmall(ra)
+			Parent[rb] = ra
 
-	if small or IsSmall(rb) then
-		if not small then
-			ra, rb = rb, ra
+			if ra.rank == rb.rank then
+				ra.rank = ra.rank + 1
+			end
+
+			-- Insert rb into children, non_leaves of ra (add to beginnings of lists)
+			-- Merge dfs_list's of Ta, Tb: insert list of Tb after ra in Ta's list
+			-- Free Tb's non_leaves
 		end
-
-		local node = rb
-
-		repeat
-			Parent[node], node.rank = ra, 0
-
-			node = node.dfs_next
-		until node == rb
-
-		ra.rank = max(ra.rank, 1)
-
-		-- Update children, dfs_list
-	--
-	else
-		if ra.rank < rb.rank then
-			ra, rb = rb, ra
-		end
-
-		Parent[rb] = ra
-
-		if ra.rank == rb.rank then
-			ra.rank = ra.rank + 1
-		end
-
-		-- Insert rb into children, non_leaves of ra (add to beginnings of lists)
-		-- Merge dfs_list's of Ta, Tb: insert list of Tb after ra in Ta's list
-		-- Free Tb's non_leaves
 	end
 end
 
 --
-local function FindLeaf (elem)
-	local node = NodeFromElem(elem)
-
+local function FindLeaf (node)
 	if IsLeaf(node) then
 		return node
 	elseif IsRoot(node) then
@@ -239,25 +223,32 @@ local function FindLeaf (elem)
 end
 
 --
-local function SmallTreeDelete (elem)
-	local node = NodeFromElem(elem)
+local function SmallTreeDelete (F, node)
+	F.remove_node(node)
 
-	-- Remove node
 	-- Restructure
 end
 
 --
-local function ReducedTreeDelete (elem)
-	local node = NodeFromElem(elem)
+local function SwitchElements (F, n1, n2)
+	local e1 = F.elem_from_node(n1)
+	local e2 = F.elem_from_node(n2)
 
-	if IsLeaf(node) then
-		-- Remove node
-	else -- is root
-		local leaf = FindLeaf(elem)
-		-- Switch leaf and node elements
-		-- Remove node
+	F.bind(n1, e2)
+	F.bind(n2, e1)
+end
+
+--
+local function ReducedTreeDelete (F, node)
+	if IsRoot(node) then
+		local leaf = FindLeaf(node)
+
+		SwitchElements(F, leaf, node)
 	end
-	-- Can just check root case, fall through to remove?
+
+	-- OK?
+
+	F.remove_node(node)
 end
 
 --
@@ -284,13 +275,19 @@ local function LocalRebuild (node)
 end
 
 --
-local function DeleteLeaf (node)
+local function DeleteLeaf (F, node)
 	local parent = Parent[node]
 
 	-- remove from parent.children
-	-- Remove node
-	-- if not Reduced(parent) then (enough to do parent.rank <= 1 and parent.parent == parent?)
+
+	F.remove_node(node)
+
+	-- if not Reduced(parent) then (enough to do parent.rank <= 1 and IsRoot(parent)?)
 		-- LocalRebuild(parent)
+end
+
+--
+local function IsReduced (node)
 end
 
 --- DOCME
@@ -298,21 +295,65 @@ function M.Delete (F, elem)
 	local node = NodeFromElem(elem)
 
 	if IsSmall(node, true) then
-		SmallTreeDelete(elem) -- probably fine to pass node?
-	elseif IsReduced(tree) then -- full check here
-		ReducedTreeDelete(elem) -- again?
+		SmallTreeDelete(F, node) -- probably fine to pass node?
+	elseif IsReduced(node) then -- full check here
+		ReducedTreeDelete(F, node) -- again?
 	else
-		local leaf = FindLeaf(elem)
+		local leaf = FindLeaf(node)
 
-		-- Switch leaf, node elements
-
-		DeleteLeaf(leaf)
+		SwitchElements(F, leaf, node)
+		DeleteLeaf(F, leaf)
 	end
 end
 
 --- DOCME
-function M.NewForest (bind_element_op)
+function M.NewForest (ops)
+	local forest = {}
+
 	--
+	if ops then
+		forest.bind = ops.bind
+		forest.elem_to_node = ops.elem_to_node
+		forest.new_node = ops.new_node
+		forest.node_to_elem = ops.node_to_elem
+		forest.remove_node = ops.remove_node
+	else
+		local indices, nodes, free = {}, {}, false
+
+		function forest.bind (elem, node)
+			if node then
+				indices[elem], node.elem = node.index, elem
+			else
+				indices[elem] = nil
+			end
+		end
+
+		function forest.elem_to_node (elem)
+			return nodes[indices[elem]]
+		end
+
+		function forest.new_node ()
+			local slot = free or #nodes + 1
+			local node = { index = slot }
+
+			nodes[slot], free = node, nodes[slot]
+
+			return node
+		end
+
+		function forest.node_to_elem (node)
+			return node.elem
+		end
+
+		function forest.remove_node (node)
+			local slot = node.index
+
+			nodes[slot], free, node.elem = free, slot
+		end
+	end
+
+	--
+	return forest
 end
 
 -- Cache module members.
