@@ -26,15 +26,20 @@
 -- Standard library imports --
 local abs = math.abs
 local floor = math.floor
+local ipairs = ipairs
+local ldexp = math.ldexp
 local min = math.min
 local pi = math.pi
 local random = math.random
 local sin = math.sin
+local sqrt = math.sqrt
 local yield = coroutine.yield
+
+-- Extension imports --
+local round = math.round
 
 -- Modules --
 local buttons = require("ui.Button")
-local pixels = require("effect.Pixels")
 local scenes = require("game.Scenes")
 local timers = require("game.Timers")
 
@@ -44,25 +49,66 @@ local timer = timer
 
 -- Corona modules --
 local storyboard = require("storyboard")
+local widget = require("widget")
 
 -- Pixels demo scene --
 local Scene = storyboard.newScene()
 
 -- --
+local NCols, NRows = 120, 115
+
+-- --
+local BoxX, BoxY = 200, 100
+
+-- --
 local PixelWidth, PixelHeight = 3, 3
+
+-- --
+local Right = BoxX + NCols * PixelWidth
 
 --
 function Scene:createScene ()
 	buttons.Button(self.view, nil, 120, 75, 200, 50, scenes.Opener{ name = "scene.Choices" }, "Go Back")
+
+	self.sliders = {}
+
+-- HACK! (widget itself doesn't seem to set this?)
+local function SetValue (event)
+	if event.phase == "moved" then
+		event.target:setValue(event.value)
+	end
+end
+-- /HACK
+
+	for i, value in ipairs{
+		12, 12, 12, -- Formula: Y = Base + (value / 100) * Range
+		70, 10, 30 -- Formula: Y = 2^-(round(value / 10))
+	} do
+		self.sliders[i] = widget.newSlider{
+			top = i * 50, left = Right + 20,
+			width = display.contentWidth - Right - 50,
+			listener = SetValue
+		}
+		self.sliders[i].m_def = value
+
+		self.view:insert(self.sliders[i])
+	end
 end
 
 Scene:addEventListener("createScene")
 
--- --
-local NCols, NRows = 120, 115
+--
+local function When (t, slider)
+	local distance = .5 + .995 * slider.value
 
--- --
-local Distance = 12
+	t = t % distance
+
+	if t > distance / 2 then
+		t = distance - t
+	end
+
+	return t
+end
 
 --
 function Scene:enterScene ()
@@ -72,32 +118,52 @@ function Scene:enterScene ()
 	self.view:insert(self.igroup)
 
 	--
+	for _, slider in ipairs(self.sliders) do
+		slider:setValue(slider.m_def)
+	end
+
+	--
 	self.render = timer.performWithDelay(10, function(event)
-		local index, t = 1, .125 * pi * event.time / 1000
-		local t1, t2, t3 = t * 1.4, t * 1.2, t * 3.7
-		local pix = self.igroup
+		--
+		local sliders, t = self.sliders, .125 * pi * event.time / 1000
+
+		--
+		local t1 = When(t, sliders[1])
+		local t2 = When(t, sliders[2])
+		local t3 = When(t, sliders[3])
+
+		--
+		local k1 = t2 - 16
+		local k2 = t1 / 3 - 32
+
+		--
+		t1 = t1 * 1.4
+		t2 = t2 * 1.2
+		t3 = t3 * 3.7
+
+		--
+		local fa = ldexp(1, -round(sliders[4].value / 10))
+		local fb = ldexp(1, -round(sliders[5].value / 10))
+		local fc = ldexp(1, -round(sliders[6].value / 10))
+
+		--
+		local pix, index = self.igroup, 1
 		local nloaded = pix.numChildren
 
-		--
-		t = t % Distance
-
-		if t > Distance / 2 then
-			t = Distance - t
-		end
-
-		--
 		for row = 1, NRows do
+			local ka, kb = (row - 65)^2, (row + k2)^2
+
 			for col = 1, NCols do
 				if index > nloaded then
 					return
 				end
 
-			--	local s1 = sin(3.1 + t1 * row)
---				local s2 = sin(1.7 + t2 * col)
-	--			local s3 = sin(1.2 + t3 * (row + col))
-local A = math.sqrt((col - 16 + t)^2 + (row - 65)^2) / 128
-local B = math.sqrt((col - 106)^2 + (row - 32 + t / 3)^2) / 2
-local C = (col + row) / 8
+				--
+				local A = fa * sqrt((col + k1)^2 + ka)
+				local B = fb * sqrt((col - 106)^2 + kb)
+				local C = fc * (col + row)
+
+				--
 				local rc = .5 + .1667 * (sin(t1 * A) + sin(t2 * A) + sin(t3 * A))
 				local gc = .5 + .1667 * (sin(t1 * B) + sin(t2 * B) + sin(t3 * B))
 				local bc = .5 + .1667 * (sin(t1 * C) + sin(t2 * C) + sin(t3 * C))
@@ -116,8 +182,8 @@ local C = (col + row) / 8
 			for col = 1, NCols do
 				local pixel = display.newRect(self.igroup, 0, 0, PixelWidth, PixelHeight)
 
-				pixel.anchorX, pixel.x = 0, 200 + col * PixelWidth
-				pixel.anchorY, pixel.y = 0, 100 + row * PixelHeight
+				pixel.anchorX, pixel.x = 0, BoxX + col * PixelWidth
+				pixel.anchorY, pixel.y = 0, BoxY + row * PixelHeight
 
 				count = count - 1
 

@@ -30,7 +30,7 @@ local concat = table.concat
 local gmatch = string.gmatch
 
 -- Modules --
-local utils = require("utils")
+local resource_utils = require("utils.Resource")
 
 local has_bit, bit = pcall(require, "bit") -- Prefer BitOp
 
@@ -39,79 +39,17 @@ if not has_bit then
 end
 
 -- Forward references --
+local band
 local bxor
 
--- Exports --
-local M = {}
-
-do
-	local State
-
-	-- Most of the time, the state will be going to waste. However, a likely usage pattern
-	-- would be generating several hashes in quick succession. As an ephemeral resource, a
-	-- happy compromise should be achieved. 
-	local Acquire = utils.EphemeralResource(function()
-		-- Fill the state with the values 0 to 255 in some pseudo-random order (this
-		-- derives from the alleged RC4).
-		local k, state = 7, {}
-
-		for _ = 1, 4 do
-			for i = 1, 256 do
-				local s = state[i] or i - 1
-
-				k = (k + s) % 256
-
-				state[i], state[k + 1] = state[k + 1] or k, s
-			end
-		end
-
-		State = state
-	end, function()
-		State = nil
-	end)
-
-	-- Hashes a string
-	local function Hash (str, seed)
-		local hash = (seed + #str) % 256
-
-		for char in gmatch(str, ".") do
-			hash = (hash + byte(char)) % 256 + 1
-			hash = State[hash]
-		end
-
-		return hash
-	end
-
-	--- [Pearson's hash](http://burtleburtle.net/bob/hash/pearson.html).
-	-- @string str String to hash.
-	-- @integer seed Used to vary the hash for a given string.
-	-- @treturn byte Hash value.
-	function M.Pearson (str, seed)
-		Acquire()
-
-		return Hash(str, seed or 0)
-	end
-
-	-- Variant of @{Pearson} that builds an _n_-byte string.
-	-- @string str String to hash.
-	-- @integer n Bytes in result.
-	-- @treturn string Hash string.
-	function M.Pearson_N (str, n)
-		Acquire()
-
-		local t = {}
-
-		for i = 1, n do
-			t[i] = char(Hash(str, i))
-		end
-
-		return concat(t, "")
-	end
-end
-
 if bit then -- Bit library available
+	band = bit.band
 	bxor = bit.bxor
-else -- Otherwise, make equivalent for low 8 bits
+else -- Otherwise, make equivalent for hash purposes
+	function band (a, n)
+		return a % (n + 1)
+	end
+
 	function bxor (a, b)
 		local c, mask = a, 128
 
@@ -133,6 +71,72 @@ else -- Otherwise, make equivalent for low 8 bits
 	end
 end
 
+-- Exports --
+local M = {}
+
+do
+	local State, T
+
+	-- Most of the time, the state will be going to waste. However, a likely usage pattern
+	-- would be generating several hashes in quick succession. As an ephemeral resource, a
+	-- happy compromise should be achieved. 
+	local Acquire = resource_utils.EphemeralResource(function()
+		-- Fill the state with the values 0 to 255 in some pseudo-random order (this
+		-- derives from the alleged RC4).
+		local k, state = 7, {}
+
+		for _ = 1, 4 do
+			for i = 1, 256 do
+				local s = state[i] or i - 1
+
+				k = band(k + s, 255)
+
+				state[i], state[k + 1] = state[k + 1] or k, s
+			end
+		end
+
+		State, T = state, {}
+	end, function()
+		State, T = nil
+	end)
+
+	-- Hashes a string
+	local function Hash (str, seed)
+		local hash = band(seed + #str, 255)
+
+		for char in gmatch(str, ".") do
+			hash = band(hash + byte(char), 255) + 1
+			hash = State[hash]
+		end
+
+		return hash
+	end
+
+	--- [Pearson's hash](http://burtleburtle.net/bob/hash/pearson.html).
+	-- @string str String to hash.
+	-- @int seed Used to vary the hash for a given string.
+	-- @treturn byte Hash value.
+	function M.Pearson (str, seed)
+		Acquire()
+
+		return Hash(str, seed or 0)
+	end
+
+	-- Variant of @{Pearson} that builds an _n_-byte string.
+	-- @string str String to hash.
+	-- @integer n Bytes in result.
+	-- @treturn string Hash string.
+	function M.Pearson_N (str, n)
+		Acquire()
+
+		for i = 1, n do
+			T[i] = char(Hash(str, i))
+		end
+
+		return concat(T, "", 1, n)
+	end
+end
+
 --- [32-bit FNV 1-A hash](http://www.isthe.com/chongo/tech/comp/fnv/#FNV-1a).
 -- @string str String to hash.
 -- @treturn integer 32-bit hash value.
@@ -141,7 +145,7 @@ function M.FNV32_1A (str)
 
 	for char in gmatch(str, ".") do
 		hash = bxor(hash, byte(char))
-		hash = (hash * 16777619) % 2^32
+		hash = band(hash * 16777619, 2^32 - 1)
 	end
 
 	return hash

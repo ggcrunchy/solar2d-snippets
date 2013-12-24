@@ -55,7 +55,7 @@ end
 function M.FindNode (skip_list, value)
 	local node = skip_list
 
-	for i = skip_list.n, 1, -1 -- - 1, 0, -1 do
+	for i = skip_list.n, 1, -1 do -- - 1, 0, -1 do
 		local next = node.next[i]--cast(pct, node.next[i])
 
 		--
@@ -166,7 +166,7 @@ function M.RemoveValue (skip_list, value)
 	return node
 end
 
---[[
+--[=[
 --- DOCME
 function M.NewType (inf, what)
 	assert(inf ~= nil, "Type needs 'infinite' element")
@@ -207,6 +207,6 @@ function M.NewType (inf, what)
 
 	return NewList
 end
-]]
+]=]
 -- Export the module.
 return M
