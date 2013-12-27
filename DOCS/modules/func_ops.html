@@ -37,114 +37,177 @@
 
 
 <h2>Modules</h2>
-<ul>
-  <li><a href="../modules/DEBUG.html">DEBUG</a></li>
+<ul class="$(kind=='Topics' and '' or 'nowrap'">
+  <li><a href="../modules/adaptive_table_ops.html">adaptive_table_ops</a></li>
   <li><a href="../modules/array_ops.html">array_ops</a></li>
   <li><a href="../modules/bitwise_ops.html">bitwise_ops</a></li>
   <li><a href="../modules/bound_args.html">bound_args</a></li>
   <li><a href="../modules/cache_ops.html">cache_ops</a></li>
+  <li><a href="../modules/SparseArray.html">SparseArray</a></li>
+  <li><a href="../modules/Interpolator.html">Interpolator</a></li>
+  <li><a href="../modules/SectionGroup.html">SectionGroup</a></li>
+  <li><a href="../modules/TaskQueue.html">TaskQueue</a></li>
+  <li><a href="../modules/Timeline.html">Timeline</a></li>
+  <li><a href="../modules/Timer.html">Timer</a></li>
+  <li><a href="../modules/VarFamily.html">VarFamily</a></li>
+  <li><a href="../modules/class.VarFamilyEx.Annex.html">VarFamilyEx.Annex</a></li>
+  <li><a href="../modules/BoolVars.html">BoolVars</a></li>
+  <li><a href="../modules/NumVars.html">NumVars</a></li>
+  <li><a href="../modules/RawVars.html">RawVars</a></li>
+  <li><a href="../modules/TimerVars.html">TimerVars</a></li>
   <li><a href="../modules/class.html">class</a></li>
-  <li><a href="../modules/class.Timer.html">class.Timer</a></li>
+  <li><a href="../modules/config.Dots.html">Dots</a></li>
+  <li><a href="../modules/config.EditorViews.html">EditorViews</a></li>
+  <li><a href="../modules/config.EventBlocks.html">EventBlocks</a></li>
+  <li><a href="../modules/config.GlobalEvents.html">GlobalEvents</a></li>
   <li><a href="../modules/coroutine_ex.html">coroutine_ex</a></li>
-  <li><a href="../modules/dot.Switch.html">dot.Switch</a></li>
-  <li><a href="../modules/dot.Warp.html">dot.Warp</a></li>
-  <li><a href="../modules/editor.Common.html">editor.Common</a></li>
-  <li><a href="../modules/editor.Dialog.html">editor.Dialog</a></li>
-  <li><a href="../modules/editor.Dots.html">editor.Dots</a></li>
-  <li><a href="../modules/editor.EventBlocks.html">editor.EventBlocks</a></li>
-  <li><a href="../modules/editor.Events.html">editor.Events</a></li>
-  <li><a href="../modules/editor.General.html">editor.General</a></li>
-  <li><a href="../modules/editor.Grid.html">editor.Grid</a></li>
-  <li><a href="../modules/editor.Ops.html">editor.Ops</a></li>
-  <li><a href="../modules/editor.Settings.html">editor.Settings</a></li>
-  <li><a href="../modules/editor.Tiles.html">editor.Tiles</a></li>
-  <li><a href="../modules/effect.Balloons.html">effect.Balloons</a></li>
-  <li><a href="../modules/effect.Curves.html">effect.Curves</a></li>
-  <li><a href="../modules/effect.Fillers.html">effect.Fillers</a></li>
-  <li><a href="../modules/effect.Generators.html">effect.Generators</a></li>
-  <li><a href="../modules/effect.Glow.html">effect.Glow</a></li>
-  <li><a href="../modules/effect.Markers.html">effect.Markers</a></li>
-  <li><a href="../modules/effect.Shadows.html">effect.Shadows</a></li>
-  <li><a href="../modules/effect.Snowfall.html">effect.Snowfall</a></li>
-  <li><a href="../modules/effect.Stars.html">effect.Stars</a></li>
-  <li><a href="../modules/effect.Stash.html">effect.Stash</a></li>
+  <li><a href="../modules/DEBUG.html">DEBUG</a></li>
+  <li><a href="../modules/dot.Switch.html">Switch</a></li>
+  <li><a href="../modules/dot.Warp.html">Warp</a></li>
+  <li><a href="../modules/editor.Common.html">Common</a></li>
+  <li><a href="../modules/editor.CommonUI.html">CommonUI</a></li>
+  <li><a href="../modules/editor.Dialog.Data.html">Dialog.Data</a></li>
+  <li><a href="../modules/editor.Dialog.Items.html">Dialog.Items</a></li>
+  <li><a href="../modules/editor.Dialog.Layout.html">Dialog.Layout</a></li>
+  <li><a href="../modules/editor.Dialog.Methods.html">Dialog.Methods</a></li>
+  <li><a href="../modules/editor.Dialog.Utils.html">Dialog.Utils</a></li>
+  <li><a href="../modules/editor.Dialog.html">Dialog</a></li>
+  <li><a href="../modules/editor.Events.html">Events</a></li>
+  <li><a href="../modules/editor.Grid.html">Grid</a></li>
+  <li><a href="../modules/editor.GridFuncs.html">GridFuncs</a></li>
+  <li><a href="../modules/editor.Links.html">Links</a></li>
+  <li><a href="../modules/editor.Ops.html">Ops</a></li>
+  <li><a href="../modules/editor.Tags.html">Tags</a></li>
+  <li><a href="../modules/editor.views.Audio.html">views.Audio</a></li>
+  <li><a href="../modules/editor.views.Background.html">views.Background</a></li>
+  <li><a href="../modules/editor.views.Dots.html">views.Dots</a></li>
+  <li><a href="../modules/editor.views.EventBlocks.html">views.EventBlocks</a></li>
+  <li><a href="../modules/editor.views.GlobalEvents.html">views.GlobalEvents</a></li>
+  <li><a href="../modules/editor.views.Player.html">views.Player</a></li>
+  <li><a href="../modules/editor.views.Positions.html">views.Positions</a></li>
+  <li><a href="../modules/editor.views.Settings.html">views.Settings</a></li>
+  <li><a href="../modules/editor.views.Tiles.html">views.Tiles</a></li>
+  <li><a href="../modules/editor.views.Triggers.html">views.Triggers</a></li>
+  <li><a href="../modules/effect.Balloons.html">Balloons</a></li>
+  <li><a href="../modules/effect.Fillers.html">Fillers</a></li>
+  <li><a href="../modules/effect.Glow.html">Glow</a></li>
+  <li><a href="../modules/effect.Markers.html">Markers</a></li>
+  <li><a href="../modules/effect.Shadows.html">Shadows</a></li>
+  <li><a href="../modules/effect.Snowfall.html">Snowfall</a></li>
+  <li><a href="../modules/effect.Stars.html">Stars</a></li>
+  <li><a href="../modules/effect.Stash.html">Stash</a></li>
   <li><a href="../modules/errors.html">errors</a></li>
-  <li><a href="../modules/event_block.Maze.html">event_block.Maze</a></li>
+  <li><a href="../modules/event_block.Maze.html">Maze</a></li>
   <li><a href="../modules/exception.html">exception</a></li>
   <li><a href="../modules/fibonacci_heap.html">fibonacci_heap</a></li>
-  <li><a href="../modules/fill.Circle.html">fill.Circle</a></li>
-  <li><a href="../modules/fill.Hilbert.html">fill.Hilbert</a></li>
-  <li><a href="../modules/fill.MarchingSquares.html">fill.MarchingSquares</a></li>
+  <li><a href="../modules/fill.Circle.html">Circle</a></li>
+  <li><a href="../modules/fill.Hilbert.html">Hilbert</a></li>
+  <li><a href="../modules/fill.MarchingSquares.html">MarchingSquares</a></li>
+  <li><a href="../modules/FIXES.html">FIXES</a></li>
   <li><a href="../modules/flow_bodies.html">flow_bodies</a></li>
   <li><a href="../modules/flow_ops.html">flow_ops</a></li>
   <li><strong>func_ops</strong></li>
-  <li><a href="../modules/game.AI.html">game.AI</a></li>
-  <li><a href="../modules/game.Audio.html">game.Audio</a></li>
-  <li><a href="../modules/game.Collision.html">game.Collision</a></li>
-  <li><a href="../modules/game.Controls.html">game.Controls</a></li>
-  <li><a href="../modules/game.DispatchList.html">game.DispatchList</a></li>
-  <li><a href="../modules/game.Dots.html">game.Dots</a></li>
-  <li><a href="../modules/game.EventBlocks.html">game.EventBlocks</a></li>
-  <li><a href="../modules/game.FX.html">game.FX</a></li>
-  <li><a href="../modules/game.Frames.html">game.Frames</a></li>
-  <li><a href="../modules/game.LevelMap.html">game.LevelMap</a></li>
-  <li><a href="../modules/game.LevelsList.html">game.LevelsList</a></li>
-  <li><a href="../modules/game.Movement.html">game.Movement</a></li>
-  <li><a href="../modules/game.PathUtils.html">game.PathUtils</a></li>
-  <li><a href="../modules/game.Pathing.html">game.Pathing</a></li>
-  <li><a href="../modules/game.Persistence.html">game.Persistence</a></li>
-  <li><a href="../modules/game.Player.html">game.Player</a></li>
-  <li><a href="../modules/game.Scenes.html">game.Scenes</a></li>
-  <li><a href="../modules/game.Scrolling.html">game.Scrolling</a></li>
-  <li><a href="../modules/game.TileFlags.html">game.TileFlags</a></li>
-  <li><a href="../modules/game.TileMaps.html">game.TileMaps</a></li>
-  <li><a href="../modules/game.Timers.html">game.Timers</a></li>
-  <li><a href="../modules/game.Transitions.html">game.Transitions</a></li>
+  <li><a href="../modules/game.AI.html">AI</a></li>
+  <li><a href="../modules/game.Collision.html">Collision</a></li>
+  <li><a href="../modules/game.Controls.html">Controls</a></li>
+  <li><a href="../modules/game.DispatchList.html">DispatchList</a></li>
+  <li><a href="../modules/game.Dots.html">Dots</a></li>
+  <li><a href="../modules/game.EventBlocks.html">EventBlocks</a></li>
+  <li><a href="../modules/game.FX.html">FX</a></li>
+  <li><a href="../modules/game.GlobalEvents.html">GlobalEvents</a></li>
+  <li><a href="../modules/game.LevelMap.html">LevelMap</a></li>
+  <li><a href="../modules/game.LevelsList.html">LevelsList</a></li>
+  <li><a href="../modules/game.Movement.html">Movement</a></li>
+  <li><a href="../modules/game.Pathing.html">Pathing</a></li>
+  <li><a href="../modules/game.PathUtils.html">PathUtils</a></li>
+  <li><a href="../modules/game.Persistence.html">Persistence</a></li>
+  <li><a href="../modules/game.Player.html">Player</a></li>
+  <li><a href="../modules/game.Scrolling.html">Scrolling</a></li>
+  <li><a href="../modules/game.TileFlags.html">TileFlags</a></li>
+  <li><a href="../modules/game.TileMaps.html">TileMaps</a></li>
+  <li><a href="../modules/game.Timers.html">Timers</a></li>
+  <li><a href="../modules/game.Transitions.html">Transitions</a></li>
   <li><a href="../modules/geom2d_ops.html">geom2d_ops</a></li>
   <li><a href="../modules/grid_iterators.html">grid_iterators</a></li>
+  <li><a href="../modules/hash_ops.html">hash_ops</a></li>
   <li><a href="../modules/heap_utils.html">heap_utils</a></li>
+  <li><a href="../modules/hud.Action.html">Action</a></li>
+  <li><a href="../modules/hud.Move.html">Move</a></li>
   <li><a href="../modules/index_ops.html">index_ops</a></li>
   <li><a href="../modules/iterators.html">iterators</a></li>
   <li><a href="../modules/lazy_tables.html">lazy_tables</a></li>
   <li><a href="../modules/main.html">main</a></li>
+  <li><a href="../modules/mesh_ops.html">mesh_ops</a></li>
   <li><a href="../modules/mwc_rng.html">mwc_rng</a></li>
   <li><a href="../modules/numeric_ops.html">numeric_ops</a></li>
+  <li><a href="../modules/overlay.Help.html">Help</a></li>
+  <li><a href="../modules/overlay.Link.html">Link</a></li>
   <li><a href="../modules/pairing_heap.html">pairing_heap</a></li>
   <li><a href="../modules/per_coroutine_ops.html">per_coroutine_ops</a></li>
   <li><a href="../modules/proxy.html">proxy</a></li>
-  <li><a href="../modules/samples.Curves.html">samples.Curves</a></li>
-  <li><a href="../modules/samples.Hilbert.html">samples.Hilbert</a></li>
-  <li><a href="../modules/samples.Hop.html">samples.Hop</a></li>
-  <li><a href="../modules/samples.Marching.html">samples.Marching</a></li>
-  <li><a href="../modules/samples.Nodes.html">samples.Nodes</a></li>
-  <li><a href="../modules/samples.SlowMo.html">samples.SlowMo</a></li>
-  <li><a href="../modules/samples.Snowfall.html">samples.Snowfall</a></li>
-  <li><a href="../modules/samples.Thoughts.html">samples.Thoughts</a></li>
-  <li><a href="../modules/samples.Tiling.html">samples.Tiling</a></li>
-  <li><a href="../modules/samples.Timers.html">samples.Timers</a></li>
-  <li><a href="../modules/scene.Choices.html">scene.Choices</a></li>
-  <li><a href="../modules/scene.EditorSetup.html">scene.EditorSetup</a></li>
-  <li><a href="../modules/scene.Intro.html">scene.Intro</a></li>
-  <li><a href="../modules/scene.Level.html">scene.Level</a></li>
-  <li><a href="../modules/scene.MapEditor.html">scene.MapEditor</a></li>
-  <li><a href="../modules/scene.Options.html">scene.Options</a></li>
+  <li><a href="../modules/quaternion_ops.html">quaternion_ops</a></li>
+  <li><a href="../modules/samples.Curves.html">Curves</a></li>
+  <li><a href="../modules/samples.Delaunay.html">Delaunay</a></li>
+  <li><a href="../modules/samples.Fire.html">Fire</a></li>
+  <li><a href="../modules/samples.Hilbert.html">Hilbert</a></li>
+  <li><a href="../modules/samples.HilbertMixer.html">HilbertMixer</a></li>
+  <li><a href="../modules/samples.Hop.html">Hop</a></li>
+  <li><a href="../modules/samples.Marching.html">Marching</a></li>
+  <li><a href="../modules/samples.Nodes.html">Nodes</a></li>
+  <li><a href="../modules/samples.OrbitsAndLattices.html">OrbitsAndLattices</a></li>
+  <li><a href="../modules/samples.Pixels.html">Pixels</a></li>
+  <li><a href="../modules/samples.Plasma.html">Plasma</a></li>
+  <li><a href="../modules/samples.SlowMo.html">SlowMo</a></li>
+  <li><a href="../modules/samples.Snowfall.html">Snowfall</a></li>
+  <li><a href="../modules/samples.Superformulae.html">Superformulae</a></li>
+  <li><a href="../modules/samples.Thoughts.html">Thoughts</a></li>
+  <li><a href="../modules/samples.Ticker.html">Ticker</a></li>
+  <li><a href="../modules/samples.Tiling.html">Tiling</a></li>
+  <li><a href="../modules/samples.Timers.html">Timers</a></li>
+  <li><a href="../modules/scene.EditorSetup.html">EditorSetup</a></li>
+  <li><a href="../modules/scene.Intro.html">Intro</a></li>
+  <li><a href="../modules/scene.Level.html">Level</a></li>
+  <li><a href="../modules/scene.MapEditor.html">MapEditor</a></li>
+  <li><a href="../modules/scene.Options.html">Options</a></li>
   <li><a href="../modules/simplex_noise.html">simplex_noise</a></li>
   <li><a href="../modules/skew_heap.html">skew_heap</a></li>
+  <li><a href="../modules/skip_list.html">skip_list</a></li>
   <li><a href="../modules/soft_heap.html">soft_heap</a></li>
   <li><a href="../modules/table_ops.html">table_ops</a></li>
-  <li><a href="../modules/tiles.TreeBG.html">tiles.TreeBG</a></li>
-  <li><a href="../modules/ui.Button.html">ui.Button</a></li>
-  <li><a href="../modules/ui.Checkbox.html">ui.Checkbox</a></li>
-  <li><a href="../modules/ui.Color.html">ui.Color</a></li>
-  <li><a href="../modules/ui.Grid1D.html">ui.Grid1D</a></li>
-  <li><a href="../modules/ui.Grid2D.html">ui.Grid2D</a></li>
-  <li><a href="../modules/ui.Keyboard.html">ui.Keyboard</a></li>
-  <li><a href="../modules/ui.Layout.html">ui.Layout</a></li>
-  <li><a href="../modules/ui.Lines.html">ui.Lines</a></li>
-  <li><a href="../modules/ui.Sheet.html">ui.Sheet</a></li>
-  <li><a href="../modules/ui.Skin.html">ui.Skin</a></li>
-  <li><a href="../modules/ui.Touch.html">ui.Touch</a></li>
-  <li><a href="../modules/ui.Utils.html">ui.Utils</a></li>
+  <li><a href="../modules/tests.LinksAndTags.html">LinksAndTags</a></li>
+  <li><a href="../modules/tiles.TreeBG.html">TreeBG</a></li>
+  <li><a href="../modules/ufd.html">ufd</a></li>
+  <li><a href="../modules/ui.Button.html">Button</a></li>
+  <li><a href="../modules/ui.Checkbox.html">Checkbox</a></li>
+  <li><a href="../modules/ui.Color.html">Color</a></li>
+  <li><a href="../modules/ui.ColorPicker.html">ColorPicker</a></li>
+  <li><a href="../modules/ui.Grid1D.html">Grid1D</a></li>
+  <li><a href="../modules/ui.Grid2D.html">Grid2D</a></li>
+  <li><a href="../modules/ui.HSV.html">HSV</a></li>
+  <li><a href="../modules/ui.Keyboard.html">Keyboard</a></li>
+  <li><a href="../modules/ui.Layout.html">Layout</a></li>
+  <li><a href="../modules/ui.LineEx.html">LineEx</a></li>
+  <li><a href="../modules/ui.Lines.html">Lines</a></li>
+  <li><a href="../modules/ui.LinkGroup.html">LinkGroup</a></li>
+  <li><a href="../modules/ui.Sheet.html">Sheet</a></li>
+  <li><a href="../modules/ui.Skin.html">Skin</a></li>
+  <li><a href="../modules/ui.Touch.html">Touch</a></li>
+  <li><a href="../modules/ui.Utils.html">Utils</a></li>
+  <li><a href="../modules/utils.Audio.html">Audio</a></li>
+  <li><a href="../modules/utils.Bind.html">Bind</a></li>
+  <li><a href="../modules/utils.CubicSpline.html">CubicSpline</a></li>
+  <li><a href="../modules/utils.Curves.html">Curves</a></li>
+  <li><a href="../modules/utils.Device.html">Device</a></li>
+  <li><a href="../modules/utils.File.html">File</a></li>
+  <li><a href="../modules/utils.Flag.html">Flag</a></li>
+  <li><a href="../modules/utils.Frames.html">Frames</a></li>
+  <li><a href="../modules/utils.Integrators.html">Integrators</a></li>
+  <li><a href="../modules/utils.Mask.html">Mask</a></li>
+  <li><a href="../modules/utils.ObjectHelper.html">ObjectHelper</a></li>
+  <li><a href="../modules/utils.Resource.html">Resource</a></li>
+  <li><a href="../modules/utils.Scenes.html">Scenes</a></li>
+  <li><a href="../modules/utils.Spline.html">Spline</a></li>
+  <li><a href="../modules/utils.String.html">String</a></li>
   <li><a href="../modules/utils.html">utils</a></li>
   <li><a href="../modules/var_dump.html">var_dump</a></li>
   <li><a href="../modules/var_ops.html">var_ops</a></li>
@@ -156,103 +219,85 @@
 <div id="content">
 
 <h1>Module <code>func_ops</code></h1>
-
 <p>This module defines some basic function primitives.</p>
 <p>
 
 </p>
 
+
 <h2><a href="#Functions">Functions</a></h2>
 <table class="function_list">
 	<tr>
-	<td class="name" nowrap><a href="#Call">Call&nbsp;(func, arg)</a></td>
-	<td class="summary">
-
-</td>
+	<td class="name" nowrap><a href="#Call">Call (func, arg)</a></td>
+	<td class="summary">Utility.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#Call_Multi">Call_Multi&nbsp;(func, ...)</a></td>
+	<td class="name" nowrap><a href="#Call_Multi">Call_Multi (func, ...)</a></td>
 	<td class="summary">Multiple-argument variant of <a href="../modules/func_ops.html#Call">Call</a>.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#CallMethod">CallMethod&nbsp;(owner, name, arg)</a></td>
-	<td class="summary">
-
-</td>
+	<td class="name" nowrap><a href="#CallMethod">CallMethod (owner, name, arg)</a></td>
+	<td class="summary">Utility.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#CallMethod_Multi">CallMethod_Multi&nbsp;(owner, name, ...)</a></td>
+	<td class="name" nowrap><a href="#CallMethod_Multi">CallMethod_Multi (owner, name, ...)</a></td>
 	<td class="summary">Multiple-argument variant of <a href="../modules/func_ops.html#CallMethod">CallMethod</a>.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#CallOrGet">CallOrGet&nbsp;(value, arg)</a></td>
+	<td class="name" nowrap><a href="#CallOrGet">CallOrGet (value, arg)</a></td>
 	<td class="summary">If <em>value</em> is callable, it is called and its results returned.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#CallOrGet_Multi">CallOrGet_Multi&nbsp;(value, ...)</a></td>
+	<td class="name" nowrap><a href="#CallOrGet_Multi">CallOrGet_Multi (value, ...)</a></td>
 	<td class="summary">Multiple-argument variant of <a href="../modules/func_ops.html#CallOrGet">CallOrGet</a>.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#EmptyString">EmptyString&nbsp;()</a></td>
-	<td class="summary">
-
-</td>
+	<td class="name" nowrap><a href="#EmptyString">EmptyString ()</a></td>
+	<td class="summary">Getter.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#False">False&nbsp;()</a></td>
-	<td class="summary">
-
-</td>
+	<td class="name" nowrap><a href="#False">False ()</a></td>
+	<td class="summary">Getter.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#Identity">Identity&nbsp;(arg)</a></td>
-	<td class="summary">
-
-</td>
+	<td class="name" nowrap><a href="#Identity">Identity (arg)</a></td>
+	<td class="summary">Utility.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#Identity_AllButFirst">Identity_AllButFirst&nbsp;(_, ...)</a></td>
+	<td class="name" nowrap><a href="#Identity_AllButFirst">Identity_AllButFirst (_, ...)</a></td>
 	<td class="summary">Returns its arguments, minus the first.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#Identity_Multi">Identity_Multi&nbsp;(...)</a></td>
+	<td class="name" nowrap><a href="#Identity_Multi">Identity_Multi (...)</a></td>
 	<td class="summary">Multiple-argument variant of <a href="../modules/func_ops.html#Identity">Identity</a>.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#Negater">Negater&nbsp;(func)</a></td>
+	<td class="name" nowrap><a href="#Negater">Negater (func)</a></td>
 	<td class="summary">Builds a function that passes its input to <em>func</em>.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#Negater_Multi">Negater_Multi&nbsp;(func)</a></td>
+	<td class="name" nowrap><a href="#Negater_Multi">Negater_Multi (func)</a></td>
 	<td class="summary">Multiple-argument variant of <a href="../modules/func_ops.html#Negater">Negater</a>.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#NewTable">NewTable&nbsp;()</a></td>
-	<td class="summary">
-
-</td>
+	<td class="name" nowrap><a href="#NewTable">NewTable ()</a></td>
+	<td class="summary">Utility.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#NoOp">NoOp&nbsp;()</a></td>
+	<td class="name" nowrap><a href="#NoOp">NoOp ()</a></td>
 	<td class="summary">No operation.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#One">One&nbsp;()</a></td>
-	<td class="summary">
-
-</td>
+	<td class="name" nowrap><a href="#One">One ()</a></td>
+	<td class="summary">Getter.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#True">True&nbsp;()</a></td>
-	<td class="summary">
-
-</td>
+	<td class="name" nowrap><a href="#True">True ()</a></td>
+	<td class="summary">Getter.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#Zero">Zero&nbsp;()</a></td>
-	<td class="summary">
-
-</td>
+	<td class="name" nowrap><a href="#Zero">Zero ()</a></td>
+	<td class="summary">Getter.</td>
 	</tr>
 </table>
 
@@ -261,232 +306,293 @@
 
 
     <h2><a name="Functions"></a>Functions</h2>
-    
     <dl class="function">
     <dt>
     <a name = "Call"></a>
-    <strong>Call&nbsp;(func, arg)</strong>
+    <strong>Call (func, arg)</strong>
     </dt>
     <dd>
-     
+    Utility.
 
     <h3>Parameters:</h3>
     <ul>
-       <li><code><em>func</em></code>: <strong>callable</strong>  Function to call.</li>
-       <li><code><em>arg</em></code>:  Argument.</li>
+        <li><span class="parameter">func</span>
+            <span class="types"><span class="type">callable</span></span>
+         Function to call.
+        </li>
+        <li><span class="parameter">arg</span>
+         Argument.
+        </li>
     </ul>
-
 
     <h3>Returns:</h3>
     <ol>
+
         Call results.
     </ol>
+
+
 
 
 </dd>
     <dt>
     <a name = "Call_Multi"></a>
-    <strong>Call_Multi&nbsp;(func, ...)</strong>
+    <strong>Call_Multi (func, ...)</strong>
     </dt>
     <dd>
-    Multiple-argument variant of <a href="../modules/func_ops.html#Call">Call</a>. 
+    Multiple-argument variant of <a href="../modules/func_ops.html#Call">Call</a>.
 
     <h3>Parameters:</h3>
     <ul>
-       <li><code><em>func</em></code>: <strong>callable</strong>  Function to call.</li>
-       <li><code><em>...</em></code>:  Arguments.</li>
+        <li><span class="parameter">func</span>
+            <span class="types"><span class="type">callable</span></span>
+         Function to call.
+        </li>
+        <li><span class="parameter">...</span>
+         Arguments.
+        </li>
     </ul>
-
 
     <h3>Returns:</h3>
     <ol>
+
         Call results.
     </ol>
+
+
 
 
 </dd>
     <dt>
     <a name = "CallMethod"></a>
-    <strong>CallMethod&nbsp;(owner, name, arg)</strong>
+    <strong>CallMethod (owner, name, arg)</strong>
     </dt>
     <dd>
-     
+    Utility.
 
     <h3>Parameters:</h3>
     <ul>
-       <li><code><em>owner</em></code>:  Method owner.</li>
-       <li><code><em>name</em></code>:  Method name.</li>
-       <li><code><em>arg</em></code>:  Argument.</li>
+        <li><span class="parameter">owner</span>
+         Method owner.
+        </li>
+        <li><span class="parameter">name</span>
+         Method name.
+        </li>
+        <li><span class="parameter">arg</span>
+         Argument.
+        </li>
     </ul>
-
 
     <h3>Returns:</h3>
     <ol>
+
         Call results.
     </ol>
+
+
 
 
 </dd>
     <dt>
     <a name = "CallMethod_Multi"></a>
-    <strong>CallMethod_Multi&nbsp;(owner, name, ...)</strong>
+    <strong>CallMethod_Multi (owner, name, ...)</strong>
     </dt>
     <dd>
-    Multiple-argument variant of <a href="../modules/func_ops.html#CallMethod">CallMethod</a>. 
+    Multiple-argument variant of <a href="../modules/func_ops.html#CallMethod">CallMethod</a>.
 
     <h3>Parameters:</h3>
     <ul>
-       <li><code><em>owner</em></code>:  Method owner.</li>
-       <li><code><em>name</em></code>:  Method name.</li>
-       <li><code><em>...</em></code>:  Arguments.</li>
+        <li><span class="parameter">owner</span>
+         Method owner.
+        </li>
+        <li><span class="parameter">name</span>
+         Method name.
+        </li>
+        <li><span class="parameter">...</span>
+         Arguments.
+        </li>
     </ul>
-
 
     <h3>Returns:</h3>
     <ol>
+
         Call results.
     </ol>
+
+
 
 
 </dd>
     <dt>
     <a name = "CallOrGet"></a>
-    <strong>CallOrGet&nbsp;(value, arg)</strong>
+    <strong>CallOrGet (value, arg)</strong>
     </dt>
     <dd>
     If <em>value</em> is callable, it is called and its results returned.  Otherwise, returns it.
 
     <h3>Parameters:</h3>
     <ul>
-       <li><code><em>value</em></code>:  Value to call or get.</li>
-       <li><code><em>arg</em></code>:  Call argument.</li>
+        <li><span class="parameter">value</span>
+         Value to call or get.
+        </li>
+        <li><span class="parameter">arg</span>
+         Call argument.
+        </li>
     </ul>
-
 
     <h3>Returns:</h3>
     <ol>
+
         Call results or <em>value</em>.
     </ol>
+
+
 
 
 </dd>
     <dt>
     <a name = "CallOrGet_Multi"></a>
-    <strong>CallOrGet_Multi&nbsp;(value, ...)</strong>
+    <strong>CallOrGet_Multi (value, ...)</strong>
     </dt>
     <dd>
-    Multiple-argument variant of <a href="../modules/func_ops.html#CallOrGet">CallOrGet</a>. 
+    Multiple-argument variant of <a href="../modules/func_ops.html#CallOrGet">CallOrGet</a>.
 
     <h3>Parameters:</h3>
     <ul>
-       <li><code><em>value</em></code>:  Value to call or get.</li>
-       <li><code><em>...</em></code>:  Call arguments.</li>
+        <li><span class="parameter">value</span>
+         Value to call or get.
+        </li>
+        <li><span class="parameter">...</span>
+         Call arguments.
+        </li>
     </ul>
-
 
     <h3>Returns:</h3>
     <ol>
+
         Call results or <em>value</em>.
     </ol>
+
+
 
 
 </dd>
     <dt>
     <a name = "EmptyString"></a>
-    <strong>EmptyString&nbsp;()</strong>
+    <strong>EmptyString ()</strong>
     </dt>
     <dd>
-     
-
+    Getter.
 
 
     <h3>Returns:</h3>
     <ol>
-        <a href="http://www.lua.org/manual/5.1/manual.html#5.4">string</a> <strong>""</strong>.
+
+           <span class="types"><a class="type" href="http://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
+        <strong>""</strong>.
     </ol>
+
+
 
 
 </dd>
     <dt>
     <a name = "False"></a>
-    <strong>False&nbsp;()</strong>
+    <strong>False ()</strong>
     </dt>
     <dd>
-     
-
+    Getter.
 
 
     <h3>Returns:</h3>
     <ol>
-        <strong>boolean</strong> <strong>false</strong>.
+
+           <span class="types"><span class="type">boolean</span></span>
+        <strong>false</strong>.
     </ol>
+
+
 
 
 </dd>
     <dt>
     <a name = "Identity"></a>
-    <strong>Identity&nbsp;(arg)</strong>
+    <strong>Identity (arg)</strong>
     </dt>
     <dd>
-     
+    Utility.
 
     <h3>Parameters:</h3>
     <ul>
-       <li><code><em>arg</em></code>:  Argument.</li>
+        <li><span class="parameter">arg</span>
+         Argument.
+        </li>
     </ul>
-
 
     <h3>Returns:</h3>
     <ol>
+
         <em>arg</em>.
     </ol>
+
+
 
 
 </dd>
     <dt>
     <a name = "Identity_AllButFirst"></a>
-    <strong>Identity_AllButFirst&nbsp;(_, ...)</strong>
+    <strong>Identity_AllButFirst (_, ...)</strong>
     </dt>
     <dd>
-    Returns its arguments, minus the first. 
+    Returns its arguments, minus the first.
 
     <h3>Parameters:</h3>
     <ul>
-       <li><code><em>_</em></code>:  Unused.</li>
-       <li><code><em>...</em></code>:  Arguments #2 and up.</li>
+        <li><span class="parameter">_</span>
+         Unused.
+        </li>
+        <li><span class="parameter">...</span>
+         Arguments #2 and up.
+        </li>
     </ul>
-
 
     <h3>Returns:</h3>
     <ol>
+
         Arguments #2 and up.
     </ol>
+
+
 
 
 </dd>
     <dt>
     <a name = "Identity_Multi"></a>
-    <strong>Identity_Multi&nbsp;(...)</strong>
+    <strong>Identity_Multi (...)</strong>
     </dt>
     <dd>
-    Multiple-argument variant of <a href="../modules/func_ops.html#Identity">Identity</a>. 
+    Multiple-argument variant of <a href="../modules/func_ops.html#Identity">Identity</a>.
 
     <h3>Parameters:</h3>
     <ul>
-       <li><code><em>...</em></code>:  Arguments.</li>
+        <li><span class="parameter">...</span>
+         Arguments.
+        </li>
     </ul>
-
 
     <h3>Returns:</h3>
     <ol>
+
         Arguments.
     </ol>
+
+
 
 
 </dd>
     <dt>
     <a name = "Negater"></a>
-    <strong>Negater&nbsp;(func)</strong>
+    <strong>Negater (func)</strong>
     </dt>
     <dd>
     Builds a function that passes its input to <em>func</em>.  If it returns a true result,
@@ -494,59 +600,75 @@
 
     <h3>Parameters:</h3>
     <ul>
-       <li><code><em>func</em></code>: <strong>callable</strong>  Function to negate, which is passed one argument.</li>
+        <li><span class="parameter">func</span>
+            <span class="types"><span class="type">callable</span></span>
+         Function to negate, which is passed one argument.
+        </li>
     </ul>
-
 
     <h3>Returns:</h3>
     <ol>
-        <strong>function</strong> Negated function.
+
+           <span class="types"><span class="type">function</span></span>
+        Negated function.
     </ol>
+
+
 
 
 </dd>
     <dt>
     <a name = "Negater_Multi"></a>
-    <strong>Negater_Multi&nbsp;(func)</strong>
+    <strong>Negater_Multi (func)</strong>
     </dt>
     <dd>
-    Multiple-argument variant of <a href="../modules/func_ops.html#Negater">Negater</a>. 
+    Multiple-argument variant of <a href="../modules/func_ops.html#Negater">Negater</a>.
 
     <h3>Parameters:</h3>
     <ul>
-       <li><code><em>func</em></code>: <strong>callable</strong>  Function to negate, which is passed multiple arguments.</li>
+        <li><span class="parameter">func</span>
+            <span class="types"><span class="type">callable</span></span>
+         Function to negate, which is passed multiple arguments.
+        </li>
     </ul>
-
 
     <h3>Returns:</h3>
     <ol>
-        <strong>function</strong> Negated function.
+
+           <span class="types"><span class="type">function</span></span>
+        Negated function.
     </ol>
+
+
 
 
 </dd>
     <dt>
     <a name = "NewTable"></a>
-    <strong>NewTable&nbsp;()</strong>
+    <strong>NewTable ()</strong>
     </dt>
     <dd>
-     
-
+    Utility.
 
 
     <h3>Returns:</h3>
     <ol>
-        <a href="http://www.lua.org/manual/5.1/manual.html#5.5">table</a> New empty table.
+
+           <span class="types"><a class="type" href="http://www.lua.org/manual/5.1/manual.html#5.5">table</a></span>
+        New empty table.
     </ol>
+
+
 
 
 </dd>
     <dt>
     <a name = "NoOp"></a>
-    <strong>NoOp&nbsp;()</strong>
+    <strong>NoOp ()</strong>
     </dt>
     <dd>
-    No operation. 
+    No operation.
+
 
 
 
@@ -555,49 +677,58 @@
 </dd>
     <dt>
     <a name = "One"></a>
-    <strong>One&nbsp;()</strong>
+    <strong>One ()</strong>
     </dt>
     <dd>
-     
-
+    Getter.
 
 
     <h3>Returns:</h3>
     <ol>
-        <strong>number</strong> 1.
+
+           <span class="types"><span class="type">number</span></span>
+        1.
     </ol>
+
+
 
 
 </dd>
     <dt>
     <a name = "True"></a>
-    <strong>True&nbsp;()</strong>
+    <strong>True ()</strong>
     </dt>
     <dd>
-     
-
+    Getter.
 
 
     <h3>Returns:</h3>
     <ol>
-        <strong>boolean</strong> <strong>true</strong>.
+
+           <span class="types"><span class="type">boolean</span></span>
+        <strong>true</strong>.
     </ol>
+
+
 
 
 </dd>
     <dt>
     <a name = "Zero"></a>
-    <strong>Zero&nbsp;()</strong>
+    <strong>Zero ()</strong>
     </dt>
     <dd>
-     
-
+    Getter.
 
 
     <h3>Returns:</h3>
     <ol>
-        <strong>number</strong> 0.
+
+           <span class="types"><span class="type">number</span></span>
+        0.
     </ol>
+
+
 
 
 </dd>
@@ -607,7 +738,7 @@
 </div> <!-- id="content" -->
 </div> <!-- id="main" -->
 <div id="about">
-<i>generated by <a href="http://github.com/stevedonovan/LDoc">LDoc 1.2</a></i>
+<i>generated by <a href="http://github.com/stevedonovan/LDoc">LDoc 1.4.0</a></i>
 </div> <!-- id="about" -->
 </div> <!-- id="container" -->
 </body>
