@@ -1,5 +1,6 @@
 --- Instances of this class can be used to check manually whether a timeout has elapsed,
 -- either once or periodically.
+-- @module Timer
 
 --
 -- Permission is hereby granted, free of charge, to any person obtaining
@@ -105,12 +106,14 @@ return class.Define(function(Timer)
 		return counter or 0
 	end
 
-	---@treturn number Timeout duration, or **nil** if the timer is stopped. 
+	--- Getter.
+	-- @treturn number Timeout duration, or **nil** if the timer is stopped. 
 	function Timer:GetDuration ()
 		return self[_duration]
 	end
 
-	---@treturn boolean The timer is paused?
+	--- Predicate.
+	-- @treturn boolean The timer is paused?
 	-- @see Timer:SetPause
 	function Timer:IsPaused ()
 		return self[_is_paused]

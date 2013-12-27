@@ -1,4 +1,6 @@
 --- Functionality common to most or all "dots", i.e. objects of interest that occupy tiles.
+-- The nomenclature is based on _Amazing Penguin_, this game's spiritual prequel, in which
+-- such things looked like dots.
 --
 -- All dots support an **ActOn** method, which defines what happens if So So acts on them.
 --
@@ -54,7 +56,7 @@ local Remaining
 local DotList
 
 -- Dummy properties
-local function NOP () end
+local function NoOp () end
 
 --- Adds a new _name_-type sensor dot to the level.
 --
@@ -87,7 +89,7 @@ function M.AddDot (group, info)
 	local dot = DotList[info.type](group, info)
 	local index = tile_maps.GetTileIndex(info.col, info.row)
 
-	dot.GetProperty = dot.GetProperty or NOP
+	dot.GetProperty = dot.GetProperty or NoOp
 
 	tile_maps.PutObjectAt(index, dot)
 	collision.MakeSensor(dot, dot:GetProperty("body_type"), dot:GetProperty("body"))
@@ -116,7 +118,7 @@ function M.EditorEvent (type, what, arg1, arg2, arg3)
 	if cons then
 		-- Build --
 		-- arg1: Level
-		-- arg2: Instance
+		-- arg2: Original entry
 		-- arg3: Dot to build
 		if what == "build" then
 			-- COMMON STUFF
@@ -136,7 +138,7 @@ function M.EditorEvent (type, what, arg1, arg2, arg3)
 			arg1:AddSeparator()
 --			arg1:AddCheckbox{ text = "On By Default?", value_name = "starts_on" }
 			arg1:AddCheckbox{ text = "Can Attach To Event Block?", value_name = "can_attach" }
-			arg1:AddSeparator()				
+			arg1:AddSeparator()
 
 		-- Verify --
 		elseif what == "verify" then
@@ -153,7 +155,8 @@ function M.EditorEvent (type, what, arg1, arg2, arg3)
 	end
 end
 
----@treturn array Unordered list of dot type names, as strings.
+--- Getter.
+-- @treturn {string,...} Unordered list of dot type names.
 function M.GetTypes ()
 	local types = {}
 

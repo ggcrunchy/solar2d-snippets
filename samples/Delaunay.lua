@@ -37,7 +37,7 @@ local buttons = require("ui.Button")
 local geom2d_ops = require("geom2d_ops")
 local line_ex = require("ui.LineEx")
 local mesh_ops = require("mesh_ops")
-local scenes = require("game.Scenes")
+local scenes = require("utils.Scenes")
 local timers = require("game.Timers")
 
 -- Corona globals --

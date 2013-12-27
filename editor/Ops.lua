@@ -28,7 +28,6 @@ local M = {}
 
 -- Standard library imports --
 local ipairs = ipairs
-local popen = io.popen
 local write = io.write
 
 -- Modules --
@@ -37,6 +36,7 @@ local dispatch_list = require("game.DispatchList")
 local events = require("editor.Events")
 local keyboard = require("ui.Keyboard")
 local persistence = require("game.Persistence")
+local str_utils = require("utils.String")
 local timers = require("game.Timers")
 
 -- Corona globals --
@@ -55,11 +55,9 @@ local function Write (name, func, wip)
 	M.SetLevelName(name)
 
 	local blob = persistence.Encode(func(), not wip)
+print(blob)
+	str_utils.SendToClipboard(blob)
 
-	M.SendToClipboard(blob)
-if not wip then
-	print(blob)
-end
 	persistence.SaveLevel(name, blob, true, wip, IsTemp)
 end
 
@@ -128,8 +126,7 @@ local function AuxSave ()
 	local saved = { main = { common.GetDims() } }
 
 	dispatch_list.CallList("save_level_wip", saved)
-
-	events.ResolveLinks(saved, true)
+	events.ResolveLinks_Save(saved)
 
 	return saved
 end
@@ -143,7 +140,7 @@ end
 --
 -- This table is then added, as a string, to the level database. If possible, this string is
 -- also sent to the clipboard.
--- @see editor.Common.IsVerified, game.DispatchList.CallList, game.Persistence.SaveLevel, GetLevelName, SendToClipboard, Verify
+-- @see editor.Common.IsVerified, game.DispatchList.CallList, game.Persistence.SaveLevel, GetLevelName, Verify
 function M.Build ()
 	M.Verify()
 
@@ -152,8 +149,7 @@ function M.Build ()
 			local level = AuxSave()
 
 			dispatch_list.CallList("build_level", level)
-
-			events.ResolveLinks(level, "build")
+			events.ResolveLinks_Build(level)
 
 			return level
 		end, false)
@@ -165,7 +161,8 @@ function M.CleanUp ()
 	IsTemp, LevelName, View = nil
 end
 
----@treturn string|nil Current working name, if assigned.
+--- Getter.
+-- @treturn string|nil Current working name, if assigned.
 -- @see SetLevelName
 function M.GetLevelName ()
 	return LevelName
@@ -188,7 +185,7 @@ end
 --
 -- This table is then added, as a string, to the level database (as a WIP). If possible, this
 -- string is also sent to the clipboard.
--- @see editor.Common.IsDirty, game.DispatchList.CallList, game.Persistence.SaveLevel, GetLevelName, SendToClipboard
+-- @see editor.Common.IsDirty, game.DispatchList.CallList, game.Persistence.SaveLevel, GetLevelName
 function M.Save ()
 	if common.IsDirty() then
 		GetLevelName(function()
@@ -198,18 +195,6 @@ function M.Save ()
 
 			return scene
 		end, true)
-	end
-end
-
----@string text If possible, this text is sent to the clipboard.
-function M.SendToClipboard (text)
-	if system.getInfo("platformName") == "Win" then
-		local clipboard = popen("clip", "w")
-
-		if clipboard then
-			clipboard:write(text)
-			clipboard:close()
-		end
 	end
 end
 
@@ -258,17 +243,17 @@ function M.Verify ()
 
 		-- If the verification takes a while, post the activity indicator.
 		timers.RepeatEx(function(event)
- 			if done then
+			if done then
 				if event.count > 3 then
 					native.setActivityIndicator(false)
 				end
 
- 				return "cancel"
+				return "cancel"
 
 			elseif event.count == 3 then
 				native.setActivityIndicator(true)
- 			end
- 		end, 10)
+			end
+		end, 10)
 
 		-- Run all verification listeners (performing extra passes if requested), quitting
 		-- if some issues came up.

@@ -144,9 +144,10 @@ local function UpdateMin (H, node)
 	end
 end
 
----@tparam fibonacci_heap H Heap.
+--- Update _node_'s key such that it is less than (or equal) to the current key.
+-- @tparam fibonacci_heap H Heap.
 -- @tparam fibonacci_heap_node node Node with key to decrease, which must be in _H_.
--- @param new Input used to produce new key, such that result < current key.
+-- @param new Input used to produce new key.
 -- @see New
 function M.DecreaseKey (H, node, new)
 	H:update(node, new)
@@ -395,7 +396,8 @@ function M.Insert_UserNode (H, init, node)
 	end
 end
 
----@function IsEmpty
+--- Predicate.
+-- @function IsEmpty
 -- @tparam fibonacci_heap H Heap.
 -- @treturn boolean The heap is empty?
 M.IsEmpty = heap_utils.IsEmpty_NilRoot

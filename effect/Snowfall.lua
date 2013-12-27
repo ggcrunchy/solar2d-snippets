@@ -34,8 +34,8 @@ local type = type
 local unpack = unpack
 
 -- Modules --
-local curves = require("effect.Curves")
-local frames = require("game.Frames")
+local curves = require("utils.Curves")
+local frames = require("utils.Frames")
 local index_ops = require("index_ops")
 local timers = require("game.Timers")
 

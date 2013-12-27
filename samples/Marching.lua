@@ -31,7 +31,7 @@ local buttons = require("ui.Button")
 local circle = require("fill.Circle")
 local line_ex = require("ui.LineEx")
 local marching_squares = require("fill.MarchingSquares")
-local scenes = require("game.Scenes")
+local scenes = require("utils.Scenes")
 local timers = require("game.Timers")
 
 -- Corona globals --

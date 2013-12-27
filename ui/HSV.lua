@@ -27,12 +27,6 @@
 local abs = math.abs
 local unpack = unpack
 
--- Modules --
-local numeric_ops = require("numeric_ops")
-
--- Corona globals --
-local graphics = graphics
-
 -- Cached module references --
 local _FindHue_
 
@@ -45,36 +39,35 @@ local RGB = {}
 --- Finds the positions of the bar and color nodes for a given color; for non-gray colors, loads RGB as a consequence
 -- DOCMEMORE
 function M.ConvertRGB (r, g, b, out)
-	local hue, sat
+	out = out or RGB
 
-	-- Sanitize the inputs.
-	r, g, b, out = numeric_ops.RoundTo(r), numeric_ops.RoundTo(g), numeric_ops.RoundTo(b), out or RGB
+	local hue, sat
 
 	-- Three equal components: white, black, or shade of gray
 	-- * Hue is irrelevant: arbitrarily choose red. Interpolate down the left side.
 	if r == g and g == b then
-		out[1], out[2], out[3] = 255, 0, 0
+		out[1], out[2], out[3] = 1, 0, 0
 
 	-- Otherwise:
-	-- * The interpolating colors each have at least one 0 component and one 255 component.
-	-- * The other component is either 0 or 255.
+	-- * The interpolating colors each have at least one 0 component and one 1 component.
+	-- * The other component is either 0 or 1.
 	-- * Only one component changes between two interpolands.
 	-- * In keeping with the first constraint, this means one of the doubled components
-	-- changes, i.e. one of the two 0's becomes 255 or one of the two 255's becomes 0.
-	-- * Conversely, this means there is a 0 and a 255 component that stay fixed.
-	-- * Without loss of generality, 0 <= b, g, r <= 255, b <= g, g <= r | b < r
+	-- changes, i.e. one of the two 0's becomes 1 or one of the two 1's becomes 0.
+	-- * Conversely, this means there is a 0 and a 1 component that stay fixed.
+	-- * Without loss of generality, 0 <= b, g, r <= 1, b <= g, g <= r | b < r
 	-- * Then between white and the interpolating color we have:
 	-- * u = 0 at left side, 1 at right
-	-- * r = 255 + (255 - 255) * u = 255
-	-- * g = 255 + (G - 255) * u = 255 * (1 - u) + G * u (0 <= G <= 255)
-	-- * b = 255 + (0 - 255) * u = 255 * (1 - u)
+	-- * r = 1 + (1 - 1) * u = 1
+	-- * g = 1 + (G - 1) * u = (1 - u) + G * u (0 <= G <= 1)
+	-- * b = 1 + (0 - 1) * u = (1 - u)
 	-- * To get the full panoply of colors, we will interpolate this toward black:
 	-- * v' = 1 - v (v = 0 at top row, 1 at bottom)
-	-- * r = v * 0 + (255) * v' = 255 * v', and v' = r / 255
-	-- * g = v * 0 + (255 * (1 - u) + G * u) * v' = 255 * (1 - u) * v' + G * u * v'
-	-- * b = v * 0 + (255 * (1 - u)) * v' = 255 * (1 - u) * v'
+	-- * r = v * 0 + (1) * v' = 1 * v', and v' = r
+	-- * g = v * 0 + (1 - u + G * u) * v' = (1 - u) * v' + G * u * v'
+	-- * b = v * 0 + (1 - u) * v' = (1 - u) * v'
 	-- * Some rearrangement on b gives u = (r - b) / r. (Since r > b, r > 0, and 0 < u <= 1)
-	-- * A little algebra gives us g = b + G * (r - b) / 255, or G = 255 * (g - b) / (r - b).
+	-- * A little algebra gives us g = b + G * (r - b), or G = (g - b) / (r - b).
 	else
 		out[1], out[2], out[3] = r, g, b
 
@@ -93,13 +86,13 @@ function M.ConvertRGB (r, g, b, out)
 		-- Compute hue color and saturation.
 		sat = (r - b) / r
 
-		out[ri], out[gi], out[bi] = 255, 255 * (g - b) / (r - b), 0
+		out[ri], out[gi], out[bi] = 1, (g - b) / (r - b), 0
 
 		-- Find the hue position from the chosen color.
 		hue = _FindHue_(unpack(out, 1, 3))
 	end
 
-	return hue or 0, sat or 0, r / 255
+	return hue or 0, sat or 0, r
 end
 
 -- Are components close enough to consider equal?
@@ -109,26 +102,26 @@ end
 
 -- Computes the hue position, given an interval and offset
 local function HuePos (base, t)
-	return (base + t / 255) / 6
+	return (base + t) / 6
 end
 
 --- Find the hue position where a color falls
 -- DOCMEMORE
 function M.FindHue (r, g, b)
-	if IsEqual(r, 255) then
+	if IsEqual(r, 1) then
 		-- Yellow -> Red --
 		if g > 0 then
-			return HuePos(5, 255 - g)
+			return HuePos(5, 1 - g)
 
 		-- Red -> Magenta --
 		else
 			return HuePos(0, b)
 		end
 
-	elseif IsEqual(g, 255) then
+	elseif IsEqual(g, 1) then
 		-- Cyan -> Green --
 		if b > 0 then
-			return HuePos(3, 255 - b)
+			return HuePos(3, 1 - b)
 
 		-- Green -> Yellow --
 		else
@@ -138,7 +131,7 @@ function M.FindHue (r, g, b)
 	else
 		-- Magenta -> Blue --
 		if r > 0 then
-			return HuePos(1, 255 - r)
+			return HuePos(1, 1 - r)
 
 		-- Blue -> Cyan --
 		else
@@ -149,7 +142,7 @@ end
 
 -- Additive primary and secondary colors: red -> magenta -> blue -> cyan -> green -> yellow -> red --
 local HueColors = {
-	{ 255, 0, 0 }, { 255, 0, 255 }, { 0, 0, 255 }, {0, 255, 255 }, { 0, 255, 0 }, { 255, 255, 0 }
+	{ 1, 0, 0 }, { 1, 0, 1 }, { 0, 0, 1 }, {0, 1, 1 }, { 0, 1, 0 }, { 1, 1, 0 }
 }
 
 -- Close the loop.
@@ -157,15 +150,15 @@ HueColors[7] = HueColors[1]
 
 --- DOCME
 function M.HueGradient (index, dir)
-	return graphics.newGradient(HueColors[index], HueColors[index + 1], dir)
+	return { type = "gradient", color1 = HueColors[index], color2 = HueColors[index + 1], direction = dir or "down" }
 end
 
 --- DOCME
 function M.RGB_ColorSV (hue_r, hue_g, hue_b, sat, value)
-	local gray, t = (1 - sat) * value * 255, sat * value
-	local r = numeric_ops.RoundTo(gray + t * hue_r)
-	local g = numeric_ops.RoundTo(gray + t * hue_g)
-	local b = numeric_ops.RoundTo(gray + t * hue_b)
+	local gray, t = (1 - sat) * value, sat * value
+	local r = gray + t * hue_r
+	local g = gray + t * hue_g
+	local b = gray + t * hue_b
 
 	return r, g, b
 end

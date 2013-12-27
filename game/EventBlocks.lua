@@ -42,8 +42,8 @@ local random = math.random
 local yield = coroutine.yield
 
 -- Modules --
+local bind_utils = require("utils.Bind")
 local coroutine_ex = require("coroutine_ex")
-local defer = require("game.Defer")
 local dispatch_list = require("game.DispatchList")
 local fx = require("game.FX")
 local numeric_ops = require("numeric_ops")
@@ -209,7 +209,7 @@ local function NewBlock (col1, row1, col2, row2)
 			local col, row = random(cmin, cmax), random(rmin, rmax)
 			local index = tile_maps.GetTileIndex(col, row)
 			local x, y = tile_maps.GetTilePos(index)
-			
+
 			total = max(total, fx.Poof(group, x, y))
 		end
 
@@ -235,23 +235,27 @@ local function NewBlock (col1, row1, col2, row2)
 		end
 	end
 
-	---@treturn int Minimum column...
+	--- Getter.
+	-- @treturn int Minimum column...
 	-- @treturn int ...and maximum.
 	function block:GetColumns ()
 		return cmin, cmax
 	end
 
-	---@treturn DisplayGroup The block's main group.
+	--- Getter.
+	-- @treturn DisplayGroup The block's main group.
 	function block:GetGroup ()
 		return bgroup
 	end
 
-	---@treturn DisplayGroup The block's image group.
+	--- Getter.
+	-- @treturn DisplayGroup The block's image group.
 	function block:GetImageGroup ()
 		return igroup
 	end
 
-	---@treturn int Minimum row...
+	--- Getter.
+	-- @treturn int Minimum row...
 	-- @treturn int ...and maximum.
 	function block:GetRows ()
 		return rmin, rmax
@@ -285,7 +289,8 @@ local function NewBlock (col1, row1, col2, row2)
 		return cmin_save, rmin_save, cmax_save, rmax_save
 	end
 
-	---@int index Tile index.
+	--- Getter.
+	-- @int index Tile index.
 	-- @treturn uint Tile flags at block creation time.
 	-- @see game.TileFlags.GetFlags
 	function block:GetOldFlags (index)
@@ -382,7 +387,7 @@ function M.AddBlock (info)
 	local block = NewBlock(info.col1, info.row1, info.col2, info.row2)
 	local event = assert(EventBlockList[info.type], "Invalid event block")(info, block)
 
-	defer.Defer("loading_level", event, info.uid, "fire")
+	bind_utils.Publish("loading_level", event, info.uid, "fire")
 
 	Events[#Events + 1] = event -- TODO: Forgo this when not debugging?
 end
@@ -406,7 +411,7 @@ function M.EditorEvent (type, what, arg1, arg2, arg3)
 	if factory then
 		-- Build --
 		-- arg1: Level
-		-- arg2: Instance
+		-- arg2: Original entry
 		-- arg3: Block to build
 		if what == "build" then
 			for _, key in ipairs(BlockKeys) do
@@ -456,7 +461,8 @@ function M.EditorEvent (type, what, arg1, arg2, arg3)
 	end
 end
 
----@param name Name used to register event in @{AddBlock}.
+--- Getter.
+-- @param name Name used to register event in @{AddBlock}.
 -- @treturn callable If missing, a no-op. Otherwise, this is a function called as
 --   result = event(what, arg1, arg2),
 -- which should handle the following choices of _what_:
@@ -488,7 +494,8 @@ function M.FireAll (forward)
 	end
 end
 
----@treturn array Unordered list of event block type names, as strings.
+--- Getter.
+-- @treturn {string,...} Unordered list of event block type names.
 function M.GetTypes ()
 	local types = {}
 

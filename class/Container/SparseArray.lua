@@ -1,5 +1,6 @@
 --- This class provides an array from which elements may be removed, without upsetting
 -- the positions of other elements and maintaining the ability to iterate the elements.
+-- @module SparseArray
 
 --
 -- Permission is hereby granted, free of charge, to any person obtaining
@@ -98,8 +99,9 @@ return class.Define(function(SparseArray)
 		end
 	end
 
-	---@param elem Element to find in the array.
-	-- @treturn uint Slot index, or **nil** if the element was not found.
+	--- Finds _elem_ in the array.
+	-- @param elem
+	-- @treturn uint Slot index, or **nil** if _elem_ was not found.
 	function SparseArray:Find (elem)
 		local index = Find(self[_array], elem)
 
@@ -137,8 +139,9 @@ return class.Define(function(SparseArray)
 		SA[_free] = free
 	end
 
-	---@param elem Element to remove from the array, cf. @{SparseArray:RemoveAt}.
-	-- @treturn uint Slot index of element, or **nil** if the element was not found.
+	--- Removes _elem_ from the array, cf. @{SparseArray:RemoveAt}.
+	-- @param elem
+	-- @treturn uint Slot index of _elem_, or **nil** if it was not found.
 	function SparseArray:FindAndRemove (elem)
 		local index = Find(self[_array], elem)
 
@@ -172,7 +175,8 @@ return class.Define(function(SparseArray)
 		return type(elem) ~= "number"
 	end
 
-	---@uint index Slot index.
+	--- Getter.
+	-- @uint index Slot index.
 	-- @return If the slot is in use, element in the slot; otherwise, **nil**.
 	--
 	-- **N.B.** If **nil** elements have been inserted, @{SparseArray:InUse} can be used to
@@ -187,7 +191,8 @@ return class.Define(function(SparseArray)
 		end
 	end
 
-	---@param null Value to mark unused slots.
+	--- Gets the elements as an array.
+	-- @param null Value to mark unused slots.
 	--
 	-- If this is callable, the value is instead the result of `null(element)`, _element_
 	-- being whatever occupies the slot.
@@ -228,8 +233,9 @@ return class.Define(function(SparseArray)
 		arr[i] = fixed
 	end
 
-	---@param elem Element to insert.
-	-- @treturn uint Slot index at which element was inserted.
+	--- Inserts _elem_ into the array.
+	-- @param elem
+	-- @treturn uint Slot index at which _elem_ was inserted.
 	function SparseArray:Insert (elem)
 		local arr, free, index = self[_array], self[_free]
 
@@ -244,7 +250,8 @@ return class.Define(function(SparseArray)
 		return index
 	end
 
-	---@uint index Slot index.
+	--- Predicate.
+	-- @uint index Slot index.
 	-- @treturn boolean Slot contains an element?
 	function SparseArray:InUse (index)
 		return InUse(self[_array], index)
@@ -261,7 +268,8 @@ return class.Define(function(SparseArray)
 		end
 	end
 
-	--- @{ipairs}-style iterator over the used slots of the sparse array.
+	--- Iterator.
+	-- @{ipairs}-style iterator over the used slots of the sparse array.
 	-- @treturn iterator Supplies slot index, element in slot.
 	function SparseArray:Ipairs ()
 		return AuxIpairs, self, 0
@@ -276,7 +284,8 @@ return class.Define(function(SparseArray)
 		return #self[_array]
 	end
 
-	---@uint index Slot index of element to remove.
+	--- Removes an element from the array.
+	-- @uint index Slot index of element.
 	--
 	-- If the slot is not in use, this is a no-op.
 	-- @see SparseArray:InUse

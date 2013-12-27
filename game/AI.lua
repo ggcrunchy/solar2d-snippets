@@ -114,7 +114,7 @@ end
 
 --
 local function TSign (n, bias)
-	return n, n < 0 and -bias or bias
+	return n + (n < 0 and -bias or bias)
 end
 
 --- DOCME

@@ -23,4 +23,4 @@
 -- [ MIT license: http://www.opensource.org/licenses/mit-license.php ]
 --
 
-return { "General", "Ambience", "Dots", "EventBlocks", "Tiles", "Settings" }
+return { "Player", "Dots", "EventBlocks", "Tiles", "Triggers", "Audio", "Background", "GlobalEvents", "Positions", "Settings" }

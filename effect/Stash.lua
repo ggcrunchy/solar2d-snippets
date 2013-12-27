@@ -59,7 +59,7 @@ local function Pull (cache, into)
 end
 
 -- Stock circle constructor
-function NewCircle (into)
+local function NewCircle (into)
 	return display.newCircle(into, 0, 0, 1)
 end
 
@@ -79,7 +79,7 @@ function M.PullCircle (what, into, new)
 end
 
 -- Stock rect constructor
-function NewRect (into)
+local function NewRect (into)
 	return display.newRect(into, 0, 0, 1, 1)
 end
 

@@ -32,22 +32,14 @@ local transition = transition
 -- Exports --
 local M = {}
 
--- Handle for glow transition --
-local GlowHandle
-
 -- Ping-pong params used to make things glow --
-local GlowParams = { time = 550, transition = easing.inOutQuad }
-
-function GlowParams.onComplete (object)
-	GlowParams.t = 1 - GlowParams.t
-
-	GlowHandle = transition.to(object, GlowParams)
-end
+local GlowParams = { time = 1100, t = 1, transition = easing.inOutQuad, iterations = 0 }
 
 -- Common glow interpolation factor --
 local Glow = {}
 
----@byte r1 Red #1.
+--- Factory.
+-- @byte r1 Red #1.
 -- @byte g1 Green #1.
 -- @byte b1 Blue #1.
 -- @byte r2 Red #2.
@@ -58,13 +50,16 @@ local Glow = {}
 -- @see GetGlowTime
 function M.ColorInterpolator (r1, g1, b1, r2, g2, b2)
 	return function()
-		local s, t = 1 - Glow.t, Glow.t
+		local gt = 1 - 2 * Glow.t
+		local u = 1 - gt * gt
+		local s, t = 1 - u, u
 
 		return s * r1 + t * r2, s * g1 + t * g2, s * b1 + t * b2
 	end
 end
 
----@treturn number Current glow time, &isin; [0, 1].
+--- Getter.
+-- @treturn number Current glow time, &isin; [0, 1].
 function M.GetGlowTime ()
 	return Glow.t
 end
@@ -74,15 +69,13 @@ dispatch_list.AddToMultipleLists{
 	-- Enter Level --
 	enter_level = function()
 		Glow.t = 0
-		GlowParams.t = 1
-		GlowHandle = transition.to(Glow, GlowParams)
+
+		transition.to(Glow, GlowParams)
 	end,
 
 	-- Leave Level --
 	leave_level = function()
-		transition.cancel(GlowHandle)
-
-		GlowHandle = nil
+		transition.cancel(Glow)
 	end
 }
 

@@ -1,6 +1,6 @@
 --- Checkbox UI elements.
 --
--- **TODO**: Document skin...
+-- @todo Document skin...
 
 --
 -- Permission is hereby granted, free of charge, to any person obtaining
@@ -76,12 +76,15 @@ function M.Checkbox (group, skin, x, y, w, h, func)
 	-- Build a new group and add it to the parent. Add follow-up logic, if available.
 	local bgroup = display.newGroup()
 
+	bgroup.anchorChildren = true
+	bgroup.x, bgroup.y = x, y
+
 	group:insert(bgroup)
 
 	bgroup.m_func = func
 
 	-- Add the box itself.
-	local rect = display.newRoundedRect(bgroup, x, y, w, h, skin.checkbox_radius)
+	local rect = display.newRoundedRect(bgroup, 0, 0, w, h, skin.checkbox_radius)
 
 	rect:addEventListener("touch", CheckTouch)
 	rect:setFillColor(colors.GetColor(skin.checkbox_backcolor))
@@ -103,7 +106,8 @@ function M.Checkbox (group, skin, x, y, w, h, func)
 		Check(bgroup, bgroup[2], not not check)
 	end
 
-	---@treturn boolean The checkbox is checked?
+	--- Predicate.
+	-- @treturn boolean The checkbox is checked?
 	function bgroup:IsChecked ()
 		return bgroup[2].isVisible
 	end

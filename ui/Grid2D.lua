@@ -1,6 +1,6 @@
 --- 2D grid UI elements.
 --
--- **TODO**: Document skin...
+-- @todo Document skin...
 
 --
 -- Permission is hereby granted, free of charge, to any person obtaining
@@ -32,6 +32,7 @@ local remove = table.remove
 local colors = require("ui.Color")
 local grid_iterators = require("grid_iterators")
 local index_ops = require("index_ops")
+local mask = require("utils.Mask")
 local numeric_ops = require("numeric_ops")
 local skins = require("ui.Skin")
 local touch = require("ui.Touch")
@@ -132,7 +133,21 @@ function M.Grid2D (group, skin, x, y, w, h, cols, rows, func)
 	group:insert(ggroup)
 
 	--
+--[[
+	local name, xs, ys = mask.NewMask_Pattern("__GRID2D_MASK_%ix%i__", w, h)
+	local mask = graphics.newMask(name, system.CachesDirectory)
+
+	ggroup:setMask(mask)
+
+	ggroup.maskScaleX = xs
+	ggroup.maskScaleY = ys
+	ggroup.maskX = x + w / 2
+	ggroup.maskY = y + h / 2
+]]
+	--
 	local back = display.newRect(ggroup, x, y, w, h)
+
+	back:translate(w / 2, h / 2)
 
 	if not skin.grid2d_backopaque then
 		back.isHitTestable = true
@@ -241,7 +256,7 @@ end
 
 -- Main 2D grid skin --
 skins.AddToDefaultSkin("grid2d", {
-	backcolor = { .3, .3, .3, .75 },
+	backcolor = { .375, .375, .375, .75 },
 	backopaque = true,
 	linecolor = "white",
 	linewidth = 2

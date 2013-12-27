@@ -171,13 +171,14 @@ dispatch_list.AddToMultipleLists{
 --
 return function(what, arg_)
 	if what == "options" then -- arg_: data group
-		local message = display.newText(arg_, Options[Index], 400, 200, native.systemFont, 50)
-
-		button.Button(arg_, nil, 20, 200, 200, 50, function()
+		local message
+		local button = button.Button(arg_, nil, 120, 210, 200, 50, function()
 			Index = index_ops.RotateIndex(Index, #Options)
 
 			message.text = Options[Index]
 		end, "Debug...")
+
+		message = display.newText(arg_, Options[Index], 400, button.y, native.systemFont, 50)
 
 		for i, key, text in iterators.ArgsByN(2,
 --			"KillP", "Add 'Kill player' button?",
@@ -185,11 +186,13 @@ return function(what, arg_)
 		) do
 			local y = 230 + i * 50
 
-			local cb = checkbox.Checkbox(arg_, nil, 10, y, 30, 30, function(_, check)
+			local cb = checkbox.Checkbox(arg_, nil, 40, y, 30, 30, function(_, check)
 				ButtonsToAdd[key] = check
 			end)
 
-			display.newText(arg_, text, cb.x + cb.width + 40, y, native.systemFont, 20)
+			local str = display.newText(arg_, text, 0, y, native.systemFont, 20)
+			
+			str.anchorX, str.x = 0, cb.x + cb.width + 10
 
 			cb:Check(ButtonsToAdd[key])
 		end

@@ -45,9 +45,9 @@ local M = {}
 -- --
 local Registered = setmetatable({}, { __mode = "kv" })
 
----
--- @tparam table funcs
--- @return
+--- DOCME
+-- @ptable funcs
+-- @return X
 function M.Register (funcs)
 	for _, func in ipairs(funcs) do
 		assert(not Registered[func], "Function already registered")

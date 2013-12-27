@@ -27,7 +27,7 @@
 local remove = os.remove
 
 -- Modules --
-local generators = require("effect.Generators")
+local mask = require("utils.Mask")
 
 -- Corona globals --
 local graphics = graphics
@@ -36,7 +36,8 @@ local system = system
 -- Exports --
 local M = {}
 
----@pobject object Object with a target group.
+--- Getter.
+-- @pobject object Object with a target group.
 -- @treturn DisplayGroup Target assigned to _object_ by @{SetTarget}, or **nil** if absent.
 function M.GetTarget (object)
 	return object.m_target
@@ -61,7 +62,7 @@ function M.SetMask (object, ref, name, dir)
 		local xscale, yscale = object.maskScaleX, object.maskScaleY
 
 		if name == true then
-			dir, name, xscale, yscale = system.TemporaryDirectory, generators.NewMask(ref.width, ref.height)
+			dir, name, xscale, yscale = system.TemporaryDirectory, mask.NewMask(ref.width, ref.height)
 		end
 
 		object:setMask(graphics.newMask(name, dir))

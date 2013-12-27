@@ -29,16 +29,16 @@ local pairs = pairs
 local sin = math.sin
 
 -- Modules --
-local audio = require("game.Audio")
+local audio = require("utils.Audio")
 local collision = require("game.Collision")
 local common = lazy_require("editor.Common")
 local dispatch_list = require("game.DispatchList")
-local frames = require("game.Frames")
+local frames = require("utils.Frames")
 local fx = require("game.FX")
+local geom2d_ops = require("geom2d_ops")
 local links = lazy_require("editor.Links")
 local markers = require("effect.Markers")
 local tags = lazy_require("editor.Tags")
-local utils = require("utils")
 
 -- Corona globals --
 local display = display
@@ -128,7 +128,7 @@ local function DoWarp (warp, func)
 
 					MoveParams.x = tx
 					MoveParams.y = ty
-					MoveParams.time = utils.QuantizeDistance("floor", dx, dy, 200, 500)
+					MoveParams.time = geom2d_ops.DistanceToBin(dx, dy, 200, 5) * 100
 					MoveParams.onComplete = MoveParams_OC
 
 					func("move_began_moving", warp, target)
@@ -168,7 +168,8 @@ function Warp:ActOn ()
 	end
 end
 
----@param item Item to add to the warp's "cargo".
+--- Utility.
+-- @param item Item to add to the warp's "cargo".
 function Warp:AddItem (item)
 	local items = self.m_items or {}
 
@@ -293,7 +294,7 @@ end
 local function OnEditorEvent (what, arg1, arg2, arg3)
 	-- Build --
 	-- arg1: Level
-	-- arg2: Instance
+	-- arg2: Original entry
 	-- arg3: Item to build
 	if what == "build" then
 		arg3.reciprocal_link = nil
@@ -360,16 +361,16 @@ local function OnEditorEvent (what, arg1, arg2, arg3)
 	-- arg3: Key
 	elseif what == "verify" then
 		local warp = arg2[arg3]
-		local rep = common.GetBinding(warp, true)
+		local rep = common.GetRepFromValues(warp)
 		local nfrom = links.CountLinks(rep, "from")
 
 		if links.HasLinks(rep, "to") or (warp.reciprocal_link and nfrom == 1) then
 			return
 		elseif warp.reciprocal_link then
 			if nfrom == 0 then
-				arg[#arg + 1] = "Missing back-link"
+				arg1[#arg1 + 1] = "Missing back-link"
 			elseif nfrom > 1 then
-				arg[#arg + 1] = "Ambiguous back-link"
+				arg1[#arg1 + 1] = "Ambiguous back-link"
 			end
 		else
 			arg1[#arg1 + 1] = "Missing target"

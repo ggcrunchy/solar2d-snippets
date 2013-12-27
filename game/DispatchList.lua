@@ -40,14 +40,16 @@ local M = {}
 -- Lazily created dispatch lists --
 local Lists = lazy_tables.SubTablesOnDemand()
 
----@param name Event name.
+--- Utility.
+-- @param name Event name.
 -- @callable func Function to call on dispatch of event _name_.
 -- @see CallList
 function M.AddToList (name, func)
 	insert(Lists[name], func)
 end
 
----@ptable to_add Table, where each key is an event name, as per @{CallList}, and the
+--- Utility.
+-- @ptable to_add Table, where each key is an event name, as per @{CallList}, and the
 -- value is the function to be called on dispatch of that event.
 --
 -- To allow convenient reuse, the value may be a string, in which case it is used to lookup

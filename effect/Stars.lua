@@ -74,7 +74,7 @@ function M.Star (group, x, y, radius, angle)
 	for i = 0, 5 do
 		star:append(Point(x, y, angle, radius, i))
 	end
-
+-- TODO: FIXME!
 	star.xReference = x - star.m_x0
 	star.yReference = y - star.m_y0
 

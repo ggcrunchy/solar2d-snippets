@@ -1,4 +1,4 @@
----
+--- DOCMAYBE
 
 --
 -- Permission is hereby granted, free of charge, to any person obtaining
@@ -41,7 +41,8 @@ local _Meld_
 -- Exports --
 local M = {}
 
----@param H Heap.
+--- DOCME
+-- @param H Heap.
 -- @param element
 function M.Delete (H, element)
 	-- TODO!

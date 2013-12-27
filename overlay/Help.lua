@@ -49,8 +49,9 @@ function Overlay:createScene ()
 	-- Corona hack: block input to lower layer
 	local wall = display.newRect(self.view, 0, 0, display.contentWidth, display.contentHeight)
 
-	wall:setFillColor(0, 64)
 	wall:addEventListener("touch", DefTouch)
+	wall:setFillColor(0, .25)
+	wall:translate(display.contentCenterX, display.contentCenterY)
 
 	--
 	self.help_group = display.newGroup()
@@ -62,8 +63,9 @@ function Overlay:createScene ()
 
 	local rect = display.newRoundedRect(self.message_group, 0, 0, display.contentWidth - 400, display.contentHeight - 300, 25)
 
-	rect:setFillColor(0, 0, 255, 192)
-	rect:setStrokeColor(0, 255, 0, 64)
+	rect:setFillColor(0, 0, 1, .75)
+	rect:setStrokeColor(0, 1, 0, .25)
+	rect:translate(rect.width / 2, rect.height / 2)
 
 	rect.x, rect.y = display.contentCenterX, display.contentCenterY
 	rect.strokeWidth = 5
@@ -102,10 +104,12 @@ function Overlay:enterScene ()
 			local bounds = binding.contentBounds
 
 			--
-			local help = display.newRoundedRect(self.help_group, bounds.xMin, bounds.yMin, bounds.xMax - bounds.xMin, bounds.yMax - bounds.yMin, 15)
+			local minx, miny = bounds.xMin, bounds.yMin
+			local maxx, maxy = bounds.xMax, bounds.yMax
+			local help = display.newRoundedRect(self.help_group, .5 * (minx + maxx), .5 * (miny + maxy), maxx - minx, maxy - miny, 15)
 
-			help:setFillColor(255, 255, 0, 32)
-			help:setStrokeColor(255, 255, 0)
+			help:setFillColor(1, 1, 0, .125)
+			help:setStrokeColor(1, 1, 0)
 
 			help.strokeWidth = 4
 
@@ -130,7 +134,7 @@ function Overlay:enterScene ()
 				local node = display.newCircle(self.help_group, x, y, 15)
 
 				node:addEventListener("touch", ShowText)
-				node:setFillColor(0, 0, 255)
+				node:setFillColor(0, 0, 1)
 
 				--
 				if n > 1 then
@@ -138,20 +142,18 @@ function Overlay:enterScene ()
 
 					if i < n then
 						local x2 = x + .5 * dw
-						local sep = display.newLine(self.help_group, x2, bounds.yMin, x2, bounds.yMax)
+						local sep = display.newLine(self.help_group, x2, miny, x2, maxy)
 
-						sep:setColor(255, 255, 0)
+						sep:setStrokeColor(1, 1, 0)
 
-						sep.width = 4
+						sep.strokeWidth = 4
 					end
 				else
 					node.m_text = text
 				end
 
 				--
-				local qmark = display.newText(self.help_group, "?", 0, 0, native.systemFontBold, 30)
-
-				qmark.x, qmark.y = node.x, node.y
+				local qmark = display.newText(self.help_group, "?", node.x, node.y, native.systemFontBold, 30)
 
 				x = x + dw
 			end

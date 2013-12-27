@@ -38,7 +38,7 @@ local display = display
 -- Exports --
 local M = {}
 
--- Intermediate storage, used to pass varargs to line:setStrokeColor() via unpack() --
+-- Intermediate storage, used to pass varargs to line:setColor() via unpack() --
 local Color = {}
 
 -- Get the wrapped object

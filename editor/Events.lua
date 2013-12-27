@@ -1,4 +1,8 @@
---- Some operations reused in editor events.
+--- Some operations, e.g. for persistence and verification, reused among editor events.
+--
+-- Many of these operations take a **common_ops** argument, namely to be called with one
+-- of the **"get"**-type arguments. (Presently, these seem to all operate on grid-bound
+-- values.) For an example of such a function, see @{editor.GridFuncs.EditErase}.
 
 --
 -- Permission is hereby granted, free of charge, to any person obtaining
@@ -32,117 +36,107 @@ local pairs = pairs
 local common = require("editor.Common")
 local grid = require("editor.Grid")
 local links = require("editor.Links")
+local str_utils = require("utils.String")
 local tags = require("editor.Tags")
-local utils = require("utils")
+
+-- Cached module references --
+local _CheckForNameDups_
+local _GetIndex_
+local _LoadValuesFromEntry_
+local _SaveValuesIntoEntry_
+local _SetCurrentIndex_
 
 -- Export --
 local M = {}
 
+--- Helper to build a level-ready entry.
+-- @ptable level Built level state. (Basically, this begins as saved level state, and
+-- is restructured into build-appropriate form.)
 --
-local function HasAny (rep)
-	local tag = links.GetTag(rep)
-
-	if tag then
-		local f, s, v0, reclaim = tags.Sublinks(tag)
-
-		for _, sub in f, s, v0 do
-			if links.HasLinks(rep, sub) then
-				reclaim()
-
-				return true
-			end
-		end
-	end
-end
-
---- DOCME
--- @ptable level
--- @ptable value
--- @ptable elem
--- @bool save
-function M.AddAnyLinks (level, value, elem, save)
-	local rep = common.GetBinding(elem, true)
-
-	--
-	if save then
-		if HasAny(rep) then
-			local list = level.links or {}
-
-			if not list[rep] then
-				elem.uid = utils.NewName()
-
-				list[#list + 1] = rep
-				list[rep] = #list
-			end
-
-			level.links = list
-		end
-
-	--
-	elseif value.uid then
-		level.links[value.uid] = rep
-	end
-end
-
---- DOCME
--- @ptable level
--- @ptable mod
--- @ptable from
--- @array acc
--- @treturn array ACC
-function M.BuildElement (level, mod, from, acc)
+-- If _from_ indicates a link, some intermediate state is stored in the **links** table (this
+-- being a build, the state is assumed to be well-formed, i.e. this table exists).
+-- @{ResolveLinks_Build} should be called once all build operations are complete, to turn
+-- this state into application-ready form.
+--
+-- Specifically, if a "prep link" handler exists, it will be stored (with the built entry
+-- as key) for lookup during resolution.
+-- @ptable mod Module, assumed to contain an **EditorEvent** function corresponding to the
+-- type of value being built.
+--
+-- A **"prep_link"** editor event takes as arguments, in order: _level_, _built_, where
+-- _built_ is the copy of _entry_, minus the **name** and **uid** fields. If it returns a
+-- handler function, that will be called during resolution, cf. @{ResolveLinks_Build}.
+--
+-- A **"build"** editor event takes as arguments, in order: _level_, _entry_, _built_. Any
+-- final changes to _built_ may be performed here.
+-- @ptable entry Entry to build. The built entry itself will be a copy of this, with **name**
+-- and **id** stripped, plus any changes performed in the **"build"** logic; _entry_ itself
+-- is left intact in case said logic still has need of those members.
+-- @array? acc Accumulator table, to which the built entry will be appended. If absent, a
+-- table is created.
+-- @treturn array _acc_.
+function M.BuildEntry (level, mod, entry, acc)
 	acc = acc or {}
 
-	local elem = common.CopyInto({}, from)
+	local built = common.CopyInto({}, entry)
 
-	if from.uid then
-		level.links[from.uid], elem.uid = elem
+	if entry.uid then
+		level.links[entry.uid], built.uid = built
 
-		level.links[elem] = mod.EditorEvent(from.type, "prep_link", level, elem)
+		level.links[built] = mod.EditorEvent(entry.type, "prep_link", level, built)
 	end
 
-	elem.name = nil
+	built.name = nil
 
-	mod.EditorEvent(from.type, "build", level, from, elem)
+	mod.EditorEvent(entry.type, "build", level, entry, built)
 
-	acc[#acc + 1] = elem
+	acc[#acc + 1] = built
 
 	return acc
 end
 
---- DOCME
--- @string what
--- @array verify
--- @ptable names
--- @ptable element
--- @treturn boolean X
-function M.CheckForNameDups (what, verify, names, element)
-	local type = names[element.name]
+--- Helper to detect if a name has been added yet to a set of names. If not, it is added
+-- (with the name as key) along with _values_'s type (for later errors, if necessary);
+-- otherwise, an error message is appended to the verify block.
+-- @string what What type of value is being named (for error messages)?
+-- @array verify Verify block.
+-- @ptable names Names against which to validate.
+-- @ptable values Candidate values to add, if its **name** field is unique.
+-- @treturn boolean Was _values_ a duplicate?
+function M.CheckForNameDups (what, verify, names, values)
+	local type = names[values.name]
 
 	if not type then
-		names[element.name] = element.type
+		names[values.name] = values.type
 	else
-		verify[#verify + 1] = "Duplicated " .. what .. " name: `" .. element.name .. "` of type `" .. element.type .. "`; already used by " .. what .. " of type `" .. type .. "`"
-
-		return true
+		verify[#verify + 1] = ("Duplicated %s name: `%s` of type `%s`; already used by %s of type `%s`"):format(what, values.name, values.type, what, type)
 	end
+
+	return type ~= nil
 end
 
---- DOCME
--- @string what
--- @array verify
--- @callable common_ops
-function M.CheckNamesInElements (what, verify, common_ops)
-	local names, _, elements = {}, common_ops("get_data")
+--- Helper to detect if there are duplicate names among a group of values.
+--
+-- Essentially, this creates a temporary _names_ table and then performs @{CheckForNameDups}
+-- on each blob of values in the group.
+-- @string what What type of value is being named (for error messages)?
+-- @array verify Verify block.
+-- @callable common_ops Used to supply the values.
+-- @treturn boolean Were there any duplicates?
+function M.CheckNamesInValues (what, verify, common_ops)
+	local names, values = {}, common_ops("get_values")
 
-	for _, elem in pairs(elements) do
-		if M.CheckForNameDups(what, verify, names, elem) then
-			return
+	for _, v in pairs(values) do
+		if _CheckForNameDups_(what, verify, names, v) then
+			return true
 		end
 	end
+
+	return false
 end
 
----@array types An array of type name strings.
+--- Getter.
+-- @array types An array of type name strings.
 -- @string name The name to find.
 -- @treturn uint Index of _name_ in _types_.
 function M.GetIndex (types, name)
@@ -163,27 +157,32 @@ function M.GetIndex (types, name)
 	return index
 end
 
---- DOCME
--- @ptable level
--- @string what
--- @ptable mod
--- @callable grid_func
--- @callable common_ops
-function M.Load (level, what, mod, grid_func, common_ops)
+--- Helper to load a group of value blobs, which values are assumed to be grid-bound in the
+-- editor. Some concomitant work is performed in order to produce a consistent grid.
+-- @ptable level Loaded level state, as per @{LoadValuesFromEntry}.
+-- @string what The group to load is found under `level[what].entries`.
+-- @ptable mod Module. As per @{LoadValuesFromEntry}, and in addition must contain a
+-- **GetTypes** function, which returns an array of type names.
+-- @callable grid_func Grid function, used to temporarily enable the grid in order to
+-- populate its cells.
+-- @callable common_ops Used to supply the current tile grid, values, and tiles that belong
+-- to the module.
+function M.LoadGroupOfValues_Grid (level, what, mod, grid_func, common_ops)
 	grid.Show(grid_func)
 
 	level[what].version = nil
 
-	local current, elements, tiles = common_ops("get_data")
+	local values, tiles = common_ops("get_values_and_tiles")
+	local current = common_ops("get_current")
 	local types = mod.GetTypes()
 	local cells = grid.Get()
 
-	for k, v in pairs(level[what].elements) do
-		M.SetCurrentIndex(current, types, v.type)
+	for k, entry in pairs(level[what].entries) do
+		_SetCurrentIndex_(current, types, entry.type)
 
 		cells:TouchCell(common.FromKey(k))
 
-		M.SaveOrLoad(level, mod, v, elements[k], false)
+		_LoadValuesFromEntry_(level, mod, values[k], entry)
 	end
 
 	current:SetCurrent(1)
@@ -192,143 +191,24 @@ function M.Load (level, what, mod, grid_func, common_ops)
 	grid.Show(false)
 end
 
---
-local function ReadLinks (level, on_element, on_pair)
-	local list, index, elem, sub = level.links, 1
-
-	for i = 1, #list, 2 do
-		local item, other = list[i], list[i + 1]
-
-		--
-		if item == "element" then
-			elem = list[other]
-
-			on_element(elem, index)
-
-			list[index], index = elem, index + 1
-
-		--
-		elseif item == "sub" then
-			sub = other
-
-		--
-		elseif index > item then
-			on_pair(list, elem, list[item], sub, other)
-		end
-	end
-end
-
---
-local function OnElement_Build (elem, index)
-	elem.uid = index
-end
-
---
-local function OnElement_Load () end
-
---
-local function OnPair_Build (list, elem1, elem2, sub1, sub2)
-	local func1, func2 = list[elem1], list[elem2]
-
-	if func1 then
-		func1(elem1, elem2, sub1, sub2)
-	end
-
-	if func2 then
-		func2(elem2, elem1, sub2, sub1)
-	end
-end
-
---
-local function OnPair_Load (_, obj1, obj2, sub1, sub2)
-	links.LinkObjects(obj1, obj2, sub1, sub2)
-end
-
---- DOCME
--- @ptable level
--- @bool save
-function M.ResolveLinks (level, save)
-	if level.links then
-		--
-		if save == "build" then
-			ReadLinks(level, OnElement_Build, OnPair_Build)
-
-			level.links = nil
-
-		--
-		elseif save then
-			local list, new = level.links, {}
-
-			for _, rep in ipairs(list) do
-				local element = common.GetBinding(rep)
-
-				--
-				new[#new + 1] = "element"
-				new[#new + 1] = element.uid
-
-				for _, sub in tags.Sublinks(links.GetTag(rep)) do
-					new[#new + 1] = "sub"
-					new[#new + 1] = sub
-
-					for link in links.Links(rep, sub) do
-						local obj, osub = link:GetOtherObject(rep)
-
-						new[#new + 1] = list[obj]
-						new[#new + 1] = osub
-					end
-				end
-			end
-
-			level.links = new
-
-		--
-		else
-			ReadLinks(level, OnElement_Load, OnPair_Load)
-		end
-	end
-end
-
---- DOCME
--- @ptable level
--- @string what
--- @ptable mod
--- @callable common_ops
-function M.Save (level, what, mod, common_ops)
-	local target = {}
-
-	level[what] = { elements = target, version = 1 }
-
-	local _, elements = common_ops("get_data")
-
-	for k, v in pairs(elements) do
-		local elem = {}
-
-		M.SaveOrLoad(level, mod, v, elem, true)
-
-		target[k] = elem
-	end
-end
-
--- --
+-- Default values for the type being saved or loaded --
+-- TODO: How much work would it be to install some prefab logic?
 local Defs
 
--- --
+-- Assign reasonable defaults to missing keys
+local function AssignDefs (item)
+	for k, v in pairs(Defs) do
+		if item[k] == nil then
+			item[k] = v
+		end
+	end
+end
+
+-- Current module and value type being saved or loaded --
 local Mod, ValueType
 
---- DOCME
--- @ptable level
--- @ptable mod
--- @ptable value
--- @ptable elem
--- @bool save
-function M.SaveOrLoad (level, mod, value, elem, save)
-	local arg1, arg2 = value, elem
-
-	if save then
-		arg1, arg2 = arg2, arg1
-	end
-
-	--
+-- Enumerate defaults for a module / element type combination, with caching
+local function EnumDefs (mod, value)
 	if Mod ~= mod or ValueType ~= value.type then
 		Mod, ValueType = mod, value.type
 
@@ -336,44 +216,281 @@ function M.SaveOrLoad (level, mod, value, elem, save)
 
 		mod.EditorEvent(ValueType, "enum_defs", Defs)
 	end
+end
 
-	--
-	M.AddAnyLinks(level, arg1, arg2, save)
+--- Helper to load a blob of values.
+-- @ptable level Loaded level state. (Basically, this begins as saved level state, and
+-- is restructured into load-appropriate form.)
+--
+-- If _entry_ indicates a link, some intermediate state is stored in the **links** table
+-- (this being a load, the state is assumed to be well-formed, i.e. this table exists).
+-- @{ResolveLinks_Load} should be called once all load operations are complete, to turn
+-- this state into editor-ready form.
+-- @ptable mod Module, assumed to contain an **EditorEvent** function corresponding to the
+-- type of value being loaded.
+--
+-- A **"load"** editor event takes as arguments, in order: _level_, _entry_, _values_. Any
+-- final changes to _values_ may be performed here.
+-- @ptable values Blob of values to populate.
+-- @ptable entry Editor state entry which will provide the values to load.
+function M.LoadValuesFromEntry (level, mod, values, entry)
+	EnumDefs(mod, entry)
 
-	--
-	for k, v in pairs(value) do
-		elem[k] = v
+	-- If the entry will be involved in links, stash its rep so that it gets picked up (as
+	-- "entry") by ReadLinks() during resolution.
+	if entry.uid then
+		level.links[entry.uid] = common.GetRepFromValues(values)
 	end
 
-	--
-	mod.EditorEvent(ValueType, save and "save" or "load", level, arg1, arg2)
+	-- Copy the editor state into the values, alert any listeners, and add defaults as necessary.
+	common.CopyInto(values, entry)
+	mod.EditorEvent(ValueType, "load", level, entry, values)
 
-	--
-	for k, v in pairs(Defs) do
-		if elem[k] == nil then
-			elem[k] = v
+	AssignDefs(values)
+end
+
+-- Reads (resolved) "saved" links, processing them into "built" or "loaded" form
+local function ReadLinks (level, on_entry, on_pair)
+	local list, index, entry, sub = level.links, 1
+
+	for i = 1, #list, 2 do
+		local item, other = list[i], list[i + 1]
+
+		-- Entry pair: Load the entry via its ID (note that the build and load pre-resolve steps
+		-- both involve stuffing the ID into the links) and append it to the entries array. If
+		-- there is a per-entry visitor, call it along with its entry index.
+		if item == "entry" then
+			entry = list[other]
+
+			on_entry(entry, index)
+
+			list[index], index = entry, index + 1
+
+		-- Sublink pair: Get the sublink name.
+		elseif item == "sub" then
+			sub = other
+
+		-- Other object sublink pair: The saved entry stream is a fat representation, with both
+		-- directions represented for each link, i.e. each sublink pair will be encountered twice.
+		-- The first time, only "entry" will have been loaded, and should be ignored. On the next
+		-- pass, pair the two entries, since both will be loaded.
+		elseif index > item then
+			on_pair(list, entry, list[item], sub, other)
 		end
 	end
 end
 
----@pobject current The "current choice" @{ui.Grid1D} widget for the current editor view.
--- @array types An array of type strings, belonging to the view.
--- @string name A name to find in _types_.
-function M.SetCurrentIndex (current, types, name)
-	current:SetCurrent(M.GetIndex(types, name))
-end
+--- Resolves any link information produced by @{BuildEntry}.
+--
+-- In each linked pair, one or both entries may have provided a "prep link" handler. If so,
+-- the available handlers are called as
+--    handler(entry1, entry2, sub1, sub2),
+-- where _entry1_ and _sub1_ are the entry and sublink associated with the handler; _entry2_
+-- and _sub2_ comprise the target. At this point, all entries will have their final **uid**'s,
+-- so this is the ideal time to bind everything as the application expects, e.g. via @{utils.Bind}.
+--
+-- Once finished, the editor state is storage-ready.
+-- @ptable level Saved level state. If present, the **links** table is read and processed;
+-- any link information is moved into the entries, and **links** is removed.
+function M.ResolveLinks_Build (level)
+	if level.links then
+		ReadLinks(level, function(entry, index)
+			entry.uid = index
+		end, function(list, entry1, entry2, sub1, sub2)
+			local func1, func2 = list[entry1], list[entry2]
 
---- DOCME
--- @ptable verify
--- @ptable mod
--- @callable common_ops
-function M.VerifyElements (verify, mod, common_ops)
-	local _, elements = common_ops("get_data")
+			if func1 then
+				func1(entry1, entry2, sub1, sub2)
+			end
 
-	for k, v in pairs(elements) do
-		mod.EditorEvent(v.type, "verify", verify, elements, k)
+			if func2 then
+				func2(entry2, entry1, sub2, sub1)
+			end
+		end)
+
+		-- All link information has now been incorporated into the entries themselves, so there
+		-- is no longer need to retain it in the editor state.
+		level.links = nil
 	end
 end
+
+--- Resolves any link information produced by @{LoadGroupOfValues_Grid} and @{LoadValuesFromEntry}.
+--
+-- Once finished, the loaded values are ready to be edited.
+-- @ptable level Saved level state. If present, the **links** table is read, and links are
+-- established between editor-side values.
+function M.ResolveLinks_Load (level)
+	if level.links then
+		ReadLinks(level, function() end, function(_, obj1, obj2, sub1, sub2)
+			links.LinkObjects(obj1, obj2, sub1, sub2)
+		end)
+	end
+end
+
+--- Resolves any link information produced by @{SaveGroupOfValues} and @{SaveValuesIntoEntry}.
+--
+-- Once finished, the editor state is storage-ready.
+--
+-- The editor state is placed into a form ready to be consumed by build or load operations.
+-- @ptable level Saved level state. If present, the **links** table is read, processed, and
+-- finally replaced by a "resolved" form.
+--
+-- The "resolved" form is a stream of pairs:
+--
+-- "entry" (literal), entry's ID (string)
+--    "sub" (literal), entry's sublink name (string)
+--      array index of other entry (integer), other entry's sublink name (string)
+--
+-- The stream is composed of one or more **"entry"** pairs (an entry), each composed in turn
+-- of one or more **"sub"** pairs (its sublinks), each of those in turn made up of lookup
+-- information (the sublink's targets).
+--
+-- This is a fat representation, where link information is stored in both directions.
+function M.ResolveLinks_Save (level)
+	local list = level.links
+
+	if list then
+		local new = {}
+
+		for _, rep in ipairs(list) do
+			local entry = common.GetValuesFromRep(rep)
+
+			new[#new + 1] = "entry"
+			new[#new + 1] = entry.uid
+
+			entry.uid = nil
+
+			for _, sub in tags.Sublinks(links.GetTag(rep)) do
+				new[#new + 1] = "sub"
+				new[#new + 1] = sub
+
+				for link in links.Links(rep, sub) do
+					local obj, osub = link:GetOtherObject(rep)
+
+					new[#new + 1] = list[obj]
+					new[#new + 1] = osub
+				end
+			end
+		end
+
+		level.links = new
+	end
+end
+
+--- Helper to save a group of value blobs.
+-- @ptable level Saved level state, as per @{SaveValuesIntoEntry}.
+-- @string what The group to load is found under `level[what].entries`.
+-- @ptable mod Module, as per @{SaveValuesIntoEntry}.
+-- @callable common_ops  Used to supply the values that belong to the module.
+function M.SaveGroupOfValues (level, what, mod, common_ops)
+	local target = {}
+
+	level[what] = { entries = target, version = 1 }
+
+	local values = common_ops("get_values")
+
+	for k, v in pairs(values) do
+		target[k] = _SaveValuesIntoEntry_(level, mod, v, {})
+	end
+end
+
+-- Is the (represented) object linked to anything?
+local function HasAny (rep)
+	local tag = links.GetTag(rep)
+
+	if tag then
+		local f, s, v0, reclaim = tags.Sublinks(tag)
+
+		for _, sub in f, s, v0 do
+			if links.HasLinks(rep, sub) then
+				reclaim()
+
+				return true
+			end
+		end
+	end
+end
+
+--- Helper to save a blob of values.
+--
+-- **N.B.** This may intrusively modify _values_ (namely, adding a **uid** field to it).
+-- @{ResolveLinks_Save} will clean up after these modifications.
+-- @ptable level Saved level state. If _values_ has links, some intermediate state is stored
+-- in the **links** table (which is created, if necessary). @{ResolveLinks_Save} should be
+-- called once all save operations are complete, to turn this state into save-ready form.
+--
+-- Specifically, _values_'s representative object is appended to an array, to be iterated;
+-- its array position is also stored for quick lookup, with the object as key.
+--
+-- At this stage, the **uid** is set to some unique (within the current batch of saves) string,
+-- mainly for easy visual comparison.
+-- @ptable mod Module, assumed to contain an **EditorEvent** function corresponding to the
+-- type of value being saved.
+--
+-- A **"save"** editor event takes as arguments, in order: _level_, _entry_, _values_. Any
+-- final changes to _entry_ may be performed here.
+-- @ptable values Blob of values to save.
+-- @ptable entry Editor state entry which will receive the saved values.
+-- @treturn ptable _entry_.
+function M.SaveValuesIntoEntry (level, mod, values, entry)
+	EnumDefs(mod, values)
+
+	-- Does this values blob have any links? If so, make note of it in the blob itself and
+	-- add some tracking information in the links list.
+	local rep = common.GetRepFromValues(values)
+
+	if HasAny(rep) then
+		local list = level.links or {}
+
+		if not list[rep] then
+			values.uid = str_utils.NewName()
+
+			list[#list + 1] = rep
+			list[rep] = #list
+		end
+
+		level.links = list
+	end
+
+	-- Copy the values into the editor state, alert any listeners, and add defaults as necessary.
+	common.CopyInto(entry, values)
+	mod.EditorEvent(ValueType, "save", level, entry, values)
+
+	AssignDefs(entry)
+
+	return entry
+end
+
+--- Setter.
+-- @pobject current The "current choice" @{ui.Grid1D} widget for the current editor view.
+-- @array types An array of strings, corresponding to the images in _current_.
+-- @string name A name to find in _types_.
+function M.SetCurrentIndex (current, types, name)
+	current:SetCurrent(_GetIndex_(types, name))
+end
+
+--- Verify all values (i.e. blobs of editor-side object data) in a given module.
+-- @ptable verify Verify block.
+-- @ptable mod Module, assumed to contain an **EditorEvent** function corresponding to the
+-- type of values being verified.
+--
+-- A **"verify"** editor event takes as arguments, in order: _verify_, _values_, _key_, where
+-- _values_ is a table of values to verify, and _key_ refers to the key being verified.
+-- @callable common_ops Used to supply the values that belong to the module.
+function M.VerifyValues (verify, mod, common_ops)
+	local values = common_ops("get_values")
+
+	for k, v in pairs(values) do
+		mod.EditorEvent(v.type, "verify", verify, values, k)
+	end
+end
+
+-- Cache module members.
+_CheckForNameDups_ = M.CheckForNameDups
+_GetIndex_ = M.GetIndex
+_LoadValuesFromEntry_ = M.LoadValuesFromEntry
+_SaveValuesIntoEntry_ = M.SaveValuesIntoEntry
+_SetCurrentIndex_ = M.SetCurrentIndex
 
 -- Export the module.
 return M

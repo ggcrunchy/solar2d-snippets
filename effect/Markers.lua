@@ -30,14 +30,13 @@ local deg = math.deg
 local pairs = pairs
 local pi = math.pi
 local sin = math.sin
-local sqrt = math.sqrt
 
 -- Modules --
 local dispatch_list = require("game.DispatchList")
+local geom2d_ops = require("geom2d_ops")
 local glow = require("effect.Glow")
 local line_ex = require("ui.LineEx")
 local timers = require("game.Timers")
-local utils = require("utils")
 
 -- Corona globals --
 local display = display
@@ -115,7 +114,7 @@ function M.CurvedArrow (group, how, x, y, radius, thickness, width)
 
 	--
 	-- CENTER at x, y?
-	line.width = width
+	line.strokeWidth = width
 
 	return line
 end
@@ -146,7 +145,7 @@ end
 -- @byte b
 function ArrowGroup:SetColor (r, g, b)
 	for i = 1, self.numChildren do
-		self[i]:setColor(r, g, b)
+		self[i]:setStrokeColor(r, g, b)
 	end
 end
 
@@ -184,7 +183,7 @@ local function ArrowGroupMaker (sep, dfunc)
 		--
 		local dx, dy = x2 - x1, y2 - y1
 
-		for i = 1, utils.QuantizeDistance("floor", dx, dy, sep, 0, 1) do
+		for i = 1, geom2d_ops.DistanceToBin(dx, dy, sep, 1) do
 			M.StraightArrow(arrow_group, dir, 0, 0, width)
 		end
 
@@ -223,7 +222,7 @@ function M.LineOfArrows (group, x1, y1, x2, y2, width, offset)
 end
 
 -- Current arrow glow color --
-local ArrowRGB = glow.ColorInterpolator(255, 0, 0, 0, 0, 255)
+local ArrowRGB = glow.ColorInterpolator(1, 0, 0, 0, 0, 1)
 
 --- DOCME
 -- @pgroup group Group to which arrows will be inserted.
@@ -277,7 +276,7 @@ function M.StraightArrow (group, dir, x, y, width)
 		line:append(x + xi, y + yi)
 	end
 
-	line.width = width
+	line.strokeWidth = width
 
 	return line.m_object
 end
@@ -292,7 +291,7 @@ local MakeColumn = ArrowGroupMaker(75, function(i, n, dx, dy, offset, agroup)
 
 		agroup.m_dir = dir
 
-		local len = sqrt(dx * dx + dy * dy) / 20
+		local len = geom2d_ops.Distance(dx, dy) / 20
 		local nx, ny = dx / len, dy / len
 
 		if dir == "backward" then

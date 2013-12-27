@@ -31,11 +31,12 @@ local setmetatable = setmetatable
 
 -- Modules --
 local debug = require("debug")
+local device = require("utils.Device")
 local errors = require("errors")
 local flow_bodies = require("flow_bodies")
-local frames = require("game.Frames")
+local frames = require("utils.Frames")
 local per_coroutine_ops = require("per_coroutine_ops")
-local scenes = require("game.Scenes")
+local scenes = require("utils.Scenes")
 local var_dump = require("var_dump")
 
 -- Corona globals --
@@ -48,33 +49,62 @@ flow_bodies.SetTimeLapseFuncs(per_coroutine_ops.TimeLapse(frames.DiffTime, frame
 -- Use standard tracebacks.
 errors.SetTracebackFunc(debug.traceback)
 
--- "enterFrame" listener --
-Runtime:addEventListener("enterFrame", function()
-	scenes.Send("update")
-end)
+-- Are we running on device? --
+local OnDevice = system.getInfo("environment") == "device"
 
--- "key" listener --
-if system.getInfo("environment") == "simulator" or system.getInfo("platformName") == "Android" then
-	Runtime:addEventListener("key", function(event)
-		local key = event.keyName
-		local go_back = key == "back" or key == "deleteBack"
+-- Install environment-limited events, if possible.
+if system.getInfo("platformName") == "Android" or not OnDevice then
+	-- Handler helper
+	local function Handles (what)
+		what = "message:handles_" .. what
 
-		if go_back or key == "volumeUp" or key == "volumeDown" then
-			if event.phase == "down" then
-				if go_back then
-					scenes.Send("message:wants_to_go_back")
-				else
-					-- VOLUME
-				end
+		return function(event)
+			if scenes.Send(what, event) then
+				return true
 			end
+		end
+	end
 
+	-- Device-only events.
+	if OnDevice then
+		-- "axis" listener --
+		Runtime:addEventListener("axis", Handles("axis"))
+
+		-- "system" listener --
+		Runtime:addEventListener("system", function(event)
+			if event.type == "applicationStart" or event.type == "applicationResume" then
+				device.EnumerateDevices()
+			end
+		end)
+	end
+
+	-- "key" listener --
+	local HandleKey = Handles("key")
+
+	Runtime:addEventListener("key", function(event)
+		if HandleKey(event) then
 			return true
+		else
+			local key = event.keyName
+			local go_back = key == "back" or key == "deleteBack"
+
+			if go_back or key == "volumeUp" or key == "volumeDown" then
+				if event.phase == "down" then
+					if go_back then
+						scenes.WantsToGoBack()
+					else
+						-- VOLUME
+					end
+				end
+
+				return true
+			end
 		end
 	end)
 end
 
 -- "unhandledError" listener --
-if system.getInfo("environment") == "device" then
+if OnDevice then
 	Runtime:addEventListener("unhandledError", function(event)
 		native.showAlert("Error!", event.errorMessage .. " \n " .. event.stackTrace, { "OK" }, native.requestExit)
 	end)

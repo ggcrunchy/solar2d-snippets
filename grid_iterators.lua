@@ -80,60 +80,60 @@ end)
 
 --- DOCME
 M.CircleSpans = iterators.InstancedAutocacher(function()
-	local edges, row = {}
+        local edges, row = {}
 
-	-- Body --
-	return function()
-		local ri, edge = row, edges[abs(row) + 1]
+        -- Body --
+        return function()
+                local ri, edge = row, edges[abs(row) + 1]
 
-		row = row + 1
+                row = row + 1
 
-		if ri >= 0 then
-			edges[row] = 0
-		end
+                if ri >= 0 then
+                        edges[row] = 0
+                end
 
-		return ri, edge
-	end,
+                return ri, edge
+        end,
 
-	-- Done --
-	function(radius)
-		return row > radius
-	end,
+        -- Done --
+        function(radius)
+                return row > radius
+        end,
 
-	-- Setup --
-	function(radius, width)
-		--
-		local xc, yc, xp, yp, dx = -1, 0, radius, 0, width or 1
+        -- Setup --
+        function(radius, width)
+                --
+                local xc, yc, xp, yp, dx = -1, 0, radius, 0, width or 1
 
-		if dx ~= 1 then
-			xp = xp * dx
-		end
+                if dx ~= 1 then
+                        xp = xp * dx
+                end
 
-		--
-		for x, y in M.CircleOctant(radius) do
-			if x ~= xc then
-				xc, xp = x, xp - dx
-			end
+                --
+                for x, y in M.CircleOctant(radius) do
+                        if x ~= xc then
+                                xc, xp = x, xp - dx
+                        end
 
-			if y ~= yc then
-				yc, yp = y, yp + dx
-			end
+                        if y ~= yc then
+                                yc, yp = y, yp + dx
+                        end
 
-			edges[x + 1] = max(edges[x + 1] or 0, yp)
-			edges[y + 1] = max(edges[y + 1] or 0, xp)
-		end
+                        edges[x + 1] = max(edges[x + 1] or 0, yp)
+                        edges[y + 1] = max(edges[y + 1] or 0, xp)
+                end
 
-		row = -radius
+                row = -radius
 
-		return radius
-	end,
+                return radius
+        end,
 
-	-- Reclaim --
-	function(radius)
-		for i = max(row, 0), radius do
-			edges[i + 1] = 0
-		end
-	end
+        -- Reclaim --
+        function(radius)
+                for i = max(row, 0), radius do
+                        edges[i + 1] = 0
+                end
+        end
 end)
 
 --- Iterator over a rectangular region on an array-based grid.

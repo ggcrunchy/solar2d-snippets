@@ -31,8 +31,8 @@ local pairs = pairs
 local rawequal = rawequal
 
 -- Modules --
+local bind_utils = require("utils.Bind")
 local config = require("config.GlobalEvents")
-local defer = require("game.Defer")
 local dispatch_list = require("game.DispatchList")
 
 -- Corona globals --
@@ -51,11 +51,11 @@ local Defaults, Events
 local GetEvent = {}
 
 for _, v in ipairs(config.events) do
-	GetEvent[v] = defer.BindBroadcast(v)
+	GetEvent[v] = bind_utils.BroadcastBuilder(v)
 
 	dispatch_list.AddToList(v, function()
 		--
-		for _, event in defer.IterEvents(Events[v]) do
+		for _, event in bind_utils.IterEvents(Events[v]) do
 			event("fire", false)
 		end
 
@@ -70,10 +70,9 @@ end
 
 --- DOCME
 function M.AddEvents (events)
+	--
 	for k, v in pairs(GetEvent) do
-		if events and events[k] then
-			defer.Await("loading_level", events[k], v, Events)
-		end
+		bind_utils.Subscribe("loading_level", events and events[k], v, Events)
 	end
 	
 	--
@@ -81,19 +80,19 @@ function M.AddEvents (events)
 
 	if actions then
 		for k in pairs(actions) do
-			defer.Defer("loading_level", Actions[k], events.uid, k)
+			bind_utils.Publish("loading_level", Actions[k], events.uid, k)
 		end
 	end
 
 	--
 	if not (actions and actions.win) then
---		Defaults = ??? (something appropriate...)
+		Defaults = { all_dots_removed = "win" }
 	end
 end
 
 --
 local function LinkGlobal (global, other, gsub, osub)
-	defer.LinkActionsAndEvents(global, other, gsub, osub, GetEvent, Actions, "actions")
+	bind_utils.LinkActionsAndEvents(global, other, gsub, osub, GetEvent, Actions, "actions")
 end
 
 --- DOCME
@@ -117,7 +116,7 @@ for _, v in ipairs(config.actions) do
 	local list = {}
 
 	Actions[v] = function(what, func)
-		-- Get Table --
+		-- Extend Action --
 		if rawequal(what, Actions) then
 			list[#list + 1] = func
 
@@ -143,7 +142,7 @@ function M.ExtendAction (name, func)
 	end
 end
 
--- Listen to events. ???
+-- Listen to events.
 dispatch_list.AddToMultipleLists{
 	-- Enter Level --
 	enter_level = function()

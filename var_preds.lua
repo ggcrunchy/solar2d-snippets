@@ -38,14 +38,16 @@ local _IsIndexableR_
 -- Exports --
 local M = {}
 
----@param var Variable to test.
+--- Predicate.
+-- @param var Variable to test.
 -- @param name Field name.
 -- @treturn boolean The field exists in _var_?
 function M.HasField (var, name)
 	return _IsIndexableR_(var) and var[name] ~= nil
 end
 
----@param var Variable to test.
+--- Predicate.
+-- @param var Variable to test.
 -- @param meta Metaproperty to lookup.
 -- @treturn boolean _var_ supports the metaproperty?
 function M.HasMeta (var, meta)
@@ -54,13 +56,15 @@ function M.HasMeta (var, meta)
 	return (mt and rawget(mt, meta)) ~= nil
 end
 
----@param var Variable to test.
+--- Predicate.
+-- @param var Variable to test.
 -- @treturn boolean _var_ is callable?
 function M.IsCallable (var)
 	return type(var) == "function" or _HasMeta_(var, "__call")
 end
 
----@param var Variable to test.
+--- Predicate.
+-- @param var Variable to test.
 -- @treturn boolean _var_ is countable?
 function M.IsCountable (var)
 	local vtype = type(var)
@@ -68,7 +72,8 @@ function M.IsCountable (var)
 	return vtype == "string" or vtype == "table" or _HasMeta_(var, "__len")
 end
 
----@param var Variable to test
+--- Predicate.
+-- @param var Variable to test
 -- @treturn boolean _var_  is read- and write-indexable?
 function M.IsIndexable (var)
 	if type(var) == "table" then
@@ -80,13 +85,15 @@ function M.IsIndexable (var)
 	end
 end
 
----@param var Variable to test
+--- Predicate.
+-- @param var Variable to test
 -- @treturn boolean _var_  is read-indexable?
 function M.IsIndexableR (var)
 	return type(var) == "table" or _HasMeta_(var, "__index")
 end
 
----@param var Variable to test
+--- Predicate.
+-- @param var Variable to test
 -- @treturn boolean _var_  is write-indexable?
 function M.IsIndexableW (var)
 	return type(var) == "table" or _HasMeta_(var, "__newindex")
@@ -102,7 +109,8 @@ local function ToNumber (var)
 	return tonumber(var) or 0 / 0
 end
 
----@param var Variable to test.
+--- Predicate.
+-- @param var Variable to test.
 -- @treturn boolean _var_ is an integer?
 function M.IsInteger (var)
 	return IsIntegral(ToNumber(var))
@@ -115,7 +123,8 @@ function M.IsInteger_Number (var)
 	return type(var) == "number" and IsIntegral(var)
 end
 
----@param var Variable to test.
+--- Predicate.
+-- @param var Variable to test.
 -- @treturn boolean _var_ is "not a number"?
 function M.IsNaN (var)
 	return var ~= var

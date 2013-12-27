@@ -1,6 +1,7 @@
 --- An implementation of Ken Perlin's simplex noise.
 --
--- Based on code and comments in [Simplex noise demystified][1], by Stefan Gustavson.
+-- Based on code and comments in [Simplex noise demystified][1],
+-- by Stefan Gustavson.
 --
 -- Thanks to Mike Pall for some cleanup and improvements (and for [LuaJIT][2]!).
 --
@@ -44,7 +45,6 @@ end
 -- Forward references --
 local band
 local bor
-local bxor
 
 -- Module table --
 local M = {}
@@ -107,7 +107,8 @@ do
 	local G = (3 - math.sqrt(3)) / 6
 	local G2 = 2 * G - 1
 
-	---@number x Value #1.
+	--- 2-dimensional simplex noise.
+	-- @number x Value #1.
 	-- @number y Value #2.
 	-- @treturn number Noise value &isin; [-1, +1].
 	function M.Simplex2D (x, y)
@@ -136,12 +137,12 @@ do
 				iy, y1 = iy + 1, y1 - 1
 			end
 		]]
-		local xi = x0 >= y0 and 1 or 0
+		local xi = x0 > y0 and 1 or 0
 		local n1 = GetN(ix + xi, iy + (1 - xi), x0 + G - xi, y0 + G - (1 - xi))
 
 		-- Add contributions from each corner to get the final noise value.
 		-- The result is scaled to return values in the interval [-1,1].
-		return 83.373 * (n0 + n1 + n2)
+		return 70.1480580019 * (n0 + n1 + n2)
 	end
 end
 
@@ -165,22 +166,20 @@ do
 	if bit then -- Bit library available
 		band = bit.band
 		bor = bit.bor
-		bxor = bit.bxor
 	else -- Otherwise, make 1-bit equivalents
+		local min = math.min
+
 		function band (a, b)
-			return a + b == 2 and 1 or 0
+			return max(a + b - 1, 0)
 		end
 
 		function bor (a, b)
-			return a + b >= 1 and 1 or 0
-		end
-
-		function bxor (a, b)
-			return a + b == 1 and 1 or 0
+			return min(a + b, 1)
 		end
 	end
 
-	---@number x Value #1.
+	--- 3-dimensional simplex noise.
+	-- @number x Value #1.
 	-- @number y Value #2.
 	-- @number z Value #3.
 	-- @treturn number Noise value &isin; [-1, +1].
@@ -206,48 +205,43 @@ do
 
 		--[[
 			Determine other corners based on simplex (skewed tetrahedron) we are in:
-			local ix2, iy2, iz2 = ix, iy, iz
 
-			if x0 >= y0 then
-				ix2, x2 = ix + 1, x2 - 1
-
-				if y0 >= z0 then -- X Y Z
-					ix, iy2, x1, y2 = ix + 1, iy + 1, x1 - 1, y2 - 1
-				elseif x0 >= z0 then -- X Z Y
-					ix, iz2, x1, z2 = ix + 1, iz + 1, x1 - 1, z2 - 1
-				else -- Z X Y
-					iz, iz2, z1, z2 = iz + 1, iz + 1, z1 - 1, z2 - 1
+			if x0 >= y0 then -- ~A
+				if y0 >= z0 then -- ~A and ~B
+					i1, j1, k1, i2, j2, k2 = 1, 0, 0, 1, 1, 0
+				elseif x0 >= z0 then -- ~A and B and ~C
+					i1, j1, k1, i2, j2, k2 = 1, 0, 0, 1, 0, 1
+				else -- ~A and B and C
+					i1, j1, k1, i2, j2, k2 = 0, 0, 1, 1, 0, 1
 				end
-			else
-				iy2, y2 = iy + 1, y2 - 1
-
-				if y0 < z0 then -- Z Y X
-					iz, iz2, z1, z2 = iz + 1, iz + 1, z1 - 1, z2 - 1
-				elseif x0 < z0 then -- Y Z X
-					iy, iz2, y1, z2 = iy + 1, iz + 1, y1 - 1, z2 - 1
-				else -- Y X Z
-					iy, ix2, y1, x2 = iy + 1, ix + 1, y1 - 1, x2 - 1
+			else -- A
+				if y0 < z0 then -- A and B
+					i1, j1, k1, i2, j2, k2 = 0, 0, 1, 0, 1, 1
+				elseif x0 < z0 then -- A and ~B and C
+					i1, j1, k1, i2, j2, k2 = 0, 1, 0, 0, 1, 1
+				else -- A and ~B and ~C
+					i1, j1, k1, i2, j2, k2 = 0, 1, 0, 1, 1, 0
 				end
-			end		
+			end
 		]]
-		local yx = x0 >= y0 and 1 or 0
-		local zy = y0 >= z0 and 1 or 0
-		local zx = x0 >= z0 and 1 or 0
+		local xLy = x0 < y0 and 1 or 0
+		local yLz = y0 < z0 and 1 or 0
+		local xLz = x0 < z0 and 1 or 0
 
-		local i1 = band(yx, bor(zy, zx)) -- x >= y and (y >= z or x >= z)
-		local j1 = band(1 - yx, zy) -- x < y and y >= z
-		local k1 = band(1 - zy, 1 - band(yx, zx)) -- y < z and not (x >= y and x >= z)
+		local i1 = band(1 - xLy, bor(1 - yLz, 1 - xLz)) -- x0 >= y0 and (y0 >= z0 or x0 >= z0)
+		local j1 = band(xLy, 1 - yLz) -- x0 < y0 and y0 >= z0
+		local k1 = band(yLz, bor(xLy, xLz)) -- y0 < z0 and (x0 < y0 or x0 < z0)
 
-		local i2 = bor(yx, band(zy, zx)) -- x >= z or (y >= z and x >= z)
-		local j2 = bor(1 - yx, zy) -- x < y or y >= z
-		local k2 = bxor(yx, zy) -- (x >= y and y < z) xor (x < y and y >= z)
+		local i2 = bor(1 - xLy, band(1 - yLz, 1 - xLz)) -- x0 >= y0 or (y0 >= z0 and x0 >= z0)
+		local j2 = bor(xLy, 1 - yLz) -- x0 < y0 or y0 >= z0
+		local k2 = bor(band(1 - xLy, yLz), band(xLy, bor(yLz, xLz))) -- (x0 >= y0 and y0 < z0) or (x0 < y0 and (y0 < z0 or x0 < z0))
 
 		local n1 = GetN(ix + i1, iy + j1, iz + k1, x0 + G - i1, y0 + G - j1, z0 + G - k1)
 		local n2 = GetN(ix + i2, iy + j2, iz + k2, x0 + G2 - i2, y0 + G2 - j2, z0 + G2 - k2)
 
 		-- Add contributions from each corner to get the final noise value.
 		-- The result is scaled to stay just inside [-1,1]
-		return 33.542 * (n0 + n1 + n2 + n3)
+		return 28.452842 * (n0 + n1 + n2 + n3)
 	end
 end
 
@@ -302,7 +296,8 @@ do
 	local G3 = 3 * G
 	local G4 = 4 * G - 1
 
-	---@number x Value #1.
+	--- 4-dimensional simplex noise.
+	-- @number x Value #1.
 	-- @number y Value #2.
 	-- @number z Value #3.
 	-- @number w Value #4.
@@ -323,16 +318,16 @@ do
 		-- To find out which of the 24 possible simplices we're in, we need to
 		-- determine the magnitude ordering of x0, y0, z0 and w0.
 		-- The method below is a good way of finding the ordering of x,y,z,w and
-		-- then find the correct traversal order for the simplex we’re in.
+		-- then find the correct traversal order for the simplex were in.
 		-- First, six pair-wise comparisons are performed between each possible pair
 		-- of the four coordinates, and the results are used to add up binary bits
 		-- for an integer index.
-		local c1 = x0 >= y0 and 32 or 0
-		local c2 = x0 >= z0 and 16 or 0
-		local c3 = y0 >= z0 and 8 or 0
-		local c4 = x0 >= w0 and 4 or 0
-		local c5 = y0 >= w0 and 2 or 0
-		local c6 = z0 >= w0 and 1 or 0
+		local c1 = x0 > y0 and 32 or 0
+		local c2 = x0 > z0 and 16 or 0
+		local c3 = y0 > z0 and 8 or 0
+		local c4 = x0 > w0 and 4 or 0
+		local c5 = y0 > w0 and 2 or 0
+		local c6 = z0 > w0 and 1 or 0
 
 		-- Simplex[c] is a 4-vector with the numbers 0, 1, 2 and 3 in some order.
 		-- Many values of c will never occur, since e.g. x>y>z>w makes x<z, y<w and x<w
@@ -370,7 +365,7 @@ do
 		local n3 = GetN(ix + i3, iy + j3, iz + k3, iw + l3, x0 + G3 - i3, y0 + G3 - j3, z0 + G3 - k3, w0 + G3 - l3)
 		local n4 = GetN(ix + 1, iy + 1, iz + 1, iw + 1, x0 + G4, y0 + G4, z0 + G4, w0 + G4)
 
-		return 40.654 * (n0 + n1 + n2 + n3 + n4)
+		return 2.210600293 * (n0 + n1 + n2 + n3 + n4)
 	end
 end
 

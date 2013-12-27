@@ -32,7 +32,7 @@
 local button = require("ui.Button")
 local dispatch_list = require("game.DispatchList")
 local level_map = require("game.LevelMap")
-local scenes = require("game.Scenes")
+local scenes = require("utils.Scenes")
 local timers = require("game.Timers")
 
 -- Corona globals --
@@ -75,6 +75,13 @@ local function Listen (what, arg1, arg2, arg3)
 		storyboard.showOverlay(arg1, Args)
 	end
 end
+
+-- Create Scene --
+function Scene:createScene (event)
+	scenes.Alias("Level")
+end
+
+Scene:addEventListener("createScene")
 
 -- Enter Scene --
 function Scene:enterScene (event)
@@ -125,8 +132,8 @@ dispatch_list.AddToMultipleLists{
 
 	-- Things Loaded --
 	things_loaded = function(level)
-		-- If we came from the map editor, this is only a test, so add a button for a quick exit.
-		if storyboard.getPrevious() == "scene.MapEditor" then
+		-- If coming from the map editor, this is only a test: add a quick exit button.
+		if scenes.ComingFrom() == "Editor" then
 			Scene.m_exit = button.Button(level.hud_group, nil, display.contentWidth - 110, 15, 50, 40, scenes.WantsToGoBack, "X")
 		end
 	end

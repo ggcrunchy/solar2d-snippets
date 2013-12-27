@@ -25,7 +25,7 @@
 
 -- Modules --
 local buttons = require("ui.Button")
-local scenes = require("game.Scenes")
+local scenes = require("utils.Scenes")
 local snowfall = require("effect.Snowfall")
 
 -- Corona modules --

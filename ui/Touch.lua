@@ -47,7 +47,7 @@ local M = {}
 --
 -- **CONSIDER**: More automagic than hscale? Varieties of clamping?
 --
--- **TODO**: May start in "broken" state, i.e. in violation of the clamping
+-- @todo May start in "broken" state, i.e. in violation of the clamping
 function M.DragParentTouch (hscale)
 	hscale = hscale or 1
 
@@ -60,6 +60,19 @@ function M.DragParentTouch (hscale)
 	end)
 end
 
+--- DOCME
+function M.DragParentTouch_Sibling (key)
+	return M.TouchHelperFunc(function(event, object)
+		object.m_dragx = object.parent.x - event.x
+		object.m_dragy = object.parent.y - event.y
+	end, function(event, object)
+		local sibling = object.parent[key]
+
+		object.parent.x = ClampIn(object.m_dragx + event.x, 0, display.contentWidth - sibling.contentWidth)
+		object.parent.y = ClampIn(object.m_dragy + event.y, 0, display.contentHeight - sibling.contentHeight)
+	end)
+end
+
 --- Builds a function (on top of @{TouchHelperFunc}) to be assigned as a **"touch"**
 -- listener, which will drag the target around when moved, subject to clamping at the screen
 -- edges.
@@ -69,7 +82,7 @@ end
 --
 -- **CONSIDER**: Varieties of clamping?
 --
--- **TODO**: As per @{DragParentTouch}
+-- @todo As per @{DragParentTouch}
 function M.DragTouch ()
 	return M.TouchHelperFunc(function(event, object)
 		object.m_dragx = object.x - event.x
@@ -107,7 +120,7 @@ end
 -- @treturn function Listener function, which always returns **true**.
 --
 -- You may simulate a touch by feeding an **id** of **"ignore_me"** through _event_, all
--- other fields being normal. Otherwise, the focus of the id'touch is updated.
+-- other fields being normal. Otherwise, the focus of the id's touch is updated.
 -- DOCMEMORE
 function M.TouchHelperFunc (began, moved, ended)
 	if moved == "began" then

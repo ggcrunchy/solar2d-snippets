@@ -147,12 +147,14 @@ end
 M.SetRangeX(.3, .7)
 M.SetRangeY(.3, .7)
 
----@number offset Horizontal screen offset of the world; if **nil**, 0.
+--- Setter.
+-- @number offset Horizontal screen offset of the world; if **nil**, 0.
 function M.SetXOffset (offset)
 	XOffset = offset or 0
 end
 
----@number offset Vertical screen offset of the world; if **nil**, 0.
+--- Setter.
+-- @number offset Vertical screen offset of the world; if **nil**, 0.
 function M.SetYOffset (offset)
 	YOffset = offset or 0
 end

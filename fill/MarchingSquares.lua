@@ -48,11 +48,9 @@ local StateToDir = {}
 
 for _, dir in ipairs{ Up, Right, Left, Down } do
 	for i = 3, 5 do
-		StateToDir[dir[i] + 1], dir[i] = dir
+		StateToDir[dir[i]], dir[i] = dir
 	end
 end
-
-StateToDir[1], StateToDir[16] = None, None
 
 -- Helper to get index of square
 local function Index (area, x, y)
@@ -92,13 +90,9 @@ local function Step (area, x, y, prev)
 	elseif state == 9 then -- UL and LR
 		return prev == Right and Up or Down
 	else -- Unambiguous cases
-		return StateToDir[state + 1]
+		return StateToDir[state] or None
 	end
 end
-
--- context:
--- array of (rows + 1) * (cols + 1)
--- top, left for half of boundary
 
 -- Finds a starting square
 local function FindEdge (area)
@@ -173,7 +167,7 @@ end
 --
 -- This is a no-op if either _x_ or _y_ is outside the target region.
 --
--- **TODO**: Currently _value_ itself isn't important, i.e. it's binary / there's no interpolation.
+-- @todo Currently _value_ itself isn't important, i.e. it's binary / there's no interpolation.
 -- @treturn function Called as `march(how, value)`. Drives the march around the boundary,
 -- calling _func_ at visited squares.
 --

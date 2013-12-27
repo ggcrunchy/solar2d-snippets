@@ -184,7 +184,8 @@ function M.Reverse (arr, count)
 	end
 end
 
----@array arr1 Array #1.
+--- Predicate.
+-- @array arr1 Array #1.
 -- @array arr2 Array #2.
 -- @treturn boolean _arr1_ and _arr2_ compared equal (without recursion)?
 function M.ShallowEqual (arr1, arr2)

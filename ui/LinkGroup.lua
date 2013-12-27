@@ -1,6 +1,6 @@
 --- Nodes for building links.
 --
--- **TODO**: Skins?
+-- @todo Skins?
 
 --
 -- Permission is hereby granted, free of charge, to any person obtaining
@@ -68,7 +68,7 @@ end
 
 -- Options for established lines --
 local LineOpts = {
-	color = { 255, 255, 255, 128 },
+	color = { 1, 1, 1, 1 },
 
 	keep = function(_, _, node)
 		return not node.m_broken
@@ -77,12 +77,12 @@ local LineOpts = {
 
 --- DOCME
 function M.Connect (object1, object2, touch, lgroup, ngroup)
-	local node = Circle(3, 16, 255, 0, 0, 128)
+	local node = Circle(3, 16, 1, 0, 0, .5)
 
 	ngroup:insert(node)
 
 	node:addEventListener("touch", touch)
-	node:setStrokeColor(0, 192)
+	node:setStrokeColor(0, .75)
 -- ^^ SKIN?
 	LineOpts.into = lgroup
 	LineOpts.node = node
@@ -105,7 +105,7 @@ end
 -- Highlights / de-highlights a link
 local function Highlight (link, is_over)
 	if link then
-		link:setStrokeColor(is_over and 255 or 0, 255, 0)
+		link:setStrokeColor(is_over and 1 or 0, 1, 0)
 -- ^^ COLOR
 	end
 end
@@ -170,7 +170,7 @@ local function HideNonTargets (lg, link, how)
 		local id, is_source = GetInfo(link)
 
 		for _, item in ipairs(lg.m_items) do
-			if MayPair(item, id, is_source) then
+			if not MayPair(item, id, is_source) then
 				show_or_hide(item, how)
 			end
 		end
@@ -181,7 +181,7 @@ end
 local Group = setmetatable({}, { __mode = "kv" }) -- todo: sparse array?
 
 -- Options for a temporary line --
-local LineOptsMaybe = { color = { 255, 64, 64, 192 } }
+local LineOptsMaybe = { color = { 1, .25, .25, .75 } }
 
 -- Link touch listener
 local LinkTouch = touch.TouchHelperFunc(function(event, link)
@@ -251,13 +251,13 @@ end)
 
 --
 local function NewLinkObject (is_target)
-	local r, b = 32, 255
+	local r, b = .125, 1
 
 	if is_target then
 		r, b = b, r
 	end
 
-	return Circle(4, 25, r, 32, b, 192)
+	return Circle(4, 25, r, .125, b, .75)
 	-- ^^ SKIN??
 end
 
@@ -319,7 +319,7 @@ local function DefCanTouch () return true end
 
 --
 local function DefMakeTemp ()
-	return Circle(2, 5, 255, 32)
+	return Circle(2, 5, 1, .125)
 end
 
 --- DOCME

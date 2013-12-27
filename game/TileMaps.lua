@@ -96,10 +96,10 @@ local TileW, TileH
 -- is padded with blanks to ensure its length is a multiple of the columns count.
 -- @see game.TileFlags.ResolveFlags
 function M.AddTiles (group, names)
-	local i, y = 1, 0
+	local i, y = 1, .5 * TileH
 
 	while i <= #names do
-		local x = 0
+		local x =.5 * TileW
 
 		for _ = 1, NCols do
 			local what = names[i]
@@ -131,14 +131,16 @@ function M.AddTiles (group, names)
 	tile_flags.ResolveFlags()
 end
 
----@int index Tile index, assumed to be inside the level.
+--- Getter.
+-- @int index Tile index, assumed to be inside the level.
 -- @treturn int Column corresponding to _index_...
 -- @treturn int ...and row.
 function M.GetCell (index)
 	return IndexToCell(index, NCols)
 end
 
----@number x Position x-coordinate...
+--- Getter.
+-- @number x Position x-coordinate...
 -- @number y ...and y-coordinate.
 -- @treturn int Column of position's cell... (May be outside level.)
 -- @treturn int ...and row. (Ditto.)
@@ -146,25 +148,29 @@ function M.GetCell_XY (x, y)
 	return FitToSlot(x, 0, TileW), FitToSlot(y, 0, TileH)
 end
 
----@treturn uint How many columns wide is each row...
+--- Getter.
+-- @treturn uint How many columns wide is each row...
 -- @treturn uint ...and how many rows tall is each column?
 function M.GetCounts ()
 	return NCols, NRows
 end
 
----@int index Tile index.
+--- Getter.
+-- @int index Tile index.
 -- @treturn DisplayObject Tile image, or **nil** if _index_ is invalid or the tile is blank.
 function M.GetImage (index)
 	return Tiles[index].image
 end
 
----@treturn number Tile width...
+--- Getter.
+-- @treturn number Tile width...
 -- @treturn number ...and height.
 function M.GetSizes ()
 	return TileW, TileH
 end
 
----@int col Tile column...
+--- Getter.
+-- @int col Tile column...
 -- @int row ...and row.
 -- @treturn int Tile index, or -1 if outside the level.
 function M.GetTileIndex (col, row)
@@ -175,14 +181,16 @@ function M.GetTileIndex (col, row)
 	end
 end
 
----@number x Position x-coordinate...
+--- Getter.
+-- @number x Position x-coordinate...
 -- @number y ...and y-coordinate.
 -- @treturn int Tile index, or -1 if outside the level.
 function M.GetTileIndex_XY (x, y)
 	return M.GetTileIndex(M.GetCell_XY(x, y))
 end
 
----@uint index Tile index.
+--- Getter.
+-- @uint index Tile index.
 --
 -- If the index is invalid or outside the level, falls back to the upper-left tile.
 -- @treturn number Tile center x-coordinate...
@@ -190,19 +198,20 @@ end
 function M.GetTilePos (index)
 	local tile = Tiles[index]
 
-	return tile.x + TileW / 2, tile.y + TileH / 2
+	return tile.x, tile.y
 end
 
----TODO: Hard-coded image file...
+--- TODO: Hard-coded image file...
 -- CONSIDER: layers...
 -- @treturn DisplayGroup Image group using current tile sheet.
 function M.NewImageGroup ()
 	ImageSheet = ImageSheet or graphics.newImageSheet("GameTiles/Tiles.png", GameTiles)
 
-	return display.newGroup()--ImageGroup(ImageSheet)
+	return display.newGroup()
 end
 
----@uint index Tile index (see the caveat for @{GetTilePos}).
+--- Utility.
+-- @uint index Tile index (see the caveat for @{GetTilePos}).
 -- @param object The tile center is assigned to this object's **x** and **y** fields.
 function M.PutObjectAt (index, object)
 	local x, y = M.GetTilePos(index)
@@ -269,8 +278,8 @@ dispatch_list.AddToMultipleLists{
 		TileH = level.h
 	end,
 
-	-- Enter Menus --
-	enter_menus = function()
+	-- Leave Level --
+	leave_level = function()
 		ImageSheet, Tiles = nil
 	end
 }

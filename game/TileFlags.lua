@@ -31,21 +31,21 @@
 -- Modules --
 local bitwise_ops = require("bitwise_ops")
 local dispatch_list = require("game.DispatchList")
+local flag_utils = require("utils.Flag")
 local index_ops = require("index_ops")
 local iterators = require("iterators")
 local numeric_ops = require("numeric_ops")
 local table_ops = require("table_ops")
-local utils = require("utils")
 
 -- Imports --
 local PowersOf2 = bitwise_ops.PowersOf2
-local TestFlag = utils.TestFlag
+local TestFlag = flag_utils.TestFlag
 
 -- Exports --
 local M = {}
 
 -- Flags for each cardinal direction --
-local DirFlags = utils.MakeFlags{ "left", "right", "up", "down" }
+local DirFlags = flag_utils.MakeFlags{ "left", "right", "up", "down" }
 
 -- Helper to build up tile flags as combination of cardinal directions
 local function OrFlags (...)
@@ -76,7 +76,8 @@ local TileFlags = {
 -- Working set of per-tile flags --
 local Flags
 
----@int index Tile index.
+--- Getter.
+-- @int index Tile index.
 -- @treturn uint Working flags, as assigned by @{SetFlags}; 0 if no value has been assigned,
 -- or _index_ is outside the level.
 --
@@ -85,7 +86,8 @@ function M.GetFlags (index)
 	return Flags[index] or 0
 end
 
----@string name One of **"left"**, **"right"**, **"up"**, **"down"**, **"FourWays"**,
+--- Getter.
+-- @string name One of **"left"**, **"right"**, **"up"**, **"down"**, **"FourWays"**,
 -- **"UpperLeft"**, **"UpperRight"**, **"LowerLeft"**, **"LowerRight"**, **"TopT"**,
 -- **"LeftT"**, **"RightT"**, **"BottomT"**, **"Horizontal"**, **"Vertical"**.
 -- @treturn uint Union of flags corresponding to _name_, or 0 if no match is found.
@@ -117,7 +119,8 @@ end
 -- The "true" value of flags, as used outside the module --
 local ResolvedFlags
 
----@int index Tile index.
+--- Getter.
+-- @int index Tile index.
 -- @treturn uint Resolved flags, as of the last @{ResolveFlags} call; 0 if no resolution
 -- has been performed or _index_ is invalid.
 --
@@ -126,7 +129,8 @@ function M.GetResolvedFlags (index)
 	return ResolvedFlags[index] or 0
 end
 
----@int index Tile index.
+--- Predicate.
+-- @int index Tile index.
 -- @string name One of **"left"**, **"right"**, **"up"**, or **"down"**.
 -- @treturn boolean _index_ is valid and the resolved flag is set for the tile?
 -- @see ResolveFlags
@@ -134,7 +138,8 @@ function M.IsFlagSet (index, name)
 	return TestFlag(ResolvedFlags[index] or 0, DirFlags[name])
 end
 
----@int index Tile index.
+--- Predicate.
+-- @int index Tile index.
 -- @treturn boolean Is _index_ valid, and did it resolve to neighboring more than two tiles?
 -- @treturn uint Number of outbound directions, &isin; [0, 4].
 -- @see ResolveFlags
@@ -148,7 +153,8 @@ function M.IsJunction (index)
 	return n > 2, n
 end
 
----@int index Tile index.
+--- Predicate.
+-- @int index Tile index.
 -- @treturn boolean Is _index_ valid, and would its flags resolve to some combination?
 -- @see GetFlagsByName, ResolveFlags
 function M.IsOnPath (index)
@@ -157,7 +163,8 @@ function M.IsOnPath (index)
 	return flags > 0
 end
 
----@int index Tile index.
+--- Predicate.
+-- @int index Tile index.
 -- @treturn boolean Is _index_ valid, and did it resolve to either the **"Horizontal"** or
 -- the **"Vertical"** combination?
 -- @see GetFlagsByName, ResolveFlags

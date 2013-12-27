@@ -30,10 +30,10 @@ local pairs = pairs
 
 -- Modules --
 local ai = require("game.AI")
-local audio = require("game.Audio")
+local audio = require("utils.Audio")
 local collision = require("game.Collision")
 local dispatch_list = require("game.DispatchList")
-local frames = require("game.Frames")
+local frames = require("utils.Frames")
 --local fx = require("game.FX")
 local level_map = lazy_require("game.LevelMap")
 local movement = require("game.Movement")
@@ -88,7 +88,7 @@ function M.AddPlayer (group, col, row)
 	-- Add the body "sprite"
 	Player.m_body = display.newCircle(group, 0, 0, Radius)
 
-	Player.m_body:setStrokeColor(255, 0, 0)
+	Player.m_body:setStrokeColor(1, 0, 0)
 
 	Player.m_body.strokeWidth = 3
 
@@ -297,11 +297,11 @@ dispatch_list.AddToMultipleLists{
 				X1 = display.newLine(MarkersLayer, x - 15, y - 15, x + 15, y + 15)
 				X2 = display.newLine(MarkersLayer, x - 15, y + 15, x + 15, y - 15)
 
-				X1:setColor(255, 0, 0)
-				X2:setColor(255, 0, 0)
+				X1:setStrokeColor(1, 0, 0)
+				X2:setStrokeColor(1, 0, 0)
 
-				X1.width = 4
-				X2.width = 8
+				X1.strokeWidth = 4
+				X2.strokeWidth = 8
 			end
 
 		-- Otherwise, play some sparkles just to give some feedback on the tap.

@@ -105,7 +105,8 @@ end
 -- Current fallback skin --
 local CurSkin = "default"
 
----@param name Skin name, or **nil** for current skin.
+--- Getter.
+-- @param name Skin name, or **nil** for current skin.
 -- @return (Read-only) Skin.
 function M.GetSkin (name)
 	if name == nil then
@@ -151,7 +152,8 @@ function M.RegisterSkin (name, data, parent)
 	Skins[name] = skin
 end
 
----@param name Name of a registered skin.
+--- Setter.
+-- @param name Name of a registered skin.
 function M.SetCurrentSkin (name)
 	assert(Skins[name], "Invalid skin")
 

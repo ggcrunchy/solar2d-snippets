@@ -54,7 +54,8 @@ do
 		return Name(tag, i + 1)
 	end
 
-	---@string name Tag name.
+	--- Iterator.
+	-- @string name Tag name.
 	-- @treturn iterator Supplies, in order, at each iteration:
 	--
 	-- * Iteration variable, of dubious practical use.
@@ -67,7 +68,8 @@ do
 	end
 end
 
----@string name Tag name.
+--- Predicate.
+-- @string name Tag name.
 -- @treturn boolean The name has been registered with @{New}?
 function M.Exists (name)
 	return Tags[name] ~= nil
@@ -365,7 +367,8 @@ do
 		return Name(tag, i - 1)
 	end
 
-	---@string name Tag name.
+	--- Iterator.
+	-- @string name Tag name.
 	-- @treturn iterator Supplies, in order, at each iteration:
 	--
 	-- * Iteration variable, of dubious practical use.
@@ -476,7 +479,8 @@ do
 		return count + 1
 	end
 
-	---@string name Tag name.
+	--- Iterator.
+	-- @string name Tag name.
 	-- @bool as_set
 	-- @treturn iterator Supplies, in some order without duplication, at each iteration:
 	--

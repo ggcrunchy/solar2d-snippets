@@ -38,12 +38,12 @@ local sqrt = math.sqrt
 
 -- Modules --
 local buttons = require("ui.Button")
-local common = require("editor.Common")
-local cubic_spline = require("effect.CubicSpline")
+local checkbox = require("ui.Checkbox")
+local cubic_spline = require("utils.CubicSpline")
 local grid_iterators = require("grid_iterators")
-local integrators = require("effect.Integrators")
+local integrators = require("utils.Integrators")
 local quaternion_ops = require("quaternion_ops")
-local scenes = require("game.Scenes")
+local scenes = require("utils.Scenes")
 local timers = require("game.Timers")
 
 -- Corona globals --
@@ -180,9 +180,10 @@ function Scene:enterScene ()
 	self.back:toBack()
 
 	--
-	self.use_quaternions = common.CheckboxWithText(self.view, 20, display.contentHeight - 70, "Use quaternions?")
+	self.use_quaternions = checkbox.Checkbox(self.view, nil, 40, display.contentHeight - 40, 30, 30)
+	self.str = display.newText(self.view, "Use quaternions?", 0, self.use_quaternions.y, native.systemFont, 20)
 
-	self.use_quaternions.isVisible = true
+	self.str.anchorX, self.str.x = 0, self.use_quaternions.x + self.use_quaternions.width + 5
 
 	-- Rotate three ellipse points and iterate the triangle formed by them, lighting
 	-- up its pixels. Ignore out-of-bounds columns and rows.
@@ -395,6 +396,8 @@ function Scene:exitScene ()
 
 	self.groups:removeSelf()
 	self.text:removeSelf()
+	self.use_quaternions:removeSelf()
+	self.str:removeSelf()
 
 	self.back = nil
 	self.front = nil

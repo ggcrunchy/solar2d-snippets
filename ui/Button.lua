@@ -1,6 +1,6 @@
 --- Button UI elements.
 --
--- **TODO**: Document skin...
+-- @todo Document skin...
 
 --
 -- Permission is hereby granted, free of charge, to any person obtaining
@@ -27,7 +27,7 @@
 
 -- Modules --
 local colors = require("ui.Color")
-local frames = require("game.Frames")
+local frames = require("utils.Frames")
 local geom2d_ops = require("geom2d_ops")
 local skins = require("ui.Skin")
 local timers = require("game.Timers")
@@ -216,13 +216,14 @@ function M.Button (group, skin, x, y, w, h, func, text)
 	-- and string will be relative to this group.
 	local bgroup = display.newGroup()
 
+	bgroup.anchorChildren = true
 	bgroup.x, bgroup.y = x, y
 
 	group:insert(bgroup)
 
 	-- Add the button and (partially centered) text, in that order, to the group.
 	local button = Factories[skin.button_type](bgroup, skin, w, h)
-	local string = display.newText(bgroup, text or "", button.x, button.y, skin.button_font, skin.button_textsize)
+	local string = display.newText(bgroup, text or "", 0, 0, skin.button_font, skin.button_textsize)
 
 	string:setFillColor(GetColor(skin.button_textcolor))
 
@@ -241,7 +242,8 @@ function M.Button (group, skin, x, y, w, h, func, text)
 	-- Assign any timeout.
 	SetTimeout(bgroup, skin.button_timeout)
 
-	---@function bgroup:SetTimeout
+	--- Setter.
+	-- @function bgroup:SetTimeout
 	-- @number timeout A value &gt; 0. When the button is held, its function is called
 	-- each time this duration passes. If absent, any such timeout is removed.
 	bgroup.SetTimeout = SetTimeout

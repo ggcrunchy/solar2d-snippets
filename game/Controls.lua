@@ -149,14 +149,6 @@ local function KeyEvent (event)
 	return true
 end
 
--- Restores the state on level load / reset
-local function ResetState ()
-	Active = true
-	FramesLeft = 0
-	Dir, Was = nil
-	ChangeTo = nil
-end
-
 -- Traps touches to the screen and interprets any taps
 local function TrapTaps (event)
 	if Active then
@@ -196,6 +188,8 @@ dispatch_list.AddToMultipleLists{
 		-- ("tap" events don't seem to play nice with the rest of the GUI).
 		local trap = display.newRect(hg, 0, 0, display.contentWidth, display.contentHeight)
 
+		trap:translate(display.contentCenterX, display.contentCenterY)
+
 		trap.isHitTestable = true
 		trap.isVisible = false
 
@@ -230,10 +224,15 @@ dispatch_list.AddToMultipleLists{
 	end,
 
 	-- Reset Level --
-	reset_level = ResetState,
+	reset_level = function()
+		Active = true
+		FramesLeft = 0
+		Dir, Was = nil
+		ChangeTo = nil
+	end,
 
 	-- Things Loaded --
-	things_loaded = ResetState
+	things_loaded = "reset_level"
 }
 
 -- Export the module.

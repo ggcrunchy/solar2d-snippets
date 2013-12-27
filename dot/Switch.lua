@@ -24,20 +24,23 @@
 --
 
 -- Modules --
-local audio = require("game.Audio")
+local audio = require("utils.Audio")
+local bind_utils = require("utils.Bind")
 local common = lazy_require("editor.Common")
 local collision = require("game.Collision")
-local defer = require("game.Defer")
 local dispatch_list = require("game.DispatchList")
+local flag_utils = require("utils.Flag")
 local links = lazy_require("editor.Links")
 local tags = lazy_require("editor.Tags")
-local utils = require("utils")
 
 -- Corona globals --
 local display = display
 
 -- Dot methods --
 local Switch = {}
+
+-- Switch <-> events binding --
+local Events = bind_utils.BroadcastBuilder_Helper("loading_level")
 
 -- Sounds played by switch --
 local Sounds = audio.NewSoundGroup{ "Switch1.wav", "Switch2.mp3" }
@@ -54,8 +57,8 @@ function Switch:ActOn ()
 
 	--
 	-- Fire the event and stop showing its hint, and wait for it to finish.
-	for _, event in defer.IterEvents(self.m_event) do
-		if not utils.TestFlag(waiting, flag) then
+	for _, event in Events.Iter(self) do
+		if not flag_utils.TestFlag(waiting, flag) then
 			event("fire", forward)
 
 			waiting = waiting + flag
@@ -115,8 +118,8 @@ end
 function Switch:Update ()
 	local flag, touched, waiting = 1, self.m_touched, self.m_waiting
 
-	for _, event in defer.IterEvents(self.m_event) do
-		if utils.TestFlag(waiting, flag) and event("is_done") then
+	for _, event in Events.Iter(self) do
+		if flag_utils.TestFlag(waiting, flag) and event("is_done") then
 			waiting = waiting - flag
 
 			if touched then
@@ -143,8 +146,8 @@ collision.AddHandler("switch", function(phase, switch, _, other_type)
 		--
 		local flag, waiting = 1, switch.m_waiting
 
-		for _, event in defer.IterEvents(switch.m_event) do
-			if not utils.TestFlag(waiting, flag) then
+		for _, event in Events.Iter(switch) do
+			if not flag_utils.TestFlag(waiting, flag) then
 				event("show", switch, is_touched)
 			end
 
@@ -160,7 +163,7 @@ end)
 --
 local function LinkSwitch (switch, other, sub, other_sub)
 	if sub == "trip" then
-		defer.AddId(switch, "target", other.uid, other_sub)
+		bind_utils.AddId(switch, "target", other.uid, other_sub)
 	end
 end
 
@@ -168,7 +171,7 @@ end
 local function OnEditorEvent (what, arg1, arg2, arg3)
 	-- Build --
 	-- arg1: Level
-	-- arg2: Instance
+	-- arg2: Original entry
 	-- arg3: Item to build
 	if what == "build" then
 		-- STUFF
@@ -205,16 +208,13 @@ local function OnEditorEvent (what, arg1, arg2, arg3)
 	-- arg3: Key
 	elseif what == "verify" then
 		local switch = arg2[arg3]
-		local rep = common.GetBinding(switch, true)
+		local rep = common.GetRepFromValues(switch)
 
 		if not links.HasLinks(rep, "trip") then
 			arg1[#arg1 + 1] = "Switch `" .. switch.name .. "` has no event targets"
 		end
 	end
 end
-
--- Deferred switch <-> event binding
-local GetEvent = defer.BindBroadcast("m_event")
 
 -- Export the switch factory.
 return function (group, info)
@@ -241,7 +241,7 @@ return function (group, info)
 
 	Sounds:Load()
 
-	defer.Await("loading_level", info.target, GetEvent, switch)
+	Events.Subscribe(switch, info.target)
 
 	switch.m_forward = not not info.forward
 	switch.m_waiting = 0

@@ -32,7 +32,7 @@ local remove = table.remove
 local buttons = require("ui.Button")
 local hilbert = require("fill.Hilbert")
 local line_ex = require("ui.LineEx")
-local scenes = require("game.Scenes")
+local scenes = require("utils.Scenes")
 local timers = require("game.Timers")
 
 -- Corona globals --

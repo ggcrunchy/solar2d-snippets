@@ -66,7 +66,8 @@ function M.CellToIndex (col, row, w)
 	return (row - 1) * w + col
 end
 
----@int index Index to test.
+--- Utility.
+-- @int index Index to test.
 -- @uint size Size of range.
 -- @bool okay_after Is _size_ + 1 a valid index?
 -- @treturn boolean _index_ is in the range?

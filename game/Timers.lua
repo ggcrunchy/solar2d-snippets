@@ -24,6 +24,7 @@
 --
 
 -- Standard library imports --
+local assert = assert
 local max = math.max
 local wrap = coroutine.wrap
 
@@ -66,6 +67,24 @@ local DeferFuncs = {
 		event.m_object:setLinearVelocity(0, 0)
 	end
 }
+
+--- DOCME
+function M.AddDeferFunc (name, func, extends)
+	assert(not DeferFuncs[name], "Name already taken")
+	assert(func ~= nil, "Invalid function")
+	assert(extends == nil or DeferFuncs[extends], "Nothing to extend")
+
+	if extends == nil then
+		DeferFuncs[name] = func
+	else
+		local base = DeferFuncs[extends]
+
+		DeferFuncs[name] = function(event)
+			base(event)
+			func(event)
+		end
+	end
+end
 
 --- Variant of @{Defer} that conditionally fires.
 -- @callable func Function as per **timer.performWithDelay**.

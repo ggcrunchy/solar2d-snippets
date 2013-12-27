@@ -57,7 +57,8 @@ function M.DivRem (a, b)
 	return quot, a - quot * b
 end
 
----@number a Value #1.
+--- Utility.
+-- @number a Value #1.
 -- @number b Value #2.
 -- @treturn number Minimum value.
 -- @treturn number Maximum value.

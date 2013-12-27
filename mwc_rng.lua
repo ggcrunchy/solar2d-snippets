@@ -62,7 +62,8 @@ end
 -- Module table --
 local M = {}
 
----@treturn function Called as `result = gen(want_real)`. If _want\_real_ is true, _result_
+--- Factory.
+-- @treturn function Called as `result = gen(want_real)`. If _want\_real_ is true, _result_
 -- will be a random number &isin; (0, 1); otherwise, it will be a random 32-bit integer.
 function M.MakeGenerator (
   z, -- uint: Z seed; if absent, uses a default.

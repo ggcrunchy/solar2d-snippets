@@ -150,9 +150,10 @@ local function Proxy (object)
 	return object and object.parent and Proxies[object]
 end
 
----@pobject object
+--- Getter.
+-- @pobject object
 -- @string sub
--- @treturn integer C
+-- @treturn uint C
 function M.CountLinks (object, sub)
 	local proxy, count = Proxy(object), 0
 
@@ -237,7 +238,8 @@ function M.CanLink (object1, object2, sub1, sub2)
 	return false, "Invalid object", true
 end
 
----@pobject object
+--- Getter.
+-- @pobject object
 -- @bool is_proxy
 -- @treturn string N
 function M.GetTag (object, is_proxy)
@@ -248,7 +250,8 @@ function M.GetTag (object, is_proxy)
 	return object and object.name
 end
 
----@pobject object
+--- Predicate.
+-- @pobject object
 -- @string sub
 -- @treturn boolean X
 function M.HasLinks (object, sub)
@@ -329,7 +332,8 @@ function Link:Break ()
 	end
 end
 
----@treturn boolean The link is still intact?
+--- Getter.
+-- @treturn boolean The link is still intact?
 --
 -- When **false**, this is the only return value.
 -- @treturn ?pobject Linked object #1...
@@ -347,7 +351,8 @@ function Link:GetObjects ()
 	return false
 end
 
---- @pobject object Object, which may be paired in the link.
+--- Getter.
+-- @pobject object Object, which may be paired in the link.
 -- @treturn ?pobject If the link is valid and _object_ was one of its linked objects, the
 -- other object; otherwise, **nil**.
 -- @treturn ?string If an object was returned, its sublink; if absent, **nil**.
@@ -452,7 +457,8 @@ function M.RemoveTag (object)
 	end
 end
 
----@callable func X
+--- Setter.
+-- @callable func X
 function M.SetRemoveFunc (func)
 	OnRemove = func
 end
@@ -514,7 +520,7 @@ dispatch_list.AddToMultipleLists{
 	-- Build Level --
 	build_level = function(level)
 		-- ??
-		-- Iterate list of links, dispatch out to objects? (some way to look up elements from keys...)
+		-- Iterate list of links, dispatch out to objects? (some way to look up values from keys...)
 	end,
 
 	-- Load Level WIP --

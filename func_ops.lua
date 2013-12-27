@@ -32,7 +32,8 @@ local IsCallable = var_preds.IsCallable
 -- Exports --
 local M = {}
 
----@callable func Function to call.
+--- Utility.
+-- @callable func Function to call.
 -- @param arg Argument.
 -- @return Call results.
 function M.Call (func, arg)
@@ -47,7 +48,8 @@ function M.Call_Multi (func, ...)
 	return func(...)
 end
 
----@param owner Method owner.
+--- Utility.
+-- @param owner Method owner.
 -- @param name Method name.
 -- @param arg Argument.
 -- @return Call results.
@@ -88,17 +90,20 @@ function M.CallOrGet_Multi (value, ...)
 	return value
 end
 
----@treturn string **""**.
+--- Getter.
+-- @treturn string **""**.
 function M.EmptyString ()
 	return ""
 end
 
----@treturn boolean **false**.
+--- Getter.
+-- @treturn boolean **false**.
 function M.False ()
 	return false
 end
 
----@param arg Argument.
+--- Utility.
+-- @param arg Argument.
 -- @return _arg_.
 function M.Identity (arg)
 	return arg
@@ -138,7 +143,8 @@ function M.Negater_Multi (func)
 	end
 end
 
----@treturn table New empty table.
+--- Utility.
+-- @treturn table New empty table.
 function M.NewTable ()
 	return {}
 end
@@ -146,17 +152,20 @@ end
 --- No operation.
 function M.NoOp () end
 
----@treturn number 1.
+--- Getter.
+-- @treturn number 1.
 function M.One ()
 	return 1
 end
 
----@treturn boolean **true**.
+--- Getter.
+-- @treturn boolean **true**.
 function M.True ()
 	return true
 end
 
----@treturn number 0.
+--- Getter.
+-- @treturn number 0.
 function M.Zero ()
 	return 0
 end

@@ -27,7 +27,7 @@
 local button = require("ui.Button")
 local DEBUG = require("DEBUG")
 local persistence = require("game.Persistence")
-local scenes = require("game.Scenes")
+local scenes = require("utils.Scenes")
 
 -- Corona modules --
 local storyboard = require("storyboard")
@@ -37,8 +37,8 @@ local Scene = storyboard.newScene()
 
 -- Create Scene --
 function Scene:createScene ()
-	button.Button(self.view, nil, 20, 20, 200, 50, scenes.WantsToGoBack, "Go Back")
-	button.Button(self.view, nil, 20, 90, 200, 50, persistence.Wipe, "Wipe data")
+	button.Button(self.view, nil, 120, 70, 200, 50, scenes.WantsToGoBack, "Go Back")
+	button.Button(self.view, nil, 120, 140, 200, 50, persistence.Wipe, "Wipe data")
 
 	-- Populate with debug options, if available.
 	if DEBUG then

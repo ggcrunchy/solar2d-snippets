@@ -29,7 +29,7 @@ local sort = table.sort
 -- Modules --
 local buttons = require("ui.Button")
 local lines = require("ui.Lines")
-local scenes = require("game.Scenes")
+local scenes = require("utils.Scenes")
 local touch = require("ui.Touch")
  
 -- Corona globals --

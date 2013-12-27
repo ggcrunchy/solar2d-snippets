@@ -25,8 +25,8 @@
 
 -- Modules --
 local buttons = require("ui.Button")
-local curves = require("effect.Curves")
-local scenes = require("game.Scenes")
+local curves = require("utils.Curves")
+local scenes = require("utils.Scenes")
 local timers = require("game.Timers")
 
 -- Corona modules --

@@ -37,7 +37,7 @@ local sin = math.sin
 
 -- Modules --
 local button = require("ui.Button")
-local scenes = require("game.Scenes")
+local scenes = require("utils.Scenes")
 local timers = require("game.Timers")
 
 -- Corona globals --

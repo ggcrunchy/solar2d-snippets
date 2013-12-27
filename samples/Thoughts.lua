@@ -32,7 +32,7 @@ local random = math.random
 -- Modules --
 local balloons = require("effect.Balloons")
 local buttons = require("ui.Button")
-local scenes = require("game.Scenes")
+local scenes = require("utils.Scenes")
 
 -- Corona globals --
 local display = display

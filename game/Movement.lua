@@ -47,7 +47,8 @@ local Directions = {
 	down = { to_left = "right", to_right = "left", backward = "up" }
 }
 
----@uint index Tile index.
+--- Predicate.
+-- @uint index Tile index.
 -- @string dir Direction to query.
 -- @string facing If provided, direction is interpreted as `NextDirection(facing, dir)`.
 -- @treturn boolean Can we move to the next tile, going this way?

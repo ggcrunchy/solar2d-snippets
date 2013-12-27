@@ -25,7 +25,9 @@
 
 -- Standard library imports --
 local ipairs = ipairs
+local next = next
 local pairs = pairs
+local remove = table.remove
 local type = type
 
 -- Exports --
@@ -123,6 +125,49 @@ function M.IterSet (set)
 	else
 		return Single_Set, set
 	end
+end
+
+--
+local function AuxRemove (func, cur, v)
+	local has_elems
+
+	if type(cur) == "table" then
+		has_elems = func(cur, v)
+	else
+		has_elems = cur ~= v
+	end
+
+	return has_elems and cur or nil
+end
+
+--
+local function ArrayRemove (arr, v)
+	for i, elem in ipairs(arr) do
+		if elem == v then
+			remove(arr, i)
+
+			break
+		end
+	end
+
+	return arr[1]
+end
+
+--- DOCME
+function M.RemoveFromArray (t, k, v)
+	t[k] = AuxRemove(ArrayRemove, t[k], v)
+end
+
+--
+local function SetRemove (set, v)
+	set[v] = nil
+
+	return next(set)
+end
+
+--- DOCME
+function M.RemoveFromSet (t, k, v)
+	t[k] = AuxRemove(SetRemove, t[k], v)
 end
 
 -- Export the module.

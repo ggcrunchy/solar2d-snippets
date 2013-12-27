@@ -70,12 +70,11 @@ end
 
 --- Shallow-copies a table.
 --
--- TODO: Account for cycles, table as key
+-- @todo Account for cycles, table as key; link to Map
 -- @tparam table t Table to copy.
 -- @param how Copy behavior, as per `Map`.
 -- @param how_arg Copy behavior, as per `Map`.
 -- @treturn table Copy.
--- @see Map
 function M.Copy (t, how, how_arg)
     return _Map_(t, Identity, how, nil, how_arg)
 end
@@ -128,7 +127,7 @@ do
 	--
 	-- This will also copy metatables, and thus assumes these are accessible.
 	--
-	-- TODO: Account for cycles, table as key
+	-- @todo Account for cycles, table as key
 	-- @tparam table t Table to copy.
 	-- @treturn table Copy.
 	function M.DeepCopy (t)
@@ -184,7 +183,7 @@ do
 	--- Compares two tables for equality, recursing into subtables. The comparison respects
 	-- the **"eq"** metamethod of non-table elements.
 	--
-	-- TODO: Account for cycles
+	-- @todo Account for cycles
 	-- @tparam table t1 Table to compare.
 	-- @tparam table t2 Table to compare.
 	-- @treturn boolean Are the tables equal?

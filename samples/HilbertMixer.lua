@@ -33,13 +33,14 @@ local sin = math.sin
 
 -- Modules --
 local buttons = require("ui.Button")
-local common = require("editor.Common")
-local cubic_spline = require("effect.CubicSpline")
-local curves = require("effect.Curves")
+local checkbox = require("ui.Checkbox")
+local common_ui = require("editor.CommonUI")
+local cubic_spline = require("utils.CubicSpline")
+local curves = require("utils.Curves")
 local hilbert = require("fill.Hilbert")
 local line_ex = require("ui.LineEx")
 local numeric_ops = require("numeric_ops")
-local scenes = require("game.Scenes")
+local scenes = require("utils.Scenes")
 local timers = require("game.Timers")
 
 -- Corona globals --
@@ -410,19 +411,19 @@ function Scene:enterScene ()
 		}
 	}
 
-	self.tabs = common.TabBar(self.view, tab_buttons, { top = display.contentHeight - 65, left = 200, width = 200 }, true)
+	self.tabs = common_ui.TabBar(self.view, tab_buttons, { top = display.contentHeight - 65, left = 250, width = 200 }, true)
 
 	self.tabs:setSelected(1, true)
 
 	--
 	self.points = points
-	self.smooth = common.CheckboxWithText(self.view, 20, display.contentHeight - 70, "Smooth polygon", {
-		func = function(_, check)
-			self.tabs.isVisible = check
-		end
-	})
+	self.smooth = checkbox.Checkbox(self.view, nil, 40, display.contentHeight - 50, 30, 30, function(_, check)
+		self.tabs.isVisible = check
+	end)
 
-	self.smooth.isVisible = true
+	self.str = display.newText(self.view, "Smooth polygon", 0, self.smooth.y, native.systemFont, 20)
+
+	self.str.anchorX, self.str.x = 0, self.smooth.x + self.smooth.width + 5
 
 	self.acoeff = widget.newSlider{
 		left = 20, top = 90, width = 120, height = 70,
@@ -456,15 +457,15 @@ function Scene:exitScene ()
 	self.igroup:removeSelf()
 
 	display.remove(self.polygon)
-	display.remove(self.smooth)
 	display.remove(self.trace)
 
 	self.polygon = nil
-	self.smooth = nil
 	self.trace = nil
 
 	self.acoeff:removeSelf()
 	self.hscale:removeSelf()
+	self.smooth:removeSelf()
+	self.str:removeSelf()
 
 	--
 	Runtime:removeEventListener("enterFrame", EnterFrame)

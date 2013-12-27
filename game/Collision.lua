@@ -29,10 +29,10 @@ local assert = assert
 -- Modules --
 local adaptive_table_ops = require("adaptive_table_ops")
 local dispatch_list = require("game.DispatchList")
+local flag_utils = require("utils.Flag")
 local iterators = require("iterators")
 local table_ops = require("table_ops")
 local timers = require("game.Timers")
-local utils = require("utils")
 
 -- Corona globals --
 local display = display
@@ -105,6 +105,8 @@ local function BorderRect (group, x, y, w, h)
 	BorderBody = BorderBody or { filter = { categoryBits = M.FilterBits("border"), maskBits = 0xFFFF } }
 
 	local rect = display.newRect(group, x, y, w, h)
+
+	rect:translate(w / 2, h / 2)
 
 	M.MakeSensor(rect, "static", BorderBody)
 	M.SetType(rect, "border")
@@ -256,14 +258,15 @@ function M.FilterBits (...)
 
 	for _, name in iterators.Args(...) do
 		if name ~= nil then
-			bits = utils.SetFlag(bits, NamedFlags[name])
+			bits = flag_utils.SetFlag(bits, NamedFlags[name])
 		end
 	end
 
 	return bits
 end
 
----@param object Object to query.
+--- Getter.
+-- @param object Object to query.
 -- @return Collision type of _object_, or **nil** if absent.
 -- @see SetType
 function M.GetType (object)
@@ -294,9 +297,10 @@ function M.Implements_Pred (object, what, def, ...)
 	return "does_not_implement"
 end
 
----@pobject object Object to poll about visibility.
+--- Predicate.
+-- @pobject object Object to poll about visibility.
 -- @treturn boolean Is _object_ visible?
--- @see @{SetVisibility}
+-- @see SetVisibility
 function M.IsVisible (object)
 	return not IsHidden[object]
 end
@@ -309,18 +313,6 @@ function M.MakeSensor (object, body_type, props)
 	physics.addBody(object, body_type or "dynamic", props)
 
 	object.isSensor = true
-end
-
----@number dx Incident vector x-component...
--- @number dy ...and y-component.
--- @number nx Normal x-component...
--- @number ny ...and y-component.
--- @treturn number Reflected vector x-component...
--- @treturn number ...and y-component.
-function M.Reflect (dx, dy, nx, ny)
-	local scale = 2 * (dx * nx + dy * ny) / (nx * nx + ny * ny)
-
-	return dx - scale * nx, dy - scale * ny
 end
 
 --- Associates a collision type with _object_. This is used to choose _object_'s handler in

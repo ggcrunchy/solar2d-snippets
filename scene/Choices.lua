@@ -27,10 +27,10 @@
 local exit = os.exit
 
 -- Modules --
-local common = require("editor.Common")
+local common_ui = require("editor.CommonUI")
 local dispatch_list = require("game.DispatchList")
 local layout = require("ui.Layout")
-local scenes = require("game.Scenes")
+local scenes = require("utils.Scenes")
 
 -- Corona globals --
 local system = system
@@ -65,6 +65,7 @@ local Names = {
 	"Snowfall", -- v 0.3: In progress... Already in, e.g. CBEffects... anyhow, see if adapting the (abandoned) Icebreakers stuff would look decent for ash, leaves, snow, etc.
 	"Superformulae", -- v 0.8: Getting there... is there any way to analyze the formula? (can get REALLY huge...)
 	"Thoughts", -- v 0.6: Seems to need some fixing...
+	"Ticker", -- v 0.1: Get something started...
 	"Tiling", -- v 0.5: Do effects on these, once in play?
 	"Timers", -- v 0.3: Better examples?
 	"Game", -- v 0.7: Having actual game ideas... explore? Which are best?
@@ -148,7 +149,7 @@ end
 --
 function Scene:createScene ()
 	local Current = display.newText(self.view, "", 0, 50, native.systemFont, 35)
-	local Choices = common.Listbox(self.view, 20, 20, {
+	local Choices = common_ui.Listbox(self.view, 20, 20, {
 		-- --
 		get_text = function(index)
 			return Names[index]
@@ -160,7 +161,7 @@ function Scene:createScene ()
 		end
 	})
 
-	local add_row = common.ListboxRowAdder()
+	local add_row = common_ui.ListboxRowAdder()
 
 	for _ = 1, #Names do
 		Choices:insertRow(add_row)

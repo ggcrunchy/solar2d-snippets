@@ -52,8 +52,8 @@ function M.GetColor (color)
 		color = assert(Colors[color], "Unknown color")
 	end
 
-	if type(color) == "table" then
-		return color.r or color[1] or 0, color.g or color[2] or 0, color.b or color[3] or 0, color.a or color[4] or 255
+	if type(color) == "table" and color.type ~= "gradient" then
+		return color.r or color[1] or 0, color.g or color[2] or 0, color.b or color[3] or 0, color.a or color[4] or 1
 	else
 		return color
 	end

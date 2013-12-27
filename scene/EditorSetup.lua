@@ -36,10 +36,11 @@ local tonumber = tonumber
 
 -- Modules --
 local button = require("ui.Button")
-local common = require("editor.Common")
+local common_ui = require("editor.CommonUI")
 local keyboard = require("ui.Keyboard")
+local object_helper = require("utils.ObjectHelper")
 local persistence = require("game.Persistence")
-local scenes = require("game.Scenes")
+local scenes = require("utils.Scenes")
 
 -- Corona globals --
 local display = display
@@ -75,8 +76,8 @@ local RowText = "Number of rows:"
 
 -- Create Scene --
 function Scene:createScene ()
-	button.Button(self.view, nil, 20, 20, 200, 50, scenes.WantsToGoBack, "Go Back")
-	button.Button(self.view, nil, display.contentWidth - (200 + 20), display.contentHeight - (20 + 50), 200, 50, function()
+	button.Button(self.view, nil, 120, 70, 200, 50, scenes.WantsToGoBack, "Go Back")
+	button.Button(self.view, nil, display.contentWidth - (150 + 20), display.contentHeight - (20 + 50), 200, 50, function()
 		local cols = tonumber(self.m_cols.text)
 		local rows = tonumber(self.m_rows.text)
 
@@ -91,8 +92,11 @@ function Scene:createScene ()
 		end
 	end, "New Scene")
 
-	self.m_cols_text = display.newText(self.view, ColText, 50, 130, native.systemFont, 24)
-	self.m_rows_text = display.newText(self.view, RowText, 50, 230, native.systemFont, 24)
+	self.m_cols_text = display.newText(self.view, ColText, 0, 150, native.systemFont, 24)
+	self.m_rows_text = display.newText(self.view, RowText, 0, 210, native.systemFont, 24)
+
+	self.m_cols_text.anchorX, self.m_cols_text.x = 0, 30
+	self.m_rows_text.anchorX, self.m_rows_text.x = 0, 30
 
 	if not OnDevice then
 		self.m_keyboard = keyboard.Keyboard(self.view, nil, "nums", 0, 0)
@@ -103,22 +107,14 @@ Scene:addEventListener("createScene")
 
 -- Updates levels listbox and related elements according to current choice
 local function UpdateCurrent (scene, levels, index)
-	local bounds = scene.m_levels_list.contentBounds
-	local cur = scene.m_current
-
-	cur.text = "Current choice: " .. levels[index].name
-
-	cur:setReferencePoint(display.CenterLeftReferencePoint)
-
-	cur.x = bounds.xMin
-	cur.y = bounds.yMax + 25
+	object_helper.AlignTextToObject(scene.m_current, "Current choice: " .. levels[index].name, scene.m_levels_list, "below_left", 0, 10)
 
 	scene.m_load_index = index
 end
 
 -- Clean up (conditional) elements used for scene loading
 local function CleanupLoadElements ()
-	for _, what in ipairs{ "m_current", "m_delete", "m_levels_list", "m_load" } do
+	for _, what in ipairs{ "m_current", "m_delete", "m_frame", "m_levels_list", "m_load" } do
 		display.remove(Scene[what])
 
 		Scene[what] = nil
@@ -127,14 +123,13 @@ end
 
 -- Enter Scene --
 function Scene:enterScene ()
-	scenes.SetListenFunc_GoBack("scene.Choices")
+	scenes.SetListenFunc_GoBack("scene.Title")
 
 	-- Line up the text input (if on device, we use native keyboards) a little to the right
 	-- of the columns or rows text (whichever was wider).
-	local textx = max(self.m_cols_text.x + self.m_cols_text.width / 2, self.m_rows_text.x + self.m_rows_text.width / 2) + 10
-	local colsy = self.m_cols_text.y - self.m_cols_text.height / 2
-	local rowsy = self.m_rows_text.y - self.m_rows_text.height / 2
+	local textx = self.m_cols_text.x + max(self.m_cols_text.width, self.m_rows_text.width) + 10
 
+ -- TODO: use object_helper...
 	if OnDevice then
 		self.m_cols = native.newTextField(textx, colsy, 300, 65, function(event)
 			if event.phase == "submitted" then
@@ -155,10 +150,16 @@ function Scene:enterScene ()
 	else
 		local options = { is_modal = true }
 
-		self.m_cols, self.m_colsedit = common.EditableString(self.view, self.m_keyboard, textx, colsy, options)
-		self.m_rows, self.m_rowsedit = common.EditableString(self.view, self.m_keyboard, textx, rowsy, options)
+		self.m_cols, self.m_colsedit = common_ui.EditableString(self.view, self.m_keyboard, textx, self.m_cols_text.y, options)
+		self.m_rows, self.m_rowsedit = common_ui.EditableString(self.view, self.m_keyboard, textx, self.m_rows_text.y, options)
 
 		self.m_keyboard:toFront()
+
+		local w = .5 * self.m_colsedit.width
+
+		for _, what in ipairs{ "m_cols", "m_colsedit", "m_rows", "m_rowsedit" } do
+			self[what]:translate(w, 0)
+		end
 	end
 
 	-- Add the actual text, now that the input widgets have been decided.
@@ -173,7 +174,7 @@ function Scene:enterScene ()
 			return level1.name < level2.name
 		end)
 
-		self.m_levels_list = common.Listbox(self.view, display.contentWidth - 350, 20, {
+		self.m_levels_list = common_ui.Listbox(self.view, display.contentWidth - 350, 20, {
 			--
 			get_text = function(index)
 				return levels[index].name
@@ -184,9 +185,12 @@ function Scene:enterScene ()
 				UpdateCurrent(self, levels, index)
 			end
 		})
+
 		self.m_current = display.newText(self.view, "", 0, 0, native.systemFont, 22)
 
-		local add_row = common.ListboxRowAdder()
+		self.m_frame = common_ui.Frame(self.m_levels_list, 0, 0, 1)
+
+		local add_row = common_ui.ListboxRowAdder()
 
 		for _ = 1, #levels do
 			self.m_levels_list:insertRow(add_row)

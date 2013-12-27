@@ -68,8 +68,7 @@ local function AuxNewImage (group, images, x, y, w, h, frame)
 
 	group:insert(image)
 
-	image.x = (x or 0) + (w or image.contentWidth) / 2
-	image.y = (y or 0) + (h or image.contentHeight) / 2
+	image.x, image.y = x or 0, y or 0
 
 	return image
 end

@@ -1,6 +1,6 @@
 --- 1D grid UI elements.
 --
--- **TODO**: Document skin...
+-- @todo Document skin...
 
 --
 -- Permission is hereby granted, free of charge, to any person obtaining
@@ -32,7 +32,6 @@ local ipairs = ipairs
 -- Modules --
 local button = require("ui.Button")
 local colors = require("ui.Color")
-local generators = require("effect.Generators")
 local index_ops = require("index_ops")
 local sheet = require("ui.Sheet")
 local skins = require("ui.Skin")
@@ -40,7 +39,6 @@ local touch = require("ui.Touch")
 
 -- Corona globals --
 local display = display
-local graphics = graphics
 local native = native
 local system = system
 local transition = transition
@@ -58,25 +56,11 @@ local BarTouch = touch.DragParentTouch(2)
 local function AddOptionGridLine (group, skin, x1, y1, x2, y2)
 	local line = display.newLine(group, x1, y1, x2, y2)
 
-	line.width = skin.optiongrid_linewidth
+	line.strokeWidth = skin.optiongrid_linewidth
 
-	line:setColor(GetColor(skin.optiongrid_linecolor))
+	line:setStrokeColor(GetColor(skin.optiongrid_linecolor))
 
 	return line
-end
-
---
-local function AdjustButton (button, skin, dx)
-	local type = skins.GetSkin(skin).button_type
-
-	if type == "image" or type == "rounded_rect" then
-		button.x = button.x + dx
-	elseif type == "sprite" then
-		local bw = button.width / 2
-
-		button.x = button.x + (dx < 0 and -bw or bw)
-		button.y = button.y + button.height / 2
-	end
 end
 
 --
@@ -90,7 +74,7 @@ end
 
 --
 local function X (i, dw)
-	return (i - .5) * dw
+	return (i - 2) * dw
 end
 
 -- Roll transition --
@@ -129,13 +113,7 @@ local function Roll (transitions, parts, oindex, dw)
 	end
 end
 
---
-local function NoOp () return true end
-
--- --
-local Name = (...) .. "_%ix%i.png"
-
----
+--- d
 -- @pgroup group
 -- @param skin
 -- @number x
@@ -156,10 +134,11 @@ function M.OptionsHGrid (group, skin, x, y, w, h, text)
 
 	--
 	local dw, dh = w / 3, h / 2
-	local bar = display.newRect(ggroup, 0, 0, w, dh)
-	local backdrop = display.newRect(ggroup, 0, dh, w, dh)
-	local choice = display.newRect(ggroup, dw, dh + 1, dw, dh - 2)
-	local string = display.newText(ggroup, text or "", 10, dh / 2, skin.optiongrid_font, skin.optiongrid_textsize)
+	local cx, cy = w / 2, 1.5 * dh
+	local bar = display.newRect(ggroup, cx, dh / 2, w, dh)
+	local backdrop = display.newRect(ggroup, cx, cy, w, dh)
+	local choice = display.newRect(ggroup, cx, cy, dw, dh - 2)
+	local string = display.newText(ggroup, text or "", bar.x, bar.y, skin.optiongrid_font, skin.optiongrid_textsize)
 
 	bar.strokeWidth = skin.optiongrid_barborderwidth
 	backdrop.strokeWidth = skin.optiongrid_backdropborderwidth
@@ -171,12 +150,8 @@ function M.OptionsHGrid (group, skin, x, y, w, h, text)
 	choice:setFillColor(GetColor(skin.optiongrid_choicecolor))
 	string:setFillColor(GetColor(skin.optiongrid_textcolor))
 
-	--
-	string.y = string.y - string.height / 2
-
 	-- 
 	bar:addEventListener("touch", BarTouch)
-	backdrop:addEventListener("touch", NoOp)
 
 	--
 	local x2, y2 = dw * 2, dh * 2 - 1
@@ -207,42 +182,25 @@ function M.OptionsHGrid (group, skin, x, y, w, h, text)
 		end
 	end
 
-	--
-	local lscroll = button.Button(ggroup, skin.optiongrid_lscrollskin, 0, y, dw, dh, function()
-		if sprite_index and #trans == 0 then
-			sprite_index = Rotate(false)
+	backdrop:addEventListener("touch", function(event)
+		local x = event.target:contentToLocal(event.x, 0)
 
-			Roll(trans, parts, Rotate(false), -dw)
+		if event.phase == "began" and abs(2 * x) > dw and sprite_index and #trans == 0 then
+			local to_left = x < 0
+
+			sprite_index = Rotate(to_left)
+
+			Roll(trans, parts, Rotate(to_left), to_left and dw or -dw)
 		end
+
+		return true
 	end)
 
-	local rscroll = button.Button(ggroup, skin.optiongrid_rscrollskin, w, y, dw, dh, function()
-		if sprite_index and #trans == 0 then
-			sprite_index = Rotate(true)
-
-			Roll(trans, parts, Rotate(true), dw)
-		end
-	end)
-
-	AdjustButton(lscroll, skin.optiongrid_lscrollskin, -dw)
-	AdjustButton(rscroll, skin.optiongrid_rscrollskin, 0)
-
 	--
-	local pgroup = display.newGroup()
-
-	pgroup.y = dh
+	local pgroup = display.newContainer(w, dh)
 
 	ggroup:insert(pgroup)
-
-	local name, xscale, yscale = generators.NewMask(w, dh, Name:format(w, dh))
-	local mask = graphics.newMask(name, system.TemporaryDirectory)
-
-	pgroup:setMask(mask)
-
-	pgroup.maskScaleX = xscale
-	pgroup.maskScaleY = yscale
-	pgroup.maskX = w / 2
-	pgroup.maskY = dh / 2
+	pgroup:translate(cx, cy)
 
 	--- DOCME
 	-- @param images
@@ -309,11 +267,11 @@ end
 
 -- Main option grid skin --
 skins.AddToDefaultSkin("optiongrid", {
-	barcolor = graphics.newGradient({ 0, 0, .25 }, { 0, 0, 1 }),
+	barcolor = { type = "gradient", color1 = { 0, 0, .25 }, color2 = { 0, 0, 1 }, direction = "down" },
 	barbordercolor = "red",
 	barborderwidth = 2,
-	backdropcolor = graphics.newGradient({ 0, .25, 0 }, { 0, 1, 0 }, "up"),
-	backdropbordercolor = graphics.newGradient({ .25, 0, 0 }, { 1, 0, 0 }, "up"),
+	backdropcolor = { type = "gradient", color1 = { 0, .25, 0 }, color2 = { 0, 1, 0 }, direction = "up" },
+	backdropbordercolor = { type = "gradient", color1 = { .25, 0, 0 }, color2 = { 1, 0, 0 }, direction = "up" },
 	backdropborderwidth = 2,
 	choicecolor = "red",
 	font = native.systemFont,
@@ -321,8 +279,6 @@ skins.AddToDefaultSkin("optiongrid", {
 	linewidth = 2,
 	textcolor = "white",
 	textsize = 24,
-	lscrollskin = "lscroll",
-	rscrollskin = "rscroll",
 	scrollsep = 0
 })
 

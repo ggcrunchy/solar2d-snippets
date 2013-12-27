@@ -121,9 +121,7 @@ local ImagesMT = {
 		local action = ActionGroup[1]
 		local ai = display.newImage(ActionGroup, name, action.x, action.y)
 
-		ai.x, ai.width = ai.x - ai.width / 2, 96
-		ai.y, ai.height = ai.y - ai.height / 4, 96
-		ai.alpha = 0
+		ai.width, ai.height, ai.alpha = 96, 96, 0
 
 		t[name], ai.name = ai, name
 
@@ -279,7 +277,6 @@ function M.AddActionButton (group, do_actions)
 	group:insert(ActionGroup)
 
 	local bradius = .06 * (w + h)
-
 	local action = display.newCircle(ActionGroup, w * .95 - bradius, h * .85 - bradius, bradius)
 
 	action.alpha = .6
@@ -287,7 +284,7 @@ function M.AddActionButton (group, do_actions)
 
 	action.m_touches = 0
 
-	action:setFillColor(0, 255, 0)
+	action:setFillColor(0, 1, 0)
 	action:addEventListener("touch", touch.TouchHelperFunc(do_actions))
 
 	ActionGroup.isVisible = false

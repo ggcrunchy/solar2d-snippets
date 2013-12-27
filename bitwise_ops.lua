@@ -105,7 +105,8 @@ function M.DivU_MP (x, m, p)
 	return rshift(x * m, p)
 end
 
----@uint n Integer.
+--- Getter.
+-- @uint n Integer.
 -- @treturn uint If _n_ > 0, lowest power of 2 in _n_; otherwise, 0.
 function M.GetLowestPowerOf2 (n)
 	return n > 0 and band(n, -n) or 0

@@ -49,12 +49,16 @@ local Info = {}
 -- Has this table been loaded yet? --
 local Loaded = {}
 
--- Opens a given database table, performing setup if necessary
-local function OpenDB (what)
-	local path = system.pathForFile("data.sqlite3", system.CachesDirectory) -- TODO: Probably config (+ game state?) should be in caches, editor stuff in documents
-	local db = sqlite3.open(path)
+-- Opens a given database
+local function OpenDB (name)
+	local path = system.pathForFile(name .. ".sqlite3", system.CachesDirectory) -- TODO: Probably config (+ game state?) should be in caches, editor stuff in documents
 
-	local info = Info[what]
+	return sqlite3.open(path)
+end
+
+-- Opens a given database table, performing setup if necessary
+local function OpenDB_Ex (what, file)
+	local db, info = OpenDB(file or "data"), Info[what]
 
 	if info and not Loaded[what] then
 		local setup = [[CREATE TABLE IF NOT EXISTS ]] .. what .. [[ (]] .. info.schema .. [[);]]
@@ -74,7 +78,7 @@ end
 -- Helper to commit a batch of change instructions
 local function Commit (what, changes)
 	if #changes > 0 then
-		local db = OpenDB(what)
+		local db = OpenDB_Ex(what)
 
 		db:execute(changes)
 		db:close()
@@ -84,6 +88,7 @@ end
 -- Configuration state --
 Info.config = {
 	schema = [[m_KEY UNIQUE, m_VALUE]],
+	[['completed', 0]],
 	[['first_time', 'true']],
 	[['hit_points', 3]],
 	[['lives', 3]],
@@ -98,7 +103,7 @@ Info.config = {
 -- @ptable change_list Key-value pairs, with new values to assign. Keys not available in the
 -- current configuration data are ignored.
 --
--- **TODO**: I might need to make that last part explicit with SQLite...
+-- @todo I might need to make that last part explicit with SQLite...
 function M.CommitConfigChanges (change_list)
 	local changes = ""
 
@@ -120,7 +125,8 @@ function M.CommitConfigChanges (change_list)
 	Commit("config", changes)
 end
 
----@string blob Data blob, as encoded by @{Encode}.
+--- Utility.
+-- @string blob Data blob, as encoded by @{Encode}.
 -- @treturn table Decoded contents of blob.
 function M.Decode (blob)
 	return json.decode(blob:gsub("%s", ""), 1, nil)
@@ -184,9 +190,10 @@ function M.Encode (t, build)
 	return str:gsub(PatternJSON, FormatJSON)
 end
 
----@treturn table Current configuration data, as key-value pairs.
+--- Getter.
+-- @treturn table Current configuration data, as key-value pairs.
 function M.GetConfig ()
-	local db, config = OpenDB("config"), {}
+	local db, config = OpenDB_Ex("config"), {}
 
 	for k, v in db:urows[[SELECT * FROM config]] do
 		if v == "true" or v == "false" then
@@ -212,14 +219,15 @@ local function TableName (wip)
 	return wip and "level_wips" or "levels"
 end
 
----@bool wips Are these work-in-progress levels?
+--- Enumerate levels from the database.
+-- @bool wips Are these work-in-progress levels?
 -- @treturn array An array of tables of the form { **name** = _name_, **data** = _blob_ },
 -- cf. @{SaveLevel}.
 --
--- **TODO**: There really isn't any ordering...
+-- @todo There really isn't any ordering
 function M.GetLevels (wips)
 	local what = TableName(wips)
-	local db, levels = OpenDB(what), {}
+	local db, levels = OpenDB_Ex(what), {}
 
 	for name, data in db:urows([[SELECT * FROM ]] .. what .. [[ WHERE m_OMIT <> 'true']]) do
 		levels[#levels + 1] = { name = name, data = data }
@@ -230,13 +238,14 @@ function M.GetLevels (wips)
 	return levels
 end
 
----@string name Level name.
+--- Predicate.
+-- @string name Level name.
 -- @bool wip Is this a work-in-progress level?
 -- @treturn boolean Is the level in the database?
 -- @treturn string If present, the level's data blob, cf. @{SaveLevel}; otherwise, **nil**.
 function M.LevelExists (name, wip)
 	local what = TableName(wip)
-	local db, exists, blob = OpenDB(what), false
+	local db, exists, blob = OpenDB_Ex(what), false
 
 	for name, data in db:urows([[SELECT * FROM ]] .. what .. [[ WHERE m_KEY = ']] .. name .. [[';]]) do
 		exists, blob = true, data
@@ -249,7 +258,7 @@ end
 -- @string name Level name.
 -- @bool wip Is this a work-in-progress level?
 --
--- **TODO**: Does this handle absent levels?
+-- @todo Does this handle absent levels?
 function M.RemoveLevel (name, wip)
 	local what = TableName(wip)
 
@@ -276,14 +285,14 @@ end
 
 --- Wipes the database.
 function M.Wipe ()
-	local drop, path = "", system.pathForFile("data.sqlite3", system.CachesDirectory)
-	local db = sqlite3.open(path)
+	local db = OpenDB("data")
 
-	drop = drop .. [[DROP TABLE IF EXISTS config;]]
-	drop = drop .. [[DROP TABLE IF EXISTS levels;]]
-	drop = drop .. [[DROP TABLE IF EXISTS level_wips;]]
+	db:exec[[
+		DROP TABLE IF EXISTS config;
+		DROP TABLE IF EXISTS levels;
+		DROP TABLE IF EXISTS level_wips;
+	]]
 
-	db:exec(drop)
 	db:close()
 
 	Loaded = {}

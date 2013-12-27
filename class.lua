@@ -378,19 +378,22 @@ function M.GetMember (ctype, member)
 	return assert(Defs[ctype], "Type not found").members[member]
 end
 
----@param what Value, which may be a class type.
+--- Predicate.
+-- @param what Value, which may be a class type.
 -- @treturn boolean _what_ was returned by @{Define}?
 function M.IsClass (what)
 	return Defs[what] ~= nil
 end
 
----@param item Item, which may be a class instance.
+--- Predicate.
+-- @param item Item, which may be a class instance.
 -- @treturn boolean _item_ was instantiated by a @{Define}'d class?
 function M.IsInstance (item)
 	return Instances[item] ~= nil
 end
 
----@param item Item.
+--- Predicate.
+-- @param item Item.
 -- @param what Type (as returned by @{Define}) or a return value of @{type}.
 -- @treturn boolean _item_ is of the given type or one of its subclasses?
 function M.IsType (item, what)

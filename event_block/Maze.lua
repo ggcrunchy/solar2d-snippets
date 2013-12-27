@@ -4,7 +4,7 @@
 -- and may begin in either state. After toggling, the **"tiles_changed"** event list
 -- is dispatched with **"maze"** as the argument, cf. @{game.DispatchList.CallList}.
 --
--- **TODO**: Maze format.
+-- @todo Maze format.
 
 --
 -- Permission is hereby granted, free of charge, to any person obtaining
@@ -244,7 +244,7 @@ end
 local function OnEditorEvent (what, arg1, arg2, arg3)
 	-- Build --
 	-- arg1: Level
-	-- arg2: Instance
+	-- arg2: Original entry
 	-- arg3: Item to build
 	if what == "build" then
 		-- STUFF

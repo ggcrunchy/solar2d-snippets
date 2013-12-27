@@ -94,7 +94,8 @@ function M.ChooseBranch_Facing (branch, facing)
 	return cur
 end
 
----@param cur Current regular node.
+--- Getter.
+-- @param cur Current regular node.
 -- @treturn string Current direction, or **nil** if unavailable.
 function M.CurrentDir (cur)
 	return cur[cur.index + 1]

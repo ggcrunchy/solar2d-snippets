@@ -29,7 +29,7 @@ local sqrt = math.sqrt
 
 -- Modules --
 local array_ops = require("array_ops")
-local curves = require("effect.Curves")
+local curves = require("utils.Curves")
 local color = require("ui.Color")
 local line_ex = require("ui.LineEx")
 local timers = require("game.Timers")

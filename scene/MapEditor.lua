@@ -39,31 +39,42 @@
 --
 
 -- Standard library imports --
+local ceil = math.ceil
 local ipairs = ipairs
 local pairs = pairs
 
 -- Modules --
 local button = require("ui.Button")
 local common = require("editor.Common")
+local common_ui = require("editor.CommonUI")
 local dispatch_list = require("game.DispatchList")
 local events = require("editor.Events")
 local grid = require("editor.Grid")
 local iterators = require("iterators")
 local ops = require("editor.Ops")
 local persistence = require("game.Persistence")
-local scenes = require("game.Scenes")
+local scenes = require("utils.Scenes")
 local tags = lazy_require("editor.Tags")
 local timers = require("game.Timers")
 
 -- Corona globals --
 local display = display
+local graphics = graphics
 local native = native
+local transition = transition
 
 -- Corona modules --
 local storyboard = require("storyboard")
 
 -- Map editor scene --
 local Scene = storyboard.newScene()
+
+-- Create Scene --
+function Scene:createScene (event)
+	scenes.Alias("Editor")
+end
+
+Scene:addEventListener("createScene")
 
 -- Current editor view --
 local Current
@@ -142,6 +153,33 @@ local CommonTagsLoaded
 -- --
 local HelpOpts = { isModal = true }
 
+-- --
+local TabsMax = 7
+
+-- --
+local TabOptions, TabRotate, TabW
+
+--
+if #TabButtons > TabsMax then
+	local params = {
+		onComplete = function(object)
+			object.m_going = false
+		end
+	}
+
+	function TabRotate (inc)
+		Tabs.m_going, params.x = true, Tabs.x + inc
+
+		transition.to(Tabs, params)
+	end
+
+	function TabW (n)
+		return ceil(n * display.contentWidth / TabsMax)
+	end
+
+	TabOptions = { left = TabW(1), width = TabW(#TabButtons) }
+end
+
 -- Enter Scene --
 function Scene:enterScene (event)
 	scenes.SetListenFunc(Listen)
@@ -163,7 +201,7 @@ function Scene:enterScene (event)
 	-- must reconstruct the editor state from various information we left behind.
 	local params
 
-	if storyboard.getPrevious() == "scene.Level" then
+	if scenes.ComingFrom() == "Level" then
 		dispatch_list.CallList("enter_menus")
 
 		local exists, data = persistence.LevelExists(TestLevelName, true)
@@ -246,6 +284,8 @@ function Scene:enterScene (event)
 	) do
 		local button = button.Button(self.view, nil, 10, display.contentHeight - i * 65 - 5, 100, 50, func, text)
 
+		button:translate(button.width / 2, button.height / 2)
+
 		if text ~= "Help" and text ~= "Back" then
 			sidebar[text] = button
 		end
@@ -257,7 +297,45 @@ function Scene:enterScene (event)
 	end
 
 	-- Load the view-switching tabs.
-	Tabs = common.TabBar(self.view, TabButtons)
+	Tabs = common_ui.TabBar(self.view, TabButtons, TabOptions)
+
+	-- If there were enough tab options, add clipping and scroll buttons.
+	if TabOptions then
+		local shown = TabsMax - 2
+		local cont, n = display.newContainer(TabW(shown), Tabs.height), #TabButtons - shown
+
+		self.view:insert(cont)
+		cont:translate(display.contentCenterX, Tabs.height / 2)
+		cont:insert(Tabs, true)
+
+		Tabs.x = TabW(.5 * n)
+
+		local x, w = 0, TabW(1)
+
+		-- TODO: Hack!
+		common_ui.TabsHack(self.view, Tabs, shown, function() return TabW(x + 1), x end, 0, TabW(shown))
+		-- /TODO
+
+		local lscroll = common_ui.ScrollButton(self.view, "lscroll", 0, 0, function()
+			if x > 0 and not Tabs.m_going then
+				x = x - 1
+
+				TabRotate(w)
+			end
+		end)
+		local rscroll = common_ui.ScrollButton(self.view, "rscroll", 0, 0, function()
+			if x < n and not Tabs.m_going then
+				x = x + 1
+
+				TabRotate(-w)
+			end
+		end)
+
+		lscroll.x, rscroll.x = w / 4, display.contentWidth - TabW(1) + w / 4
+
+		lscroll:translate(lscroll.width / 2, lscroll.height / 2)
+		rscroll:translate(rscroll.width / 2, rscroll.height / 2)
+	end
 
 	-- Initialize systems.
 	common.Init(params.main[1], params.main[2])
@@ -284,10 +362,8 @@ function Scene:enterScene (event)
 	-- not be dirty after a load.
 	if params.is_loading or RestoreState then
 		ops.SetLevelName(params.is_loading)
-
 		dispatch_list.CallList("load_level_wip", params)
-
-		events.ResolveLinks(params, false)
+		events.ResolveLinks_Load(params)
 		common.Undirty()
 	end
 
@@ -334,7 +410,7 @@ Scene:addEventListener("exitScene")
 
 -- Finally, install the editor views.
 for _, name in ipairs(Names) do
-	EditorView[name] = require("editor." .. name)
+	EditorView[name] = require("editor.views." .. name)
 end
 
 return Scene

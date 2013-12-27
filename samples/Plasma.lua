@@ -40,7 +40,7 @@ local round = math.round
 
 -- Modules --
 local buttons = require("ui.Button")
-local scenes = require("game.Scenes")
+local scenes = require("utils.Scenes")
 local timers = require("game.Timers")
 
 -- Corona globals --

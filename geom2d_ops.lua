@@ -24,6 +24,8 @@
 --
 
 -- Standard library imports --
+local ceil = math.ceil
+local floor = math.floor
 local max = math.max
 local min = math.min
 local sqrt = math.sqrt
@@ -34,7 +36,8 @@ local _BoxesIntersect_
 -- Exports --
 local M = {}
 
----@number x1 Box #1 x-coordinate...
+--- Predicate.
+-- @number x1 Box #1 x-coordinate...
 -- @number y1 ...y-coordinate...
 -- @number w1 ...width...
 -- @number h1 ...and height.
@@ -47,7 +50,8 @@ function M.BoxesIntersect (x1, y1, w1, h1, x2, y2, w2, h2)
 	return not (x1 > x2 + w2 or x2 > x1 + w1 or y1 > y2 + h2 or y2 > y1 + h1)
 end
 
----@number bx Contained box x-coordinate...
+--- Predicate.
+-- @number bx Contained box x-coordinate...
 -- @number by ...y-coordinate...
 -- @number bw ...width...
 -- @number bh ...and height.
@@ -84,33 +88,76 @@ function M.BoxIntersection (x1, y1, w1, h1, x2, y2, w2, h2)
 	return true, sx, sy, min(x1 + w1, x2 + w2) - sx, min(y1 + h1, y2 + h2) - sy
 end
 
---- DOCME
--- Cf. David Eberly's "Geometric Tools for Computer Graphics" (C.2.2)
-function M.Circumcircle (x1, y1, x2, y2, x3, y3)
-	--
-	local dx12, dy12 = x2 - x1, y2 - y1
-	local dx13, dy13 = x3 - x1, y3 - y1
-	local dx23, dy23 = x3 - x2, y3 - y2
-
-	--
-	local d_ca = dx13 * dx12 + dy13 * dy12
-	local d_ba = -(dx23 * dx12 + dy23 * dy12)
-	local d_cb = dx13 * dx23 + dy13 * dy23
-
-	--
-	local n1, n2, n3 = d_ba * d_cb, d_cb * d_ca, d_ca * d_ba
-	local n12, n13, n23 = n1 + n2, n1 + n3, n2 + n3
-	local in123 = 1 / (n12 + n3)
-
-	--
-	local radius = .5 * sqrt((d_ca + d_ba) * (d_ba + d_cb) * (d_cb + d_ca) * in123)
-
-	in123 = .5 * in123
-
-	return in123 * (n23 * x1 + n13 * x2 + n12 * x3), in123 * (n23 * y1 + n13 * y2 + n12 * y3), radius
+--- Getter.
+-- @number dx Length in x-axis...
+-- @number dy ...and y-axis.
+-- @treturn number Distance.
+function M.Distance (dx, dy)
+	return sqrt(dx * dx + dy * dy)
 end
 
----@number px Point x-coordinate...
+--- Getter.
+-- @number px Point #1, x-coordinate...
+-- @number py ...and y-axis.
+-- @number qx Point #2, x-coordinate...
+-- @number qy ...and y-axis.
+-- @treturn number Distance.
+function M.Distance_Between (px, py, qx, qy)
+	local dx, dy = qx - px, qy - py
+
+	return sqrt(dx * dx + dy * dy)
+end
+
+-- Helper to bin distances
+local function AuxQuantize (op, dx, dy, len, bias)
+	return op(sqrt(dx * dx + dy * dy) / len + (bias or 0))
+end
+
+
+--- Quantizes a distance, as `bin = Round(distance / len + bias)`, rounding down.
+-- @number dx Displacement x-component...
+-- @number dy ...and y-component.
+-- @number len Distance per unit.
+-- @number bias Amount added to the pre-rounded result. If absent, 0.
+-- @treturn integer Quantized distance, i.e. _bin_.
+function M.DistanceToBin (dx, dy, len, bias)
+	return AuxQuantize(floor, dx, dy, len, bias)
+end
+
+--- Variant of @{DistanceToBin} that ensures a minimum bin.
+-- @number dx Displacement x-component...
+-- @number dy ...and y-component.
+-- @number len Distance per unit.
+-- @number base Minimum value of rounded result. If absent, 0.
+-- @number bias Amount added to the pre-rounded result. If absent, 0.
+-- @treturn number Quantized distance, i.e. `max(base, bin)`.
+function M.DistanceToBin_Min (dx, dy, len, base, bias)
+	return max(base or 0, AuxQuantize(floor, dx, dy, len, bias))
+end
+
+--- Variant of @{DistanceToBin} that rounds up.
+-- @number dx Displacement x-component...
+-- @number dy ...and y-component.
+-- @number len Distance per unit.
+-- @number bias Amount added to the pre-rounded result. If absent, 0.
+-- @treturn integer Quantized distance, i.e. _bin_.
+function M.DistanceToBin_RoundUp (dx, dy, len, bias)
+	return AuxQuantize(ceil, dx, dy, len, bias)
+end
+
+--- Variant of @{DistanceToBin_RoundUp} that ensures a minimum bin.
+-- @number dx Displacement x-component...
+-- @number dy ...and y-component.
+-- @number len Distance per unit.
+-- @number base Minimum value of rounded result. If absent, 0.
+-- @number bias Amount added to the pre-rounded result. If absent, 0.
+-- @treturn number Quantized distance, i.e. `max(base, bin)`.
+function M.DistanceToBin_RoundUpMin (dx, dy, len, base, bias)
+	return max(base or 0, AuxQuantize(ceil, dx, dy, len, bias))
+end
+
+--- Predicate.
+-- @number px Point x-coordinate...
 -- @number py ...and y-coordinate.
 -- @number x Box x-coordinate...
 -- @number y ...y-coordinate...
@@ -119,6 +166,19 @@ end
 -- @treturn boolean The point is contained by the box?
 function M.PointInBox (px, py, x, y, w, h)
 	return px >= x and px < x + w and py >= y and py < y + h
+end
+
+--- Getter.
+-- @number dx Incident vector x-component...
+-- @number dy ...and y-component.
+-- @number nx Normal x-component...
+-- @number ny ...and y-component.
+-- @treturn number Reflected vector x-component...
+-- @treturn number ...and y-component.
+function M.Reflect (dx, dy, nx, ny)
+	local scale = 2 * (dx * nx + dy * ny) / (nx * nx + ny * ny)
+
+	return dx - scale * nx, dy - scale * ny
 end
 
 -- Cache module members.

@@ -23,31 +23,22 @@
 -- [ MIT license: http://www.opensource.org/licenses/mit-license.php ]
 --
 
--- Exports --
-local M = {}
-
 -- Standard library imports --
 local ceil = math.ceil
 local format = string.format
-local ipairs = ipairs
 local max = math.max
 local min = math.min
 local pairs = pairs
 
 -- Modules --
 local common = require("editor.Common")
-local grid1D = require("ui.Grid1D")
+local common_ui = require("editor.CommonUI")
 local grid2D = require("ui.Grid2D")
-local links = require("editor.Links")
-local sheet = require("ui.Sheet")
 
 -- Corona globals --
 local display = display
 local native = native
 local transition = transition
-
--- Corona modules --
-local widget = require("widget")
 
 -- Exports --
 local M = {}
@@ -67,168 +58,11 @@ function M.CleanUp ()
 		Grid.reserve:removeSelf()
 	end
 
-	Grid, GrixProxy, Offset, ScrollProxy, Targets = nil
+	Grid, Offset, Targets = nil
 end
 
---- Common logic for the **PAINT** / **EDIT** / **ERASE** combination of grid operations.
--- @callable dialog_wrapper Cf. the result of @{editor.Dialog.DialogWrapper}.
--- @array types An array of strings denoting type.
--- @treturn function A "common ops" wrapper for an editor view. Its signature starts with a
--- _what_ parameter, then all grid function parameters, cf. _func_ in @{ui.Grid2D.Grid2D}.
--- The following choices are available for _what_:
---
--- * **"grid"**: Boilerplate: editor grid function body.
--- * **"load"**: Boilerplate: editor view being loaded... (The assets directory prefix, viz.
--- in **"_prefix_\_Assets/", is passed through _col_, and a title for the current tile
--- @{ui.Grid1D} is passed through _row_.)
--- * **"enter"**: ...entered... (The grid function is passed through _col_.)
--- * **"exit"**: ...exited...
--- * **"unload"**: ...or unloaded.
--- * **"get\_data"**: Returns the current tile @{ui.Grid1D}, the elements table, and the
--- tiles table.
-function M.EditErase (dialog_wrapper, types)
-	local current, option, pick, elements, tabs, tiles, try_option, tile_images
-
-	return function (what, group, col_, row_, x, y, w, h)
-		-- Grid --
-		if what == "grid" then
-			local key, which = common.ToKey(col_, row_), current:GetCurrent()
-			local cur, tile = elements[key], tiles[key]
-
-			--
-			pick = M.UpdatePick(group, pick, col_, row_, x, y, w, h)
-
-			--
-			if group == "show" or group == "hide" then
-				if cur then
-					tile.isVisible = group == "show"
-				end
-
-			--
-			elseif option == "Edit" then
-				if cur then
-					dialog_wrapper("edit", cur, current.parent, key, tile)
-				else
-					dialog_wrapper("close")
-				end
-
-			--
-			elseif option == "Erase" then
-				if tile then
-					tile:removeSelf()
-
-					common.BindToElement(tile, nil)
-					common.Dirty()
-				end
-
-				elements[key], tiles[key] = nil
-
-			--
-			elseif not cur or sheet.GetSpriteSetImageFrame(tile) ~= which then -- TODO: can 'tile' sub for 'cur' ?(then we have a pattern...)
-				if tile then
-					links.RemoveTag(tile)
-				end
-
-				elements[key] = dialog_wrapper("new_element", types[which], key)
-				tiles[key] = tile or sheet.NewImage(group, tile_images, x, y, w, h)
-
-				sheet.SetSpriteSetImageFrame(tiles[key], which)
-
-				--
-				local tag = dialog_wrapper("get_tag", types[which])
-
-				if tag then
-					common.BindToElement(tiles[key], elements[key])
-
-					links.SetTag(tiles[key], tag)
-				end
-
-				common.Dirty()
-			end
-
-		-- Load --
-		-- col_: Prefix
-		-- row_: Title
-		elseif what == "load" then
-			elements, tiles = {}, {}
-
-			--
-			current = grid1D.OptionsHGrid(group, nil, 150, 50, 200, 100, row_)
-
-			--
-			local tab_buttons = { "Paint", "Edit", "Erase" }
-
-			for i, label in ipairs(tab_buttons) do
-				tab_buttons[i] = {
-					label = label,
-
-					onPress = function()
-						option = label
-
-						common.ShowCurrent(current, label == "Paint")
-
-						if label ~= "Edit" then
-							dialog_wrapper("close")
-						end
-
-						return true
-					end
-				}
-			end
-
-			tabs = common.TabBar(group, tab_buttons, { top = display.contentHeight - 65, left = 120, width = 300 }, true)
-
-			tabs:setSelected(1, true)
-
-			--
-			try_option = common.ChoiceTrier(tab_buttons)
-
-			--
-			tile_images = common.SpriteSetFromThumbs(col_, types)
-
-			current:Bind(tile_images, #tile_images)
-			current:toFront()
-
-			common.ShowCurrent(current, false)
-
-			--
-			common.AddHelp(col_, { current = current, tabs = tabs })
-
-		-- Enter --
-		-- col_: Grid func
-		elseif what == "enter" then
-			M.Show(col_)
-
-			try_option(tabs, option)
-			common.ShowCurrent(current, option == "Paint")
-
-			tabs.isVisible = true
-
-		-- Exit --
-		elseif what == "exit" then
-			dialog_wrapper("close")
-
-			common.SetChoice(option)
-			common.ShowCurrent(current, false)
-
-			tabs.isVisible = false
-
-			M.Show(false)
-
-		-- Unload --
-		elseif what == "unload" then
-			tabs:removeSelf()
-
-			current, option, pick, elements, tabs, tiles, tile_images, try_option = nil
-
-		-- Get Data --
-		elseif what == "get_data" then
-			return current, elements, tiles
-		end
-	end
-end
-
----@treturn DisplayObject The global editor @{ui.Grid2D} widget.
+--- Getter.
+-- @treturn DisplayObject The global editor @{ui.Grid2D} widget.
 function M.Get ()
 	return Grid.grid
 end
@@ -243,7 +77,8 @@ end
 -- Column and row of upper-left cell --
 local Col, Row
 
----@treturn uint Column offset... (i.e. upper-left cell visible on grid)
+--- Getter.
+-- @treturn uint Column offset... (i.e. upper-left cell visible on grid)
 -- @treturn uint ...and row offset.
 function M.GetOffsets ()
 	return Col, Row
@@ -418,7 +253,11 @@ end
 
 --
 local function AddButton (name, x, y, dc, dr)
-	common.AddButton(name, common.ScrollButton(Grid.group, name, x, y, UpdateDir))
+	local button = common_ui.ScrollButton(Grid.group, name, x, y, UpdateDir)
+
+	button:translate(button.width / 2, button.height / 2)
+
+	common.AddButton(name, button)
 end
 
 --- Initializes various state used by editor grid operations.
@@ -441,13 +280,13 @@ function M.Init (view)
 	Grid.reserve.isVisible = false
 
 	-- Build the grid and put opaque elements around it to each side (as a lazy mask).
-	local x, y = 120, 80
+	local gx, gy = 120, 80
 	local cw, ch = GetCellDims()
 	local gw, gh = ceil(cw * VCols), ceil(ch * VRows)
 
-	Grid.grid = grid2D.Grid2D(Grid.group, nil, x, y, gw, gh, VCols, VRows, GridFunc)
+	Grid.grid = grid2D.Grid2D(Grid.group, nil, gx, gy, gw, gh, VCols, VRows, GridFunc)
 
-	common.WallInRect(Grid.group, x, y, gw, gh)
+	common_ui.WallInRect(Grid.group, gx, gy, gw, gh)
 
 	local grid_proxy = common.Proxy(view, Grid.grid)
 
@@ -537,7 +376,8 @@ function M.Show (func)
 	Grid.group.isVisible = show
 end
 
----@bool show Enable showing multiple layers?
+--- Utility.
+-- @bool show Enable showing multiple layers?
 function M.ShowMultipleLayers (show)
 	DoMultipleLayers = not not show
 end
@@ -574,7 +414,7 @@ function M.UpdatePick (group, pick, row, col, x, y, w, h)
 		if not pick then
 			pick = display.newRect(group, 0, 0, w, h)
 
-			pick:setFillColor(255, 0, 0, 64)
+			pick:setFillColor(1, 0, 0, .25)
 		end
 
 		pick.x, pick.y = x + w / 2, y + h / 2

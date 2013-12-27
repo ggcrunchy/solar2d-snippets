@@ -55,6 +55,7 @@ function M.AddMoveButtons (group, on_touch)
 		button.alpha = .6
 
 		button:addEventListener("touch", on_touch)
+		button:translate(bw / 2, 0)
 	end
 end
 

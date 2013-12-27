@@ -26,6 +26,7 @@
 --
 
 -- Standard library imports --
+local floor = math.floor
 local max = math.max
 local min = math.min
 local unpack = unpack
@@ -37,7 +38,6 @@ local touch = require("ui.Touch")
 
 -- Corona globals --
 local display = display
-local graphics = graphics
 local native = native
 
 -- Exports --
@@ -45,11 +45,8 @@ local M = {}
 
 -- Assigns the color text
 local function SetText (text, r, g, b)
-	text.text = ("Color: #%02X%02X%02X"):format(r, g, b)
-
-	text:setReferencePoint(display.CenterLeftReferencePoint)
-
-	text.x = text.parent.m_colors.x
+	text.text = ("Color: #%02X%02X%02X"):format(floor(r * 255), floor(g * 255), floor(b * 255))
+	text.anchorX, text.x = 0, text.parent.m_colors.x
 end
 -- ^^ TODO: Generalize for prefix
 -- Updates the current color according to the hue color and the color node
@@ -113,13 +110,13 @@ end, function(event, colors)
 end, "moved")
 
 -- Gradient colors --
-local White, FadeTo = { 255, 255, 255 }, {}
+local White, FadeTo = { 1 }, {}
 
 -- Tints the box pixels according to the bar color
 local function SetColors (colors, r, g, b)
 	FadeTo[1], FadeTo[2], FadeTo[3] = r, g, b
 
-	colors:setFillColor(graphics.newGradient(White, FadeTo, "left")) -- left?
+	colors:setFillColor{ type = "gradient", color1 = White, color2 = FadeTo, direction = "right" }
 
 	-- Register the hue color for quick lookup.
 	colors.m_rhue, colors.m_ghue, colors.m_bhue = r, g, b
@@ -131,7 +128,7 @@ local RGB = {}
 -- Put the hue bar node somewhere and apply updates
 local function PutBarNode (node, bar, t, use_rgb)
 	local was, y, h = node.y, bar.y, bar.height
-	local new = y + min(numeric_ops.RoundTo(h * max(t, 0)), h - 1)
+	local new = y + min(h * max(t, 0), h - 1)
 
 	if use_rgb or new ~= was then
 		local R, G, B
@@ -187,10 +184,11 @@ end, "moved")
 -- Populates the bar with colored rects
 -- TODO: A horizontal variant is rather straightforward...
 local function FillBar (group, w, h)
-	local y, dh = 0, h / 6
+	local dh = h / 6
+	local y = .5 * h - 2.5 * dh
 
 	for i = 1, 6 do
-		local rect = display.newRect(group, 0, y, w, dh)
+		local rect = display.newRect(group, w / 2, y, w, dh)
 
 		rect:setFillColor(hsv.HueGradient(i))
 
@@ -227,26 +225,32 @@ function M.ColorPicker (group, skin, x, y, w, h) -- precision?
 	--
 	local back = display.newRoundedRect(picker, 0, 0, w, h, 15)
 
-	back:setFillColor(96)
-	back:setStrokeColor(128)
+	back:setFillColor(.375)
+	back:setStrokeColor(.5)
 
+	back.anchorX, back.x = 0, 0
+	back.anchorY, back.y = 0, 0
 	back.strokeWidth = 2
 
 	-- Add the colors rect. This will be assigned a gradient whenever the color bar changes.
-	local colors = display.newRect(picker, 20, 20, 200, 150)
+	local colors = display.newRect(picker, 0, 0, 200, 150)
 
 	colors:addEventListener("touch", ColorsTouch)
-	colors:setReferencePoint(display.TopLeftReferencePoint)
+
+	colors.anchorX, colors.x = 0, 20
+	colors.anchorY, colors.y = 0, 20
 
 	picker.m_colors = colors
 
 	-- Add an equal-sized overlay above the colors to apply the fade-to-black gradient.
 	FadeTo[1], FadeTo[2], FadeTo[3] = 0, 0, 0
 
-	local overlay = display.newRect(picker, colors.x, colors.y, colors.width, colors.height)
+	local overlay = display.newRect(picker, 0, 0, colors.width, colors.height)
 
-	overlay:setFillColor(graphics.newGradient(White, FadeTo))
+	overlay:setFillColor{ type = "gradient", color1 = White, color2 = FadeTo, direction = "down" }
 
+	overlay.anchorX, overlay.x = 0, colors.x
+	overlay.anchorY, overlay.y = 0, colors.y
 	overlay.blendMode = "multiply"
 
 	--
@@ -266,11 +270,11 @@ function M.ColorPicker (group, skin, x, y, w, h) -- precision?
 	picker.m_bar = bar
 
 	--
-	local bar_node = display.newRect(picker, bar.x, 0, bar.width, 5)
+	local bar_node = display.newRect(picker, bar.x + bar.width / 2, 0, bar.width, 5)
 
 	bar_node:addEventListener("touch", BarNodeTouch)
-	bar_node:setFillColor(192, 192)
-	bar_node:setStrokeColor(0, 192, 192)
+	bar_node:setFillColor(.75, .75)
+	bar_node:setStrokeColor(0, .75, .75)
 
 	bar_node.strokeWidth, bar_node.y = 2, -1
 
@@ -282,8 +286,8 @@ function M.ColorPicker (group, skin, x, y, w, h) -- precision?
 	local color_node = display.newCircle(picker, 0, 0, 8)
 
 	color_node:addEventListener("touch", ColorNodeTouch)
-	color_node:setFillColor(192, 128)
-	color_node:setStrokeColor(192, 0, 128)
+	color_node:setFillColor(.75, .5)
+	color_node:setStrokeColor(.75, 0, .5)
 
 	color_node.strokeWidth = 2
 

@@ -60,7 +60,7 @@ end
 -- of "until test passes" the loop is interpreted as "while test passes", and vice versa.
 --
 -- If a **yvalue** field is present, this value is yielded after each iteration. If absent,
--- this defaults to **"keep"**, as a convenience for coroutine-based @{class.TaskQueue} tasks.
+-- this defaults to **"keep"**, as a convenience for coroutine-based @{TaskQueue} tasks.
 -- @param arg1 Argument #1.
 -- @param arg2 Argument #2.
 -- @param arg3 Argument #3.

@@ -1,6 +1,6 @@
 --- Keyboard widget for non-native off-device input.
 --
--- **TODO**: Document skin...
+-- @todo Document skin...
 
 --
 -- Permission is hereby granted, free of charge, to any person obtaining
@@ -50,9 +50,7 @@ local BackTouch = touch.DragParentTouch()
 --
 local function SetRef (keys, target)
 	if keys.m_refx and target then
-		target:setReferencePoint(display.CenterLeftReferencePoint)
-
-		target.x = keys.m_refx
+		target.anchorX, target.x = 0, keys.m_refx
 	end
 end
 
@@ -165,8 +163,9 @@ local function ProcessRow (group, skin, row, x, y, w, h, xsep)
 		--
 		if not skip then
 			local dim = (Scales[text] or 1) * w
+			local button = button.Button(group, skin, x, y, dim, h, AddText, text)
 
-			button.Button(group, skin, x, y, dim, h, AddText, text)
+			button:translate(button.width / 2, button.height / 2)
 
 			x = x + xsep + dim
 		end
@@ -188,7 +187,7 @@ end
 
 -- --
 local Options = {
-	color = { 0, 0, 192, 160 }, parent_second = true,
+	color = { 0, 0, .75, .625 }, parent_second = true,
 
 	keep = function(keys, target)
 		return keys.m_target == target
@@ -242,14 +241,12 @@ function M.Keyboard (group, skin, type, x, y, no_drag)
 	x0, bh = rx, max(bh, rh)
 
 	--
-	backdrop.x, backdrop.width = x0 / 2, x0
-	backdrop.y, backdrop.height = bh / 2, bh
-
-	--
 	backdrop.strokeWidth = skin.keyboard_backdropborderwidth
+	backdrop.width, backdrop.height = x0, bh
 
 	backdrop:setFillColor(colors.GetColor(skin.keyboard_backdropcolor))
 	backdrop:setStrokeColor(colors.GetColor(skin.keyboard_backdropbordercolor))
+	backdrop:translate(backdrop.width / 2, backdrop.height / 2)
 
 	--- DOCME
 	-- @treturn DisplayObject X
@@ -326,7 +323,7 @@ end
 
 -- Main keyboard skin --
 skins.AddToDefaultSkin("keyboard", {
-	backdropcolor = graphics.newGradient({ .25, .25, .25 }, { .75, .75, .75 }, "up"),
+	backdropcolor = { type = "gradient", color1 = { .25 }, color2 = { .75 }, direction = "up" },
 	backdropbordercolor = "white",
 	backdropborderwidth = 2,
 	keyskin = nil,

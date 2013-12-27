@@ -90,6 +90,14 @@ local Levels = {
 	}
 }
 
+-- Tile names, expanded from two-character shorthands --
+local Names = {
+	_H = "Horizontal", _V = "Vertical",
+	UL = "UpperLeft", UR = "UpperRight", LL = "LowerLeft", LR = "LowerRight",
+	TT = "TopT", LT = "LeftT", RT = "RightT", BT = "BottomT",
+	_4 = "FourWays", _U = "Up", _L = "Left", _R = "Right", _D = "Down"
+}
+
 --- A basic background; used by default, if a level doesn't provide its own.
 -- @pgroup group Display group that will hold the background.
 -- @number ncols Column count.
@@ -97,12 +105,20 @@ local Levels = {
 -- @number tilew Tile width.
 -- @number tileh Tile height.
 function M.DefaultBackground (group, ncols, nrows, tilew, tileh)
-	local bg = display.newRect(group, 0, 0, max(ncols * tilew, display.contentWidth), max(nrows * tileh, display.contentHeight))
+	local w, h = max(ncols * tilew, display.contentWidth), max(nrows * tileh, display.contentHeight)
+	local bg = display.newRect(group, w / 2, h / 2, w, h)
 
-	bg:setFillColor(140)
+	bg:setFillColor(.525)
 end
 
----@uint index Level index.
+--- Getter.
+-- @treturn uint Level count.
+function M.GetCount ()
+	return #Levels
+end
+
+--- Getter.
+-- @uint index Level index.
 -- @treturn table Level information, which consists of at least:
 --
 -- * **start_col**: Column where So So starts / respawns...
@@ -120,7 +136,6 @@ end
 -- are the tile grid dimensions, and _tilew_ and _tileh_ are the tile dimensions.
 --
 -- * **dots**: Array of _info_ elements as per @{game.Dots.AddDot}.
--- * **enemies**: Array of _info_ elements as per @{game.Enemies.SpawnEnemy}.
 -- @see DefaultBackground
 function M.GetLevel (index)
 	return assert(Levels[index], "Invalid level")

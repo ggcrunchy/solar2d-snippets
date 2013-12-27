@@ -52,19 +52,18 @@ local M = {}
 -- @number sep
 -- @param ...
 function M.VBox (group, skin, x, y, bw, bh, sep, ...)
-	--
-	if not x then
-		x = contentCenterX - bw / 2
-	end
+	x = x or contentCenterX
 
 	if not y then
-		y = contentCenterY - (bh + sep) * select("#", ...) / 4
+		local n = select("#", ...) / 2
+
+		y = contentCenterY - (bh + sep) * (n - 1) / 2
 	end
 
 	--
 	local h = 0
 
-	for i, func, text in ArgsByN(2, ...) do
+	for _, func, text in ArgsByN(2, ...) do
 		Button(group, skin, x, y + h, bw, bh, func, text)
 
 		h = h + bh + sep

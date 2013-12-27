@@ -31,6 +31,7 @@ local type = type
 -- Modules --
 local button = require("ui.Button")
 local common = require("editor.Common")
+local common_ui = require("editor.CommonUI")
 local link_group = require("ui.LinkGroup")
 local links = require("editor.Links")
 local tags = require("editor.Tags")
@@ -74,7 +75,9 @@ function FadeShadeParams.onComplete (object)
 	if object.alpha < .5 then
 		local dialog = object.m_dialog
 
-		dialog.alpha, object.m_dialog = 1
+		if dialog then
+			dialog.alpha, object.m_dialog = 1
+		end
 
 		storyboard.hideOverlay(true)
 	end
@@ -82,10 +85,19 @@ end
 
 --
 local function Fade (object, params, alpha)
+	if object.m_fade then
+		if object.m_to_alpha ~= alpha then
+			object.alpha = object.m_to_alpha
+		end
+
+		transition.cancel(object.m_fade)
+	end
+
 	params.alpha = alpha
 	params.time = ceil(abs(object.alpha - alpha) * 150) + 20
 
-	transition.to(object, params)
+	object.m_fade = transition.to(object, params)
+	object.m_to_alpha = alpha
 end
 
 --
@@ -98,8 +110,9 @@ local function Backdrop (group, w, h, corner)
 	local backdrop = display.newRoundedRect(group, 0, 0, w, h, corner)
 
 	backdrop:addEventListener("touch", DragTouch)
-	backdrop:setFillColor(96, 160)
-	backdrop:setStrokeColor(32)
+	backdrop:setFillColor(.375, .675)
+	backdrop:setStrokeColor(.125)
+	backdrop:translate(w / 2, h / 2)
 
 	backdrop.strokeWidth = 2
 
@@ -118,6 +131,7 @@ function Overlay:createScene ()
 	self.m_shade = display.newRect(self.view, 0, 0, display.contentWidth, display.contentHeight)
 
 	self.m_shade:setFillColor(0)
+	self.m_shade:translate(display.contentCenterX, display.contentCenterY)
 
 	--
 	local cgroup = display.newGroup()
@@ -130,7 +144,7 @@ function Overlay:createScene ()
 	Backdrop(cgroup, 350, 225, 22)
 
 	--
-	self.m_choices = common.Listbox(cgroup, 25, 50, {
+	self.m_choices = common_ui.Listbox(cgroup, 25, 50, {
 		--
 		get_text = function(index)
 			local item = List[index]
@@ -145,13 +159,13 @@ function Overlay:createScene ()
 		end
 	})
 
-	common.Frame(self.m_choices, 0, 32, 96)
+	common_ui.Frame(self.m_choices, 0, .125, .375)
 
 	--
 	self.m_about = display.newText(cgroup, "", 0, 0, native.systemFont, 18)
 
 	--
-	button.Button(cgroup, nil, 300, 10, 35, 35, function()
+	button.Button(cgroup, nil, 300, 30, 35, 35, function()
 		FadeShade(0)
 	end, "X")
 end
@@ -170,9 +184,7 @@ local FadeLinkParams = { transition = easing.inOutQuad }
 --
 local function SetText (str, x, y, text)
 	str.text = text
-
-	str:setReferencePoint(display.CenterLeftReferencePoint)
-
+	str.anchorX = 0
 	str.x, str.y = x, y
 end
 
@@ -206,7 +218,7 @@ local function BoxItems (reverse)
 end
 
 --
-local function SubLinkText (sub)
+local function SublinkText (sub)
 	return "(Sublink: " .. sub .. ")"
 end
 
@@ -216,7 +228,7 @@ local function Refresh (is_dirty)
 
 	for _, item, str, sub in BoxItems() do
 		local can_link, why = links.CanLink(Rep, object, Sub, sub)
-		local text, alpha = SubLinkText(sub)
+		local text, alpha = SublinkText(sub)
 
 		if not can_link then
 			alpha, text = .2, text .. (#why > 0 and ": " .. why or "")
@@ -241,7 +253,7 @@ local function Refresh (is_dirty)
 -- TODO: Broken?
 Overlay.m_choices:deleteAllRows()
 
-local add_row = common.ListboxRowAdder()
+local add_row = common_ui.ListboxRowAdder()
 
 for _ = 1, #List do
 	Overlay.m_choices:insertRow(add_row)
@@ -322,9 +334,9 @@ end
 function LinkGroupOpts:show_or_hide (how)
 	--
 	if how == "began" then
-		self.m_old_alpha = self.alpha
-
 		Fade(self, FadeLinkParams, .4)
+
+		self.m_old_alpha = self.alpha
 
 	--
 	elseif how == "cancelled" or self.m_owner_id == 0 then
@@ -355,13 +367,6 @@ local function CouldPass (object, sub)
 end
 
 --
-local function ElementName (object)
-	local element = common.GetBinding(object)
-
-	return element and element.name
-end
-
---
 local function MayLink (object, tag)
 	for _, sub in tags.Sublinks(tag) do
 		if CouldPass(object, sub) then
@@ -378,10 +383,17 @@ local function SetBoxParams (params)
 end
 
 --
-local function SetName ()
-	local name = ElementName(Box.m_object)
+local function ValuesName (object)
+	local values = common.GetValuesFromRep(object)
 
-	SetText(Box.m_name, 25, NameY, "Sublinks for object" .. (name and ": " .. name or "") .. " " .. SubLinkText(Sub))
+	return values and values.name
+end
+
+--
+local function SetName ()
+	local name = ValuesName(Box.m_object)
+
+	SetText(Box.m_name, 25, NameY, "Sublinks for object" .. (name and ": " .. name or "") .. " " .. SublinkText(Sub))
 end
 
 --
@@ -469,11 +481,13 @@ params.time, params.onComplete = n * 120, Show
 		--
 		local x, y, w, h = common.Rect(object)
 
-		Outline = display.newRoundedRect(object.parent, x - 5, y - 5, w + 10, h + 10, 15)
+		Outline = display.newRoundedRect(object.parent, 0, 0, w + 10, h + 10, 15)
 
 		Outline:setFillColor(0, 0)
-		Outline:setStrokeColor(0, 255, 0)
+		Outline:setStrokeColor(0, 1, 0)
 
+		Outline.anchorX, Outline.x = 0, x - 5
+		Outline.anchorY, Outline.y = 0, y - 5
 		Outline.strokeWidth = 7
 
 	-- Cleanup.
@@ -487,7 +501,7 @@ end
 
 --
 local function SetAboutText (about, has_links)
-	SetText(about, 25, 25, has_links and "Link choices for " .. (ElementName(Rep) or "") or "Nothing to link against")
+	SetText(about, 25, 25, has_links and "Link choices for " .. (ValuesName(Rep) or "") or "Nothing to link against")
 end
 
 --
@@ -507,9 +521,13 @@ function Overlay:enterScene (event)
 	Rep, Sub = params.rep, params.sub
 -- TODO: make this optional...
 	--
-	params.dialog.alpha = .35
+	local dialog = params.dialog
+	
+	if dialog then
+		dialog.alpha = .35
+	end
 
-	self.m_shade.m_dialog = params.dialog
+	self.m_shade.m_dialog = dialog
 
 	--
 	self.m_choices:deleteAllRows()
@@ -527,7 +545,7 @@ function Overlay:enterScene (event)
 	for _, name in iter(set) do
 		for object in links.Tagged(name) do
 			if object ~= Rep and MayLink(object, name) then
-				local name = ElementName(object)
+				local name = ValuesName(object)
 
 				List[#List + 1] = {
 					text = ("%s%s"):format(links.GetTag(object), name and " (" .. name .. ")" or ""),
@@ -540,8 +558,8 @@ function Overlay:enterScene (event)
 	--
 	Node = display.newCircle(self.view, params.x, params.y, 15)
 
-	Node:setFillColor(32, 255, 32)
-	Node:setStrokeColor(255, 0, 0)
+	Node:setFillColor(.125, 1, .125)
+	Node:setStrokeColor(1, 0, 0)
 
 	Node.strokeWidth = 3
 
@@ -554,7 +572,7 @@ function Overlay:enterScene (event)
 			AddObject(link:GetOtherObject(Rep))
 		end
 
-		local add_row = common.ListboxRowAdder()
+		local add_row = common_ui.ListboxRowAdder()
 
 		for _ = 1, #List do
 			self.m_choices:insertRow(add_row)

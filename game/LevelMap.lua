@@ -34,8 +34,8 @@ local wrap = coroutine.wrap
 local yield = coroutine.yield
 
 -- Modules --
+local bind_utils = require("utils.Bind")
 local controls = require("game.Controls")
-local defer = require("game.Defer")
 local dispatch_list = require("game.DispatchList")
 local dots = require("game.Dots")
 local event_blocks = require("game.EventBlocks")
@@ -43,7 +43,7 @@ local global_events = require("game.GlobalEvents")
 local level_list = require("game.LevelsList")
 local persistence = require("game.Persistence")
 local player = require("game.Player")
-local scenes = require("game.Scenes")
+local scenes = require("utils.Scenes")
 local tile_maps = require("game.TileMaps")
 
 -- Corona globals --
@@ -71,7 +71,7 @@ local function Decode (str)
 	level.start_col = level.player.col
 	level.start_row = level.player.row
 
-	for i, tile in ipairs(level.tiles.elements) do
+	for i, tile in ipairs(level.tiles.values) do
 		level[i] = Names[tile] or false
 	end
 
@@ -120,6 +120,9 @@ local NormalValues = { return_to = "scene.Choices", wait_to_end = 3000 }
 -- ...those same values, if the level was launched from the editor... --
 local TestingValues = { return_to = "scene.MapEditor", wait_to_end = 500 }
 
+-- ...or from the intro / title screen... --
+local QuickTestValues = { return_to = "scene.Title", wait_to_end = 500 }
+
 -- ...the current set of values in effect  --
 local Values
 
@@ -161,16 +164,28 @@ function M.LoadLevel (view, which)
 	assert(not CurrentLevel, "Level not unloaded")
 	assert(not Loading, "Load already in progress")
 
-	Values = storyboard.getPrevious() == "scene.MapEditor" and TestingValues or NormalValues
+	local coming_from = scenes.ComingFrom()
+
+	if coming_from == "Editor" then
+		Values = TestingValues
+	else
+		Values = NormalValues
+	end
 
 	Loading = wrap(function()
 		Running = running()
 
 		-- Get the level info, either by decoding a database blob or grabbing it from the list.
-		local level = type(which) == "string" and Decode(which) or level_list.GetLevel(which)
+		local level
+
+		if type(which) == "string" then
+			level, which = Decode(which), ""
+		else
+			level = level_list.GetLevel(which)
+		end
 
 		-- Record some information to pass along via dispatch.
-		CurrentLevel = { ncols = level.ncols, nrows = ceil(#level / level.ncols), w = Width, h = Height }
+		CurrentLevel = { ncols = level.ncols, nrows = ceil(#level / level.ncols), w = Width, h = Height, which = which }
 
 		-- Add the primary display groups.
 		for _, name in ipairs(Groups) do
@@ -194,7 +209,7 @@ function M.LoadLevel (view, which)
 		bg_func(CurrentLevel.bg_layer, CurrentLevel.ncols, CurrentLevel.nrows, Width, Height)
 
 		-- Dispatch to "enter level" observers, now that the basics are in place.
-		defer.Reset("loading_level")
+		bind_utils.Reset("loading_level")
 
 		dispatch_list.CallList("enter_level", CurrentLevel)
 
@@ -218,16 +233,11 @@ function M.LoadLevel (view, which)
 		-- ...and the player...
 		player.AddPlayer(CurrentLevel.things_layer, level.start_col, level.start_row)
 
-		-- ...and the enemies.
-		for _, enemy in Ipairs(level.enemies) do
-			enemies.SpawnEnemy(CurrentLevel.things_layer, enemy)
-		end
-
 		-- ...and any global events.
 		global_events.AddEvents(level.global_events)
 
 		-- Patch up deferred objects.
-		defer.Resolve("loading_level")
+		bind_utils.Resolve("loading_level")
 
 		-- Some of the loading may have been expensive, which can lead to an unnatural
 		-- start, since various things will act as if that time had passed for them as
@@ -250,10 +260,17 @@ function M.LoadLevel (view, which)
 end
 
 -- Helper to leave level
-local function Leave (why)
-	dispatch_list.CallList("leave_level", why)
+local function Leave (info)
+	dispatch_list.CallList("leave_level", info.why)
 
-	storyboard.gotoScene(Values.return_to, "crossFade")
+	--
+	local return_to = Values.return_to
+
+	if type(return_to) == "function" then
+		return_to = return_to(info)
+	end
+
+	storyboard.gotoScene(return_to, "crossFade")
 end
 
 -- Possible overlays to play on unload --
@@ -273,7 +290,7 @@ function M.UnloadLevel (why)
 	if CurrentLevel.is_loaded then
 		CurrentLevel.is_loaded = false
 
-		DoOverlay(Overlay[why], Leave, why)
+		DoOverlay(Overlay[why], Leave, { which = CurrentLevel.which, why = why })
 	end
 end
 
