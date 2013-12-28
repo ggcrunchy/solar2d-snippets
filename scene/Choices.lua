@@ -126,6 +126,8 @@ local Names = {
 	  by iteratively capturing completed sections and compositing them? (Ditto, would be a lot easier
 	  with render textures)
 
+	* Coupled map lattices, logistic maps, etc.
+
 	* Projectile targeting, with gravity (maybe with some of the competing teams stuff from WAY back...)
 	  (Also came up on forums)
 
