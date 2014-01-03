@@ -37,6 +37,7 @@ local curves = require("utils.Curves")
 local flow_ops = require("flow_ops")
 local grid_iterators = require("grid_iterators")
 local index_ops = require("index_ops")
+local ms = require("mask.MarchingSquares")
 local numeric_ops = require("numeric_ops")
 local scenes = require("utils.Scenes")
 local sheet = require("ui.Sheet")
@@ -120,15 +121,24 @@ local Curves = {
 }
 
 -- --
+local MS, CommitMS
+
+--
+local function DefCommit () end
+
+-- --
+local Commit = DefCommit
+
+-- --
 local SetTo
 
 -- --
-local Ops = {
+local Ops = {--[[
 	--
 	function(tile, set)
 		if tile then
 			tile.alpha = set and SetTo or 1
-		else
+		elseif set then
 			SetTo = .55 + random() * .35
 			Scene.effect.text = ("Effect: alpha = %.3f"):format(SetTo)
 		end
@@ -138,17 +148,38 @@ local Ops = {
 	function(tile, set)
 		if tile then
 			tile.rotation = set and SetTo or 0
-		else
+		elseif set then
 			SetTo = random(10, 60)
 			Scene.effect.text = ("Effect: rotation = %i"):format(SetTo)
 		end
+	end,
+]]
+	--
+	function(tile, set, col, row)
+		if tile then
+			MS(col, row, set)
+		elseif set then
+			if not MS then
+				MS, CommitMS = ms.NewGrid(function(col, row, ncols, nrows, tiles)
+					return col < ncols and row < nrows and tiles[Index(col, row)]
+				end, 32, NCols_Log * LogicalDim, NRows_Log * LogicalDim, NCols, NRows)
+			end
+
+			Commit = CommitMS
+			Scene.effect.text = "Effect: marching squares"
+		else
+			Commit = DefCommit
+		end
 	end
--- TODO: marching squares masks (mostly working, needs minor formalization and a port... also, somewhat different interface)
 } 
 
 -- --
-local function Mark (tiles, index, op, set)
-	Ops[op](tiles[index], set)
+local function Mark (tiles, col, row, op, set)
+	local index = Index(col, row)
+
+	Ops[op](tiles[index], set, col, row, tiles)
+
+	return index
 end
 
 -- --
@@ -158,9 +189,13 @@ local Dirty, DirtyN = {}, 0
 local function CleanUp (tiles, op)
 	op = Ops[op]
 
-	for i = 1, DirtyN do
-		op(tiles[Dirty[i]], false)
+	for i = 1, DirtyN, 3 do
+		local index = Dirty[i]
+
+		op(tiles[index], false, Dirty[i + 1], Dirty[i + 2], tiles)
 	end
+
+	Commit(tiles)
 
 	DirtyN = 0
 end
@@ -168,12 +203,20 @@ end
 --
 local function Mark_Add (tiles, col, row, op)
 	if col >= 1 and col <= NCols and row >= 1 and row <= NRows then
-		local index = Index(col, row)
+		local index = Mark(tiles, col, row, op, true)
 
-		Mark(tiles, index, op, true)
+		Dirty[DirtyN + 1] = index
+		Dirty[DirtyN + 2] = col
+		Dirty[DirtyN + 3] = row
 
-		Dirty[DirtyN + 1], DirtyN = index, DirtyN + 1
+		DirtyN = DirtyN + 3
 	end
+end
+
+--
+local function Yield (tiles)
+	Commit(tiles)
+	yield()
 end
 
 --
@@ -183,7 +226,7 @@ function A (tiles, op)
 	--
 	op = index_ops.RotateIndex(op, #Ops)
 
-	Ops[op]()
+	Ops[op](nil, true)
 
 	--
 	for _ = 1, 5 do
@@ -211,7 +254,7 @@ function A (tiles, op)
 
 			t1 = t2
 
-			yield()
+			Yield(tiles)
 		end
 
 		flow_ops.Wait(.85)
@@ -265,8 +308,7 @@ function B (tiles, op)
 			end
 		end
 
-		yield()
-
+		Yield(tiles)
 		CleanUp(tiles, op)
 	until n == 0
 
@@ -282,21 +324,19 @@ function C (tiles, op)
 
 	--
 	CA = CA or ca.GosperGliderGun(10, 10, 8, 8, function(how, _, set, col, row, op)
-		if how == "visit" then
-			set = false
-		end
-
-		Mark(tiles, Index(col, row), op, set)
+		Mark(tiles, col, row, op, how == "update" and set)
 	end, op)
 
 	--
 	for _ = 1, 150 do
 		CA("update", op)
-
-		yield()
+		Yield(tiles)
 	end
 
 	CA("visit", op)
+
+	--
+	Ops[op](nil, false)
 
 	return A(tiles, op)
 end
@@ -390,7 +430,7 @@ function Scene:exitScene ()
 	self.action.text = ""
 	self.effect.text = ""
 
-	CA = nil
+	CA, MS, CommitMS = nil
 end
 
 Scene:addEventListener("exitScene")
