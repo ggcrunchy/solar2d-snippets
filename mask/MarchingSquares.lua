@@ -49,12 +49,14 @@ local Clear = UL + UR + LL + LR
 -- No flags set: full --
 local Full = 0
 
+-- Column increments (upper-left -> upper-right -> lower-right -> lower-left --
+local Step = { 1, 0, -1 }
+
 --- DOCME
 function M.NewGrid (get_object, dim, w, h, ncols, nrows, base_dir)
 	local reel = _NewReel_(dim, w / ncols, h / nrows, base_dir)
 	local cleared, dirty_cells, ndirty, id = {}, {}, 0, 0
 	local pitch, total = ncols + 2, (ncols + 2) * (nrows + 2)
-	local step = { 1, 0, 1, -1, 1, pitch - 1, 1, 0, 1 }
 
 	return function(col, row, clear)
 		-- If a cell is dirtied, flip its state, then add each of the four affected display
@@ -63,23 +65,23 @@ function M.NewGrid (get_object, dim, w, h, ncols, nrows, base_dir)
 		-- corner are stored, in order to forgo some later recomputation.
 		if col >= 1 and col <= ncols and row >= 1 and row <= nrows then
 			local index = row * pitch + col + 1
-			local is_set = not cleared[index]
+			local not_clear = not cleared[index]
 
-			if is_set ~= not clear then
+			if not_clear ~= not clear then
 				dirty_cells[ndirty + 1] = index
 				dirty_cells[ndirty + 2] = col
 				dirty_cells[ndirty + 3] = row
 
-				ndirty, cleared[index] = ndirty + 3, is_set
+				ndirty, cleared[index] = ndirty + 3, not_clear
 			end
 		end
 	end, function(arg)
 		if ndirty > 0 then
 			-- Visit each dirty cell, building up a state from the cell's corners.
 			for i = 1, ndirty, 3 do
-				local index, col, row = unpack(dirty_cells, i, i + 2)
+				local j, index, col, row = 1, unpack(dirty_cells, i, i + 2)
 
-				for j = 1, 9, 3 do
+				repeat
 					if dirty_cells[-index] ~= id then
 						local ul = cleared[index - pitch - 1] and UL or None
 						local ur = cleared[index - pitch] and UR or None
@@ -110,14 +112,20 @@ function M.NewGrid (get_object, dim, w, h, ncols, nrows, base_dir)
 					end
 
 					-- Step to another corner.
-					local di, dc, dr = unpack(step, j, j + 2)
+					local dc = Step[j]
 
-					index, col, row = index + di, col + dc, row + dr
-				end
+					if dc ~= 0 then
+						index, col = index + dc, col + dc
+					else
+						index, row = index + pitch, row + 1
+					end
+
+					j = j + 1
+				until j > 3
 			end
 
 			-- Update the ID and invalidate one cell.
-			dirty_cells[-(id + 1)], id, ndirty = id, (id + 1) % total, 0
+			id, ndirty, dirty_cells[-(id + 1)] = (id + 1) % total, 0
 		end
 	end
 end
@@ -214,62 +222,6 @@ function M.NewReel (dim, dw, dh, base_dir)
 
 	return reel
 end
-
---[[
-
--- Cell states and images --
-local Cells
-
--- Grid dimensions in terms of (touchable) cells; number of cells between rows (includes padding) --
-local NCols, NRows, Pitch
-
--- Dimensions of (touchable) cell --
-local CellW, CellH
-
-
-
-
-			end
-
-		return true
-	end)
-
--- SNIP!
-
-	Cells = {}
-
-	-- Compute the scale factors, i.e. the (graphical) cell / mask dimension ratios.
-	MaskScaleX = dw / MaskDim
-	MaskScaleY = dh / MaskDim
-
-	-- Initialize the cell states and put images in most cells. Because the touchable grid
-	-- corresponds to corners in the marching squares state, the graphical grid is one column
-	-- wider and one row taller. These cells are arbitrarily added in the last row and column,
-	-- with the corresponding details in the implementation.
-	local index = 1
-
-	for row = 1, NRows + 2 do
-		for col = 1, NCols + 2 do
-			Cells[index] = { cleared = false }
-
--- SNIP
-		end
-	end
-
--- SNIP
-
-	NCols, NRows = 60, 70
-	Pitch = NCols + 2
-
-	-- Compute the dimensions of a (touchable) cell.
-	CellW = display.contentWidth / NCols
-	CellH = display.contentHeight / NRows
-
-	-- Compute the dimensions of a (graphical) cell and use it to build up the cell list
-	-- and associated mask state.
-	InitCells(self.view, display.contentWidth / (NCols + 1), display.contentHeight / (NRows + 1))
-
-]]
 
 -- Cache module members.
 _NewReel_ = M.NewReel

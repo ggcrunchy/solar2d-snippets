@@ -188,7 +188,7 @@ function M.NewReel (dim)
 		-- arg2: frame index
 		-- arg3: boolean (is background white?)
 		elseif what == "frame" then
-			local cgroup, bg = display.newGroup(), arg2 and 1 or 0
+			local cgroup, bg = display.newGroup(), arg3 and 1 or 0
 
 			-- Add the left-hand black border.
 			BlackRect(mgroup, x, y, 3, dim)
@@ -245,8 +245,8 @@ function M.NewReel (dim)
 			-- Correct the mask coordinates to refer to the frame centers, relative to the mask center.
 			local correct = (xdim - dim) / 2
 
-			for index, x in pairs(pos) do
-				pos[index] = correct - x
+			for k, v in pairs(pos) do
+				pos[k] = correct - v
 			end
 		end
 	end

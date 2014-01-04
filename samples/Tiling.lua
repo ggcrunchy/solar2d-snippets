@@ -68,22 +68,22 @@ end
 
 Scene:addEventListener("createScene")
 
--- --
+-- "Logical" grid dimensions (i.e. before being broken down into subgrids)... --
 local NCols_Log, NRows_Log = 15, 10
 
--- --
+-- ... and "true" dimensions --
 local NCols, NRows = NCols_Log * 4, NRows_Log * 4
 
--- --
+-- Distance between vertically adjacent grid cells --
 local Pitch = NCols_Log * 4
 
--- --
+-- Corner of tiled image region --
 local X, Y = 150, 150
 
--- --
+-- Square dimension of "logical" tile... --
 local LogicalDim = 32
 
--- --
+-- ...and "true" dimension --
 local TileDim = LogicalDim / 4
 
 -- Heh, not exactly the most efficient representation :P
@@ -94,47 +94,21 @@ local function Index (col, row)
 	return 4 * (qr * Pitch + qc * 4 + rr) + rc + 1
 end
 
---
-local function TileCoords (x, y)
-	local col = index_ops.FitToSlot(x, 0, TileDim)
-	local row = index_ops.FitToSlot(y, 0, TileDim)
-
-	return col, row
-end
-
--- --
-local A, B, C
-
---
-local function SetupCurve (curve)
-	local radius = curve.radius
-
-	curve.x, curve.rx = random(10, NCols - 10) * TileDim, random() < .5 and radius or -radius
-	curve.y, curve.ry = random(10, NRows - 10) * TileDim, random() < .5 and radius or -radius
-end
-
--- --
-local Curves = {
-	{ func = curves.Tschirnhausen, radius = 15 },
-	{ func = curves.SingularCubic, radius = 200 },
-	{ func = curves.Tschirnhausen, radius = 35 }
-}
-
--- --
+-- Marching squares setter and committer --
 local MS, CommitMS
 
---
+-- Default committer: no-op
 local function DefCommit () end
 
--- --
-local Commit = DefCommit
+-- Current committer --
+local Commit
 
--- --
+-- Value to be assigned, for certain operations --
 local SetTo
 
--- --
-local Ops = {--[[
-	--
+-- Effect operations (cycled through) --
+local Ops = {
+	-- Effect: change the tile's alpha
 	function(tile, set)
 		if tile then
 			tile.alpha = set and SetTo or 1
@@ -144,7 +118,7 @@ local Ops = {--[[
 		end
 	end,
 
-	--
+	-- Effect: change the tile's rotation
 	function(tile, set)
 		if tile then
 			tile.rotation = set and SetTo or 0
@@ -153,27 +127,27 @@ local Ops = {--[[
 			Scene.effect.text = ("Effect: rotation = %i"):format(SetTo)
 		end
 	end,
-]]
-	--
+
+	-- Effect: mask the tile (requires neighbors, and thus a deferred commit)
 	function(tile, set, col, row)
 		if tile then
 			MS(col, row, set)
 		elseif set then
 			if not MS then
 				MS, CommitMS = ms.NewGrid(function(col, row, ncols, nrows, tiles)
-					return col < ncols and row < nrows and tiles[Index(col, row)]
-				end, 32, NCols_Log * LogicalDim, NRows_Log * LogicalDim, NCols, NRows)
+					return col <= ncols and row <= nrows and tiles[Index(col, row)]
+				end, 32, NCols * TileDim, NRows * TileDim, NCols, NRows)
 			end
 
 			Commit = CommitMS
-			Scene.effect.text = "Effect: marching squares"
+			Scene.effect.text = "Effect: marching squares masking"
 		else
 			Commit = DefCommit
 		end
 	end
 } 
 
--- --
+-- Helper to mark or unmark a given tile, using the current effect
 local function Mark (tiles, col, row, op, set)
 	local index = Index(col, row)
 
@@ -182,10 +156,10 @@ local function Mark (tiles, col, row, op, set)
 	return index
 end
 
--- --
+-- Info about recently marked tiles --
 local Dirty, DirtyN = {}, 0
 
--- --
+-- Helper to clean up dirty tiles
 local function CleanUp (tiles, op)
 	op = Ops[op]
 
@@ -200,7 +174,7 @@ local function CleanUp (tiles, op)
 	DirtyN = 0
 end
 
---
+-- Marks a tile, adding it to the dirty list
 local function Mark_Add (tiles, col, row, op)
 	if col >= 1 and col <= NCols and row >= 1 and row <= NRows then
 		local index = Mark(tiles, col, row, op, true)
@@ -213,22 +187,50 @@ local function Mark_Add (tiles, col, row, op)
 	end
 end
 
---
+-- Helper to yield following any commit operation
 local function Yield (tiles)
 	Commit(tiles)
 	yield()
 end
 
---
+-- Forward references for tail-called actions --
+local A, B, C
+
+-- Some (parametrized) curves to follow --
+local Curves = {
+	{ func = curves.Tschirnhausen, radius = 15 },
+	{ func = curves.SingularCubic, radius = 200 },
+	{ func = curves.Tschirnhausen, radius = 35 }
+}
+
+-- Some common logic to do setup on various curves, with some variety
+local function SetupCurve (curve)
+	local radius = curve.radius
+
+	curve.x, curve.rx = random(10, NCols - 10) * TileDim, random() < .5 and radius or -radius
+	curve.y, curve.ry = random(10, NRows - 10) * TileDim, random() < .5 and radius or -radius
+end
+
+-- Resolves a position to tile coordinates
+local function TileCoords (x, y)
+	local col = index_ops.FitToSlot(x, 0, TileDim)
+	local row = index_ops.FitToSlot(y, 0, TileDim)
+
+	return col, row
+end
+
+-- Curves action
 function A (tiles, op)
 	Scene.action.text = "Action: drawing curves"
 
-	--
+	-- This is the first action, so update the effect in use (the first time this is called,
+	-- it gets moved out of a dummy state). Perform any initialization on the effect.
 	op = index_ops.RotateIndex(op, #Ops)
 
 	Ops[op](nil, true)
 
-	--
+	-- "Draw" (by applying the current effect to the underlying tiles, across multiple frames)
+	-- a batch of curves. Repeat a few times, with varying curve parameters.
 	for _ = 1, 5 do
 		for _, curve in ipairs(Curves) do
 			SetupCurve(curve)
@@ -257,6 +259,7 @@ function A (tiles, op)
 			Yield(tiles)
 		end
 
+		-- Wait a while (so the next batch isn't so abrupt), then erase the current curves.
 		flow_ops.Wait(.85)
 
 		CleanUp(tiles, op)
@@ -265,11 +268,11 @@ function A (tiles, op)
 	return B(tiles, op)
 end
 
---
+-- Ripples action
 function B (tiles, op)
 	Scene.action.text = "Action: drawing ripples"
 
-	--
+	-- Build up several ripples with random centers and time properties.
 	local ripples = {}
 
 	for i = 1, 60 do
@@ -278,12 +281,13 @@ function B (tiles, op)
 		local iters, wait = random(10, 15), random(0, 50)
 		local radius, inc = 1, .23 * iters / (20 - iters)
 
-		--
+		-- Spread out from the center chosen above.
 		local spread = circle.SpreadOut(7, 7, function(x, y, _)
 			Mark_Add(tiles, col + x, row + y, op)
 		end)
 
-		--
+		-- Wait some number of frames to begin each ripple, then spread out for a while before
+		-- declaring the ripple complete.
 		ripples[i] = function()
 			if wait > 0 then
 				wait = wait - 1
@@ -297,7 +301,7 @@ function B (tiles, op)
 		end
 	end
 
-	--
+	-- Update the ripples (backfilling spots vacated by dead ones) until all are done.
 	repeat
 		local n = #ripples
 
@@ -315,33 +319,34 @@ function B (tiles, op)
 	return C(tiles, op)
 end
 
--- --
+-- Cellular automaton setter --
 local CA
 
---
+-- Cellular automaton action
 function C (tiles, op)
 	Scene.action.text = "Action: drawing Gosper's glider gun"
 
-	--
+	-- Build Gosper's glider gun.
 	CA = CA or ca.GosperGliderGun(10, 10, 8, 8, function(how, _, set, col, row, op)
 		Mark(tiles, col, row, op, how == "update" and set)
 	end, op)
 
-	--
+	-- Update the gun for a while and then clean up.
 	for _ = 1, 150 do
 		CA("update", op)
 		Yield(tiles)
 	end
 
 	CA("visit", op)
+	Commit(tiles)
 
-	--
+	-- This is the last action, so do any effect cleanup. Begin the action cycle anew.
 	Ops[op](nil, false)
 
 	return A(tiles, op)
 end
 
--- --
+-- How many tiles are still filling? --
 local NumLeft
 
 -- --
@@ -404,6 +409,8 @@ function Scene:enterScene ()
 						yield()
 					end
 
+					Commit = DefCommit
+
 					return A(self.tiles, 0)
 				end, 60)
 			end
@@ -430,7 +437,7 @@ function Scene:exitScene ()
 	self.action.text = ""
 	self.effect.text = ""
 
-	CA, MS, CommitMS = nil
+	Commit, CA, MS, CommitMS = nil
 end
 
 Scene:addEventListener("exitScene")
