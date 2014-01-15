@@ -33,7 +33,6 @@ local pi = math.pi
 local random = math.random
 local sin = math.sin
 local sqrt = math.sqrt
-local yield = coroutine.yield
 
 -- Extension imports --
 local round = math.round
@@ -159,11 +158,15 @@ function Scene:enterScene ()
 				end
 
 				--
+				-- TODO: In theory, it would be cheaper to do the columns in the outer loop and
+				-- restructure the indexing accordingly (assuming the present behavior is to be
+				-- left intact)... in that case, deal with it during allocation?
 				local A = fa * sqrt((col + k1)^2 + ka)
 				local B = fb * sqrt((col - 106)^2 + kb)
 				local C = fc * (col + row)
 
 				--
+				-- TODO: For that matter, all the sines can then be done incrementally
 				local rc = .5 + .1667 * (sin(t1 * A) + sin(t2 * A) + sin(t3 * A))
 				local gc = .5 + .1667 * (sin(t1 * B) + sin(t2 * B) + sin(t3 * B))
 				local bc = .5 + .1667 * (sin(t1 * C) + sin(t2 * C) + sin(t3 * C))
@@ -176,7 +179,7 @@ function Scene:enterScene ()
 	end, 0)
 
 	self.allocate_pixels = timers.WrapEx(function()
-		local count = 30
+		local step = timers.YieldEach(30)
 
 		for row = 1, NRows do
 			for col = 1, NCols do
@@ -185,13 +188,7 @@ function Scene:enterScene ()
 				pixel.anchorX, pixel.x = 0, BoxX + col * PixelWidth
 				pixel.anchorY, pixel.y = 0, BoxY + row * PixelHeight
 
-				count = count - 1
-
-				if count == 0 then
-					count = 30
-
-					yield()
-				end
+				step()
 			end
 		end
 	end)

@@ -52,7 +52,7 @@ local Scene = storyboard.newScene()
 -- Various notes
 local Names = {
 	"Delaunay",
-	-- "Fire",
+	"Fire",
 	"Hilbert",
 	"HilbertMixer",
 	"Hop",

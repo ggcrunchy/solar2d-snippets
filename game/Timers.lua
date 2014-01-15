@@ -27,6 +27,7 @@
 local assert = assert
 local max = math.max
 local wrap = coroutine.wrap
+local yield = coroutine.yield
 
 -- Corona globals --
 local system = system
@@ -190,6 +191,21 @@ function M.WrapEx (func, delay)
 
 		return "cancel"
 	end), delay)
+end
+
+--- DOCME
+function M.YieldEach (n)
+	local count = n
+
+	return function()
+		count = count - 1
+
+		if count == 0 then
+			count = n
+
+			yield()
+		end
+	end
 end
 
 -- Export the module.
