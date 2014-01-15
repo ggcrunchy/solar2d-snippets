@@ -1,6 +1,6 @@
 --- Fire demo.
 --
--- At the moment following on some suggestions from [here](http://lodev.org/cgtutor/fire.html).
+-- At the moment, basically following what's [here](http://lodev.org/cgtutor/fire.html).
 
 --
 -- Permission is hereby granted, free of charge, to any person obtaining
@@ -26,11 +26,14 @@
 --
 
 -- Standard library imports --
-local floor = math.floor
 local ipairs = ipairs
 local max = math.max
 local min = math.min
+local modf = math.modf
 local random = math.random
+
+-- Extension imports --
+local round = math.round
 
 -- Modules --
 local buttons = require("ui.Button")
@@ -44,10 +47,10 @@ local timer = timer
 
 -- Corona modules --
 local storyboard = require("storyboard")
+local widget = require("widget")
 
 -- Fire demo scene --
 local Scene = storyboard.newScene()
-local widget=require("widget")
 --
 function Scene:createScene ()
 	buttons.Button(self.view, nil, 120, 75, 200, 50, scenes.Opener{ name = "scene.Choices" }, "Go Back")
@@ -61,9 +64,11 @@ local function SetValue (event)
 	end
 end
 -- /HACK
-	for i = 1, 2 do
+	for i = 1, 4 do
+		local x = (i - 1) % 2 + 1 
+
 		self.sliders[i] = widget.newSlider{
-			top = 50, left = 125 + i * 175, width = 150,
+			top = 20 + 35 * (i - x) / 2, left = 125 + x * 175, width = 150,
 			listener = SetValue
 		}
 
@@ -90,114 +95,98 @@ local Height = math.ceil(BoxHeight / PixelHeight)
 
 --
 function Scene:enterScene ()
-	self.sliders[1]:setValue(76)
+	--
+	self.igroup = display.newGroup()
+
+	self.view:insert(self.igroup)
+
+	--
+	self.sliders[1]:setValue(84)
 	self.sliders[2]:setValue(35)
+	self.sliders[3]:setValue(0)
+	self.sliders[4]:setValue(55)
 
 	--
-	self.cgroup = display.newGroup()
+	local heat = {}
 
-	local heat, left = {}, {}
+	for i = 1, Height do
+		local row = {}
 
-	for i = 1, NCols do
-		self.cgroup:insert(display.newGroup())
-
-		local column = {}
-
-		for j = 1, Height do
-			column[j] = 0
+		for j = 1, NCols do
+			row[j] = 0
 		end
 
-		heat[i] = column
+		heat[i] = row
 	end
-
-	self.view:insert(self.cgroup)
-
-	--
-	self.stash = display.newGroup()
-
-	self.stash.isVisible = false
-
-	--
-	self.coals = timer.performWithDelay(550, function()
-		for _ = 1, random(3) do
-			local from, extra, intensity = random(NCols), random(2), .2 + 1.65 * random()
-
-			for i = from, min(from + extra, NCols) do
-				heat[i][1] = intensity
-			end
-		end
-	end, 0)
 
 	--
 	self.render = timer.performWithDelay(20, function()
-		local prev, cur = heat[1], heat[1]
-		local stash, x = self.stash, BoxX
-		local hue = min(6 * self.sliders[1].value / 100 + 1, 6)
-		local scale, t = 1 / (4 + .35 * self.sliders[2].value / 100), hue % 1
-		local r, g, b = hsv.RGB_HueInterval(hue - t, t)
+		--
+		local coals = heat[1]
+		local base = self.sliders[3].value / 100
+		local range = .3 + 1.2 * self.sliders[4].value / 100
 
 		for i = 1, NCols do
-			local next = heat[min(i + 1, NCols)]
-			local cgroup, top = self.cgroup[i]
-			local lheat = prev[Height]
-			local rheat = next[Height]
-			local ul, ur = 0, 0
+			coals[i] = base + random() * range
+		end
 
-			for h = Height, 1, -1 do
-				local hi = max(h - 1, 1)
-				local bheat, ll, lr = cur[hi], prev[hi], next[hi]
-				local avgh = (bheat + lheat + rheat + cur[h]) * scale--ul + ur + ll + lr) / 7
+		--
+		local k = round(self.sliders[2].value / 5)
+		local scale = k / (k * 4 + 1)
 
-				if top or avgh > 1e-3 then
-					if not top then
-						local count, nstash = cgroup.numChildren, stash.numChildren
-						local y = BoxY - count * PixelHeight
+		for h = Height, 2, -1 do
+			local r0 = heat[h]
+			local r1 = heat[h - 1]
+			local r2 = heat[h > 2 and h - 2 or Height]
+			local li = NCols
 
-						top = min(h, count + nstash)
+			for i = 1, NCols do
+				local ri = i < NCols and i + 1 or 1
 
-						for _ = count + 1, top do
-							local pixel = stash[nstash]
+				r0[i] = (r1[li] + r1[i] + r1[ri] + r2[i]) * scale
 
-							cgroup:insert(pixel)
+				li = i
+			end
+		end
 
-							pixel.x, pixel.y = x, y
+		--
+		local hue = .06 * min(self.sliders[1].value, 99) + 1
+		local R, G, B = hsv.RGB_HueInterval(modf(hue))
+		local pix, index = self.igroup, 1
+		local nloaded = pix.numChildren
 
-							nstash, y = nstash - 1, y - PixelHeight
-						end
-					end
-
-					if h <= top then
-						local r, g, b = hsv.RGB_ColorSV(r, g, b, 1 - min(avgh, 1), 1)
-						cgroup[h]:setFillColor(r, g, b)--min(avgh, 1), 0, 0)
-						--.alpha = min(avgh, 1)--
-					end
-				elseif h == cgroup.numChildren then
-					stash:insert(cgroup[h])
+		for i = 1, Height do
+			for _, intensity in ipairs(heat[i]) do
+				if index > nloaded then
+					return
 				end
 
-				cur[h], left[h] = avgh, cur[h]
+				local r, g, b = hsv.RGB_ColorSV(R, G, B, 1, min(intensity, 1))
 
-				ul, ur, lheat, rheat = lheat, rheat, ll, lr
+				pix[index]:setFillColor(r, g, b)
+
+				index = index + 1
 			end
-
-			prev, cur, x = left, next, x + PixelWidth
 		end
 	end, 0)
 
 	--
-	local nloaded, total = 0, NCols * Height
+	self.allocate_pixels = timers.WrapEx(function()
+		local step, y = timers.YieldEach(30), BoxY
 
-	self.allocate_pixels = timers.RepeatEx(function()
-		local up_to = min(nloaded + 20, total)
+		for _ = 1, Height do
+			for col = 1, NCols do
+				local pixel = display.newRect(self.igroup, 0, 0, PixelWidth, PixelHeight)
 
-		repeat
-			local r=display.newRect(self.stash, 0, 0, PixelWidth, PixelHeight)
-r:setFillColor(1,0,0)
-			nloaded = nloaded + 1
-		until nloaded == up_to
+				pixel.anchorX, pixel.x = 0, BoxX + col * PixelWidth
+				pixel.anchorY, pixel.y = 0, y
 
-		return nloaded == total and "cancel"
-	end, 50)
+				step()
+			end
+
+			y = y - PixelHeight
+		end
+	end)
 end
 
 Scene:addEventListener("enterScene")
@@ -207,11 +196,9 @@ function Scene:exitScene ()
 	timer.cancel(self.render)
 	timer.cancel(self.allocate_pixels)
 
-	self.cgroup:removeSelf()
-	self.stash:removeSelf()
+	self.igroup:removeSelf()
 
-	self.cgroup = nil
-	self.stash = nil
+	self.igroup = nil
 	self.render = nil
 	self.allocate_pixels = nil
 end
