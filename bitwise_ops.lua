@@ -54,31 +54,29 @@ else -- Otherwise, make equivalents for low-bit purposes
 	-- Logical and / or LUT's
 	local And, Or = {}, {}
 
-	for i = 0, 3 do
-		for j = 0, 3 do
-			local minp = math.min(i, j)
-			local maxp = i + j - minp
+	for i = 1, 16 do
+		local p1 = (i - 1) % 4
+		local p2 = (i - p1 - 1) / 4
 
-			if minp > 0 then
-				local mixed = maxp % (minp + minp) >= minp
+		local minp = math.min(p1, p2)
+		local maxp = p1 + p2 - minp
 
-				And[#And + 1] = mixed and minp or 0
-				Or[#Or + 1] = mixed and maxp or minp + maxp
-			else
-				And[#And + 1], Or[#Or + 1] = 0, maxp
-			end
+		if minp > 0 and maxp % (minp + minp) >= minp then
+			And[i], Or[i] = minp, maxp
+		else
+			And[i], Or[i] = 0, minp + maxp
 		end
 	end
 
-	-- Binary op helper
-	local function BinOp (a, b, t)
-		local sum, n = 0, 0
+	-- Bitwise op helper
+	local function AuxOp (a, b, t)
+		local sum, n = 0, 1
 
 		while a > 0 or b > 0 do
 			local abits = a % 4
 			local bbits = b % 4
 
-			sum, n = sum + lshift(t[abits * 4 + bbits + 1], n), n + 2
+			sum, n = sum + n * t[abits * 4 + bbits + 1], n * 4
 			a = .25 * (a - abits)
 			b = .25 * (b - bbits)
 		end
@@ -87,11 +85,11 @@ else -- Otherwise, make equivalents for low-bit purposes
 	end
 
 	function band (a, b)
-		return BinOp(a, b, And)
+		return AuxOp(a, b, And)
 	end
 
 	function bor (a, b)
-		return BinOp(a, b, Or)
+		return AuxOp(a, b, Or)
 	end
 
 	-- Number of trailing zeroes helper
@@ -273,8 +271,6 @@ end
 function M.Morton3 (x, y, z)
 	return rshift(AuxMorton(x), 2) + rshift(AuxMorton(y), 1) + AuxMorton(z)
 end
-for i = 0, 47 do
-	print(i, M.CLP2(i))
-end
+
 -- Export the module.
 return M
