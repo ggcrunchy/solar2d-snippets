@@ -25,10 +25,12 @@
 
 -- Standard library imports --
 local abs = math.abs
+local modf = math.modf
 local unpack = unpack
 
 -- Cached module references --
 local _FindHue_
+local _RGB_HueInterval_
 
 -- Exports --
 local M = {}
@@ -164,6 +166,11 @@ function M.RGB_ColorSV (hue_r, hue_g, hue_b, sat, value)
 end
 
 --- DOCME
+function M.RGB_Hue (hue)
+	return _RGB_HueInterval_(modf(6 * (hue % 1) + 1))
+end
+
+--- DOCME
 function M.RGB_HueInterval (index, t)
 	local r1, g1, b1 = unpack(HueColors[index])
 	local r2, g2, b2 = unpack(HueColors[index + 1])
@@ -174,6 +181,7 @@ end
 
 -- Cache module members.
 _FindHue_ = M.FindHue
+_RGB_HueInterval_ = M.RGB_HueInterval
 
 -- Export the module.
 return M

@@ -29,7 +29,6 @@
 local ipairs = ipairs
 local max = math.max
 local min = math.min
-local modf = math.modf
 local random = math.random
 
 -- Extension imports --
@@ -150,8 +149,7 @@ function Scene:enterScene ()
 		end
 
 		--
-		local hue = .06 * min(self.sliders[1].value, 99) + 1
-		local R, G, B = hsv.RGB_HueInterval(modf(hue))
+		local R, G, B = hsv.RGB_Hue(self.sliders[1].value / 100)
 		local pix, index = self.igroup, 1
 		local nloaded = pix.numChildren
 

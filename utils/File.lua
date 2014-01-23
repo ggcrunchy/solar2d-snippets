@@ -124,7 +124,9 @@ function M.EnumerateFiles (path, options, into)
 	into = into or {}
 	path = system.pathForFile(path, base)
 
-	;(EnumFiles[type(exts)] or EnumAll)(into, path, exts)
+	if path then
+		(EnumFiles[type(exts)] or EnumAll)(into, path, exts)
+	end
 
 	return into
 end
@@ -151,14 +153,17 @@ end
 -- @param base Directory base. If absent, **system.ResourceDirectory**.
 -- @treturn TimerHandle A timer, which may be cancelled.
 function M.WatchForFileModification (path, func, base)
-	local respath = system.pathForFile(path, base)
-	local modtime = lfs.attributes(respath, "modification")
+	local respath, modtime
 
 	return timer.performWithDelay(50, function()
-		local now = lfs.attributes(respath, "modification")
+		respath = respath or system.pathForFile(path, base)
 
-		if now ~= modtime then
-			func(path)
+		if respath then
+			local now = lfs.attributes(respath, "modification")
+
+			if modtime and now ~= modtime then
+				func(path)
+			end
 
 			modtime = now
 		end

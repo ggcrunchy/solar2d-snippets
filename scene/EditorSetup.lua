@@ -123,7 +123,7 @@ end
 
 -- Enter Scene --
 function Scene:enterScene ()
-	scenes.SetListenFunc_GoBack("scene.Title")
+	scenes.SetListenFunc_GoBack("scene.Choices")
 
 	-- Line up the text input (if on device, we use native keyboards) a little to the right
 	-- of the columns or rows text (whichever was wider).

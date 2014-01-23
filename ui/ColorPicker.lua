@@ -122,7 +122,7 @@ local function SetColors (colors, r, g, b)
 	colors.m_rhue, colors.m_ghue, colors.m_bhue = r, g, b
 end
 
--- Working set used when explicitly set colors --
+-- Working set used when colors are explicitly assigned --
 local RGB = {}
 
 -- Put the hue bar node somewhere and apply updates
@@ -140,10 +140,7 @@ local function PutBarNode (node, bar, t, use_rgb)
 		if use_rgb then
 			R, G, B = unpack(RGB)
 		else
-			local dh = h / 6
-			local q, r = numeric_ops.DivRem(new - y, dh)
-
-			R, G, B = hsv.RGB_HueInterval(q + 1, r / dh)
+			R, G, B = hsv.RGB_Hue((new - y) / h)
 		end
 
 		SetColors(node.parent.m_colors, R, G, B)
