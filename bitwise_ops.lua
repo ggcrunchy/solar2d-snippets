@@ -37,22 +37,26 @@ end
 -- Forward references --
 local band
 local band_lz
+local bnot
 local bor
+local bxor
 local lshift
 local rshift
-
+local pb = require("plugin.bit")
 -- Imports --
 if bit then -- Bit library available
 	band = bit.band
 	band_lz = bit.band
+	bnot = bit.bnot
 	bor = bit.bor
+	bxor = bit.bxor
 	lshift = bit.lshift
 	rshift = bit.rshift
 else -- Otherwise, make equivalents for low-bit purposes
 	lshift = math.ldexp
 
-	-- Logical and / or LUT's
-	local And, Or = {}, {}
+	-- Logical op LUT's
+	local And, Or, Xor = {}, {}, {}
 
 	for i = 1, 16 do
 		local p1 = (i - 1) % 4
@@ -66,6 +70,8 @@ else -- Otherwise, make equivalents for low-bit purposes
 		else
 			And[i], Or[i] = 0, minp + maxp
 		end
+
+		Xor[i] = Or[i] - And[i]
 	end
 
 	-- Bitwise op helper
@@ -90,6 +96,14 @@ else -- Otherwise, make equivalents for low-bit purposes
 
 	function bor (a, b)
 		return AuxOp(a, b, Or)
+	end
+
+	function bxor (a, b)
+		return AuxOp(a, b, Xor)
+	end
+
+	function bnot (x)
+		return -1 - x
 	end
 
 	-- Number of trailing zeroes helper
@@ -150,6 +164,13 @@ end
 local M = {}
 
 --- DOCME
+-- N.B. This, and other operators defined herein, do not (YET?) correct for negative arguments
+M.And = band
+
+--- DOCME
+M.BNot = bnot
+
+--- DOCME
 function M.CLP2 (x)
 	if x > 0 then
 		x = x - 1
@@ -201,6 +222,9 @@ function M.Lg_PowerOf2 (n)
 	return Lg[n % 59]
 end
 
+--- DOCME
+M.LShift = lshift
+
 -- Cached denominator --
 local InvLg2 = 1 / log(2)
 
@@ -222,6 +246,9 @@ function M.MagicGU (nmax, d)
 		two_p = two_p + two_p
 	end
 end
+
+--- DOCME
+M.Or = bor
 
 -- Helper to iterates powers of 2
 local function AuxPowersOf2 (bits, removed)
@@ -271,6 +298,12 @@ end
 function M.Morton3 (x, y, z)
 	return rshift(AuxMorton(x), 2) + rshift(AuxMorton(y), 1) + AuxMorton(z)
 end
+
+--- DOCME
+M.RShift = rshift
+
+--- DOCME
+M.Xor = bxor
 
 -- Export the module.
 return M

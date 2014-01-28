@@ -176,6 +176,6 @@ function vdump (var, name, limit)
 
 	var_dump.Print(var)
 end
---require("ufd")
+
 -- Kick off the app.
 scenes.GoToScene{ name = "scene.Intro" }
