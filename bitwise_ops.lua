@@ -42,7 +42,7 @@ local bor
 local bxor
 local lshift
 local rshift
-local pb = require("plugin.bit")
+
 -- Imports --
 if bit then -- Bit library available
 	band = bit.band
@@ -269,6 +269,7 @@ function M.PowersOf2 (n)
 end
 
 -- Helper to extract a component from a Morton triple
+-- 0x3FF = 1023, i.e. the largest 10-bit number; the shifts and masks are as in AuxMorton, in reverse
 local function AuxTriple (mnum)
 	mnum = band(0x24924924, mnum)
 	mnum = band(0x2190C321, bor(mnum, rshift(mnum, 2)))
@@ -285,6 +286,7 @@ function M.MortonTriple (mnum)
 end
 
 -- Helper to prepare a component for a Morton triple
+-- The right-hand side comments show how the shifts and masks spread a given 10-bit number across 30 bits 
 local function AuxMorton (x)
 	x = band(0x000F801F, bor(x, lshift(x, 10))) -- 000 000 000 011 111 000 000 000 011 111
 	x = band(0x03818703, bor(x, lshift(x, 6)))  -- 000 011 100 000 011 000 011 100 000 011
