@@ -24,7 +24,9 @@
 --
 
 -- Standard library imports --
+local ceil = math.ceil
 local floor = math.floor
+local frexp = math.frexp
 local log = math.log
 
 -- Modules --
@@ -197,6 +199,15 @@ end
 -- @treturn uint If _n_ > 0, lowest power of 2 in _n_; otherwise, 0.
 function M.GetLowestPowerOf2 (n)
 	return n > 0 and band_lz(n, -n) or 0
+end
+
+--- Ceiling of binary logarithm of _n_.
+-- @uint n Positive integer.
+-- @treturn uint Ceilinged logarithm.
+function M.Lg_Ceil (n)
+	local frac, exp = frexp(n)
+
+	return exp + ceil(frac - 1.5)
 end
 
 -- Binary logarithm lookup table --
