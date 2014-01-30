@@ -27,6 +27,7 @@
 local ceil = math.ceil
 local floor = math.floor
 local frexp = math.frexp
+local ldexp = math.ldexp
 local log = math.log
 
 -- Modules --
@@ -55,7 +56,7 @@ if bit then -- Bit library available
 	lshift = bit.lshift
 	rshift = bit.rshift
 else -- Otherwise, make equivalents for low-bit purposes
-	lshift = math.ldexp
+	lshift = ldexp
 
 	-- Logical op LUT's
 	local And, Or, Xor = {}, {}, {}
@@ -210,6 +211,15 @@ function M.Lg_Ceil (n)
 	return exp + ceil(frac - 1.5)
 end
 
+--- Floor of binary logarithm of _n_.
+-- @uint n Positive integer.
+-- @treturn uint Floored logarithm.
+function M.Lg_Floor (n)
+	local _, exp = frexp(n)
+
+	return exp - 1
+end
+
 -- Binary logarithm lookup table --
 local Lg = {}
 
@@ -263,12 +273,12 @@ M.Or = bor
 
 -- Helper to iterates powers of 2
 local function AuxPowersOf2 (bits, removed)
-	bits = bits - removed
+	if bits ~= removed then
+		local _, e = frexp(bits - removed)
+		local exp = e - 1
+		local bit = ldexp(1, exp)
 
-	if bits ~= 0 then
-		local low = band_lz(bits, -bits)
-
-		return removed + low, low, Lg[low % 59]
+		return removed + bit, bit, exp
 	end
 end
 
@@ -280,13 +290,13 @@ function M.PowersOf2 (n)
 end
 
 -- Helper to extract a component from a Morton triple
--- 0x3FF = 1023, i.e. the largest 10-bit number; the shifts and masks are as in AuxMorton, in reverse
+-- The shift and mask constants are those same ones used in AuxMorton, but in reverse order
 local function AuxTriple (mnum)
 	mnum = band(0x24924924, mnum)
 	mnum = band(0x2190C321, bor(mnum, rshift(mnum, 2)))
 	mnum = band(0x03818703, bor(mnum, rshift(mnum, 4)))
 	mnum = band(0x000F801F, bor(mnum, rshift(mnum, 6)))
-	mnum = band(0x000003FF, bor(mnum, rshift(mnum, 10)))
+	mnum = band(0x000003FF, bor(mnum, rshift(mnum, 10))) -- 0x3FF = 1023, i.e. mask of low 10 bits
 
 	return mnum
 end
