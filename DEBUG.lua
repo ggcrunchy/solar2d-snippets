@@ -68,10 +68,10 @@ end
 
 --
 local Colors = {
-	down = { 0, 0, 255 },
-	left = { 255, 0, 255 },
-	right = { 0, 255, 0 },
-	up = { 255, 0, 0 }
+	down = { 0, 0, 1 },
+	left = { 1, 0, 1 },
+	right = { 0, 1, 0 },
+	up = { 1, 0, 0 }
 }
 
 --
@@ -191,7 +191,7 @@ return function(what, arg_)
 			end)
 
 			local str = display.newText(arg_, text, 0, y, native.systemFont, 20)
-			
+
 			str.anchorX, str.x = 0, cb.x + cb.width + 10
 
 			cb:Check(ButtonsToAdd[key])

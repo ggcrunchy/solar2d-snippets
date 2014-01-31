@@ -190,16 +190,17 @@ function M.CLP2 (x)
 	end
 end
 
---- DOCME
-function M.DivU_MP (x, m, p)
-	return rshift(x * m, p)
-end
-
 --- Getter.
 -- @uint n Integer.
 -- @treturn uint If _n_ > 0, lowest power of 2 in _n_; otherwise, 0.
 function M.GetLowestPowerOf2 (n)
 	return n > 0 and band_lz(n, -n) or 0
+end
+
+--- Predicate.
+-- @treturn boolean Bit library exists?
+function M.HasBitLib ()
+	return bit ~= nil
 end
 
 --- Ceiling of binary logarithm of _n_.
@@ -245,28 +246,6 @@ end
 
 --- DOCME
 M.LShift = lshift
-
--- Cached denominator --
-local InvLg2 = 1 / log(2)
-
---- DOCME
--- "Simple code in Python" from Hacker's Delight
-function M.MagicGU (nmax, d)
-	local nc, two_p = floor(nmax / d) * d - 1, 1
-	local nbits = floor(log(nmax) * InvLg2) + 1
-
-	for p = 0, 2 * nbits + 1 do
-		local q = d - 1 - (two_p - 1) % d
-
-		if two_p > nc * q then
-			local m = floor((two_p + q) / d)
-
-			return m, p
-		end
-
-		two_p = two_p + two_p
-	end
-end
 
 --- DOCME
 M.Or = bor

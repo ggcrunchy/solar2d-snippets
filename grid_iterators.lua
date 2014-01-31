@@ -253,7 +253,7 @@ do
 	local function GetValues (edge)
 		local dx, dy = edge.dx, edge.dy
 
-		return dx, dy, floor(dx / dy), dx % dy
+		return dx, dy, DivRem(dx, dy)
 	end
 
 	--- Iterator over a triangle on the grid.
