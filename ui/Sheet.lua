@@ -30,7 +30,7 @@ local tonumber = tonumber
 
 -- Modules --
 local dispatch_list = require("game.DispatchList")
-local grid_iterators = require("grid_iterators")
+local grid_iterators = require("iterator_ops.grid")
 
 -- Corona globals --
 local display = display

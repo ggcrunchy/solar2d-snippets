@@ -27,14 +27,14 @@
 local select = select
 
 -- Modules --
+local args = require("iterator_ops.args")
 local buttons = require("ui.Button")
-local iterators = require("iterators")
 
 -- Corona globals --
 local display = display
 
 -- Imports --
-local ArgsByN = iterators.ArgsByN
+local ArgsByN = args.ArgsByN
 local Button = buttons.Button
 local contentCenterX = display.contentCenterX
 local contentCenterY = display.contentCenterY

@@ -23,7 +23,7 @@
 --
 
 -- Modules --
-local iterators = require("iterators")
+local args = require("iterator_ops.args")
 
 -- Corona globals --
 local display = display
@@ -42,7 +42,7 @@ function M.AddMoveButtons (group, on_touch)
 	local y2 = y1 + dh + h * .03
 	local x = w * .17
 
-	for _, name, bx, by, bw, bh in iterators.ArgsByN(5,
+	for _, name, bx, by, bw, bh in args.ArgsByN(5,
 		"up", x, y1, dw, dh,
 		"left", x - (dw + .02 * w), y2, dw, dh,
 		"right", x + (dw + .02 * w), y2, dw, dh,

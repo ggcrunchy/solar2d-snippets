@@ -30,7 +30,7 @@ local max = math.max
 
 -- Modules --
 local index_ops = require("index_ops")
-local iterators = require("iterators")
+local iterator_utils = require("iterator_ops.utils")
 local numeric_ops = require("numeric_ops")
 
 -- Imports --
@@ -45,7 +45,7 @@ local M = {}
 -- @function CircleOctant
 -- @int radius Circle radius.
 -- @treturn iterator Supplies column, row at each iteration, in order.
-M.CircleOctant = iterators.InstancedAutocacher(function()
+M.CircleOctant = iterator_utils.InstancedAutocacher(function()
 	local x, y, diff
 
 	-- Body --
@@ -79,7 +79,7 @@ M.CircleOctant = iterators.InstancedAutocacher(function()
 end)
 
 --- DOCME
-M.CircleSpans = iterators.InstancedAutocacher(function()
+M.CircleSpans = iterator_utils.InstancedAutocacher(function()
 	local edges, row = {}
 
 	-- Body --
@@ -154,8 +154,8 @@ end)
 -- * Row index.
 -- * Cell corner x-coordinate, 0 at _c_ = 1.
 -- * Cell corner y-coordinate, 0 at _r_ = 1.
--- @see iterators.InstancedAutocacher
-M.GridIter = iterators.InstancedAutocacher(function()
+-- @see iterator_ops.utils.InstancedAutocacher
+M.GridIter = iterator_utils.InstancedAutocacher(function()
 	local c1, r1, c2, r2, dw, dh, ncols, cw
 
 	-- Body --
@@ -193,7 +193,7 @@ end)
 -- @int col2 End column.
 -- @int row2 End row.
 -- @treturn iterator Supplies column, row at each iteration, in order.
-M.LineIter = iterators.InstancedAutocacher(function()
+M.LineIter = iterator_utils.InstancedAutocacher(function()
 	local adx, ady, curx, cury, endx, err, steep, xstep, ystep
 
 	-- Body --
@@ -265,7 +265,7 @@ do
 	-- @int x3 Column of point #3.
 	-- @int y3 Row of point #3.
 	-- @treturn iterator Supplies row, left and right column at each iteration, top to bottom.
-	M.TriangleIter = iterators.InstancedAutocacher(function()
+	M.TriangleIter = iterator_utils.InstancedAutocacher(function()
 		local long, top, low = {}, {}, {}
 		local ymid, ledge, redge, lnumer, rnumer, ldx, ldy, lconst, lmod, rdx, rdy, rconst, rmod
 

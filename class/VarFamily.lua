@@ -34,9 +34,9 @@ local rawget = rawget
 local setmetatable = setmetatable
 
 -- Modules --
+local args = require("iterator_ops.args")
 local class = require("class")
 local func_ops = require("func_ops")
-local iterators = require("iterators")
 local lazy_tables = require("lazy_tables")
 local table_ops = require("table_ops")
 local var_preds = require("var_preds")
@@ -79,13 +79,13 @@ return class.Define(function(VarFamily)
 			-- Helper to build callbacks over iterators for arrays and varargs
 			function(name, aux)
 				VarFamily[name .. "_Array"] = function(VF, array) return aux(VF[meta], ipairs(array)) end
-				VarFamily[name .. "_Varargs"] = function(VF, ...) return aux(VF[meta], iterators.Args(...)) end
+				VarFamily[name .. "_Varargs"] = function(VF, ...) return aux(VF[meta], args.Args(...)) end
 			end,
 
 			-- Helper variant with an injected extra argument, for setting
 			function(name, aux)
 				VarFamily[name .. "_Array"] = function(VF, extra, array) aux(VF[meta], extra, ipairs(array)) end
-				VarFamily[name .. "_Varargs"] = function(VF, extra, ...) aux(VF[meta], extra, iterators.Args(...)) end
+				VarFamily[name .. "_Varargs"] = function(VF, extra, ...) aux(VF[meta], extra, args.Args(...)) end
 			end
 		end
 

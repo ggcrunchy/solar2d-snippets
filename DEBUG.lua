@@ -24,11 +24,11 @@
 --
 
 -- Modules --
+local args = require("iterator_ops.args")
 local button = require("ui.Button")
 local checkbox = require("ui.Checkbox")
 local dispatch_list = require("game.DispatchList")
 local index_ops = require("index_ops")
-local iterators = require("iterators")
 local level_map = require("game.LevelMap")
 local markers = require("effect.Markers")
 local movement = require("game.Movement")
@@ -122,7 +122,7 @@ dispatch_list.AddToMultipleLists{
 
 		local y = 20
 
-		for _, key, func in iterators.ArgsByN(2,
+		for _, key, func in args.ArgsByN(2,
 --			"KillP", player.Kill,
 			"Win", function()
 				level_map.UnloadLevel("won")
@@ -180,7 +180,7 @@ return function(what, arg_)
 
 		message = display.newText(arg_, Options[Index], 400, button.y, native.systemFont, 50)
 
-		for i, key, text in iterators.ArgsByN(2,
+		for i, key, text in args.ArgsByN(2,
 --			"KillP", "Add 'Kill player' button?",
 			"Win", "Add 'Win' button?"
 		) do

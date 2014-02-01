@@ -28,10 +28,10 @@
 local pairs = pairs
 
 -- Modules --
+local args = require("iterator_ops.args")
 local cache_ops = require("cache_ops")
 local flow_ops = require("flow_ops")
 local func_ops = require("func_ops")
-local iterators = require("iterators")
 
 -- Modules --
 local has_bit, bit = pcall(require, "bit") -- Prefer BitOp
@@ -120,11 +120,11 @@ return function(ops, BoolVars)
 	-- @treturn boolean At least one bool was false?
 	-- @see BoolVars:IsFalse
 
-	for _, name, ref in iterators.ArgsByN(2,
+	for _, name, ref in args.ArgsByN(2,
 		"AllFalse", "AnyTrue",
 		"AnyFalse", "AllTrue"
 	) do
-		for _, suffix in iterators.Args("_Array", "_Varargs") do
+		for _, suffix in args.Args("_Array", "_Varargs") do
 			BoolVars[name .. suffix] = func_ops.Negater_Multi(BoolVars[ref .. suffix])
 		end
 	end
@@ -410,7 +410,7 @@ return function(ops, BoolVars)
 	-- @treturn boolean The wait completed?
 	-- @see BoolVars:IsTrue, flow_ops.WaitUntil
 
-	for i, name in iterators.Args("WaitUntilFalse", "WaitUntilTrue") do
+	for i, name in args.Args("WaitUntilFalse", "WaitUntilTrue") do
 		local op = flow_ops[i < 2 and "WaitWhile" or "WaitUntil"]
 
 		BoolVars[name] = Waiter(op)

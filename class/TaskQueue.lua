@@ -36,18 +36,18 @@ local newproxy = newproxy
 local wrap = coroutine.wrap
 
 -- Modules --
+local args = require("iterator_ops.args")
 local array_ops = require("array_ops")
 local bound_args = require("bound_args")
 local cache_ops = require("cache_ops")
 local class = require("class")
 local coroutine_ex = require("coroutine_ex")
 local exception = require("exception")
-local iterators = require("iterators")
 local table_ops = require("table_ops")
 local var_preds = require("var_preds")
 
 -- Imports --
-local Args = iterators.Args
+local Args = args.Args
 local Filter = array_ops.Filter
 local IsCallable = var_preds.IsCallable
 local Move = table_ops.Move

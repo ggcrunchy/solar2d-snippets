@@ -31,7 +31,7 @@ local type = type
 -- Modules --
 local adaptive_table_ops = require("adaptive_table_ops")
 local common = require("editor.Common")
-local iterators = require("iterators")
+local iterator_utils = require("iterator_ops.utils")
 
 -- Exports --
 local M = {}
@@ -382,7 +382,7 @@ do
 end
 
 --
-local IterStrList = iterators.InstancedAutocacher(function()
+local IterStrList = iterator_utils.InstancedAutocacher(function()
 	local str_list = {}
 
 	-- Body --

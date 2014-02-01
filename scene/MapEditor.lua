@@ -44,13 +44,13 @@ local ipairs = ipairs
 local pairs = pairs
 
 -- Modules --
+local args = require("iterator_ops.args")
 local button = require("ui.Button")
 local common = require("editor.Common")
 local common_ui = require("editor.CommonUI")
 local dispatch_list = require("game.DispatchList")
 local events = require("editor.Events")
 local grid = require("editor.Grid")
-local iterators = require("iterators")
 local ops = require("editor.Ops")
 local persistence = require("game.Persistence")
 local scenes = require("utils.Scenes")
@@ -218,7 +218,7 @@ function Scene:enterScene (event)
 	-- Load sidebar buttons for editor operations.
 	local sidebar = {}
 
-	for i, func, text in iterators.ArgsByN(2,
+	for i, func, text in args.ArgsByN(2,
 		scenes.WantsToGoBack, "Back",
 
 		-- Test the level --

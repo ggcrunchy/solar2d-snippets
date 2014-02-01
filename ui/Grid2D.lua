@@ -30,7 +30,7 @@ local remove = table.remove
 
 -- Modules --
 local colors = require("ui.Color")
-local grid_iterators = require("grid_iterators")
+local grid_iterators = require("iterator_ops.grid")
 local index_ops = require("index_ops")
 local mask = require("utils.Mask")
 local numeric_ops = require("numeric_ops")

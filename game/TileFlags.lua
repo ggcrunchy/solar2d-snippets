@@ -29,11 +29,11 @@
 -- Standard library imports --
 
 -- Modules --
+local args = require("iterator_ops.args")
 local bitwise_ops = require("bitwise_ops")
 local dispatch_list = require("game.DispatchList")
 local flag_utils = require("utils.Flag")
 local index_ops = require("index_ops")
-local iterators = require("iterators")
 local numeric_ops = require("numeric_ops")
 local table_ops = require("table_ops")
 
@@ -51,7 +51,7 @@ local DirFlags = flag_utils.MakeFlags{ "left", "right", "up", "down" }
 local function OrFlags (...)
 	local flags = 0
 
-	for _, name in iterators.Args(...) do
+	for _, name in args.Args(...) do
 		flags = flags + DirFlags[name]
 	end
 

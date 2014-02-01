@@ -28,9 +28,9 @@ local assert = assert
 
 -- Modules --
 local adaptive_table_ops = require("adaptive_table_ops")
+local args = require("iterator_ops.args")
 local dispatch_list = require("game.DispatchList")
 local flag_utils = require("utils.Flag")
-local iterators = require("iterators")
 local table_ops = require("table_ops")
 local timers = require("game.Timers")
 
@@ -79,7 +79,7 @@ local InterfacePreds, Interfaces = {}, {}
 
 --- DOCME
 function M.AddInterfaces (type, ...)
-	for _, v in iterators.Args(...) do
+	for _, v in args.Args(...) do
 		adaptive_table_ops.AddToSet(Interfaces, type, v)
 	end
 end
@@ -88,7 +88,7 @@ end
 function M.AddInterfaces_Pred (type, ...)
 	local preds = InterfacePreds[type] or {}
 
-	for _, what, pred in iterators.ArgsByN(2, ...) do
+	for _, what, pred in args.ArgsByN(2, ...) do
 		adaptive_table_ops.AddToSet(Interfaces, type, what)
 
 		preds[what] = pred
@@ -256,7 +256,7 @@ local NamedFlags = setmetatable({}, {
 function M.FilterBits (...)
 	local bits = 0
 
-	for _, name in iterators.Args(...) do
+	for _, name in args.Args(...) do
 		if name ~= nil then
 			bits = flag_utils.SetFlag(bits, NamedFlags[name])
 		end

@@ -32,7 +32,7 @@ local type = type
 
 -- Modules --
 local class = require("class")
-local iterators = require("iterators")
+local iterator_utils = require("iterator_ops.utils")
 
 -- Unique member keys --
 local _counter = {}
@@ -193,8 +193,8 @@ return class.Define(function(Timer)
 	-- * Time difference from last timeout or last check to this timeout (or final state).
 	-- * Current tally of time elapsed from last check, including current time difference.
 	-- * Total time, accrued in updates since last check.
-	-- @see Timer:Check, iterators.InstancedAutocacher
-	Timer.WithTimeouts = iterators.InstancedAutocacher(function()
+	-- @see Timer:Check, iterator_ops.utils.InstancedAutocacher
+	Timer.WithTimeouts = iterator_utils.InstancedAutocacher(function()
 		local count, counter, dt, duration, offset, tally, total
 
 		-- Body --
