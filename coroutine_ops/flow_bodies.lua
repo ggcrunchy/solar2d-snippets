@@ -116,7 +116,7 @@ end
 -- On each iteration, the final value of _lapse_ will also be deducted from the "time bank",
 -- before yielding or returning.
 -- @callable update As per @{Body}, but called as
---    result, true_lapse = update(time_state, arg1, arg2, arg3).
+--    result, true_lapse = update(time_state, arg1, arg2, arg3)
 -- If _result_ is **"done"**, _true\_lapse_ is also considered. If present, it indicates how
 -- much time actually passed before the update terminated, and will replace the current time
 -- lapse (assuming it is a shorter lapse and non-negative).
@@ -127,7 +127,7 @@ end
 -- * **lapse**: The current value of _lapse_ (possibly reduced by _done_).
 --
 -- @callable done Test performed on each iteration, called as
---    is_done[, true_lapse] = done([time_state, ]arg1, arg2, arg3).
+--    is_done[, true_lapse] = done([time_state, ]arg1, arg2, arg3)
 -- If _is\_done_ is true, the loop is ready to terminate. In that case, _true\_lapse_ may
 -- also be considered, as per _update_; otherwise, the amount is assumed to be 0, i.e. the
 -- loop terminated instantly. If _true\_lapse_ &gt; 0, _update_ will still be called, using

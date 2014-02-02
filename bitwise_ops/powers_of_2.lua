@@ -24,7 +24,6 @@
 --
 
 -- Standard library imports --
-local floor = math.floor
 local frexp = math.frexp
 local ldexp = math.ldexp
 
@@ -63,17 +62,17 @@ local Tick = { 0, 0, 0 }
 -- @treturn uint If _n_ > 0, lowest power of 2 in _n_; otherwise, 0.
 function M.GetLowestPowerOf2 (n)
 	if n > 0 then
-		local lowest = 1
+		local bit = 1
 
 		while true do
 			local low2 = n % 4
 
 			if low2 > 0 then
-				Tick[2] = lowest
+				Tick[2] = bit
 
-				return lowest + Tick[low2]
+				return bit + Tick[low2]
 			else
-				n, lowest = floor(.5 * n), lowest + lowest
+				n, bit = .25 * n, bit * 4
 			end
 		end
 	else

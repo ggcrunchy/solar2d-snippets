@@ -102,7 +102,7 @@ end
 -- down to fill in gaps.
 -- @array arr Array to filter.
 -- @callable func Visitor function called as
---    func(entry, arg),
+--    func(entry, arg)
 -- where _entry_ is the current element and _arg_ is the parameter.
 --
 -- If the function returns a true result, this entry is kept. As a special case, if the

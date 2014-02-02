@@ -46,16 +46,16 @@ local function NoReclaim () end
 -- in the cache. It must return the following functions, in order:
 --
 -- * _body_: As with standard iterator functions, called as
---    var\_1, ..., var\_n = body(s, var),
+--    var\_1, ..., var\_n = body(s, var)
 -- where the _var_\* are loop variables, _s_ and _var_ are the state and iteration variable.
 -- * _done_: Called as
---    is\_done = done(s, var).
+--    is\_done = done(s, var)
 -- If _is\_done_ is true, the iterator terminates normally and calls `reclaim(s)`; otherwise
 -- the _body_ logic is performed.
 -- * _setup_: This takes any iterator arguments and returns _s_ and the initial value of
 -- _var_. Any complex iterator state should be set up here.
 -- * _reclaim_: May be absent, in which case it is a no-op. Called as
---    reclaim(s).
+--    reclaim(s)
 -- Any complex iterator state should be cleaned up here. If _reclaim_ must be paranoid that
 -- it terminated normally (i.e. that the **for** loop terminated), preparation should be
 -- done in the false branch of _done_.
@@ -65,9 +65,9 @@ local function NoReclaim () end
 -- This design encourages storing an instance's state in _builder_'s local variables,
 -- which are then captured. Thus the above functions will typically be new closures.
 -- @treturn function Iterator generator, called as
---    for LOOPVARS in gen(...),
--- or as
---    func, s, var, reclaim = gen(...),
+--    for LOOPVARS in gen(...) do
+-- or (where _reclaim_ may be needed) fetched as
+--    func, s, var, reclaim = gen(...)
 -- where any arguments are passed to _setup_. If it is necessary to build an instance first,
 -- _builder_ will receive these arguments as well.
 --

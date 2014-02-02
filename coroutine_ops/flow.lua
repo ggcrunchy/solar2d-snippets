@@ -53,7 +53,7 @@ do
 	-- Built on top of @{coroutine_ops.flow_bodies.Body_Timed}.
 	-- @number duration Time to wait.
 	-- @callable update Optional update logic, called as
-	--    update(time_state, duration, arg),
+	--    update(time_state, duration, arg)
 	-- with _time\_state_ as per @{coroutine_ops.flow_bodies.Body_Timed}.
 	-- @param arg Argument.
 	-- @param yvalue Optional value to yield.
@@ -110,7 +110,7 @@ do
 	-- * **"not_all**: At least one test must not pass.
 	-- * **"some"**: Some, but not all, tests must pass.
 	-- @callable update Optional update logic, called as
-	--    update(signals, count, arg).
+	--    update(signals, count, arg)
 	-- @param arg Argument.
 	-- @param yvalue Optional value to yield.
 	-- @treturn The signals satisfied the predicate?
@@ -126,7 +126,7 @@ do
 	-- @uint count Signal count.
 	-- @string pred Predicate name, as per @{WaitForMultipleSignals}.
 	-- @callable update Optional update logic, called as
-	--    update(time_state, signals, count, arg),
+	--    update(time_state, signals, count, arg)
 	-- with _time\_state_ as per @{coroutine_ops.flow_bodies.Body_Timed}.
 	-- @param arg Argument.
 	-- @param yvalue Optional value to yield.
@@ -154,7 +154,7 @@ do
 	-- `signals(what)` or `signals[what]` is true.
 	-- @param what Signal to watch.
 	-- @callable update Optional update logic, called as
-	--    update(signals, what, arg).
+	--    update(signals, what, arg)
 	-- @param arg Argument.
 	-- @param yvalue Optional value to yield.
 	-- @treturn boolean The signal fired?
@@ -168,7 +168,7 @@ do
 	-- @param signals Callable or read-indexable signal object.
 	-- @param what Signal to watch.
 	-- @callable update Optional update logic, called as
-	--    update(time_state, signals, what, arg),
+	--    update(time_state, signals, what, arg)
 	-- with _time\_state_ as per @{coroutine_ops.flow_bodies.Body_Timed}.
 	-- @param arg Argument.
 	-- @param yvalue Optional value to yield.
@@ -204,7 +204,7 @@ do
 	-- @callable test Test function, with the same signature as _update_. If it returns
 	-- true, the wait terminates.
 	-- @callable update Optional update logic, called as
-	--    update(arg).
+	--    update(arg)
 	-- @param arg Argument.
 	-- @param yvalue Optional value to yield.
 	-- @treturn boolean The test passed?
@@ -213,7 +213,7 @@ do
 	-- @function WaitUntil_Timed
 	-- @callable test Test function. If it returns true, the wait terminates.
 	-- @callable update Optional update logic, called as
-	--    update(time_state, arg),
+	--    update(time_state, arg)
 	-- with _time\_state_ as per @{coroutine_ops.flow_bodies.Body_Timed}.
 	-- @param arg Argument.
 	-- @bool use_time _test_ has the same signature as _update_? Otherwise, the _time\_state_
@@ -230,7 +230,7 @@ do
 	-- @callable test Test function, with the same signature as _update_. If it returns
 	-- false, the wait terminates.
 	-- @callable update Optional update logic, called as
-	--    update(arg).
+	--    update(arg)
 	-- @param arg Argument.
 	-- @param yvalue Optional value to yield.
 	-- @treturn boolean The test failed?
@@ -239,7 +239,7 @@ do
 	-- @function WaitWhile_Timed
 	-- @callable test Test function. If it returns false, the wait terminates.
 	-- @callable update Optional update logic, called as
-	--    update(time_state, arg),
+	--    update(time_state, arg)
 	-- with _time\_state_ as per @{coroutine_ops.flow_bodies.Body_Timed}.
 	-- @param arg Argument.
 	-- @bool use_time _test_ has the same signature as _update_? Otherwise, the _time\_state_

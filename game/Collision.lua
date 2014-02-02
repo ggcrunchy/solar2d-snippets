@@ -60,7 +60,7 @@ local Handlers = {}
 --
 -- When two objects collide, each is checked for a handler. Each handler that exists is
 -- called as
---    handler(phase, object, other, other_type, contact),
+--    handler(phase, object, other, other_type, contact)
 -- where _phase_ is **"began"** or **"ended"**, _object_ is what supplied _handler_, _other_
 -- is what collided with _object_, _other_type_ is the collision type of _other_ (may be
 -- **nil**), and _contact_ is the physics object passed via the event.

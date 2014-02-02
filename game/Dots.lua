@@ -63,7 +63,7 @@ local function NoOp () end
 -- For each name, there must be a corresponding module **"dot.Name"** (e.g. for _name_ of
 -- **"acorn"**, the module is **"dot.Acorn"**), the value of which is a constructor function,
 -- called as
---    cons(group, info),
+--    cons(group, info)
 -- and which returns the new dot, which must be a display object without physics.
 --
 -- Various dot properties are important:

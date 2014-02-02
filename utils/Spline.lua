@@ -42,10 +42,10 @@ local M = {}
 --
 -- In a well-formed, populated table, each element  will have **number** members **s** and
 -- **t**. In the first element, both values will be 0. In the final elemnt, **t** will be
--- 1. In element _lut_[_i_ + 1], **s** and **t** must each be larger than the respective
--- members in element _lut_[_i_].
+-- 1. In element _lut[i + 1]_, **s** and **t** must each be larger than the respective
+-- members in element _lut[i]_.
 -- @treturn function Lookup function, called as
---  t1, t2, index, u, s1, s2 = func(s, start),
+--    t1, t2, index, u, s1, s2 = func(s, start)
 -- where _s_ is the arc length to search and _start_ is an (optional) index where the search
 -- may be started (when performing multiple "nearby" lookups, this might speed up search).
 --
@@ -62,9 +62,8 @@ function M.ArcLengthLookup (add_01_wrapper, lut)
 	lut = lut or { n = 0 }
 
 	local function S_to_T (s, start)
-		local n = lut.n
+		local n, t = lut.n
 		local i = start or floor(.5 * n)
-		local entry, next, t
 
 		-- Negative arc / less-than-1 start index: clamp to start of arc.
 		if s <= 0 or i < 1 then
@@ -133,11 +132,11 @@ function M.ArcLengthLookup (add_01_wrapper, lut)
 	return S_to_T, lut, S_to_T_01
 end
 
---- Gets the position along a quadratic Bzier spline at time _t_.
+--- Gets the position along a quadratic B&eacute;zier spline at time _t_.
 -- @tparam Vector p1 Endpoint #1...
 -- @tparam Vector q ...control point...
 -- @tparam Vector p2 ...and endpoint #2.
--- @number t Interpolation time, &isin [0, 1].
+-- @number t Interpolation time, &isin; [0, 1].
 -- @treturn number Position x-coordinate...
 -- @treturn number ...and y-coordinate.
 function M.Bezier2 (p1, q, p2, t)
@@ -149,7 +148,7 @@ end
 
 --- Array variant of @{Bezier2}.
 -- @array bezier Elements 1, 2, 3 are interpreted as arguments _p1_, _q_, _p2_ from @{Bezier2}.
--- @number t Interpolation time, &isin [0, 1].
+-- @number t Interpolation time, &isin; [0, 1].
 -- @treturn number Position x-coordinate...
 -- @treturn number ...and y-coordinate.
 function M.Bezier2_Array (bezier, t)
@@ -168,7 +167,7 @@ local function AuxGetControlPoint (x1, y1, x2, y2, below)
 	end
 end
 
---- Computes a reasonable control point for a quadratic Bzier spline.
+--- Computes a reasonable control point for a quadratic B&eacute;zier spline.
 -- @tparam Vector p1 Endpoint #1...
 -- @tparam Vector p2 ...and #2.
 -- @bool below Should the control points be "below" the line segment between _p1_ and
@@ -179,7 +178,7 @@ function M.GetControlPoint2 (p1, p2, below)
 	return AuxGetControlPoint(p1.x, p1.y, p2.x, p2.y, below)
 end
 
---- Computes a reasonable control point for a quadratic Bzier spline.
+--- Computes a reasonable control point for a quadratic B&eacute;zier spline.
 --
 -- When the endpoints do not line up (horizontally or vertically), they may be interpreted
 -- as two opposite corners of a rectangle, and one of the unused corners is chosen as the
@@ -195,10 +194,10 @@ end
 -- y-coordinates of _p1_ and _p2_ is less than this amount, the points are considered
 -- as lined up, and the corner is abandoned.
 -- @string? how If a corner can be found, the control point "below" the segment is chosen
--- if _how_ is **"below"** or **"below_else_middle"**, or the one "above" otherwise.
+-- if _how_ is **"below"** or **"below\_else\_middle"**, or the one "above" otherwise.
 --
--- Failing that, the midpoint is chosen as a fallback if _how_ is **"above_else_middle"**
--- or **below_else_middle"**. Otherwise, @{GetControlPoint2} is the fallback, with _below_
+-- Failing that, the midpoint is chosen as a fallback if _how_ is **"above\_else\_middle"**
+-- or **below\_else\_middle"**. Otherwise, @{GetControlPoint2} is the fallback, with _below_
 -- true if _how_ is **"below"**.
 -- @treturn number Position x-coordinate...
 -- @treturn number ...and y-coordinate.
@@ -254,7 +253,7 @@ end
 -- Intermediate spline vectors, partitions --
 local Bezier, Left, Right = {}, {}, {}
 
--- Build up the LUT from a (degree n) Bzier spline
+-- Build up the LUT from a (degree n) B&eacute;zier spline
 local function SetLUT_Bezier (lut, nsamples, func, tolerance)
 	nsamples = nsamples or 20
 
@@ -280,7 +279,7 @@ local function SetLUT_Bezier (lut, nsamples, func, tolerance)
 	return CloseLUT(lut, s, index)
 end
 
---- Populates an arc &rarr; parameter lookup table given a (degree 2) Bzier spline.
+--- Populates an arc &rarr; parameter lookup table given a (degree 2) B&eacute;zier spline.
 -- @array lut Lookup table, cf. @{ArcLengthLookup}.
 -- @tparam Vector p1 Endpoint #1...
 -- @tparam Vector q ...control point...
@@ -297,7 +296,7 @@ function M.SetArcLengthLUT_Bezier2 (lut, p1, q, p2, nsamples)
 	return s
 end
 
---- Populates an arc &rarr; parameter lookup table given a (degree 3) Bzier spline.
+--- Populates an arc &rarr; parameter lookup table given a (degree 3) B&eacute;zier spline.
 -- @array lut Lookup table, cf. @{ArcLengthLookup}.
 -- @tparam Vector p1 Endpoint #1...
 -- @tparam Vector q1 ...control point #1...
@@ -351,9 +350,9 @@ end
 do
 	local Row = {}
 
-	--- Subdivides a Bzier spline into two new splines, using [De Casteljau's algorithm](http://en.wikipedia.org/wiki/De_Casteljau's_algorithm).
+	--- Subdivides a B&eacute;zier spline into two new splines, using [De Casteljau's algorithm](http://en.wikipedia.org/wiki/De_Casteljau's_algorithm).
 	-- @array bezier **Vector** elements 1, 2, ..., _deg_ + 1 corresponding to the first
-	-- endpoint, first control point, ..., final endpoint of the Bzier spline to subdivide.
+	-- endpoint, first control point, ..., final endpoint of the B&eacute;zier spline to subdivide.
 	--
 	-- It is safe to reuse the value of _bezier_ as either _dst1_ or _dst2_.
 	-- @array dst1 Receives the "left" subdivision, i.e. the spline is evaluated from 0 to

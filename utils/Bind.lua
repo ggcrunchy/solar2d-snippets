@@ -68,7 +68,7 @@ end
 -- broadcast-type event sender, i.e. one that may send 0, 1, or multiple events.
 -- @param what Key under which the broadcast function is stored, in _object_.
 -- @treturn function Builder, called as
---    builder(event, object),
+--    builder(event, object)
 -- where _event_ is a published event, cf. @{Publish}.
 --
 -- When the first event is received, it is assigned to _object_ as is, under the key _what_.

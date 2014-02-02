@@ -38,7 +38,7 @@ local M = {}
 -- Cached module references --
 local _BezierLength2_
 
---- Computes a (degree 2) [Bzier spline's length](http://malczak.info/blog/quadratic-bezier-curve-length/).
+--- Computes a (degree 2) [B&eacute;zier spline's length](http://malczak.info/blog/quadratic-bezier-curve-length/).
 -- @tparam Vector p1 Endpoint #1 of control polygon...
 -- @tparam Vector q ...interior control point...
 -- @tparam Vector p2 ...and endpoint #2.
@@ -170,7 +170,7 @@ do
 		return len
 	end
 
-	--- Computes a (degree 3) [Bzier spline's length](http://steve.hollasch.net/cgindex/curves/cbezarclen.html).
+	--- Computes a (degree 3) [B&eacute;zier spline's length](http://steve.hollasch.net/cgindex/curves/cbezarclen.html).
 	-- @tparam Vector p1 Endpoint #1 of control polygon...
 	-- @tparam Vector q1 ...interior control point #1...
 	-- @tparam Vector q2 ...interior control point #2...
@@ -240,7 +240,7 @@ do
 
 	--- Integrates _func_ via [Gauss-Legendre quadrature](http://en.wikipedia.org/wiki/Gaussian_quadrature#Gauss.E2.80.93Legendre_quadrature).
 	-- @callable func Called as
-	--   y = func(x),
+	--    y = func(x)
 	-- where _x_ and _y_ are numbers.
 	-- @number a Lower limit of integration.
 	-- @number b Upper limit of integration.
@@ -253,8 +253,8 @@ end
 
 --- [Line integrand](http://en.wikipedia.org/wiki/Arc_length#Finding_arc_lengths_by_integrating)
 -- for a cubic polynomial.
--- @array? poly The underlying polynomial, (dx/dt)^2 + (dy/dt)^2: elements 1 to 5 are the
--- x^4, x^3, x^2, x, and constant coefficients, respectively. If absent, a table is supplied.
+-- @array? poly The underlying polynomial, (dx/dt)&sup2; + (dy/dt)&sup2;: elements 1 to 5 are the
+-- x&#8308;, x&sup3;, x&sup2;, x, and constant coefficients, respectively. If absent, a table is supplied.
 -- @treturn function Integrand function, which may be passed e.g. as the _func_ argument to
 -- the various integrators.
 -- @treturn array _poly_.
@@ -285,7 +285,7 @@ do
 
 	--- Integrates _func_ via [Romberg integration](http://www.geometrictools.com/Documentation/NumericalIntegration.pdf).
 	-- @callable func Called as
-	--   y = func(x),
+	--   y = func(x)
 	-- where _x_ and _y_ are numbers.
 	-- @number a Lower limit of integration.
 	-- @number b Upper limit of integration.
@@ -330,11 +330,11 @@ do
 end
 
 --- Assigns integrand coefficents (in particular, as expected by @{LineIntegrand_Cubic}'s
--- integrand function), given a cubic polynomial's derivatives: dx/dt = 3_Ax^2_ + 2_Bx_ +
--- _C_, dy/dt = 3_Dy^2_ + 2_Ey_ + F.
+-- integrand function), given a cubic polynomial's derivatives: dx/dt = 3_Ax&sup2;_ + 2_Bx_ +
+-- _C_, dy/dt = 3_Dy&sup2;_ + 2_Ey_ + F.
 -- @array poly Polynomial.
--- @number ax _Ax^2_.
--- @number ay _Dy^2_.
+-- @number ax _Ax&sup2;_.
+-- @number ay _Dy_&sup2;.
 -- @number bx _Bx_.
 -- @number by _Ey_.
 -- @number cx _C_.

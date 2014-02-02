@@ -40,7 +40,9 @@
 <ul class="$(kind=='Topics' and '' or 'nowrap'">
   <li><a href="../modules/adaptive_table_ops.html">adaptive_table_ops</a></li>
   <li><a href="../modules/array_ops.html">array_ops</a></li>
-  <li><a href="../modules/bitwise_ops.html">bitwise_ops</a></li>
+  <li><a href="../modules/bitwise_ops.log2.html">log2</a></li>
+  <li><a href="../modules/bitwise_ops.operators.html">operators</a></li>
+  <li><a href="../modules/bitwise_ops.powers_of_2.html">powers_of_2</a></li>
   <li><a href="../modules/bound_args.html">bound_args</a></li>
   <li><a href="../modules/cache_ops.html">cache_ops</a></li>
   <li><a href="../modules/SparseArray.html">SparseArray</a></li>
@@ -60,7 +62,10 @@
   <li><a href="../modules/config.EditorViews.html">EditorViews</a></li>
   <li><a href="../modules/config.EventBlocks.html">EventBlocks</a></li>
   <li><a href="../modules/config.GlobalEvents.html">GlobalEvents</a></li>
-  <li><a href="../modules/coroutine_ex.html">coroutine_ex</a></li>
+  <li><a href="../modules/coroutine_ops.flow.html">flow</a></li>
+  <li><a href="../modules/coroutine_ops.flow_bodies.html">flow_bodies</a></li>
+  <li><a href="../modules/coroutine_ops.per_coroutine.html">per_coroutine</a></li>
+  <li><a href="../modules/coroutine_ops.wrapper.html">wrapper</a></li>
   <li><a href="../modules/DEBUG.html">DEBUG</a></li>
   <li><a href="../modules/dot.Switch.html">Switch</a></li>
   <li><a href="../modules/dot.Warp.html">Warp</a></li>
@@ -99,13 +104,10 @@
   <li><a href="../modules/errors.html">errors</a></li>
   <li><a href="../modules/event_block.Maze.html">Maze</a></li>
   <li><a href="../modules/exception.html">exception</a></li>
-  <li><a href="../modules/fibonacci_heap.html">fibonacci_heap</a></li>
+  <li><a href="../modules/fill.CellularAutomata.html">CellularAutomata</a></li>
   <li><a href="../modules/fill.Circle.html">Circle</a></li>
-  <li><a href="../modules/fill.Hilbert.html">Hilbert</a></li>
   <li><a href="../modules/fill.MarchingSquares.html">MarchingSquares</a></li>
   <li><a href="../modules/FIXES.html">FIXES</a></li>
-  <li><a href="../modules/flow_bodies.html">flow_bodies</a></li>
-  <li><a href="../modules/flow_ops.html">flow_ops</a></li>
   <li><a href="../modules/func_ops.html">func_ops</a></li>
   <li><a href="../modules/game.AI.html">AI</a></li>
   <li><a href="../modules/game.Collision.html">Collision</a></li>
@@ -128,25 +130,27 @@
   <li><a href="../modules/game.Timers.html">Timers</a></li>
   <li><a href="../modules/game.Transitions.html">Transitions</a></li>
   <li><a href="../modules/geom2d_ops.html">geom2d_ops</a></li>
-  <li><a href="../modules/grid_iterators.html">grid_iterators</a></li>
   <li><a href="../modules/hash_ops.html">hash_ops</a></li>
-  <li><a href="../modules/heap_utils.html">heap_utils</a></li>
   <li><a href="../modules/hud.Action.html">Action</a></li>
   <li><a href="../modules/hud.Move.html">Move</a></li>
   <li><a href="../modules/index_ops.html">index_ops</a></li>
-  <li><a href="../modules/iterators.html">iterators</a></li>
+  <li><a href="../modules/iterator_ops.args.html">args</a></li>
+  <li><a href="../modules/iterator_ops.coroutine.html">coroutine</a></li>
+  <li><a href="../modules/iterator_ops.grid.html">grid</a></li>
+  <li><a href="../modules/iterator_ops.ipairs.html">ipairs</a></li>
+  <li><a href="../modules/iterator_ops.utils.html">utils</a></li>
   <li><a href="../modules/lazy_tables.html">lazy_tables</a></li>
   <li><a href="../modules/main.html">main</a></li>
+  <li><a href="../modules/mask.MarchingSquares.html">MarchingSquares</a></li>
   <li><a href="../modules/mesh_ops.html">mesh_ops</a></li>
   <li><a href="../modules/mwc_rng.html">mwc_rng</a></li>
+  <li><a href="../modules/numeric_ops.hilbert.html">hilbert</a></li>
+  <li><a href="../modules/numeric_ops.morton.html">morton</a></li>
   <li><a href="../modules/numeric_ops.html">numeric_ops</a></li>
   <li><a href="../modules/overlay.Help.html">Help</a></li>
   <li><a href="../modules/overlay.Link.html">Link</a></li>
-  <li><a href="../modules/pairing_heap.html">pairing_heap</a></li>
-  <li><a href="../modules/per_coroutine_ops.html">per_coroutine_ops</a></li>
   <li><a href="../modules/proxy.html">proxy</a></li>
   <li><a href="../modules/quaternion_ops.html">quaternion_ops</a></li>
-  <li><a href="../modules/samples.Curves.html">Curves</a></li>
   <li><a href="../modules/samples.Delaunay.html">Delaunay</a></li>
   <li><a href="../modules/samples.Fire.html">Fire</a></li>
   <li><a href="../modules/samples.Hilbert.html">Hilbert</a></li>
@@ -164,19 +168,16 @@
   <li><a href="../modules/samples.Ticker.html">Ticker</a></li>
   <li><a href="../modules/samples.Tiling.html">Tiling</a></li>
   <li><a href="../modules/samples.Timers.html">Timers</a></li>
+  <li><a href="../modules/scene.Choices.html">Choices</a></li>
   <li><a href="../modules/scene.EditorSetup.html">EditorSetup</a></li>
   <li><a href="../modules/scene.Intro.html">Intro</a></li>
   <li><a href="../modules/scene.Level.html">Level</a></li>
   <li><a href="../modules/scene.MapEditor.html">MapEditor</a></li>
   <li><a href="../modules/scene.Options.html">Options</a></li>
   <li><a href="../modules/simplex_noise.html">simplex_noise</a></li>
-  <li><a href="../modules/skew_heap.html">skew_heap</a></li>
-  <li><a href="../modules/skip_list.html">skip_list</a></li>
-  <li><a href="../modules/soft_heap.html">soft_heap</a></li>
   <li><a href="../modules/table_ops.html">table_ops</a></li>
   <li><a href="../modules/tests.LinksAndTags.html">LinksAndTags</a></li>
   <li><a href="../modules/tiles.TreeBG.html">TreeBG</a></li>
-  <li><a href="../modules/ufd.html">ufd</a></li>
   <li><a href="../modules/ui.Button.html">Button</a></li>
   <li><a href="../modules/ui.Checkbox.html">Checkbox</a></li>
   <li><a href="../modules/ui.Color.html">Color</a></li>
@@ -208,7 +209,6 @@
   <li><a href="../modules/utils.Scenes.html">Scenes</a></li>
   <li><a href="../modules/utils.Spline.html">Spline</a></li>
   <li><a href="../modules/utils.String.html">String</a></li>
-  <li><a href="../modules/utils.html">utils</a></li>
   <li><a href="../modules/var_dump.html">var_dump</a></li>
   <li><a href="../modules/var_ops.html">var_ops</a></li>
   <li><a href="../modules/var_preds.html">var_preds</a></li>
@@ -267,11 +267,10 @@
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#SectionGroup:Send">SectionGroup:Send (name, what, ...)</a></td>
-	<td class="summary">
-<p>Sends a message to any section directly, called as</p>
-<pre><code>proc(what, ...).
+	<td class="summary">Sends a message to any section directly, called as</p>
+<pre><code>proc(what, ...)
 </code></pre>
-</td>
+<p> The section need not be open.</td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#SectionGroup:Unload">SectionGroup:Unload (...)</a></td>
@@ -326,7 +325,7 @@
     Clears the active section stack. </p>
 
 <p> Each section, from top to bottom, is called as</p>
-<pre><code>proc("close", true),
+<pre><code>proc("close", true)
 </code></pre>
 <p> where the <strong>true</strong> indicates that the close was during a clear.
 
@@ -344,13 +343,13 @@
     Closes an active section. </p>
 
 <p> The section is called as</p>
-<pre><code>proc("close", false, ...),
+<pre><code>proc("close", false, ...)
 </code></pre>
 <p> where the <strong>false</strong> indicates that the close was not in <a href="../modules/SectionGroup.html#SectionGroup:Clear">SectionGroup:Clear</a>.</p>
 
 <p> If the current section is closed, and another is below it on the stack, that section
  is called as</p>
-<pre><code>other_proc("resume").
+<pre><code>other_proc("resume")
 </code></pre>
 <p> This is a no-op if the stack is empty or the section is not open.
 
@@ -447,7 +446,7 @@
 <pre><code>old_proc("unload")
 </code></pre>
 <p> and replaced with the new one, which is called as</p>
-<pre><code>proc("load", ...).
+<pre><code>proc("load", ...)
 </code></pre>
 
 
@@ -479,13 +478,13 @@
     Opens a section and makes it current. </p>
 
 <p> If another section is already current, it is called as</p>
-<pre><code>other_proc("suspend").
+<pre><code>other_proc("suspend")
 </code></pre>
 <p> If the new section is already open, it is called as</p>
-<pre><code>proc("move").
+<pre><code>proc("move")
 </code></pre>
 <p> The section is moved or pushed to the top of the stack, and finally called as</p>
-<pre><code>proc("open", ...).
+<pre><code>proc("open", ...)
 </code></pre>
 <p> This is a no-op if the section is already open and current.
 
@@ -510,7 +509,7 @@
     </dt>
     <dd>
     Sends a message to any section directly, called as</p>
-<pre><code>proc(what, ...).
+<pre><code>proc(what, ...)
 </code></pre>
 <p> The section need not be open.
 
@@ -550,7 +549,7 @@
 <p>Unloads all registered sections, removing them from the group in arbitrary order. </p>
 
 <p> Each section is called as</p>
-<pre><code>proc("unload", ...).
+<pre><code>proc("unload", ...)
 </code></pre>
 
 

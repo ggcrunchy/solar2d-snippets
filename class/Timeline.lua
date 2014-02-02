@@ -61,7 +61,7 @@ class.Define(function(Timeline)
 	-- Events are placed in a fetch list, and thus will not take effect during an update.
 	-- @number when Time when event occurs.
 	-- @callable event Event function, which is called as
-	--    event(when).
+	--    event(when)
 	-- @see Timeline:__call
 	function Timeline:Add (when, event)
 		assert(type(when) == "number" and when >= 0, "Invalid time")

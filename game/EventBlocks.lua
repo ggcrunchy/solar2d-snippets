@@ -464,7 +464,7 @@ end
 --- Getter.
 -- @param name Name used to register event in @{AddBlock}.
 -- @treturn callable If missing, a no-op. Otherwise, this is a function called as
---   result = event(what, arg1, arg2),
+--   result = event(what, arg1, arg2)
 -- which should handle the following choices of _what_:
 --
 -- * **"can_fire"**: If _result_ is true, the event can be safely fired. _arg1_ indicates

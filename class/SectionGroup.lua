@@ -88,7 +88,7 @@ return class.Define(function(SectionGroup)
 	--- Clears the active section stack.
 	--
 	-- Each section, from top to bottom, is called as
-	--    proc("close", true),
+	--    proc("close", true)
 	-- where the **true** indicates that the close was during a clear.
 	function SectionGroup:Clear ()
 		local stack = self[_stack]
@@ -106,12 +106,12 @@ return class.Define(function(SectionGroup)
 	--- Closes an active section.
 	--
 	-- The section is called as
-	--    proc("close", false, ...),
+	--    proc("close", false, ...)
 	-- where the **false** indicates that the close was not in @{SectionGroup:Clear}.
 	--
 	-- If the current section is closed, and another is below it on the stack, that section
 	-- is called as
-	--    other_proc("resume").
+	--    other_proc("resume")
 	-- This is a no-op if the stack is empty or the section is not open.
 	-- @param name Name of section to close. If **nil**, uses the current section.
 	-- @param ... Close arguments.
@@ -160,7 +160,7 @@ return class.Define(function(SectionGroup)
 	-- If a section is already registered under _name_, it is called as
 	--    old_proc("unload")
 	-- and replaced with the new one, which is called as
-	--    proc("load", ...).
+	--    proc("load", ...)
 	-- @param name Section name.
 	-- @callable proc Section procedure, whose first parameter will be the current callback
 	-- message; any others are input associated with the message.
@@ -182,11 +182,11 @@ return class.Define(function(SectionGroup)
 	--- Opens a section and makes it current.
 	--
 	-- If another section is already current, it is called as
-	--    other_proc("suspend").
+	--    other_proc("suspend")
 	-- If the new section is already open, it is called as
-	--    proc("move").
+	--    proc("move")
 	-- The section is moved or pushed to the top of the stack, and finally called as
-	--    proc("open", ...).
+	--    proc("open", ...)
 	-- This is a no-op if the section is already open and current.
 	-- @param name Name of section to open.
 	-- @param ... Open arguments.
@@ -218,7 +218,7 @@ return class.Define(function(SectionGroup)
 	end
 
 	--- Sends a message to any section directly, called as
-	--    proc(what, ...).
+	--    proc(what, ...)
 	-- The section need not be open.
 	-- @param name Section name.
 	-- @param what Message, which may be any non-**nil** value not used by another method.
@@ -236,7 +236,7 @@ return class.Define(function(SectionGroup)
 	--- Unloads all registered sections, removing them from the group in arbitrary order.
 	--
 	-- Each section is called as
-	--    proc("unload", ...).
+	--    proc("unload", ...)
 	-- @param ... Unload arguments.
 	function SectionGroup:Unload (...)
 		self[_stack] = {}

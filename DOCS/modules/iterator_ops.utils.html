@@ -30,13 +30,19 @@
   <li><a href="../api.html">Index</a></li>
 </ul>
 
+<h2>Contents</h2>
+<ul>
+<li><a href="#Functions">Functions</a></li>
+</ul>
 
 
 <h2>Modules</h2>
 <ul class="$(kind=='Topics' and '' or 'nowrap'">
   <li><a href="../modules/adaptive_table_ops.html">adaptive_table_ops</a></li>
   <li><a href="../modules/array_ops.html">array_ops</a></li>
-  <li><a href="../modules/bitwise_ops.html">bitwise_ops</a></li>
+  <li><a href="../modules/bitwise_ops.log2.html">log2</a></li>
+  <li><a href="../modules/bitwise_ops.operators.html">operators</a></li>
+  <li><a href="../modules/bitwise_ops.powers_of_2.html">powers_of_2</a></li>
   <li><a href="../modules/bound_args.html">bound_args</a></li>
   <li><a href="../modules/cache_ops.html">cache_ops</a></li>
   <li><a href="../modules/SparseArray.html">SparseArray</a></li>
@@ -56,7 +62,10 @@
   <li><a href="../modules/config.EditorViews.html">EditorViews</a></li>
   <li><a href="../modules/config.EventBlocks.html">EventBlocks</a></li>
   <li><a href="../modules/config.GlobalEvents.html">GlobalEvents</a></li>
-  <li><a href="../modules/coroutine_ex.html">coroutine_ex</a></li>
+  <li><a href="../modules/coroutine_ops.flow.html">flow</a></li>
+  <li><a href="../modules/coroutine_ops.flow_bodies.html">flow_bodies</a></li>
+  <li><a href="../modules/coroutine_ops.per_coroutine.html">per_coroutine</a></li>
+  <li><a href="../modules/coroutine_ops.wrapper.html">wrapper</a></li>
   <li><a href="../modules/DEBUG.html">DEBUG</a></li>
   <li><a href="../modules/dot.Switch.html">Switch</a></li>
   <li><a href="../modules/dot.Warp.html">Warp</a></li>
@@ -95,13 +104,10 @@
   <li><a href="../modules/errors.html">errors</a></li>
   <li><a href="../modules/event_block.Maze.html">Maze</a></li>
   <li><a href="../modules/exception.html">exception</a></li>
-  <li><a href="../modules/fibonacci_heap.html">fibonacci_heap</a></li>
+  <li><a href="../modules/fill.CellularAutomata.html">CellularAutomata</a></li>
   <li><a href="../modules/fill.Circle.html">Circle</a></li>
-  <li><a href="../modules/fill.Hilbert.html">Hilbert</a></li>
   <li><a href="../modules/fill.MarchingSquares.html">MarchingSquares</a></li>
   <li><a href="../modules/FIXES.html">FIXES</a></li>
-  <li><a href="../modules/flow_bodies.html">flow_bodies</a></li>
-  <li><a href="../modules/flow_ops.html">flow_ops</a></li>
   <li><a href="../modules/func_ops.html">func_ops</a></li>
   <li><a href="../modules/game.AI.html">AI</a></li>
   <li><a href="../modules/game.Collision.html">Collision</a></li>
@@ -124,25 +130,27 @@
   <li><a href="../modules/game.Timers.html">Timers</a></li>
   <li><a href="../modules/game.Transitions.html">Transitions</a></li>
   <li><a href="../modules/geom2d_ops.html">geom2d_ops</a></li>
-  <li><a href="../modules/grid_iterators.html">grid_iterators</a></li>
   <li><a href="../modules/hash_ops.html">hash_ops</a></li>
-  <li><a href="../modules/heap_utils.html">heap_utils</a></li>
   <li><a href="../modules/hud.Action.html">Action</a></li>
   <li><a href="../modules/hud.Move.html">Move</a></li>
   <li><a href="../modules/index_ops.html">index_ops</a></li>
-  <li><a href="../modules/iterators.html">iterators</a></li>
+  <li><a href="../modules/iterator_ops.args.html">args</a></li>
+  <li><a href="../modules/iterator_ops.coroutine.html">coroutine</a></li>
+  <li><a href="../modules/iterator_ops.grid.html">grid</a></li>
+  <li><a href="../modules/iterator_ops.ipairs.html">ipairs</a></li>
+  <li><strong>utils</strong></li>
   <li><a href="../modules/lazy_tables.html">lazy_tables</a></li>
   <li><a href="../modules/main.html">main</a></li>
+  <li><a href="../modules/mask.MarchingSquares.html">MarchingSquares</a></li>
   <li><a href="../modules/mesh_ops.html">mesh_ops</a></li>
   <li><a href="../modules/mwc_rng.html">mwc_rng</a></li>
+  <li><a href="../modules/numeric_ops.hilbert.html">hilbert</a></li>
+  <li><a href="../modules/numeric_ops.morton.html">morton</a></li>
   <li><a href="../modules/numeric_ops.html">numeric_ops</a></li>
   <li><a href="../modules/overlay.Help.html">Help</a></li>
   <li><a href="../modules/overlay.Link.html">Link</a></li>
-  <li><a href="../modules/pairing_heap.html">pairing_heap</a></li>
-  <li><a href="../modules/per_coroutine_ops.html">per_coroutine_ops</a></li>
   <li><a href="../modules/proxy.html">proxy</a></li>
   <li><a href="../modules/quaternion_ops.html">quaternion_ops</a></li>
-  <li><strong>Curves</strong></li>
   <li><a href="../modules/samples.Delaunay.html">Delaunay</a></li>
   <li><a href="../modules/samples.Fire.html">Fire</a></li>
   <li><a href="../modules/samples.Hilbert.html">Hilbert</a></li>
@@ -160,19 +168,16 @@
   <li><a href="../modules/samples.Ticker.html">Ticker</a></li>
   <li><a href="../modules/samples.Tiling.html">Tiling</a></li>
   <li><a href="../modules/samples.Timers.html">Timers</a></li>
+  <li><a href="../modules/scene.Choices.html">Choices</a></li>
   <li><a href="../modules/scene.EditorSetup.html">EditorSetup</a></li>
   <li><a href="../modules/scene.Intro.html">Intro</a></li>
   <li><a href="../modules/scene.Level.html">Level</a></li>
   <li><a href="../modules/scene.MapEditor.html">MapEditor</a></li>
   <li><a href="../modules/scene.Options.html">Options</a></li>
   <li><a href="../modules/simplex_noise.html">simplex_noise</a></li>
-  <li><a href="../modules/skew_heap.html">skew_heap</a></li>
-  <li><a href="../modules/skip_list.html">skip_list</a></li>
-  <li><a href="../modules/soft_heap.html">soft_heap</a></li>
   <li><a href="../modules/table_ops.html">table_ops</a></li>
   <li><a href="../modules/tests.LinksAndTags.html">LinksAndTags</a></li>
   <li><a href="../modules/tiles.TreeBG.html">TreeBG</a></li>
-  <li><a href="../modules/ufd.html">ufd</a></li>
   <li><a href="../modules/ui.Button.html">Button</a></li>
   <li><a href="../modules/ui.Checkbox.html">Checkbox</a></li>
   <li><a href="../modules/ui.Color.html">Color</a></li>
@@ -204,7 +209,6 @@
   <li><a href="../modules/utils.Scenes.html">Scenes</a></li>
   <li><a href="../modules/utils.Spline.html">Spline</a></li>
   <li><a href="../modules/utils.String.html">String</a></li>
-  <li><a href="../modules/utils.html">utils</a></li>
   <li><a href="../modules/var_dump.html">var_dump</a></li>
   <li><a href="../modules/var_ops.html">var_ops</a></li>
   <li><a href="../modules/var_preds.html">var_preds</a></li>
@@ -214,18 +218,90 @@
 
 <div id="content">
 
-<h1>Module <code>samples.Curves</code></h1>
-<p>Various curves demo.</p>
+<h1>Module <code>iterator_ops.utils</code></h1>
+<p>Iterator-building utilities.</p>
 <p>
 
 </p>
 
 
+<h2><a href="#Functions">Functions</a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#InstancedAutocacher">InstancedAutocacher (builder)</a></td>
+	<td class="summary">Apparatus for building stateful iterators which recache themselves when iteration
+ terminates normally, of which multiple instances may be in use at once.</td>
+	</tr>
+</table>
 
 <br/>
 <br/>
 
 
+    <h2><a name="Functions"></a>Functions</h2>
+    <dl class="function">
+    <dt>
+    <a name = "InstancedAutocacher"></a>
+    <strong>InstancedAutocacher (builder)</strong>
+    </dt>
+    <dd>
+    Apparatus for building stateful iterators which recache themselves when iteration
+ terminates normally, of which multiple instances may be in use at once.
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">builder</span>
+            <span class="types"><span class="type">callable</span></span>
+         Function used to build a new iterator instance when none is available
+ in the cache. It must return the following functions, in order:</p>
+
+<ul>
+    <li><em>body</em>: As with standard iterator functions, called as
+    var_1, ..., var_n = body(s, var)
+    where the <em>var</em>* are loop variables, <em>s</em> and <em>var</em> are the state and iteration variable.</li>
+    <li><em>done</em>: Called as
+    is_done = done(s, var)
+    If <em>is_done</em> is true, the iterator terminates normally and calls <code>reclaim(s)</code>; otherwise
+    the <em>body</em> logic is performed.</li>
+    <li><em>setup</em>: This takes any iterator arguments and returns <em>s</em> and the initial value of
+    <em>var</em>. Any complex iterator state should be set up here.</li>
+    <li><em>reclaim</em>: May be absent, in which case it is a no-op. Called as
+    reclaim(s)
+    Any complex iterator state should be cleaned up here. If <em>reclaim</em> must be paranoid that
+    it terminated normally (i.e. that the <strong>for</strong> loop terminated), preparation should be
+    done in the false branch of <em>done</em>.</li>
+</ul>
+
+<p> Afterward this instance is put in the cache.</p>
+
+<p> This design encourages storing an instance's state in <em>builder</em>'s local variables,
+ which are then captured. Thus the above functions will typically be new closures.
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">function</span></span>
+         Iterator generator, called as</p>
+<pre><code>for LOOPVARS in gen(...) do
+</code></pre>
+<p> or (where <em>reclaim</em> may be needed) fetched as</p>
+<pre><code>func, s, var, reclaim = gen(...)
+</code></pre>
+<p> where any arguments are passed to <em>setup</em>. If it is necessary to build an instance first,
+ <em>builder</em> will receive these arguments as well.</p>
+
+<p> Note that <em>reclaim</em> is returned. This can be used to manually recache the iterator if the
+ code needs to break or return mid-iteration, though if forgotten the instance will just
+ become garbage.
+    </ol>
+
+
+
+
+</dd>
+</dl>
 
 
 </div> <!-- id="content" -->

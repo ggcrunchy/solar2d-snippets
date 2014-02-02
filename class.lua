@@ -420,10 +420,10 @@ end
 --- Gets a type's linearization, i.e. a flattened representation of its superclass hierarchy.
 -- @param ctype Class type.
 -- @treturn function Linearization walker, which is called as
---    type = walker(i),
+--    type = walker(i)
 -- where _i_ is the index in the linearization, ranging from 1 (_type_ = _ctype_) to _size_
 -- (_ctype_'s least specific base class), where
---    size = walker(nil).
+--    size = walker(nil)
 -- @see Define
 function M.Linearization (ctype)
     assert(ctype ~= nil, "Linearization: ctype == nil")

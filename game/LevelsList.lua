@@ -131,7 +131,7 @@ end
 --
 -- * **background**: A function used to add some sort of background on level load,
 -- called as
---    background(bg, ncols, nrows, tilew, tileh),
+--    background(bg, ncols, nrows, tilew, tileh)
 -- where _bg_ is the display group for the background layer, _ncols_ and _nrows_
 -- are the tile grid dimensions, and _tilew_ and _tileh_ are the tile dimensions.
 --

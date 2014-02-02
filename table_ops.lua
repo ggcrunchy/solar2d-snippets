@@ -243,7 +243,7 @@ end
 --- Performs an action on each item of the table.
 -- @tparam table t Table to iterate.
 -- @callable func Visitor function, called as
---    func(v, arg),
+--    func(v, arg)
 -- where _v_ is the current value and _arg_ is the parameter. If the return value
 -- is not **nil**, iteration is interrupted and quits.
 -- @bool is_array Traverse only the array part (up to a **nil**, in order)?
@@ -262,7 +262,7 @@ end
 --- Key-value variant of @{ForEach}.
 -- @tparam table t Table to iterate.
 -- @callable func Visitor function, called as
---    func(k, v, arg),
+--    func(k, v, arg)
 -- where _k_ is the current key, _v_ is the current value, and _arg_ is the
 -- parameter. If the return value is not **nil**, iteration is interrupted and quits.
 -- @bool is_array Traverse only the array part (up to a **nil**, in order)?

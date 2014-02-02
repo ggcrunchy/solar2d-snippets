@@ -284,7 +284,7 @@ end
 --
 -- In each linked pair, one or both entries may have provided a "prep link" handler. If so,
 -- the available handlers are called as
---    handler(entry1, entry2, sub1, sub2),
+--    handler(entry1, entry2, sub1, sub2)
 -- where _entry1_ and _sub1_ are the entry and sublink associated with the handler; _entry2_
 -- and _sub2_ comprise the target. At this point, all entries will have their final **uid**'s,
 -- so this is the ideal time to bind everything as the application expects, e.g. via @{utils.Bind}.

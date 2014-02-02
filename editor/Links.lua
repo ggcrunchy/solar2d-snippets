@@ -378,7 +378,7 @@ end
 --- Sets logic to call when a link becomes invalid, cf. @{Link:IsValid}.
 --
 -- Called as
---    func(link, object1, object2, sub1, sub2),
+--    func(link, object1, object2, sub1, sub2)
 -- where _object1_ and _object2_ were the linked objects and _sub1_ and _sub2_ were their
 -- respective sublinks. In the case that _object*_ has been removed, it will be **nil**.
 --
