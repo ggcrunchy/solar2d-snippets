@@ -33,7 +33,7 @@ local yield = coroutine.yield
 -- Modules --
 local array_ops = require("array_ops")
 local common = require("editor.Common")
-local coroutine_ex = require("coroutine_ex")
+local coro = require("iterator_ops.coroutine")
 local dispatch_list = require("game.DispatchList")
 local tags = require("editor.Tags")
 local timers = require("game.Timers")
@@ -435,7 +435,7 @@ end
 -- @pobject object
 -- @string sub
 -- @treturn iterator X
-M.Links = coroutine_ex.Iterator(function(object, sub)
+M.Links = coro.Iterator(function(object, sub)
 	local proxy = Proxy(object)
 
 	for _, v in LinkKeys(proxy) do
@@ -503,7 +503,7 @@ end
 -- @function M.Tagged
 -- @string name N
 -- @treturn iterator X
-M.Tagged = coroutine_ex.Iterator(function(name)
+M.Tagged = coro.Iterator(function(name)
 	local list = TaggedLists[name]
 
 	for _, proxy in common.PairsIf(list) do

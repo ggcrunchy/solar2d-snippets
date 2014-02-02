@@ -30,7 +30,7 @@
 
 -- Modules --
 local args = require("iterator_ops.args")
-local bitwise_ops = require("bitwise_ops")
+local powers_of_2 = require("bitwise_ops.powers_of_2")
 local dispatch_list = require("game.DispatchList")
 local flag_utils = require("utils.Flag")
 local index_ops = require("index_ops")
@@ -38,7 +38,7 @@ local numeric_ops = require("numeric_ops")
 local table_ops = require("table_ops")
 
 -- Imports --
-local PowersOf2 = bitwise_ops.PowersOf2
+local PowersOf2 = powers_of_2.PowersOf2
 local TestFlag = flag_utils.TestFlag
 
 -- Exports --
@@ -146,7 +146,7 @@ end
 function M.IsJunction (index)
 	local n = 0
 
-	for _ in bitwise_ops.PowersOf2(ResolvedFlags[index] or 0) do
+	for _ in PowersOf2(ResolvedFlags[index] or 0) do
 		n = n + 1
 	end
 

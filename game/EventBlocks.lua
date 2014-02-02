@@ -43,13 +43,13 @@ local yield = coroutine.yield
 
 -- Modules --
 local bind_utils = require("utils.Bind")
-local coroutine_ex = require("coroutine_ex")
 local dispatch_list = require("game.DispatchList")
 local fx = require("game.FX")
 local numeric_ops = require("numeric_ops")
 local tags = lazy_require("editor.Tags")
 local tile_flags = require("game.TileFlags")
 local tile_maps = require("game.TileMaps")
+local wrapper = require("coroutine_ops.wrapper")
 
 -- Corona globals --
 local display = display
@@ -67,7 +67,7 @@ local M = {}
 local CMin, CMax, RMin, RMax
 
 -- Block iterator body
-local BlockIter = coroutine_ex.Wrap(function()
+local BlockIter = wrapper.Wrap(function()
 	local left = tile_maps.GetTileIndex(CMin, RMin)
 	local col, ncols = CMin, tile_maps.GetCounts()
 

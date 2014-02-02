@@ -27,11 +27,7 @@
 local remove = table.remove
 
 -- Modules --
-local has_bit, bit = pcall(require, "bit") -- Prefer BitOp
-
-if not has_bit then
-	bit = bit32 -- Fall back to bit32 if available
-end
+local operators = require("bitwise_ops.operators")
 
 -- Forward references --
 local band
@@ -40,11 +36,11 @@ local lshift
 local rshift
 
 -- Imports --
-if bit then -- Bit library available
-	band = bit.band
-	bor = bit.bor
-	lshift = bit.lshift
-	rshift = bit.rshift
+if operators.HasBitLib() then -- Bit library available
+	band = operators.And
+	bor = operators.Or
+	lshift = operators.LShift
+	rshift = operators.RShift
 else -- Otherwise, make equivalents for Hilbert curve purposes
 	function band (x, n)
 		return x % (n + 1)
@@ -54,7 +50,7 @@ else -- Otherwise, make equivalents for Hilbert curve purposes
 		return a + b + (c or 0)
 	end
 
-	lshift = math.ldexp
+	lshift = operators.LShift
 
 	local floor = math.floor
 	local lastn, power

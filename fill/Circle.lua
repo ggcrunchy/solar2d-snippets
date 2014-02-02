@@ -27,7 +27,7 @@
 local min = math.min
 
 -- Modules --
-local grid_iterators = require("iterator_ops.grid")--grid_iterators")
+local grid_iterators = require("iterator_ops.grid")
 
 -- Exports --
 local M = {}

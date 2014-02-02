@@ -27,11 +27,7 @@
 --
 
 -- Modules --
-local has_bit, bit = pcall(require, "bit") -- Prefer BitOp
-
-if not has_bit then
-	bit = bit32 -- Fall back to bit32 if available
-end
+local operators = require("bitwise_ops.operators")
 
 -- Forward references --
 local band
@@ -39,10 +35,10 @@ local lshift
 local rshift
 
 -- Imports --
-if bit then -- Bit library available
-	band = bit.band
-	lshift = bit.lshift
-	rshift = bit.rshift
+if operators.HasBitLib() then -- Bit library available
+	band = operators.And
+	lshift = operators.LShift
+	rshift = operators.RShift
 else -- Otherwise, make equivalents for RNG purposes
 	local floor = math.floor
 

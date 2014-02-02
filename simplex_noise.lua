@@ -36,11 +36,7 @@ local floor = math.floor
 local max = math.max
 
 -- Modules --
-local has_bit, bit = pcall(require, "bit") -- Prefer BitOp
-
-if not has_bit then
-	bit = bit32 -- Fall back to bit32 if available
-end
+local operators = require("bitwise_ops.operators")
 
 -- Forward references --
 local band
@@ -163,9 +159,9 @@ do
 	local G2 = 2 * G
 	local G3 = 3 * G - 1
 
-	if bit then -- Bit library available
-		band = bit.band
-		bor = bit.bor
+	if operators.HasBitLib() then -- Bit library available
+		band = operators.And
+		bor = operators.Or
 	else -- Otherwise, make 1-bit equivalents
 		local min = math.min
 
@@ -201,7 +197,7 @@ do
 		ix, iy, iz = ix % 256, iy % 256, iz % 256
 
 		local n0 = GetN(ix, iy, iz, x0, y0, z0)
-		local n3 = GetN(ix + 1, iy + 1, iz + 1, x0 - 0.5, y0 - 0.5, z0 - 0.5) -- G3
+		local n3 = GetN(ix + 1, iy + 1, iz + 1, x0 - .5, y0 - .5, z0 - .5) -- G3
 
 		--[[
 			Determine other corners based on simplex (skewed tetrahedron) we are in:
@@ -318,22 +314,22 @@ do
 		-- To find out which of the 24 possible simplices we're in, we need to
 		-- determine the magnitude ordering of x0, y0, z0 and w0.
 		-- The method below is a good way of finding the ordering of x,y,z,w and
-		-- then find the correct traversal order for the simplex were in.
+		-- then find the correct traversal order for the simplex we're in.
 		-- First, six pair-wise comparisons are performed between each possible pair
 		-- of the four coordinates, and the results are used to add up binary bits
 		-- for an integer index.
-		local c1 = x0 > y0 and 32 or 0
-		local c2 = x0 > z0 and 16 or 0
-		local c3 = y0 > z0 and 8 or 0
-		local c4 = x0 > w0 and 4 or 0
-		local c5 = y0 > w0 and 2 or 0
-		local c6 = z0 > w0 and 1 or 0
+		local b1 = x0 > y0 and 32 or 0
+		local b2 = x0 > z0 and 16 or 0
+		local b3 = y0 > z0 and 8 or 0
+		local b4 = x0 > w0 and 4 or 0
+		local b5 = y0 > w0 and 2 or 0
+		local b6 = z0 > w0 and 1 or 0
 
 		-- Simplex[c] is a 4-vector with the numbers 0, 1, 2 and 3 in some order.
 		-- Many values of c will never occur, since e.g. x>y>z>w makes x<z, y<w and x<w
 		-- impossible. Only the 24 indices which have non-zero entries make any sense.
 		-- We use a thresholding to set the coordinates in turn from the largest magnitude.
-		local c = c1 + c2 + c3 + c4 + c5 + c6 + 1
+		local c = b1 + b2 + b3 + b4 + b5 + b6 + 1
 		local cell = Simplex[c]
 		local c1, c2, c3, c4 = cell[1], cell[2], cell[3], cell[4]
 

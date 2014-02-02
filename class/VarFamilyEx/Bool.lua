@@ -34,11 +34,13 @@ local flow_ops = require("flow_ops")
 local func_ops = require("func_ops")
 
 -- Modules --
-local has_bit, bit = pcall(require, "bit") -- Prefer BitOp
+local operators = require("bitwise_ops.operators")
 
-if not has_bit then
-	bit = bit32 -- Fall back to bit32 if available
-end
+-- Imports --
+local band = operators.And
+local bor = operators.Or
+local lshift = operators.LShift
+local rshift = operators.RShift
 
 -- Cookies --
 local _set_name = {}
@@ -282,61 +284,53 @@ return function(ops, BoolVars)
 		end
 	end)
 
-	-- Bitwise ops
-	if bit then
-		local band = bit.band
-		local bor = bit.bor
-		local lshift = bit.lshift
-		local rshift = bit.rshift
+	--- Looks up several bool variables and sets each bit of an integer: 1 if the bool
+	-- is true and 0 otherwise. The first variable is at bit 0.
+	--
+	-- Any leftover bits are set to 0.
+	-- @function BoolVars:GetBits_Array
+	-- @array arr Array of bool variable names (up to 32).
+	-- @treturn uint Integer with bits set.
+	-- @see BoolVars:SetFromBits_Array
 
-		--- Looks up several bool variables and sets each bit of an integer: 1 if the bool
-		-- is true and 0 otherwise. The first variable is at bit 0.
-		--
-		-- Any leftover bits are set to 0.
-		-- @function BoolVars:GetBits_Array
-		-- @array arr Array of bool variable names (up to 32).
-		-- @treturn uint Integer with bits set.
-		-- @see BoolVars:SetFromBits_Array
+	--- Vararg variant of @{BoolVars:GetBits_Array}.
+	-- @function BoolVars:GetBits_Varargs
+	-- @param ... Bool variable names (up to 32).
+	-- @treturn uint Integer with bits set.
+	-- @see BoolVars:SetFromBits_Varargs
 
-		--- Vararg variant of @{BoolVars:GetBits_Array}.
-		-- @function BoolVars:GetBits_Varargs
-		-- @param ... Bool variable names (up to 32).
-		-- @treturn uint Integer with bits set.
-		-- @see BoolVars:SetFromBits_Varargs
+	Pair("GetBits", function(bools, iter, s, v0)
+		local bits = 0
 
-		Pair("GetBits", function(bools, iter, s, v0)
-			local bits = 0
-
-			for i, name in iter, s, v0 do
-				if bools[name] then
-					bits = bor(bits, lshift(1, i - 1))
-				end
+		for i, name in iter, s, v0 do
+			if bools[name] then
+				bits = bor(bits, lshift(1, i - 1))
 			end
+		end
 
-			return bits
-		end)
+		return bits
+	end)
 
-		--- Sets several bool variables based on the bits from an integer: true for a 1 bit
-		-- and false otherwise. The first variable uses bit 0.
-		-- @function BoolVars:SetFromBits_Array
-		-- @uint bits Integer with bits set.
-		-- @array arr Array of non-**nil** bool variable names.
-		-- @see BoolVars:GetBits_Array
+	--- Sets several bool variables based on the bits from an integer: true for a 1 bit
+	-- and false otherwise. The first variable uses bit 0.
+	-- @function BoolVars:SetFromBits_Array
+	-- @uint bits Integer with bits set.
+	-- @array arr Array of non-**nil** bool variable names.
+	-- @see BoolVars:GetBits_Array
 
-		--- Vararg variant of @{BoolVars:SetFromBits_Array}.
-		-- @function BoolVars:SetFromBits_Varargs
-		-- @uint bits Integer with bits set.
-		-- @param ... Non-**nil** bool variable names.
-		-- @see BoolVars:GetBits_Varargs
+	--- Vararg variant of @{BoolVars:SetFromBits_Array}.
+	-- @function BoolVars:SetFromBits_Varargs
+	-- @uint bits Integer with bits set.
+	-- @param ... Non-**nil** bool variable names.
+	-- @see BoolVars:GetBits_Varargs
 
-		PairSet("SetFromBits", function(bools, bits, iter, s, v0)
-			for _, name in iter, s, v0 do
-				bools[name] = band(bits, 0x1) ~= 0
+	PairSet("SetFromBits", function(bools, bits, iter, s, v0)
+		for _, name in iter, s, v0 do
+			bools[name] = band(bits, 0x1) ~= 0
 
-				bits = rshift(bits, 1)
-			end
-		end)
-	end
+			bits = rshift(bits, 1)
+		end
+	end)
 
 	-- Lookup / name setter cache --
 	local LookupCache = cache_ops.SimpleCache()

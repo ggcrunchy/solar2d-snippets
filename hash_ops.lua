@@ -30,21 +30,16 @@ local concat = table.concat
 local gmatch = string.gmatch
 
 -- Modules --
+local operators = require("bitwise_ops.operators")
 local resource_utils = require("utils.Resource")
-
-local has_bit, bit = pcall(require, "bit") -- Prefer BitOp
-
-if not has_bit then
-	bit = bit32 -- Fall back to bit32 if available
-end
 
 -- Forward references --
 local band
 local bxor
 
-if bit then -- Bit library available
-	band = bit.band
-	bxor = bit.bxor
+if operators.HasBitLib() then -- Bit library available
+	band = operators.And
+	bxor = operators.Xor
 else -- Otherwise, make equivalent for hash purposes
 	function band (a, n)
 		return a % (n + 1)

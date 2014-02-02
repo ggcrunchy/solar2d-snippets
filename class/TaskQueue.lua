@@ -41,10 +41,10 @@ local array_ops = require("array_ops")
 local bound_args = require("bound_args")
 local cache_ops = require("cache_ops")
 local class = require("class")
-local coroutine_ex = require("coroutine_ex")
 local exception = require("exception")
 local table_ops = require("table_ops")
 local var_preds = require("var_preds")
+local wrapper = require("coroutine_ops.wrapper")
 
 -- Imports --
 local Args = args.Args
@@ -54,7 +54,7 @@ local Move = table_ops.Move
 local Reverse = array_ops.Reverse
 local Try = exception.Try
 local WithBoundTable = bound_args.WithBoundTable
-local Wrap = coroutine_ex.Wrap
+local Wrap = wrapper.Wrap
 
 -- Unique member keys --
 local _fetch = {}
@@ -105,7 +105,7 @@ return class.Define(function(TaskQueue)
 
 	--- Adds a wrapped coroutine task to the queue.
 	-- @callable task Task to wrap and add.
-	-- @param extended_ If false, the task uses @{coroutine.wrap}; otherwise, @{coroutine_ex.Wrap}.
+	-- @param extended_ If false, the task uses @{coroutine.wrap}; otherwise, @{coroutine_ops.wrapper.Wrap}.
 	--
 	-- In the latter case, if callable, _extended\__ is passed as the _on\_reset_ parameter.
 	function TaskQueue:AddWrapped (task, extended_)
