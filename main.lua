@@ -33,9 +33,9 @@ local setmetatable = setmetatable
 local debug = require("debug")
 local device = require("utils.Device")
 local errors = require("errors")
-local flow_bodies = require("flow_bodies")
+local flow_bodies = require("coroutine_ops.flow_bodies")
 local frames = require("utils.Frames")
-local per_coroutine_ops = require("per_coroutine_ops")
+local per_coroutine = require("coroutine_ops.per_coroutine")
 local scenes = require("utils.Scenes")
 local var_dump = require("var_dump")
 
@@ -44,7 +44,7 @@ local native = native
 local system = system
 
 -- Install the coroutine time logic.
-flow_bodies.SetTimeLapseFuncs(per_coroutine_ops.TimeLapse(frames.DiffTime, frames.GetFrameID))
+flow_bodies.SetTimeLapseFuncs(per_coroutine.TimeLapse(frames.DiffTime, frames.GetFrameID))
 
 -- Use standard tracebacks.
 errors.SetTracebackFunc(debug.traceback)

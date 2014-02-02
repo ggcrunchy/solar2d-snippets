@@ -30,7 +30,7 @@ local pairs = pairs
 -- Modules --
 local args = require("iterator_ops.args")
 local cache_ops = require("cache_ops")
-local flow_ops = require("flow_ops")
+local flow = require("coroutine_ops.flow")
 local func_ops = require("func_ops")
 
 -- Modules --
@@ -373,7 +373,7 @@ return function(ops, BoolVars)
 	-- This must be called within a coroutine.
 	-- @function BoolVars:WaitUntilFalse
 	-- @param name Non-**nil** bool variable name.
-	-- @callable? update Optional update routine, as per @{flow_ops.WaitWhile},
+	-- @callable? update Optional update routine, as per @{coroutine_ops.flow.WaitWhile},
 	-- which receives _name_ as its argument.
 	-- @treturn boolean The wait completed?
 	-- @see BoolVars:WaitUntilTrue, BoolVars:IsFalse
@@ -384,14 +384,14 @@ return function(ops, BoolVars)
 	-- @param name Non-**nil** bool variable name.
 	-- @callable? update Optional update routine.
 	-- @treturn boolean The wait completed?
-	-- @see BoolVars:IsFalse, flow_ops.WaitWhile
+	-- @see BoolVars:IsFalse, coroutine_ops.flow.WaitWhile
 
 	--- Waits until a bool is true.
 	--
 	-- This must be called within a coroutine.
 	-- @function BoolVars:WaitUntilTrue
 	-- @param name Non-**nil** bool variable name.
-	-- @callable? update Optional update routine, as per @{flow_ops.WaitUntil},
+	-- @callable? update Optional update routine, as per @{coroutine_ops.flow.WaitUntil},
 	-- which receives _name_ as its argument.
 	-- @treturn boolean The wait completed?
 	-- @see BoolVars:WaitUntilFalse, BoolVars:IsTrue
@@ -402,10 +402,10 @@ return function(ops, BoolVars)
 	-- @param name Non-**nil** bool variable name.
 	-- @callable? update Optional update routine.
 	-- @treturn boolean The wait completed?
-	-- @see BoolVars:IsTrue, flow_ops.WaitUntil
+	-- @see BoolVars:IsTrue, coroutine_ops.flow.WaitUntil
 
 	for i, name in args.Args("WaitUntilFalse", "WaitUntilTrue") do
-		local op = flow_ops[i < 2 and "WaitWhile" or "WaitUntil"]
+		local op = flow[i < 2 and "WaitWhile" or "WaitUntil"]
 
 		BoolVars[name] = Waiter(op)
 		BoolVars[name .. "_Flip"] = Waiter(op, true)

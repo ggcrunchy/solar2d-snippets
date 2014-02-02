@@ -1,4 +1,4 @@
---- This module defines bodies used to build control-flow operations, e.g. @{flow_ops}.
+--- This module defines bodies used to build control-flow operations, e.g. @{coroutine_ops.flow}.
 
 --
 -- Permission is hereby granted, free of charge, to any person obtaining

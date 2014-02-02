@@ -32,7 +32,7 @@ local type = type
 
 -- Modules --
 local dispatch_list = require("game.DispatchList")
-local flow_ops = require("flow_ops")
+local flow = require("coroutine_ops.flow")
 local movement = require("game.Movement")
 local mwc_rng = require("mwc_rng")
 local numeric_ops = require("numeric_ops")
@@ -182,7 +182,7 @@ function M.SamplePositions (n, tolerx, tolery, target, dt, update, arg)
 
 	for i = 1, n do
 		--
-		if not flow_ops.Wait(dt, update, arg) then
+		if not flow.Wait(dt, update, arg) then
 			return false
 		end
 

@@ -112,7 +112,7 @@ end
 -- result of `diff()`, and it tracks the new ID.
 -- @treturn function Time lapse function.
 -- @treturn function Deduct function.
--- @see PerCoroutineFunc, flow_bodies.SetTimeLapseFuncs
+-- @see PerCoroutineFunc, coroutine_ops.flow_bodies.SetTimeLapseFuncs
 function M.TimeLapse (diff, get_id)
 	assert(IsCallable(diff), "Uncallable time difference")
 	assert(IsCallable(get_id), "Uncallable id getter")

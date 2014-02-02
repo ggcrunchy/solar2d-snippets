@@ -24,7 +24,7 @@
 --
 
 -- Modules --
-local flow_ops = require("flow_ops")
+local flow = require("coroutine_ops.flow")
 local timers = require("game.Timers")
 
 -- Corona globals --
@@ -48,12 +48,12 @@ function Scene:enterScene ()
 			text.anchorX = 0
 			text.x = x
 
-			flow_ops.Wait(.2)
+			flow.Wait(.2)
 
 			x = x + text.width + 10
 		end
 
-		flow_ops.Wait(.15)
+		flow.Wait(.15)
 
 		storyboard.gotoScene("scene.Choices", "zoomInOutFadeRotate")
 	end)

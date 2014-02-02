@@ -30,7 +30,7 @@ local assert = assert
 
 -- Modules --
 local array_ops = require("array_ops")
-local flow_bodies = require("flow_bodies")
+local flow_bodies = require("coroutine_ops.flow_bodies")
 
 -- Imports --
 local Body = flow_bodies.Body
@@ -50,11 +50,11 @@ do
 
 	--- Waits for some time to pass.
 	--
-	-- Built on top of @{flow_bodies.Body_Timed}.
+	-- Built on top of @{coroutine_ops.flow_bodies.Body_Timed}.
 	-- @number duration Time to wait.
 	-- @callable update Optional update logic, called as
 	--    update(time_state, duration, arg),
-	-- with _time\_state_ as per @{flow_bodies.Body_Timed}.
+	-- with _time\_state_ as per @{coroutine_ops.flow_bodies.Body_Timed}.
 	-- @param arg Argument.
 	-- @param yvalue Optional value to yield.
 	-- @treturn boolean The wait completed?
@@ -96,7 +96,7 @@ do
 
 	--- Waits for a group of signals to reach a certain state.
 	--
-	-- Built on top of @{flow_bodies.Body}.
+	-- Built on top of @{coroutine_ops.flow_bodies.Body}.
 	-- @param signals Callable or read-indexable signal object. For _i_ = 1 to _count_,
 	-- the corresponding test is performed: `signals(i)` or `signals[i]`.
 	--
@@ -121,13 +121,13 @@ do
 		return Body(update, pred_op, Config, signals, count, arg)
 	end
 
-	--- Timed variant of @{WaitForMultipleSignals}, built on top of @{flow_bodies.Body_Timed}.
+	--- Timed variant of @{WaitForMultipleSignals}, built on top of @{coroutine_ops.flow_bodies.Body_Timed}.
 	-- @param signals Callable or read-indexable signal object.
 	-- @uint count Signal count.
 	-- @string pred Predicate name, as per @{WaitForMultipleSignals}.
 	-- @callable update Optional update logic, called as
 	--    update(time_state, signals, count, arg),
-	-- with _time\_state_ as per @{flow_bodies.Body_Timed}.
+	-- with _time\_state_ as per @{coroutine_ops.flow_bodies.Body_Timed}.
 	-- @param arg Argument.
 	-- @param yvalue Optional value to yield.
 	-- @treturn boolean The signals satisfied the predicate?
@@ -149,7 +149,7 @@ do
 
 	--- Waits for a single signal to fire.
 	--
-	-- Built on top of @{flow_bodies.Body}.
+	-- Built on top of @{coroutine_ops.flow_bodies.Body}.
 	-- @param signals Callable or read-indexable signal object. A signal has fired if
 	-- `signals(what)` or `signals[what]` is true.
 	-- @param what Signal to watch.
@@ -164,12 +164,12 @@ do
 		return Body(update, Index, Config, signals, what, arg)
 	end
 
-	--- Timed variant of @{WaitForSignal}, built on top of @{flow_bodies.Body_Timed}.
+	--- Timed variant of @{WaitForSignal}, built on top of @{coroutine_ops.flow_bodies.Body_Timed}.
 	-- @param signals Callable or read-indexable signal object.
 	-- @param what Signal to watch.
 	-- @callable update Optional update logic, called as
 	--    update(time_state, signals, what, arg),
-	-- with _time\_state_ as per @{flow_bodies.Body_Timed}.
+	-- with _time\_state_ as per @{coroutine_ops.flow_bodies.Body_Timed}.
 	-- @param arg Argument.
 	-- @param yvalue Optional value to yield.
 	-- @treturn boolean The signal fired?
@@ -199,7 +199,7 @@ do
 
 	--- Waits for a test to pass.
 	--
-	-- Built on top of @{flow_bodies.Body}.
+	-- Built on top of @{coroutine_ops.flow_bodies.Body}.
 	-- @function WaitUntil
 	-- @callable test Test function, with the same signature as _update_. If it returns
 	-- true, the wait terminates.
@@ -209,12 +209,12 @@ do
 	-- @param yvalue Optional value to yield.
 	-- @treturn boolean The test passed?
 
-	--- Timed variant of @{WaitUntil}, built on top of @{flow_bodies.Body_Timed}.
+	--- Timed variant of @{WaitUntil}, built on top of @{coroutine_ops.flow_bodies.Body_Timed}.
 	-- @function WaitUntil_Timed
 	-- @callable test Test function. If it returns true, the wait terminates.
 	-- @callable update Optional update logic, called as
 	--    update(time_state, arg),
-	-- with _time\_state_ as per @{flow_bodies.Body_Timed}.
+	-- with _time\_state_ as per @{coroutine_ops.flow_bodies.Body_Timed}.
 	-- @param arg Argument.
 	-- @bool use_time _test_ has the same signature as _update_? Otherwise, the _time\_state_
 	-- argument is omitted.
@@ -225,7 +225,7 @@ do
 
 	--- Waits for a test to fail.
 	--
-	-- Built on top of @{flow_bodies.Body}.
+	-- Built on top of @{coroutine_ops.flow_bodies.Body}.
 	-- @function WaitWhile
 	-- @callable test Test function, with the same signature as _update_. If it returns
 	-- false, the wait terminates.
@@ -235,12 +235,12 @@ do
 	-- @param yvalue Optional value to yield.
 	-- @treturn boolean The test failed?
 
-	--- Timed variant of @{WaitWhile}, built on top of @{flow_bodies.Body_Timed}.
+	--- Timed variant of @{WaitWhile}, built on top of @{coroutine_ops.flow_bodies.Body_Timed}.
 	-- @function WaitWhile_Timed
 	-- @callable test Test function. If it returns false, the wait terminates.
 	-- @callable update Optional update logic, called as
 	--    update(time_state, arg),
-	-- with _time\_state_ as per @{flow_bodies.Body_Timed}.
+	-- with _time\_state_ as per @{coroutine_ops.flow_bodies.Body_Timed}.
 	-- @param arg Argument.
 	-- @bool use_time _test_ has the same signature as _update_? Otherwise, the _time\_state_
 	-- argument is omitted.

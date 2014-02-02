@@ -34,7 +34,7 @@ local buttons = require("ui.Button")
 local ca = require("fill.CellularAutomata")
 local circle = require("fill.Circle")
 local curves = require("utils.Curves")
-local flow_ops = require("flow_ops")
+local flow = require("coroutine_ops.flow")
 local grid_iterators = require("iterator_ops.grid")
 local index_ops = require("index_ops")
 local ms = require("mask.MarchingSquares")
@@ -260,7 +260,7 @@ function A (tiles, op)
 		end
 
 		-- Wait a while (so the next batch isn't so abrupt), then erase the current curves.
-		flow_ops.Wait(.85)
+		flow.Wait(.85)
 
 		CleanUp(tiles, op)
 	end

@@ -30,7 +30,7 @@ local remove = table.remove
 local setmetatable = setmetatable
 
 -- Modules --
-local flow_ops = require("flow_ops")
+local flow = require("coroutine_ops.flow")
 
 -- Corona globals --
 local transition = transition
@@ -69,7 +69,7 @@ end
 -- @param target Object to transition.
 -- @ptable params Transition parameters, as per `transition.to`.
 -- @callable update Optional update routine, with the transition handle as argument, cf.
--- @{flow_ops.WaitWhile}.
+-- @{coroutine_ops.flow.WaitWhile}.
 --
 -- If the wait is aborted during the update, the transition is cancelled.
 function M.DoAndWait (target, params, update)
@@ -91,7 +91,7 @@ function M.DoAndWait (target, params, update)
 	params.onCancel, params.onComplete = func1, func2
 
 	-- Wait for the transition to finish, performing any user-provided update.
-	if not flow_ops.WaitWhile(DoingTransition, update, handle) then
+	if not flow.WaitWhile(DoingTransition, update, handle) then
 		transition.cancel(handle)
 	end
 
