@@ -24,11 +24,8 @@
 --
 
 -- Standard library imports --
-local assert = assert
-local format = string.format
 local rawget = rawget
 local select = select
-local tostring = tostring
 local type = type
 local unpack = unpack
 
@@ -37,19 +34,6 @@ local _WipeRange_
 
 -- Exports --
 local M = {}
-
---- Assert with formatted error message support.
--- @param cond Condition to validate, as per @{assert}.
--- @string str Format string, which can contain one **%s** specifier.
--- @param arg Argument, used by _str_ after having @{tostring} applied.
--- @return _cond_, if no error was thrown.
-function M.AssertArg (cond, str, arg)
-	if not cond then
-		assert(false, format(str, tostring(arg)))
-	end
-
-	return cond
-end
 
 -- This is a standard collect, specialized for five element loads at once, which seems to
 -- be a reasonable sweet spot in tests.

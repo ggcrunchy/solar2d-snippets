@@ -30,17 +30,18 @@
 
 -- Standard library imports --
 local assert = assert
+local error = error
+local format = string.format
 local pairs = pairs
 local remove = table.remove
+local tostring = tostring
 
 -- Modules --
 local class = require("class")
 local table_ops = require("table_ops")
-local var_ops = require("var_ops")
 local var_preds = require("var_preds")
 
 -- Imports --
-local AssertArg = var_ops.AssertArg
 local Find = table_ops.Find
 local IsCallable = var_preds.IsCallable
 
@@ -100,7 +101,13 @@ return class.Define(function(SectionGroup)
 
 	-- Section acquire helper
 	local function GetSection (G, name)
-		return AssertArg(G[_sections][name], "Section \"%s\" does not exist", name)
+		local section = G[_sections][name]
+
+		if section then
+			return section
+		else
+			error(format("Section \"%s\" does not exist", tostring(name)))
+		end
 	end
 
 	--- Closes an active section.

@@ -136,7 +136,7 @@ do
 		return t[k]
 	end
 
-	-- Install the on-demand __index metamethod --
+	-- Install the on-demand __index metamethod.
 	for _, v in pairs(OnDemand) do
 		v.__index = Index
 	end
@@ -161,7 +161,7 @@ do
 	-- @treturn table Table.
 	-- @see bound_args.WithBoundTable
 	function M.SubTablesOnDemand (choice, weakness, cache)
-		local dt = GetTable(Token)
+		local dt = GetTable()
 		local mt = Weakness[choice]
 
 		assert(choice == nil or mt, "Invalid choice")

@@ -26,22 +26,21 @@
 
 -- Standard library imports --
 local assert = assert
+local error = error
 local format = string.format
 local getmetatable = getmetatable
-local ipairs = ipairs
 local newproxy = newproxy
 local pairs = pairs
 local setmetatable = setmetatable
+local tostring = tostring
 local type = type
 
 -- Modules --
 local exception = require("exception")
 local table_ops = require("table_ops")
-local var_ops = require("var_ops")
 local var_preds = require("var_preds")
 
 -- Imports --
-local AssertArg = var_ops.AssertArg
 local IsCallable = var_preds.IsCallable
 local Try_Multi = exception.Try_Multi
 
@@ -74,7 +73,7 @@ local M = {}
 local Heads = table_ops.Weak("v")
 
 -- Weak-mode, __index'd table
-function WeakIndexed (ifunc)
+local function WeakIndexed (ifunc)
 	return setmetatable({}, { __mode = "k", __index = ifunc })
 end
 
@@ -480,7 +479,12 @@ do
 	function M.Clone (I, ...)
 		local ctype = assert(Instances[I], "Invalid instance")
 		local type_info = Defs[ctype]
-		local clone = AssertArg(type_info.clone, "class.Clone: Type \"%s\" does not support cloning", ctype)
+		local clone = type_info.clone
+
+		if not clone then
+			error(format("class.Clone: Type \"%s\" does not support cloning", tostring(ctype)))
+		end
+
 		local CI = type_info.alloc(type_info.meta)
 
 		Try_Multi(Cons, ConsDone, #ConsStack + 1, clone, CI, ctype, I, ...)

@@ -28,6 +28,7 @@ local assert = assert
 local error = error
 local ipairs = ipairs
 local pcall = pcall
+local rawequal = rawequal
 local type = type
 
 -- Modules --
@@ -58,7 +59,7 @@ function M.Register (funcs)
 	local Binding
 
 	local function Bind (what, t)
-		if what == _bind then
+		if rawequal(what, _bind) then
 			Binding, t = t, Binding
 		else
 			t, Binding = Binding or {}
