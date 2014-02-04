@@ -39,7 +39,9 @@
 <h2>Modules</h2>
 <ul class="$(kind=='Topics' and '' or 'nowrap'">
   <li><a href="../modules/array_ops.collect.html">collect</a></li>
+  <li><a href="../modules/array_ops.embedded_free_list.html">embedded_free_list</a></li>
   <li><a href="../modules/array_ops.funcs.html">funcs</a></li>
+  <li><a href="../modules/array_ops.id_occupied.html">id_occupied</a></li>
   <li><a href="../modules/array_ops.index.html">index</a></li>
   <li><a href="../modules/array_ops.predicates.html">predicates</a></li>
   <li><a href="../modules/array_ops.wipe.html">wipe</a></li>
@@ -104,7 +106,6 @@
   <li><a href="../modules/event_block.Maze.html">Maze</a></li>
   <li><a href="../modules/fill.CellularAutomata.html">CellularAutomata</a></li>
   <li><a href="../modules/fill.Circle.html">Circle</a></li>
-  <li><a href="../modules/fill.MarchingSquares.html">MarchingSquares</a></li>
   <li><a href="../modules/FIXES.html">FIXES</a></li>
   <li><a href="../modules/game.AI.html">AI</a></li>
   <li><a href="../modules/game.Collision.html">Collision</a></li>
@@ -155,7 +156,6 @@
   <li><a href="../modules/samples.Hilbert.html">Hilbert</a></li>
   <li><a href="../modules/samples.HilbertMixer.html">HilbertMixer</a></li>
   <li><a href="../modules/samples.Hop.html">Hop</a></li>
-  <li><a href="../modules/samples.Marching.html">Marching</a></li>
   <li><a href="../modules/samples.Nodes.html">Nodes</a></li>
   <li><a href="../modules/samples.OrbitsAndLattices.html">OrbitsAndLattices</a></li>
   <li><a href="../modules/samples.Pixels.html">Pixels</a></li>
@@ -185,6 +185,7 @@
   <li><a href="../modules/tektite.errors.html">errors</a></li>
   <li><a href="../modules/tektite.exception.html">exception</a></li>
   <li><a href="../modules/tektite.func_ops.html">func_ops</a></li>
+  <li><a href="../modules/tektite.require_ex.html">require_ex</a></li>
   <li><a href="../modules/tests.LinksAndTags.html">LinksAndTags</a></li>
   <li><a href="../modules/tiles.TreeBG.html">TreeBG</a></li>
   <li><a href="../modules/ui.Button.html">Button</a></li>
@@ -235,16 +236,8 @@
 <h2><a href="#Functions">Functions</a></h2>
 <table class="function_list">
 	<tr>
-	<td class="name" nowrap><a href="#lazy_require">lazy_require (name)</a></td>
-	<td class="summary">Helper to deal with circular module require situations.</td>
-	</tr>
-	<tr>
 	<td class="name" nowrap><a href="#printf">printf (s, ...)</a></td>
 	<td class="summary">Helper to print formatted argument.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#require_list">require_list (name)</a></td>
-	<td class="summary">DOCME</td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#vdump">vdump (var, name, limit)</a></td>
@@ -258,34 +251,6 @@
 
     <h2><a name="Functions"></a>Functions</h2>
     <dl class="function">
-    <dt>
-    <a name = "lazy_require"></a>
-    <strong>lazy_require (name)</strong>
-    </dt>
-    <dd>
-    Helper to deal with circular module require situations.  Provided module access is not
- needed immediately (in particular, it can wait until the requiring module has loaded),
- the lazy-required module looks and may be treated as a normal module.
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">name</span>
-            <span class="types"><a class="type" href="http://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
-         Module name, as passed to <a href="http://www.lua.org/manual/5.1/manual.html#pdf-require">require</a>.
-        </li>
-    </ul>
-
-    <h3>Returns:</h3>
-    <ol>
-
-           <span class="types"><a class="type" href="http://www.lua.org/manual/5.1/manual.html#5.5">table</a></span>
-        Module proxy, to be accessed like the module proper.
-    </ol>
-
-
-
-
-</dd>
     <dt>
     <a name = "printf"></a>
     <strong>printf (s, ...)</strong>
@@ -301,27 +266,6 @@
         </li>
         <li><span class="parameter">...</span>
          Format arguments.
-        </li>
-    </ul>
-
-
-
-
-
-</dd>
-    <dt>
-    <a name = "require_list"></a>
-    <strong>require_list (name)</strong>
-    </dt>
-    <dd>
-    DOCME
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">name</span>
-
-
-
         </li>
     </ul>
 

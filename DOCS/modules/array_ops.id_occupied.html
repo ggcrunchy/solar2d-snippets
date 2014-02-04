@@ -30,10 +30,6 @@
   <li><a href="../api.html">Index</a></li>
 </ul>
 
-<h2>Contents</h2>
-<ul>
-<li><a href="#Functions">Functions</a></li>
-</ul>
 
 
 <h2>Modules</h2>
@@ -41,7 +37,7 @@
   <li><a href="../modules/array_ops.collect.html">collect</a></li>
   <li><a href="../modules/array_ops.embedded_free_list.html">embedded_free_list</a></li>
   <li><a href="../modules/array_ops.funcs.html">funcs</a></li>
-  <li><a href="../modules/array_ops.id_occupied.html">id_occupied</a></li>
+  <li><strong>id_occupied</strong></li>
   <li><a href="../modules/array_ops.index.html">index</a></li>
   <li><a href="../modules/array_ops.predicates.html">predicates</a></li>
   <li><a href="../modules/array_ops.wipe.html">wipe</a></li>
@@ -145,7 +141,7 @@
   <li><a href="../modules/number_ops.hilbert.html">hilbert</a></li>
   <li><a href="../modules/number_ops.integrators.html">integrators</a></li>
   <li><a href="../modules/number_ops.morton.html">morton</a></li>
-  <li><strong>mwc_rng</strong></li>
+  <li><a href="../modules/number_ops.mwc_rng.html">mwc_rng</a></li>
   <li><a href="../modules/number_ops.range.html">range</a></li>
   <li><a href="../modules/number_ops.simplex_noise.html">simplex_noise</a></li>
   <li><a href="../modules/overlay.Help.html">Help</a></li>
@@ -226,58 +222,18 @@
 
 <div id="content">
 
-<h1>Module <code>number_ops.mwc_rng</code></h1>
-<p>This module implements a multiply-with-carry RNG.</p>
-<p> Based on code and algorithm by George Marsaglia:
- <a href="http://www.math.uni-bielefeld.de/~sillke/ALGORITHMS/random/marsaglia-c">MWC</a></p>
+<h1>Module <code>array_ops.id_occupied</code></h1>
+<p>DOCME</p>
+<p>
+
+</p>
 
 
-<h2><a href="#Functions">Functions</a></h2>
-<table class="function_list">
-	<tr>
-	<td class="name" nowrap><a href="#MakeGenerator">MakeGenerator (z, w)</a></td>
-	<td class="summary">Factory.</td>
-	</tr>
-</table>
 
 <br/>
 <br/>
 
 
-    <h2><a name="Functions"></a>Functions</h2>
-    <dl class="function">
-    <dt>
-    <a name = "MakeGenerator"></a>
-    <strong>MakeGenerator (z, w)</strong>
-    </dt>
-    <dd>
-    Factory.
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">z</span>
-            <span class="types"><span class="type">uint</span></span>
-         Z seed; if absent, uses a default.
-        </li>
-        <li><span class="parameter">w</span>
-            <span class="types"><span class="type">uint</span></span>
-         W Seed; if absent, uses a default.
-        </li>
-    </ul>
-
-    <h3>Returns:</h3>
-    <ol>
-
-           <span class="types"><span class="type">function</span></span>
-        Called as <code>result = gen(want_real)</code>. If <em>want_real</em> is true, <em>result</em>
- will be a random number &isin; (0, 1); otherwise, it will be a random 32-bit integer.
-    </ol>
-
-
-
-
-</dd>
-</dl>
 
 
 </div> <!-- id="content" -->

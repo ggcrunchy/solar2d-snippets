@@ -1,9 +1,9 @@
---- Various spline utilities.
+--- Various B&eacute;zier utilities.
 --
 -- For purposes of this module, an instance of type **Vector** is a value, e.g. a table,
 -- that has and / or receives **number** members **x** and **y**.
 
--- TODO: Investigating
+-- TODO: Investigate
 -- "Arc-Length Parameterized Spline Curves for Real-Time Simulation", Hongling Wang, Joseph Kearney, and Kendall Atkinson
 -- "Arc Length Parameterization of Spline Curves", John W. Peterson
 
