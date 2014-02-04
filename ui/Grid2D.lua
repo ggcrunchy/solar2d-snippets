@@ -29,9 +29,9 @@
 local remove = table.remove
 
 -- Modules --
+local array_index = require("array_ops.index")
 local colors = require("ui.Color")
 local grid_iterators = require("iterator_ops.grid")
-local index_ops = require("index_ops")
 local mask = require("utils.Mask")
 local range = require("number_ops.range")
 local skins = require("ui.Skin")
@@ -47,8 +47,8 @@ local M = {}
 --
 local function Cell (grid, x, y)
 	local gx, gy = grid:contentToLocal(x, y)
-	local col = index_ops.FitToSlot(gx, -grid.width / 2, grid.width / grid.m_ncols)
-	local row = index_ops.FitToSlot(gy, -grid.height / 2, grid.height / grid.m_nrows)
+	local col = array_index.FitToSlot(gx, -grid.width / 2, grid.width / grid.m_ncols)
+	local row = array_index.FitToSlot(gy, -grid.height / 2, grid.height / grid.m_nrows)
 
 	return col, row
 end

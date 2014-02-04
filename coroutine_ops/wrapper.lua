@@ -42,16 +42,17 @@ local status = coroutine.status
 local yield = coroutine.yield
 
 -- Modules --
-local errors = require("errors")
-local var_ops = require("var_ops")
-local var_preds = require("var_preds")
+local collect = require("array_ops.collect")
+local errors = require("tektite.errors")
+local var_preds = require("var_ops.predicates")
+local wipe = require("array_ops.wipe")
 
 -- Imports --
-local CollectArgsInto_IfAny = var_ops.CollectArgsInto_IfAny
+local CollectArgsInto_IfAny = collect.CollectArgsInto_IfAny
 local GetLastTraceback = errors.GetLastTraceback
 local IsCallable = var_preds.IsCallable
 local StoreTraceback = errors.StoreTraceback
-local UnpackAndWipe = var_ops.UnpackAndWipe
+local UnpackAndWipe = wipe.UnpackAndWipe
 
 -- Common weak metatable --
 local WeakKV = { __mode = "kv" }

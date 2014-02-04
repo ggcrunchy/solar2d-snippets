@@ -29,7 +29,7 @@ local remove = table.remove
 
 -- Modules --
 local dispatch_list = require("game.DispatchList")
-local lazy_tables = require("lazy_tables")
+local lazy = require("table_ops.lazy")
 local timers = require("game.Timers")
 
 -- Corona globals --
@@ -171,8 +171,8 @@ end
 dispatch_list.AddToMultipleLists{
 	-- Enter Level --
 	enter_level = function(level)
-		Circles = lazy_tables.SubTablesOnDemand()
-		Rects = lazy_tables.SubTablesOnDemand()
+		Circles = lazy.SubTablesOnDemand()
+		Rects = lazy.SubTablesOnDemand()
 		Stash = display.newGroup()
 
 		Stash.isVisible = false

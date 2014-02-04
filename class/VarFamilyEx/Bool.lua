@@ -29,9 +29,9 @@ local pairs = pairs
 
 -- Modules --
 local args = require("iterator_ops.args")
-local cache_ops = require("cache_ops")
+local cache = require("var_ops.cache")
 local flow = require("coroutine_ops.flow")
-local func_ops = require("func_ops")
+local func_ops = require("tektite.func_ops")
 
 -- Modules --
 local operators = require("bitwise_ops.operators")
@@ -333,7 +333,7 @@ return function(ops, BoolVars)
 	end)
 
 	-- Lookup / name setter cache --
-	local LookupCache = cache_ops.SimpleCache()
+	local LookupCache = cache.SimpleCache()
 
 	-- Helper to build cached wait operations
 	local ToggleBool = BoolVars.ToggleBool

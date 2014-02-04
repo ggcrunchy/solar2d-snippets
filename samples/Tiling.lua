@@ -30,13 +30,13 @@ local random = math.random
 local yield = coroutine.yield
 
 -- Modules --
+local array_index = require("array_ops.index")
 local buttons = require("ui.Button")
 local ca = require("fill.CellularAutomata")
 local circle = require("fill.Circle")
 local curves = require("utils.Curves")
 local flow = require("coroutine_ops.flow")
 local grid_iterators = require("iterator_ops.grid")
-local index_ops = require("index_ops")
 local ms = require("mask.MarchingSquares")
 local number_funcs = require("number_ops.funcs")
 local scenes = require("utils.Scenes")
@@ -213,8 +213,8 @@ end
 
 -- Resolves a position to tile coordinates
 local function TileCoords (x, y)
-	local col = index_ops.FitToSlot(x, 0, TileDim)
-	local row = index_ops.FitToSlot(y, 0, TileDim)
+	local col = array_index.FitToSlot(x, 0, TileDim)
+	local row = array_index.FitToSlot(y, 0, TileDim)
 
 	return col, row
 end
@@ -225,7 +225,7 @@ function A (tiles, op)
 
 	-- This is the first action, so update the effect in use (the first time this is called,
 	-- it gets moved out of a dummy state). Perform any initialization on the effect.
-	op = index_ops.RotateIndex(op, #Ops)
+	op = array_index.RotateIndex(op, #Ops)
 
 	Ops[op](nil, true)
 

@@ -31,8 +31,8 @@ local setmetatable = setmetatable
 local type = type
 
 -- Modules --
-local adaptive_table_ops = require("adaptive_table_ops")
-local lazy_tables = require("lazy_tables")
+local adaptive = require("table_ops.adaptive")
+local lazy = require("table_ops.lazy")
 
 -- Cached module references --
 local _AddId_
@@ -59,9 +59,9 @@ end
 -- @string key Key under which the ID is stored.
 -- @int id Target's ID. The stored ID will be a composite of _id_ and _sub_.
 -- @string sub Name of target's sublink.
--- @see adaptive_table_ops.Append
+-- @see table_ops.adaptive.Append
 function M.AddId (elem, key, id, sub)
-	adaptive_table_ops.Append(elem, key, ComposeId(id, sub))
+	adaptive.Append(elem, key, ComposeId(id, sub))
 end
 
 --- Convenience routine for building a subscribe function that in turn will populate a
@@ -224,7 +224,7 @@ function M.LinkActionsAndEvents (elem, other, esub, osub, events, actions, akey)
 end
 
 -- Waiting lists --
-local Deferred = lazy_tables.SubTablesOnDemand()
+local Deferred = lazy.SubTablesOnDemand()
 
 --- Publishes an event. This is intended as a startup process, to provide events to be
 -- picked up by event senders.
@@ -290,7 +290,7 @@ function M.Subscribe (name, id, func, arg)
 
 	local dt = Deferred[name]
 
-	for _, v in adaptive_table_ops.IterArray(id) do
+	for _, v in adaptive.IterArray(id) do
 		dt[#dt + 1] = v
 		dt[#dt + 1] = func
 		dt[#dt + 1] = arg

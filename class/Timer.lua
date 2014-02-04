@@ -31,7 +31,7 @@ local modf = math.modf
 local type = type
 
 -- Modules --
-local class = require("class")
+local class = require("tektite.class")
 local iterator_utils = require("iterator_ops.utils")
 
 -- Unique member keys --

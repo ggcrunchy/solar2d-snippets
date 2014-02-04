@@ -39,9 +39,9 @@ local sqrt = math.sqrt
 -- Modules --
 local buttons = require("ui.Button")
 local checkbox = require("ui.Checkbox")
-local cubic_spline = require("utils.CubicSpline")
+local cubic_spline = require("spline_ops.cubic")
 local grid_iterators = require("iterator_ops.grid")
-local integrators = require("utils.Integrators")
+local integrators = require("number_ops.Integrators")
 local quaternion_ops = require("quaternion_ops")
 local scenes = require("utils.Scenes")
 local timers = require("game.Timers")
@@ -148,7 +148,7 @@ local LightParams = {
 }
 
 -- --
-local Length, Poly = integrators.LineIntegrand_Cubic()
+local Length, Poly = cubic_spline.LineIntegrand()
 
 --
 function Scene:enterScene ()
@@ -275,7 +275,7 @@ function Scene:enterScene ()
 				if use_quats then
 					LightParams.time = 750
 				else
-					integrators.SetPolyFromCoeffs_Cubic(Poly, cubic_spline.GetPolyCoeffs_Array("catmull_rom", Angles))
+					cubic_spline.SetPolyFromCoeffs(Poly, cubic_spline.GetPolyCoeffs_Array("catmull_rom", Angles))
 
 					LightParams.time = ceil(max(.3, integrators.Romberg(Length, 0, 1, .005)) * 200)
 				end

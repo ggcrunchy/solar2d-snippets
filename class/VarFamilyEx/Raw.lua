@@ -25,7 +25,7 @@
 --
 
 -- Modules --
-local bound_args = require("bound_args")
+local bound_args = require("var_ops.bound_args")
 local table_ops = require("table_ops")
 
 --

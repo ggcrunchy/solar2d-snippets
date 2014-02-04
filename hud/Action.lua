@@ -31,8 +31,8 @@ local remove = table.remove
 local setmetatable = setmetatable
 
 -- Modules --
+local array_index = require("array_ops.index")
 local dispatch_list = require("game.DispatchList")
-local index_ops = require("index_ops")
 local touch = require("ui.Touch")
 
 -- Corona globals --
@@ -102,7 +102,7 @@ function FadeIconParams.onComplete (icon)
 
 	-- On fade out: Try to fade in the next icon (which may be the icon itself).
 	elseif icon.alpha < .5 then
-		local index = index_ops.RotateIndex(IndexOf(icon.prev or icon.name), n)
+		local index = array_index.RotateIndex(IndexOf(icon.prev or icon.name), n)
 
 		FadeIcon(Sequence[index].icon, 1)
 
@@ -168,7 +168,7 @@ local function RemoveIcon (index, item)
 			-- Since indices are trouble to maintain, get the name of the previous item in
 			-- the sequence: this will be the reference point for the "go to next" logic,
 			-- after the fade out.
-			local prev = index_ops.RotateIndex(index, #Sequence, true)
+			local prev = array_index.RotateIndex(index, #Sequence, true)
 
 			item.icon.prev = index ~= prev and Sequence[prev].name
 

@@ -34,9 +34,9 @@ local type = type
 local unpack = unpack
 
 -- Modules --
+local array_index = require("array_ops.index")
 local curves = require("utils.Curves")
 local frames = require("utils.Frames")
-local index_ops = require("index_ops")
 local timers = require("game.Timers")
 
 -- Corona globals --
@@ -93,7 +93,7 @@ end
 --
 local function SolvePath (path, t)
 	local slice = 1 / (#path / 2 - 1)
-	local slot = index_ops.FitToSlot(t, 0, slice) - 1
+	local slot = array_index.FitToSlot(t, 0, slice) - 1
 	local yt, base = t / slice - slot, slot * 2
 	local x1, y1, x2, y2 = unpack(path, base + 1, base + 4)
 
@@ -170,7 +170,7 @@ function M.Snowfall (group, images, max)
 			-- Replace a dead flake if desired.
 			elseif states[i] == nil then
 				-- Assign a random alpha to the flake, and pick a horizontal slot.
-				slot = index_ops.RotateIndex(slot, nslots)
+				slot = array_index.RotateIndex(slot, nslots)
 
 				-- Choose a position above the screen at the current slot. Choose another
 				-- below the screen, displaced a bit horizontally from the first. Assign a

@@ -28,7 +28,7 @@
 -- Modules --
 local colors = require("ui.Color")
 local frames = require("utils.Frames")
-local geom2d_ops = require("geom2d_ops")
+local geom2d_preds = require("geom2d_ops.predicates")
 local skins = require("ui.Skin")
 local timers = require("game.Timers")
 
@@ -115,7 +115,7 @@ local function OnTouch (event)
 		-- Check whether the touch is inside the button.
 		local bx, by = button:localToContent(0, 0)
 
-		button.m_inside = geom2d_ops.PointInBox(event.x, event.y, bx - button.width / 2, by - button.height / 2, button.contentWidth, button.contentHeight)
+		button.m_inside = geom2d_preds.PointInBox(event.x, event.y, bx - button.width / 2, by - button.height / 2, button.contentWidth, button.contentHeight)
 
 		-- On(ended) / On(cancelled): release focus and restore appearance
 		-- If the button was doing timeouts, do nothing. Otherwise, if it was dropped

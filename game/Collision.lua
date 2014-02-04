@@ -27,11 +27,10 @@
 local assert = assert
 
 -- Modules --
-local adaptive_table_ops = require("adaptive_table_ops")
+local adaptive = require("table_ops.adaptive")
 local args = require("iterator_ops.args")
 local dispatch_list = require("game.DispatchList")
 local flag_utils = require("utils.Flag")
-local table_ops = require("table_ops")
 local timers = require("game.Timers")
 
 -- Corona globals --
@@ -80,7 +79,7 @@ local InterfacePreds, Interfaces = {}, {}
 --- DOCME
 function M.AddInterfaces (type, ...)
 	for _, v in args.Args(...) do
-		adaptive_table_ops.AddToSet(Interfaces, type, v)
+		adaptive.AddToSet(Interfaces, type, v)
 	end
 end
 
@@ -89,7 +88,7 @@ function M.AddInterfaces_Pred (type, ...)
 	local preds = InterfacePreds[type] or {}
 
 	for _, what, pred in args.ArgsByN(2, ...) do
-		adaptive_table_ops.AddToSet(Interfaces, type, what)
+		adaptive.AddToSet(Interfaces, type, what)
 
 		preds[what] = pred
 	end
@@ -200,7 +199,7 @@ local function AddToList (object, other, func)
 end
 
 -- Types used to manage physics interactions --
-local Types = table_ops.Weak("k")
+local Types = setmetatable({}, { __mode = "k" })
 
 --- DOCME
 function M.DoOrDefer (object, other, phase, func)
@@ -275,13 +274,13 @@ end
 
 --- DOCME
 function M.Implements (object, what)
-	return adaptive_table_ops.InSet(Interfaces[Types[object]], what)
+	return adaptive.InSet(Interfaces[Types[object]], what)
 end
 
 --- DOCME
 function M.Implements_Pred (object, what, def, ...)
 	local type = Types[object]
-	local implements = adaptive_table_ops.InSet(Interfaces[type], what)
+	local implements = adaptive.InSet(Interfaces[type], what)
 
 	if implements then
 		local preds = InterfacePreds[type]

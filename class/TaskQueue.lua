@@ -38,19 +38,19 @@ local wrap = coroutine.wrap
 -- Modules --
 local args = require("iterator_ops.args")
 local array_funcs = require("array_ops.funcs")
-local bound_args = require("bound_args")
-local cache_ops = require("cache_ops")
-local class = require("class")
-local exception = require("exception")
-local table_ops = require("table_ops")
-local var_preds = require("var_preds")
+local bound_args = require("var_ops.bound_args")
+local cache = require("var_ops.cache")
+local class = require("tektite.class")
+local exception = require("tektite.exception")
+local table_funcs = require("table_ops.funcs")
+local var_preds = require("var_ops.predicates")
 local wrapper = require("coroutine_ops.wrapper")
 
 -- Imports --
 local Args = args.Args
 local Filter = array_funcs.Filter
 local IsCallable = var_preds.IsCallable
-local Move = table_ops.Move
+local Move = table_funcs.Move
 local Reverse = array_funcs.Reverse
 local Try = exception.Try
 local WithBoundTable = bound_args.WithBoundTable
@@ -64,7 +64,7 @@ local _tasks = {}
 -- TaskQueue class definition --
 return class.Define(function(TaskQueue)
 	-- Cache of task batches --
-	local Cache = cache_ops.TableCache()
+	local Cache = cache.TableCache()
 
 	-- Task batching helper
 	local function CollectAndValidate (op, ...)
@@ -152,7 +152,7 @@ return class.Define(function(TaskQueue)
 		end
 
 		-- Sequence states --
-		local States = table_ops.Weak("k")
+		local States = table_funcs.Weak("k")
 
 		-- Adds a set of tasks to a new sequence
 		local function Add (TQ, op, ...)

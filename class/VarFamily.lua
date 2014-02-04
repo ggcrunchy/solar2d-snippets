@@ -35,11 +35,12 @@ local setmetatable = setmetatable
 
 -- Modules --
 local args = require("iterator_ops.args")
-local class = require("class")
-local func_ops = require("func_ops")
-local lazy_tables = require("lazy_tables")
-local table_ops = require("table_ops")
-local var_preds = require("var_preds")
+local array_funcs = require("array_ops.funcs")
+local class = require("tektite.class")
+local func_ops = require("tektite.func_ops")
+local lazy = require("table_ops.lazy")
+local table_funcs = require("table_ops.funcs")
+local var_preds = require("var_ops.predicates")
 
 -- Unique member keys --
 local _auto_propagate = {}
@@ -62,7 +63,7 @@ return class.Define(function(VarFamily)
 			if is_prim then
 				meta = { __index = def, is_prim = true }
 			else
-				meta = lazy_tables.MakeOnDemand_Meta(def)
+				meta = lazy.MakeOnDemand_Meta(def)
 			end
 
 			function meta:set_current (VF, group_cur)
@@ -139,9 +140,9 @@ return class.Define(function(VarFamily)
 	-- Group propagate operations
 	local function GetOps (what)
 		if Metas[what].is_prim then
-			return table_ops.Copy
+			return table_funcs.Copy
 		else
-			return table_ops.Map, class.Clone
+			return table_funcs.Map, class.Clone
 		end
 	end
 
@@ -244,7 +245,7 @@ return class.Define(function(VarFamily)
 	function VarFamily:GetVars (what)
 		local vars = assert(Metas[what], "Invalid variable type")
 
-		return table_ops.Copy(self[vars])
+		return table_funcs.Copy(self[vars])
 	end
 
 --[[
@@ -282,13 +283,13 @@ return class.Define(function(VarFamily)
 		assert(var_preds.IsInteger(tier_count) and count > 0, "Invalid tier count")
 
 		-- Automatically propagated variables --
-		self[_auto_propagate] = lazy_tables.SubTablesOnDemand()
+		self[_auto_propagate] = lazy.SubTablesOnDemand()
 
 		-- Variables groups --
 		self[_groups] = {}
 
 		for what in pairs(Metas) do
-			self[_groups][what] = table_ops.ArrayOfTables(tier_count)
+			self[_groups][what] = array_funcs.ArrayOfTables(tier_count)
 		end
 
 		SetupWorkingSet(self)

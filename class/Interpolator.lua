@@ -29,9 +29,9 @@ local assert = assert
 local type = type
 
 -- Modules --
-local class = require("class")
-local func_ops = require("func_ops")
-local table_ops = require("table_ops")
+local class = require("tektite.class")
+local func_ops = require("tektite.func_ops")
+local table_funcs = require("table_ops.funcs")
 
 -- Imports --
 local Identity = func_ops.Identity
@@ -40,7 +40,7 @@ local Identity = func_ops.Identity
 local TimerClass = require("class.Timer")
 
 -- Resume commands --
-local Commands = table_ops.MakeSet{ "continue", "flip", "forward", "reverse" }
+local Commands = table_funcs.MakeSet{ "continue", "flip", "forward", "reverse" }
 
 -- Unique member keys --
 local _context = {}

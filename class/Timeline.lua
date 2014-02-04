@@ -34,16 +34,16 @@ local sort = table.sort
 local type = type
 
 -- Modules --
-local bound_args = require("bound_args")
-local class = require("class")
-local exception = require("exception")
-local table_ops = require("table_ops")
-local var_preds = require("var_preds")
+local bound_args = require("var_ops.bound_args")
+local class = require("tektite.class")
+local exception = require("tektite.exception")
+local table_funcs = require("table_ops.funcs")
+local var_preds = require("var_ops.predicates")
 
 -- Imports --
-local DeepCopy = table_ops.DeepCopy
+local DeepCopy = table_funcs.DeepCopy
 local IsCallable = var_preds.IsCallable
-local Move = table_ops.Move
+local Move = table_funcs.Move
 local Try = exception.Try
 local WithBoundTable = bound_args.WithBoundTable
 

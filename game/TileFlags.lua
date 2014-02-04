@@ -29,13 +29,13 @@
 -- Standard library imports --
 
 -- Modules --
+local array_index = require("array_ops.index")
 local args = require("iterator_ops.args")
 local powers_of_2 = require("bitwise_ops.powers_of_2")
 local dispatch_list = require("game.DispatchList")
 local flag_utils = require("utils.Flag")
-local index_ops = require("index_ops")
 local range = require("number_ops.range")
-local table_ops = require("table_ops")
+local table_funcs = require("table_ops.funcs")
 
 -- Imports --
 local PowersOf2 = powers_of_2.PowersOf2
@@ -104,10 +104,10 @@ function M.GetNameByFlagNames (...)
 end
 
 -- The names of each cardinal direction, indexed by its flag --
-local NamesByValueDir = table_ops.Invert(DirFlags)
+local NamesByValueDir = table_funcs.Invert(DirFlags)
 
 -- The names of each flag combination, indexed by its union of flags --
-local NamesByValueTile = table_ops.Invert(TileFlags)
+local NamesByValueTile = table_funcs.Invert(TileFlags)
 
 --- Variant of @{GetNameByFlagNames} using the flags themselves as input.
 -- @uint flags Union of flags.
@@ -207,7 +207,7 @@ function M.ResolveFlags (update)
 	for i = 1, Area do
 		local flags, ignore = Flags[i]
 
-		col = index_ops.RotateIndex(col, NCols)
+		col = array_index.RotateIndex(col, NCols)
 
 		if col == 1 then
 			ignore = "left"
@@ -236,7 +236,7 @@ end
 local RotateCW = { left = "up", right = "down", down = "left", up = "right" }
 
 -- Counter-clockwise flag rotations --
-local RotateCCW = table_ops.Invert(RotateCW)
+local RotateCCW = table_funcs.Invert(RotateCW)
 
 --- Reports the state of a set of flags, after a rotation of some multiple of 90 degrees.
 -- @uint flags Union of flags to rotate.
@@ -287,7 +287,7 @@ function M.WipeFlags (col1, row1, col2, row2)
 	col1, col2 = range.MinMax_N(col1, col2, NCols)
 	row1, row2 = range.MinMax_N(row1, row2, NRows)
 
-	local index = index_ops.CellToIndex(col1, row1, NCols)
+	local index = array_index.CellToIndex(col1, row1, NCols)
 
 	for _ = row1, row2 do
 		for i = 0, col2 - col1 do

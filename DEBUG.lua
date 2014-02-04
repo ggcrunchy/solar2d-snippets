@@ -25,10 +25,10 @@
 
 -- Modules --
 local args = require("iterator_ops.args")
+local array_index = require("array_ops.index")
 local button = require("ui.Button")
 local checkbox = require("ui.Checkbox")
 local dispatch_list = require("game.DispatchList")
-local index_ops = require("index_ops")
 local level_map = require("game.LevelMap")
 local markers = require("effect.Markers")
 local movement = require("game.Movement")
@@ -173,7 +173,7 @@ return function(what, arg_)
 	if what == "options" then -- arg_: data group
 		local message
 		local button = button.Button(arg_, nil, 120, 210, 200, 50, function()
-			Index = index_ops.RotateIndex(Index, #Options)
+			Index = array_index.RotateIndex(Index, #Options)
 
 			message.text = Options[Index]
 		end, "Debug...")

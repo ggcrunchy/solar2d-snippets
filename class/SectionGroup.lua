@@ -37,12 +37,12 @@ local remove = table.remove
 local tostring = tostring
 
 -- Modules --
-local class = require("class")
-local table_ops = require("table_ops")
-local var_preds = require("var_preds")
+local class = require("tektite.class")
+local table_funcs = require("table_ops.funcs")
+local var_preds = require("var_ops.predicates")
 
 -- Imports --
-local Find = table_ops.Find
+local Find = table_funcs.Find
 local IsCallable = var_preds.IsCallable
 
 -- Unique member keys --
@@ -50,7 +50,7 @@ local _sections = {}
 local _stack = {}
 
 -- Internal proc states --
-local Internal = table_ops.MakeSet{
+local Internal = table_funcs.MakeSet{
 	"load", "unload",
 	"move",
 	"open", "close",

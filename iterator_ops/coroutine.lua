@@ -27,17 +27,18 @@
 local ipairs = ipairs
 
 -- Modules --
+local collect = require("array_ops.collect")
 local iterator_utils = require("iterator_ops.utils")
-local var_ops = require("var_ops")
 local wrapper = require("coroutine_ops.wrapper")
+local wipe = require("array_ops.wipe")
 
 -- Imports --
-local CollectArgsInto_IfAny = var_ops.CollectArgsInto_IfAny
+local CollectArgsInto_IfAny = collect.CollectArgsInto_IfAny
 local InstancedAutocacher = iterator_utils.InstancedAutocacher
 local IsIterationDone = wrapper.IsIterationDone
 local Reset = wrapper.Reset
-local UnpackAndWipe = var_ops.UnpackAndWipe
-local WipeRange = var_ops.WipeRange
+local UnpackAndWipe = wipe.UnpackAndWipe
+local WipeRange = wipe.WipeRange
 local Wrap = wrapper.Wrap
 
 -- Exports --

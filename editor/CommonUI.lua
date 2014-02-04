@@ -332,7 +332,7 @@ function M.TabsHack (group, tabs, n, x, y, w, h)
 
 	rect:addEventListener("touch", function(event)
 		local bounds = event.target.contentBounds
-		local index = math.min(require("index_ops").FitToSlot(event.x, bounds.xMin, (bounds.xMax - bounds.xMin) / n), n)
+		local index = math.min(require("array_ops.index").FitToSlot(event.x, bounds.xMin, (bounds.xMax - bounds.xMin) / n), n)
 
 		if is_func then
 			local _, extra = x()

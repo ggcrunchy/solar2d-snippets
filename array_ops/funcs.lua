@@ -28,12 +28,13 @@ local ipairs = ipairs
 local pairs = pairs
 
 -- Modules --
-local bound_args = require("bound_args")
-local var_ops = require("var_ops")
+local bound_args = require("var_ops.bound_args")
+local collect = require("array_ops.collect")
+local wipe = require("array_ops.wipe")
 
 -- Imports --
-local CollectArgsInto = var_ops.CollectArgsInto
-local WipeRange = var_ops.WipeRange
+local CollectArgsInto = collect.CollectArgsInto
+local WipeRange = wipe.WipeRange
 
 -- Exports --
 local M = {}
@@ -46,7 +47,7 @@ local GetTable
 -- When called in a bound table context, the binding is used as the destination array.
 -- @uint count
 -- @treturn table Array.
--- @see bound_args.WithBoundTable
+-- @see var_ops.bound_args.WithBoundTable
 function M.ArrayOfTables (count)
 	local dt = GetTable()
 
@@ -131,7 +132,7 @@ end
 -- When called in a bound table context, the binding is used as the destination array.
 -- @array arr Array from which to read keys.
 -- @treturn table Key array.
--- @see bound_args.WithBoundTable
+-- @see var_ops.bound_args.WithBoundTable
 function M.GetKeys (arr)
     local dt = GetTable()
 

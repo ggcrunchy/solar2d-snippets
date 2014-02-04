@@ -32,12 +32,12 @@ local setmetatable = setmetatable
 -- Modules --
 local debug = require("debug")
 local device = require("utils.Device")
-local errors = require("errors")
+local errors = require("tektite.errors")
 local flow_bodies = require("coroutine_ops.flow_bodies")
 local frames = require("utils.Frames")
 local per_coroutine = require("coroutine_ops.per_coroutine")
 local scenes = require("utils.Scenes")
-local var_dump = require("var_dump")
+local var_dump = require("var_ops.dump")
 
 -- Corona globals --
 local native = native

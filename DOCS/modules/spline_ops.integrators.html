@@ -1,0 +1,586 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+<head>
+    <title>Snippets documentation</title>
+    <link rel="stylesheet" href="../ldoc.css" type="text/css" />
+</head>
+<body>
+
+<div id="container">
+
+<div id="product">
+	<div id="product_logo"></div>
+	<div id="product_name"><big><b></b></big></div>
+	<div id="product_description"></div>
+</div> <!-- id="product" -->
+
+
+<div id="main">
+
+
+<!-- Menu -->
+
+<div id="navigation">
+<br/>
+<h1>Corona SDK snippets</h1>
+
+<ul>
+  <li><a href="../api.html">Index</a></li>
+</ul>
+
+<h2>Contents</h2>
+<ul>
+<li><a href="#Functions">Functions</a></li>
+</ul>
+
+
+<h2>Modules</h2>
+<ul class="$(kind=='Topics' and '' or 'nowrap'">
+  <li><a href="../modules/array_ops.collect.html">collect</a></li>
+  <li><a href="../modules/array_ops.funcs.html">funcs</a></li>
+  <li><a href="../modules/array_ops.index.html">index</a></li>
+  <li><a href="../modules/array_ops.predicates.html">predicates</a></li>
+  <li><a href="../modules/array_ops.wipe.html">wipe</a></li>
+  <li><a href="../modules/bitwise_ops.log2.html">log2</a></li>
+  <li><a href="../modules/bitwise_ops.operators.html">operators</a></li>
+  <li><a href="../modules/bitwise_ops.powers_of_2.html">powers_of_2</a></li>
+  <li><a href="../modules/SparseArray.html">SparseArray</a></li>
+  <li><a href="../modules/Interpolator.html">Interpolator</a></li>
+  <li><a href="../modules/SectionGroup.html">SectionGroup</a></li>
+  <li><a href="../modules/TaskQueue.html">TaskQueue</a></li>
+  <li><a href="../modules/Timeline.html">Timeline</a></li>
+  <li><a href="../modules/Timer.html">Timer</a></li>
+  <li><a href="../modules/VarFamily.html">VarFamily</a></li>
+  <li><a href="../modules/class.VarFamilyEx.Annex.html">VarFamilyEx.Annex</a></li>
+  <li><a href="../modules/BoolVars.html">BoolVars</a></li>
+  <li><a href="../modules/NumVars.html">NumVars</a></li>
+  <li><a href="../modules/RawVars.html">RawVars</a></li>
+  <li><a href="../modules/TimerVars.html">TimerVars</a></li>
+  <li><a href="../modules/config.Dots.html">Dots</a></li>
+  <li><a href="../modules/config.EditorViews.html">EditorViews</a></li>
+  <li><a href="../modules/config.EventBlocks.html">EventBlocks</a></li>
+  <li><a href="../modules/config.GlobalEvents.html">GlobalEvents</a></li>
+  <li><a href="../modules/coroutine_ops.flow.html">flow</a></li>
+  <li><a href="../modules/coroutine_ops.flow_bodies.html">flow_bodies</a></li>
+  <li><a href="../modules/coroutine_ops.per_coroutine.html">per_coroutine</a></li>
+  <li><a href="../modules/coroutine_ops.wrapper.html">wrapper</a></li>
+  <li><a href="../modules/DEBUG.html">DEBUG</a></li>
+  <li><a href="../modules/dot.Switch.html">Switch</a></li>
+  <li><a href="../modules/dot.Warp.html">Warp</a></li>
+  <li><a href="../modules/editor.Common.html">Common</a></li>
+  <li><a href="../modules/editor.CommonUI.html">CommonUI</a></li>
+  <li><a href="../modules/editor.Dialog.Data.html">Dialog.Data</a></li>
+  <li><a href="../modules/editor.Dialog.Items.html">Dialog.Items</a></li>
+  <li><a href="../modules/editor.Dialog.Layout.html">Dialog.Layout</a></li>
+  <li><a href="../modules/editor.Dialog.Methods.html">Dialog.Methods</a></li>
+  <li><a href="../modules/editor.Dialog.Utils.html">Dialog.Utils</a></li>
+  <li><a href="../modules/editor.Dialog.html">Dialog</a></li>
+  <li><a href="../modules/editor.Events.html">Events</a></li>
+  <li><a href="../modules/editor.Grid.html">Grid</a></li>
+  <li><a href="../modules/editor.GridFuncs.html">GridFuncs</a></li>
+  <li><a href="../modules/editor.Links.html">Links</a></li>
+  <li><a href="../modules/editor.Ops.html">Ops</a></li>
+  <li><a href="../modules/editor.Tags.html">Tags</a></li>
+  <li><a href="../modules/editor.views.Audio.html">views.Audio</a></li>
+  <li><a href="../modules/editor.views.Background.html">views.Background</a></li>
+  <li><a href="../modules/editor.views.Dots.html">views.Dots</a></li>
+  <li><a href="../modules/editor.views.EventBlocks.html">views.EventBlocks</a></li>
+  <li><a href="../modules/editor.views.GlobalEvents.html">views.GlobalEvents</a></li>
+  <li><a href="../modules/editor.views.Player.html">views.Player</a></li>
+  <li><a href="../modules/editor.views.Positions.html">views.Positions</a></li>
+  <li><a href="../modules/editor.views.Settings.html">views.Settings</a></li>
+  <li><a href="../modules/editor.views.Tiles.html">views.Tiles</a></li>
+  <li><a href="../modules/editor.views.Triggers.html">views.Triggers</a></li>
+  <li><a href="../modules/effect.Balloons.html">Balloons</a></li>
+  <li><a href="../modules/effect.Fillers.html">Fillers</a></li>
+  <li><a href="../modules/effect.Glow.html">Glow</a></li>
+  <li><a href="../modules/effect.Markers.html">Markers</a></li>
+  <li><a href="../modules/effect.Shadows.html">Shadows</a></li>
+  <li><a href="../modules/effect.Snowfall.html">Snowfall</a></li>
+  <li><a href="../modules/effect.Stars.html">Stars</a></li>
+  <li><a href="../modules/effect.Stash.html">Stash</a></li>
+  <li><a href="../modules/event_block.Maze.html">Maze</a></li>
+  <li><a href="../modules/fill.CellularAutomata.html">CellularAutomata</a></li>
+  <li><a href="../modules/fill.Circle.html">Circle</a></li>
+  <li><a href="../modules/fill.MarchingSquares.html">MarchingSquares</a></li>
+  <li><a href="../modules/FIXES.html">FIXES</a></li>
+  <li><a href="../modules/game.AI.html">AI</a></li>
+  <li><a href="../modules/game.Collision.html">Collision</a></li>
+  <li><a href="../modules/game.Controls.html">Controls</a></li>
+  <li><a href="../modules/game.DispatchList.html">DispatchList</a></li>
+  <li><a href="../modules/game.Dots.html">Dots</a></li>
+  <li><a href="../modules/game.EventBlocks.html">EventBlocks</a></li>
+  <li><a href="../modules/game.FX.html">FX</a></li>
+  <li><a href="../modules/game.GlobalEvents.html">GlobalEvents</a></li>
+  <li><a href="../modules/game.LevelMap.html">LevelMap</a></li>
+  <li><a href="../modules/game.LevelsList.html">LevelsList</a></li>
+  <li><a href="../modules/game.Movement.html">Movement</a></li>
+  <li><a href="../modules/game.Pathing.html">Pathing</a></li>
+  <li><a href="../modules/game.PathUtils.html">PathUtils</a></li>
+  <li><a href="../modules/game.Persistence.html">Persistence</a></li>
+  <li><a href="../modules/game.Player.html">Player</a></li>
+  <li><a href="../modules/game.Scrolling.html">Scrolling</a></li>
+  <li><a href="../modules/game.TileFlags.html">TileFlags</a></li>
+  <li><a href="../modules/game.TileMaps.html">TileMaps</a></li>
+  <li><a href="../modules/game.Timers.html">Timers</a></li>
+  <li><a href="../modules/game.Transitions.html">Transitions</a></li>
+  <li><a href="../modules/geom2d_ops.predicates.html">predicates</a></li>
+  <li><a href="../modules/geom2d_ops.quantize.html">quantize</a></li>
+  <li><a href="../modules/geom2d_ops.vector.html">vector</a></li>
+  <li><a href="../modules/hash_ops.html">hash_ops</a></li>
+  <li><a href="../modules/hud.Action.html">Action</a></li>
+  <li><a href="../modules/hud.Move.html">Move</a></li>
+  <li><a href="../modules/iterator_ops.args.html">args</a></li>
+  <li><a href="../modules/iterator_ops.coroutine.html">coroutine</a></li>
+  <li><a href="../modules/iterator_ops.grid.html">grid</a></li>
+  <li><a href="../modules/iterator_ops.ipairs.html">ipairs</a></li>
+  <li><a href="../modules/iterator_ops.utils.html">utils</a></li>
+  <li><a href="../modules/main.html">main</a></li>
+  <li><a href="../modules/mask.MarchingSquares.html">MarchingSquares</a></li>
+  <li><a href="../modules/mesh_ops.html">mesh_ops</a></li>
+  <li><a href="../modules/number_ops.funcs.html">funcs</a></li>
+  <li><a href="../modules/number_ops.hilbert.html">hilbert</a></li>
+  <li><a href="../modules/number_ops.integrators.html">integrators</a></li>
+  <li><a href="../modules/number_ops.morton.html">morton</a></li>
+  <li><a href="../modules/number_ops.mwc_rng.html">mwc_rng</a></li>
+  <li><a href="../modules/number_ops.range.html">range</a></li>
+  <li><a href="../modules/number_ops.simplex_noise.html">simplex_noise</a></li>
+  <li><a href="../modules/overlay.Help.html">Help</a></li>
+  <li><a href="../modules/overlay.Link.html">Link</a></li>
+  <li><a href="../modules/quaternion_ops.html">quaternion_ops</a></li>
+  <li><a href="../modules/samples.Delaunay.html">Delaunay</a></li>
+  <li><a href="../modules/samples.Fire.html">Fire</a></li>
+  <li><a href="../modules/samples.Hilbert.html">Hilbert</a></li>
+  <li><a href="../modules/samples.HilbertMixer.html">HilbertMixer</a></li>
+  <li><a href="../modules/samples.Hop.html">Hop</a></li>
+  <li><a href="../modules/samples.Marching.html">Marching</a></li>
+  <li><a href="../modules/samples.Nodes.html">Nodes</a></li>
+  <li><a href="../modules/samples.OrbitsAndLattices.html">OrbitsAndLattices</a></li>
+  <li><a href="../modules/samples.Pixels.html">Pixels</a></li>
+  <li><a href="../modules/samples.Plasma.html">Plasma</a></li>
+  <li><a href="../modules/samples.SlowMo.html">SlowMo</a></li>
+  <li><a href="../modules/samples.Snowfall.html">Snowfall</a></li>
+  <li><a href="../modules/samples.Superformulae.html">Superformulae</a></li>
+  <li><a href="../modules/samples.Thoughts.html">Thoughts</a></li>
+  <li><a href="../modules/samples.Ticker.html">Ticker</a></li>
+  <li><a href="../modules/samples.Tiling.html">Tiling</a></li>
+  <li><a href="../modules/samples.Timers.html">Timers</a></li>
+  <li><a href="../modules/scene.Choices.html">Choices</a></li>
+  <li><a href="../modules/scene.EditorSetup.html">EditorSetup</a></li>
+  <li><a href="../modules/scene.Intro.html">Intro</a></li>
+  <li><a href="../modules/scene.Level.html">Level</a></li>
+  <li><a href="../modules/scene.MapEditor.html">MapEditor</a></li>
+  <li><a href="../modules/scene.Options.html">Options</a></li>
+  <li><a href="../modules/spline_ops.arc_length.html">arc_length</a></li>
+  <li><a href="../modules/spline_ops.bezier.html">bezier</a></li>
+  <li><a href="../modules/spline_ops.cubic.html">cubic</a></li>
+  <li><strong>integrators</strong></li>
+  <li><a href="../modules/table_ops.adaptive.html">adaptive</a></li>
+  <li><a href="../modules/table_ops.funcs.html">funcs</a></li>
+  <li><a href="../modules/table_ops.lazy.html">lazy</a></li>
+  <li><a href="../modules/table_ops.predicates.html">predicates</a></li>
+  <li><a href="../modules/table_ops.proxy.html">proxy</a></li>
+  <li><a href="../modules/tektite.class.html">class</a></li>
+  <li><a href="../modules/tektite.errors.html">errors</a></li>
+  <li><a href="../modules/tektite.exception.html">exception</a></li>
+  <li><a href="../modules/tektite.func_ops.html">func_ops</a></li>
+  <li><a href="../modules/tests.LinksAndTags.html">LinksAndTags</a></li>
+  <li><a href="../modules/tiles.TreeBG.html">TreeBG</a></li>
+  <li><a href="../modules/ui.Button.html">Button</a></li>
+  <li><a href="../modules/ui.Checkbox.html">Checkbox</a></li>
+  <li><a href="../modules/ui.Color.html">Color</a></li>
+  <li><a href="../modules/ui.ColorPicker.html">ColorPicker</a></li>
+  <li><a href="../modules/ui.Grid1D.html">Grid1D</a></li>
+  <li><a href="../modules/ui.Grid2D.html">Grid2D</a></li>
+  <li><a href="../modules/ui.HSV.html">HSV</a></li>
+  <li><a href="../modules/ui.Keyboard.html">Keyboard</a></li>
+  <li><a href="../modules/ui.Layout.html">Layout</a></li>
+  <li><a href="../modules/ui.LineEx.html">LineEx</a></li>
+  <li><a href="../modules/ui.Lines.html">Lines</a></li>
+  <li><a href="../modules/ui.LinkGroup.html">LinkGroup</a></li>
+  <li><a href="../modules/ui.Sheet.html">Sheet</a></li>
+  <li><a href="../modules/ui.Skin.html">Skin</a></li>
+  <li><a href="../modules/ui.Touch.html">Touch</a></li>
+  <li><a href="../modules/ui.Utils.html">Utils</a></li>
+  <li><a href="../modules/utils.Audio.html">Audio</a></li>
+  <li><a href="../modules/utils.Bind.html">Bind</a></li>
+  <li><a href="../modules/utils.CubicSpline.html">CubicSpline</a></li>
+  <li><a href="../modules/utils.Curves.html">Curves</a></li>
+  <li><a href="../modules/utils.Device.html">Device</a></li>
+  <li><a href="../modules/utils.File.html">File</a></li>
+  <li><a href="../modules/utils.Flag.html">Flag</a></li>
+  <li><a href="../modules/utils.Frames.html">Frames</a></li>
+  <li><a href="../modules/utils.Integrators.html">Integrators</a></li>
+  <li><a href="../modules/utils.Mask.html">Mask</a></li>
+  <li><a href="../modules/utils.ObjectHelper.html">ObjectHelper</a></li>
+  <li><a href="../modules/utils.Resource.html">Resource</a></li>
+  <li><a href="../modules/utils.Scenes.html">Scenes</a></li>
+  <li><a href="../modules/utils.Spline.html">Spline</a></li>
+  <li><a href="../modules/utils.String.html">String</a></li>
+  <li><a href="../modules/var_ops.bound_args.html">bound_args</a></li>
+  <li><a href="../modules/var_ops.cache.html">cache</a></li>
+  <li><a href="../modules/var_ops.dump.html">dump</a></li>
+  <li><a href="../modules/var_ops.predicates.html">predicates</a></li>
+</ul>
+
+</div>
+
+<div id="content">
+
+<h1>Module <code>spline_ops.integrators</code></h1>
+<p>Various numerical integrators.</p>
+<p> For purposes of this module, an instance of type <strong>Vector</strong> is a value, e.g. a table,
+ that has <strong>number</strong> members <strong>x</strong> and <strong>y</strong>.</p>
+
+
+<h2><a href="#Functions">Functions</a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#BezierLength2">BezierLength2 (p1, q, p2)</a></td>
+	<td class="summary">Computes a (degree 2) <a href="http://malczak.info/blog/quadratic-bezier-curve-length/">B&eacute;zier spline's length</a>.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#BezierLength2_Array">BezierLength2_Array (bezier)</a></td>
+	<td class="summary">Array variant of <a href="../modules/spline_ops.integrators.html#BezierLength2">BezierLength2</a>.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#BezierLength3">BezierLength3 (p1, q1, q2, p2, tolerance)</a></td>
+	<td class="summary">Computes a (degree 3) <a href="http://steve.hollasch.net/cgindex/curves/cbezarclen.html">B&eacute;zier spline's length</a>.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#BezierLength3_Array">BezierLength3_Array (bezier, tolerance)</a></td>
+	<td class="summary">Array variant of <a href="../modules/spline_ops.integrators.html#BezierLength3">BezierLength3</a>.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#GaussLegendre">GaussLegendre (func, a, b, tolerance)</a></td>
+	<td class="summary">Integrates <em>func</em> via <a href="http://en.wikipedia.org/wiki/Gaussian_quadrature#Gauss.E2.80.93Legendre_quadrature">Gauss-Legendre quadrature</a>.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#LineIntegrand_Cubic">LineIntegrand_Cubic (poly)</a></td>
+	<td class="summary"><a href="http://en.wikipedia.org/wiki/Arc_length#Finding_arc_lengths_by_integrating">Line integrand</a>
+ for a cubic polynomial.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Romberg">Romberg (func, a, b)</a></td>
+	<td class="summary">Integrates <em>func</em> via <a href="http://www.geometrictools.com/Documentation/NumericalIntegration.pdf">Romberg integration</a>.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#SetPolyFromCoeffs_Cubic">SetPolyFromCoeffs_Cubic (poly, ax, ay, bx, by, cx, cy)</a></td>
+	<td class="summary">Assigns integrand coefficents (in particular, as expected by <a href="../modules/spline_ops.integrators.html#LineIntegrand_Cubic">LineIntegrand_Cubic</a>'s
+ integrand function), given a cubic polynomial's derivatives: dx/dt = 3<em>Ax&sup2;</em> + 2<em>Bx</em> +
+ <em>C</em>, dy/dt = 3<em>Dy&sup2;</em> + 2<em>Ey</em> + F.</td>
+	</tr>
+</table>
+
+<br/>
+<br/>
+
+
+    <h2><a name="Functions"></a>Functions</h2>
+    <dl class="function">
+    <dt>
+    <a name = "BezierLength2"></a>
+    <strong>BezierLength2 (p1, q, p2)</strong>
+    </dt>
+    <dd>
+    Computes a (degree 2) <a href="http://malczak.info/blog/quadratic-bezier-curve-length/">B&eacute;zier spline's length</a>.
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">p1</span>
+            <span class="types"><span class="type">Vector</span></span>
+         Endpoint #1 of control polygon...
+        </li>
+        <li><span class="parameter">q</span>
+            <span class="types"><span class="type">Vector</span></span>
+         ...interior control point...
+        </li>
+        <li><span class="parameter">p2</span>
+            <span class="types"><span class="type">Vector</span></span>
+         ...and endpoint #2.
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">number</span></span>
+        Approximate arc length.
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "BezierLength2_Array"></a>
+    <strong>BezierLength2_Array (bezier)</strong>
+    </dt>
+    <dd>
+    Array variant of <a href="../modules/spline_ops.integrators.html#BezierLength2">BezierLength2</a>.
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">bezier</span>
+            <span class="types"><span class="type">array</span></span>
+         Elements 1, 2, 3 are interpreted as arguments <em>p1</em>, <em>q</em>, <em>p2</em> from
+ <a href="../modules/spline_ops.integrators.html#BezierLength2">BezierLength2</a>.
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">number</span></span>
+        Approximate arc length.
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "BezierLength3"></a>
+    <strong>BezierLength3 (p1, q1, q2, p2, tolerance)</strong>
+    </dt>
+    <dd>
+    Computes a (degree 3) <a href="http://steve.hollasch.net/cgindex/curves/cbezarclen.html">B&eacute;zier spline's length</a>.
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">p1</span>
+            <span class="types"><span class="type">Vector</span></span>
+         Endpoint #1 of control polygon...
+        </li>
+        <li><span class="parameter">q1</span>
+            <span class="types"><span class="type">Vector</span></span>
+         ...interior control point #1...
+        </li>
+        <li><span class="parameter">q2</span>
+            <span class="types"><span class="type">Vector</span></span>
+         ...interior control point #2...
+        </li>
+        <li><span class="parameter">p2</span>
+            <span class="types"><span class="type">Vector</span></span>
+         ...and endpoint #2.
+        </li>
+        <li><span class="parameter">tolerance</span>
+            <span class="types"><span class="type">number</span></span>
+         "Close enough" separation between arc estimates and chord lengths.
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">number</span></span>
+        Approximate arc length.
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "BezierLength3_Array"></a>
+    <strong>BezierLength3_Array (bezier, tolerance)</strong>
+    </dt>
+    <dd>
+    Array variant of <a href="../modules/spline_ops.integrators.html#BezierLength3">BezierLength3</a>.
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">bezier</span>
+            <span class="types"><span class="type">array</span></span>
+         Elements 1, 2, 3, 4 are interpreted as arguments <em>p1</em>, <em>q1</em>, <em>q2</em>, <em>p2</em>
+ from <a href="../modules/spline_ops.integrators.html#BezierLength3">BezierLength3</a>.
+        </li>
+        <li><span class="parameter">tolerance</span>
+            <span class="types"><span class="type">number</span></span>
+         "Close enough" separation between arc estimates and chord lengths.
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">number</span></span>
+        Approximate arc length.
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "GaussLegendre"></a>
+    <strong>GaussLegendre (func, a, b, tolerance)</strong>
+    </dt>
+    <dd>
+    Integrates <em>func</em> via <a href="http://en.wikipedia.org/wiki/Gaussian_quadrature#Gauss.E2.80.93Legendre_quadrature">Gauss-Legendre quadrature</a>.
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">func</span>
+            <span class="types"><span class="type">callable</span></span>
+         Called as</p>
+<pre><code>y = func(x)
+</code></pre>
+<p> where <em>x</em> and <em>y</em> are numbers.
+        </li>
+        <li><span class="parameter">a</span>
+            <span class="types"><span class="type">number</span></span>
+         Lower limit of integration.
+        </li>
+        <li><span class="parameter">b</span>
+            <span class="types"><span class="type">number</span></span>
+         Upper limit of integration.
+        </li>
+        <li><span class="parameter">tolerance</span>
+            <span class="types"><span class="type">number</span></span>
+         "Close enough" separation between quadrature estimates.
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">number</span></span>
+        Approximate integral.
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "LineIntegrand_Cubic"></a>
+    <strong>LineIntegrand_Cubic (poly)</strong>
+    </dt>
+    <dd>
+    <a href="http://en.wikipedia.org/wiki/Arc_length#Finding_arc_lengths_by_integrating">Line integrand</a>
+ for a cubic polynomial.
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">poly</span>
+            <span class="types"><span class="type">array</span></span>
+         The underlying polynomial, (dx/dt)&sup2; + (dy/dt)&sup2;: elements 1 to 5 are the
+ x&#8308;, x&sup3;, x&sup2;, x, and constant coefficients, respectively. If absent, a table is supplied.
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+        <li>
+           <span class="types"><span class="type">function</span></span>
+        Integrand function, which may be passed e.g. as the <em>func</em> argument to
+ the various integrators.</li>
+        <li>
+           <span class="types"><span class="type">array</span></span>
+        <em>poly</em>.</li>
+    </ol>
+
+
+    <h3>See also:</h3>
+    <ul>
+         <a href="../modules/spline_ops.integrators.html#SetPolyFromCoeffs_Cubic">SetPolyFromCoeffs_Cubic</a>
+    </ul>
+
+
+</dd>
+    <dt>
+    <a name = "Romberg"></a>
+    <strong>Romberg (func, a, b)</strong>
+    </dt>
+    <dd>
+    Integrates <em>func</em> via <a href="http://www.geometrictools.com/Documentation/NumericalIntegration.pdf">Romberg integration</a>.
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">func</span>
+            <span class="types"><span class="type">callable</span></span>
+         Called as
+   y = func(x)
+ where <em>x</em> and <em>y</em> are numbers.
+        </li>
+        <li><span class="parameter">a</span>
+            <span class="types"><span class="type">number</span></span>
+         Lower limit of integration.
+        </li>
+        <li><span class="parameter">b</span>
+            <span class="types"><span class="type">number</span></span>
+         Upper limit of integration.
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">number</span></span>
+        Approximate integral.
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "SetPolyFromCoeffs_Cubic"></a>
+    <strong>SetPolyFromCoeffs_Cubic (poly, ax, ay, bx, by, cx, cy)</strong>
+    </dt>
+    <dd>
+    Assigns integrand coefficents (in particular, as expected by <a href="../modules/spline_ops.integrators.html#LineIntegrand_Cubic">LineIntegrand_Cubic</a>'s
+ integrand function), given a cubic polynomial's derivatives: dx/dt = 3<em>Ax&sup2;</em> + 2<em>Bx</em> +
+ <em>C</em>, dy/dt = 3<em>Dy&sup2;</em> + 2<em>Ey</em> + F.
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">poly</span>
+            <span class="types"><span class="type">array</span></span>
+         Polynomial.
+        </li>
+        <li><span class="parameter">ax</span>
+            <span class="types"><span class="type">number</span></span>
+         <em>Ax&sup2;</em>.
+        </li>
+        <li><span class="parameter">ay</span>
+            <span class="types"><span class="type">number</span></span>
+         <em>Dy</em>&sup2;.
+        </li>
+        <li><span class="parameter">bx</span>
+            <span class="types"><span class="type">number</span></span>
+         <em>Bx</em>.
+        </li>
+        <li><span class="parameter">by</span>
+            <span class="types"><span class="type">number</span></span>
+         <em>Ey</em>.
+        </li>
+        <li><span class="parameter">cx</span>
+            <span class="types"><span class="type">number</span></span>
+         <em>C</em>.
+        </li>
+        <li><span class="parameter">cy</span>
+            <span class="types"><span class="type">number</span></span>
+         <em>F</em>.
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+</dl>
+
+
+</div> <!-- id="content" -->
+</div> <!-- id="main" -->
+<div id="about">
+<i>generated by <a href="http://github.com/stevedonovan/LDoc">LDoc 1.4.0</a></i>
+</div> <!-- id="about" -->
+</div> <!-- id="container" -->
+</body>
+</html>

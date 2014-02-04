@@ -32,13 +32,13 @@ local pairs = pairs
 local type = type
 
 -- Modules --
-local lazy_tables = require("lazy_tables")
+local lazy = require("table_ops.lazy")
 
 -- Exports --
 local M = {}
 
 -- Lazily created dispatch lists --
-local Lists = lazy_tables.SubTablesOnDemand()
+local Lists = lazy.SubTablesOnDemand()
 
 --- Utility.
 -- @param name Event name.

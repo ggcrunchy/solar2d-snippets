@@ -33,10 +33,11 @@ local sin = math.sin
 
 -- Modules --
 local dispatch_list = require("game.DispatchList")
-local geom2d_ops = require("geom2d_ops")
 local glow = require("effect.Glow")
 local line_ex = require("ui.LineEx")
+local quantize = require("geom2d_ops.quantize")
 local timers = require("game.Timers")
+local vector = require("geom2d_ops.vector")
 
 -- Corona globals --
 local display = display
@@ -183,7 +184,7 @@ local function ArrowGroupMaker (sep, dfunc)
 		--
 		local dx, dy = x2 - x1, y2 - y1
 
-		for i = 1, geom2d_ops.DistanceToBin(dx, dy, sep, 1) do
+		for i = 1, quantize.ToBin(dx, dy, sep, 1) do
 			M.StraightArrow(arrow_group, dir, 0, 0, width)
 		end
 
@@ -291,7 +292,7 @@ local MakeColumn = ArrowGroupMaker(75, function(i, n, dx, dy, offset, agroup)
 
 		agroup.m_dir = dir
 
-		local len = geom2d_ops.Distance(dx, dy) / 20
+		local len = vector.Distance(dx, dy) / 20
 		local nx, ny = dx / len, dy / len
 
 		if dir == "backward" then

@@ -28,15 +28,16 @@ local assert = assert
 local min = math.min
 
 -- Modules --
+local collect = require("array_ops.collect")
 local iterator_utils = require("iterator_ops.utils")
-local var_ops = require("var_ops")
-local var_preds = require("var_preds")
+local var_preds = require("var_ops.predicates")
+local wipe = require("array_ops.wipe")
 
 -- Imports --
-local CollectArgsInto = var_ops.CollectArgsInto
+local CollectArgsInto = collect.CollectArgsInto
 local IsInteger = var_preds.IsInteger
-local UnpackAndWipeRange = var_ops.UnpackAndWipeRange
-local WipeRange = var_ops.WipeRange
+local UnpackAndWipeRange = wipe.UnpackAndWipeRange
+local WipeRange = wipe.WipeRange
 
 -- Exports --
 local M = {}

@@ -29,9 +29,6 @@ local pairs = pairs
 local setmetatable = setmetatable
 local type = type
 
--- Modules --
-local table_ops = require("table_ops")
-
 -- Corona globals --
 local native = native
 
@@ -42,7 +39,7 @@ local M = {}
 local IgnoreKeys = { _prefix_ = true }
 
 -- Prefix store --
-local Prefixes = table_ops.Weak("k")
+local Prefixes = setmetatable({}, { __mode = "k" })
 
 -- Helper to preprocess and store values in a skin
 local function StoreValues (name, from, to)

@@ -37,9 +37,9 @@ local remove = table.remove
 local sqrt = math.sqrt
 
 -- Modules --
+local array_index = require("array_ops.index")
 local circle = require("fill.Circle")
 local dispatch_list = require("game.DispatchList")
-local index_ops = require("index_ops")
 local tile_flags = require("game.TileFlags")
 local tile_maps = require("game.TileMaps")
 local timers = require("game.Timers")
@@ -164,7 +164,7 @@ local function MakeMaze (block, open)
 	-- the number of available slots (and then resets), and since every slot is invalidated
 	-- between occurrences of the ID taking on a given value, all slots will either contain
 	-- some either ID or be invalid, i.e. none will be already explored.
-	local new = index_ops.RotateIndex(open.id, #open)
+	local new = array_index.RotateIndex(open.id, #open)
 
 	open.id, open[-new] = new
 

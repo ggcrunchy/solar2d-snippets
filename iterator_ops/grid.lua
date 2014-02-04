@@ -29,12 +29,12 @@ local floor = math.floor
 local max = math.max
 
 -- Modules --
-local index_ops = require("index_ops")
+local array_index = require("array_ops.index")
 local iterator_utils = require("iterator_ops.utils")
 local number_funcs = require("number_ops.funcs")
 
 -- Imports --
-local CellToIndex = index_ops.CellToIndex
+local CellToIndex = array_index.CellToIndex
 local DivRem = number_funcs.DivRem
 
 -- Exports --
@@ -149,7 +149,7 @@ end)
 -- @treturn iterator Supplies the following, in order, at each iteration:
 --
 -- * Current iteration index.
--- * Array index, as per @{index_ops.CellToIndex}.
+-- * Array index, as per @{array_ops.index.CellToIndex}.
 -- * Column index.
 -- * Row index.
 -- * Cell corner x-coordinate, 0 at _c_ = 1.

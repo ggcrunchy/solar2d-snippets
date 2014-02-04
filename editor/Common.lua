@@ -36,7 +36,7 @@ local tonumber = tonumber
 local type = type
 
 -- Modules --
-local adaptive_table_ops = require("adaptive_table_ops")
+local adaptive = require("table_ops.adaptive")
 local array_funcs = require("array_ops.funcs")
 local sheet = require("ui.Sheet")
 local tags = lazy_require("editor.Tags")
@@ -308,11 +308,11 @@ function M.GetTag (etype, on_editor_event)
 		if topts == "sources_and_targets" then
 			local sub_links = {}
 
-			for k in adaptive_table_ops.IterSet(ret1) do
+			for k in adaptive.IterSet(ret1) do
 				sub_links[k] = "event_target"
 			end
 
-			for k in adaptive_table_ops.IterSet(ret2) do
+			for k in adaptive.IterSet(ret2) do
 				sub_links[k] = "event_source"
 			end
 

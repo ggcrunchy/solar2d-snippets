@@ -30,7 +30,7 @@ local min = math.min
 local yield = coroutine.yield
 
 -- Modules --
-local var_preds = require("var_preds")
+local var_preds = require("var_ops.predicates")
 
 -- Imports --
 local IsCallable = var_preds.IsCallable

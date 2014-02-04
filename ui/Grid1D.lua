@@ -30,9 +30,9 @@ local abs = math.abs
 local ipairs = ipairs
 
 -- Modules --
+local array_index = require("array_ops.index")
 local button = require("ui.Button")
 local colors = require("ui.Color")
-local index_ops = require("index_ops")
 local sheet = require("ui.Sheet")
 local skins = require("ui.Skin")
 local touch = require("ui.Touch")
@@ -162,7 +162,7 @@ function M.OptionsHGrid (group, skin, x, y, w, h, text)
 	local sprite_count, sprite_index
 
 	local function Rotate (to_left, i)
-		return index_ops.RotateIndex(i or sprite_index, sprite_count, to_left)
+		return array_index.RotateIndex(i or sprite_index, sprite_count, to_left)
 	end
 
 	--

@@ -34,8 +34,8 @@ local pairs = pairs
 local audio = require("utils.Audio")
 local circle = require("fill.Circle")
 local dispatch_list = require("game.DispatchList")
-local geom2d_ops = require("geom2d_ops")
 local pixels = require("utils.Pixels")
+local quantize = require("geom2d_ops.quantize")
 local sheet = require("ui.Sheet")
 local stash = require("effect.Stash")
 local timers = require("game.Timers")
@@ -203,7 +203,7 @@ function M.Fill (group, how, ulx, uly, lrx, lry)
 
 		timers.RepeatEx(function()
 			if filler.parent then
-				local radius = geom2d_ops.DistanceToBin_RoundUp(filler.width / dw, filler.height / dh, 1.15, .01)
+				local radius = quantize.ToBin_RoundUp(filler.width / dw, filler.height / dh, 1.15, .01)
 
 				spread(radius)
 

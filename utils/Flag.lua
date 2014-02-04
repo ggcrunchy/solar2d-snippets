@@ -1,4 +1,4 @@
---- This module wraps up some useful flags (and enum) functionality.--
+--- This module wraps up some useful flags (and enum) functionality.
 --
 -- See: [Iterating Bits In Lua](http://ricilake.blogspot.com/2007/10/iterating-bits-in-lua.html)
 

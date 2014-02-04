@@ -28,9 +28,9 @@ local ipairs = ipairs
 local setmetatable = setmetatable
 
 -- Modules --
+local array_index = require("array_ops.index")
 local collision = require("game.Collision")
 local dispatch_list = require("game.DispatchList")
-local index_ops = require("index_ops")
 local range = require("number_ops.range")
 local sheet = require("ui.Sheet")
 local tile_flags = require("game.TileFlags")
@@ -41,11 +41,11 @@ local graphics = graphics
 local system = system
 
 -- Imports --
-local CellToIndex = index_ops.CellToIndex
-local FitToSlot = index_ops.FitToSlot
+local CellToIndex = array_index.CellToIndex
+local FitToSlot = array_index.FitToSlot
 local GetNameByFlags = tile_flags.GetNameByFlags
 local GetResolvedFlags = tile_flags.GetResolvedFlags
-local IndexToCell = index_ops.IndexToCell
+local IndexToCell = array_index.IndexToCell
 local IsFlagSet = tile_flags.IsFlagSet
 local SetFlags = tile_flags.SetFlags
 
@@ -231,7 +231,7 @@ function M.SetTilesFromFlags (group, col1, row1, col2, row2)
 	col1, col2 = range.MinMax_N(col1, col2, NCols)
 	row1, row2 = range.MinMax_N(row1, row2, NRows)
 
-	local index = index_ops.CellToIndex(col1, row1, NCols)
+	local index = CellToIndex(col1, row1, NCols)
 
 	for _ = row1, row2 do
 		for i = 0, col2 - col1 do

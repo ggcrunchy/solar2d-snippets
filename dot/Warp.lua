@@ -35,9 +35,9 @@ local common = lazy_require("editor.Common")
 local dispatch_list = require("game.DispatchList")
 local frames = require("utils.Frames")
 local fx = require("game.FX")
-local geom2d_ops = require("geom2d_ops")
 local links = lazy_require("editor.Links")
 local markers = require("effect.Markers")
+local quantize = require("geom2d_ops.quantize")
 local tags = lazy_require("editor.Tags")
 
 -- Corona globals --
@@ -128,7 +128,7 @@ local function DoWarp (warp, func)
 
 					MoveParams.x = tx
 					MoveParams.y = ty
-					MoveParams.time = geom2d_ops.DistanceToBin(dx, dy, 200, 5) * 100
+					MoveParams.time = quantize.ToBin(dx, dy, 200, 5) * 100
 					MoveParams.onComplete = MoveParams_OC
 
 					func("move_began_moving", warp, target)

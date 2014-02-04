@@ -25,7 +25,7 @@
 --
 
 -- Modules --
-local func_ops = require("func_ops")
+local func_ops = require("tektite.func_ops")
 
 --
 return function(ops, NumVars)
