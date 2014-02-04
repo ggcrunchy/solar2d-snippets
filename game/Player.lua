@@ -29,13 +29,14 @@ local min = math.min
 local pairs = pairs
 
 -- Modules --
+local require_ex = require("tektite.require_ex")
 local ai = require("game.AI")
 local audio = require("utils.Audio")
 local collision = require("game.Collision")
 local dispatch_list = require("game.DispatchList")
 local frames = require("utils.Frames")
 --local fx = require("game.FX")
-local level_map = lazy_require("game.LevelMap")
+local level_map = require_ex.Lazy("game.LevelMap")
 local movement = require("game.Movement")
 local pathing = require("game.Pathing")
 local path_utils = require("game.PathUtils")

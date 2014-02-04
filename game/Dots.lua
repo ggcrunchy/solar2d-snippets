@@ -40,6 +40,7 @@ local sort = table.sort
 -- Modules --
 local collision = require("game.Collision")
 local dispatch_list = require("game.DispatchList")
+local require_ex = require("tektite.require_ex")
 local tile_maps = require("game.TileMaps")
 local timers = require("game.Timers")
 
@@ -270,7 +271,7 @@ dispatch_list.AddToMultipleLists{
 }
 
 -- Install various types of dots.
-DotList = require_list("config.Dots")
+DotList = require_ex.DoList("config.Dots")
 
 -- Export the module.
 return M

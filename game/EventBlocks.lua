@@ -42,11 +42,12 @@ local random = math.random
 local yield = coroutine.yield
 
 -- Modules --
+local require_ex = require("tektite.require_ex")
 local bind_utils = require("utils.Bind")
 local dispatch_list = require("game.DispatchList")
 local fx = require("game.FX")
 local range = require("number_ops.range")
-local tags = lazy_require("editor.Tags")
+local tags = require_ex.Lazy("editor.Tags")
 local tile_flags = require("game.TileFlags")
 local tile_maps = require("game.TileMaps")
 local wrapper = require("coroutine_ops.wrapper")
@@ -561,7 +562,7 @@ dispatch_list.AddToMultipleLists{
 }
 
 -- Install various types of events.
-EventBlockList = require_list("config.EventBlocks")
+EventBlockList = require_ex.DoList("config.EventBlocks")
 
 -- Export the module.
 return M

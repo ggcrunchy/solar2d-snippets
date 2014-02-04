@@ -44,6 +44,7 @@ local ipairs = ipairs
 local pairs = pairs
 
 -- Modules --
+local require_ex = require("tektite.require_ex")
 local args = require("iterator_ops.args")
 local button = require("ui.Button")
 local common = require("editor.Common")
@@ -54,7 +55,7 @@ local grid = require("editor.Grid")
 local ops = require("editor.Ops")
 local persistence = require("game.Persistence")
 local scenes = require("utils.Scenes")
-local tags = lazy_require("editor.Tags")
+local tags = require_ex.Lazy("editor.Tags")
 local timers = require("game.Timers")
 
 -- Corona globals --

@@ -27,10 +27,11 @@
 local ipairs = ipairs
 
 -- Modules --
+local require_ex = require("tektite.require_ex")
 local button = require("ui.Button")
 local checkbox = require("ui.Checkbox")
 local common = require("editor.Common")
-local dialog_utils = lazy_require("editor.dialog.Utils")
+local dialog_utils = require_ex.Lazy("editor.dialog.Utils")
 local object_helper = require("utils.ObjectHelper")
 local touch = require("ui.Touch")
 

@@ -29,16 +29,17 @@ local pairs = pairs
 local sin = math.sin
 
 -- Modules --
+local require_ex = require("tektite.require_ex")
 local audio = require("utils.Audio")
 local collision = require("game.Collision")
-local common = lazy_require("editor.Common")
+local common = require_ex.Lazy("editor.Common")
 local dispatch_list = require("game.DispatchList")
 local frames = require("utils.Frames")
 local fx = require("game.FX")
-local links = lazy_require("editor.Links")
+local links = require_ex.Lazy("editor.Links")
 local markers = require("effect.Markers")
 local quantize = require("geom2d_ops.quantize")
-local tags = lazy_require("editor.Tags")
+local tags = require_ex.Lazy("editor.Tags")
 
 -- Corona globals --
 local display = display

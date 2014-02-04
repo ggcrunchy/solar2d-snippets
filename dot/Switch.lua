@@ -24,14 +24,15 @@
 --
 
 -- Modules --
+local require_ex = require("tektite.require_ex")
 local audio = require("utils.Audio")
 local bind_utils = require("utils.Bind")
-local common = lazy_require("editor.Common")
+local common = require_ex.Lazy("editor.Common")
 local collision = require("game.Collision")
 local dispatch_list = require("game.DispatchList")
 local flag_utils = require("utils.Flag")
-local links = lazy_require("editor.Links")
-local tags = lazy_require("editor.Tags")
+local links = require_ex.Lazy("editor.Links")
+local tags = require_ex.Lazy("editor.Tags")
 
 -- Corona globals --
 local display = display

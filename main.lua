@@ -26,7 +26,6 @@
 -- Standard library imports --
 local pairs = pairs
 local print = print
-local require = require
 local setmetatable = setmetatable
 
 -- Modules --
@@ -110,23 +109,6 @@ if OnDevice then
 	end)
 end
 
---- Helper to deal with circular module require situations. Provided module access is not
--- needed immediately (in particular, it can wait until the requiring module has loaded),
--- the lazy-required module looks and may be treated as a normal module.
--- @string name Module name, as passed to @{require}.
--- @treturn table Module proxy, to be accessed like the module proper.
-function lazy_require (name)
-	local mod
-
-	return setmetatable({}, {
-		__index = function(_, k)
-			mod = mod or require(name)
-
-			return mod[k]
-		end
-	})
-end
-
 --- Helper to print formatted argument.
 -- @string s Format string.
 -- @param ... Format arguments.
@@ -136,22 +118,6 @@ end
 
 -- Install printf as the default var dump routine.
 var_dump.SetDefaultOutf(printf)
-
---- DOCME
-function require_list (name)
-	local from = require(name)
-	local prefix, list = from._prefix, {}
-
-	prefix = prefix and prefix .. "." or ""
-
-	for k, v in pairs(from) do
-		if k ~= "_prefix" then
-			list[k] = require(prefix .. v)
-		end
-	end
-
-	return list
-end
 
 -- Checks for vdump --
 local Checks

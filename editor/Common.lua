@@ -36,10 +36,11 @@ local tonumber = tonumber
 local type = type
 
 -- Modules --
+local require_ex = require("tektite.require_ex")
 local adaptive = require("table_ops.adaptive")
 local array_funcs = require("array_ops.funcs")
 local sheet = require("ui.Sheet")
-local tags = lazy_require("editor.Tags")
+local tags = require_ex.Lazy("editor.Tags")
 
 -- Corona globals --
 local display = display
