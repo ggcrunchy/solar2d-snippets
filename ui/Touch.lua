@@ -24,10 +24,10 @@
 --
 
 -- Modules --
-local numeric_ops = require("numeric_ops")
+local range = require("number_ops.range")
 
 -- Imports --
-local ClampIn = numeric_ops.ClampIn
+local ClampIn = range.ClampIn
 
 -- Corona globals --
 local display = display

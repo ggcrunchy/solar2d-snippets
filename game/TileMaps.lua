@@ -31,7 +31,7 @@ local setmetatable = setmetatable
 local collision = require("game.Collision")
 local dispatch_list = require("game.DispatchList")
 local index_ops = require("index_ops")
-local numeric_ops = require("numeric_ops")
+local range = require("number_ops.range")
 local sheet = require("ui.Sheet")
 local tile_flags = require("game.TileFlags")
 
@@ -228,8 +228,8 @@ end
 -- @int col2 ...column of another corner... (Columns will be sorted, and clamped.)
 -- @int row2 ...and row of another corner. (Rows too.)
 function M.SetTilesFromFlags (group, col1, row1, col2, row2)
-	col1, col2 = numeric_ops.MinMax_Range(col1, col2, NCols)
-	row1, row2 = numeric_ops.MinMax_Range(row1, row2, NRows)
+	col1, col2 = range.MinMax_N(col1, col2, NCols)
+	row1, row2 = range.MinMax_N(row1, row2, NRows)
 
 	local index = index_ops.CellToIndex(col1, row1, NCols)
 

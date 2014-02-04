@@ -30,7 +30,7 @@ local remove = table.remove
 
 -- Modules --
 local buttons = require("ui.Button")
-local hilbert = require("numeric_ops.hilbert")
+local hilbert = require("number_ops.hilbert")
 local line_ex = require("ui.LineEx")
 local scenes = require("utils.Scenes")
 local timers = require("game.Timers")

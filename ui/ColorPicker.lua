@@ -26,29 +26,24 @@
 --
 
 -- Standard library imports --
-local floor = math.floor
 local max = math.max
 local min = math.min
 local unpack = unpack
 
 -- Modules --
 local hsv = require("ui.HSV")
-local numeric_ops = require("numeric_ops")
+local range = require("number_ops.range")
 local touch = require("ui.Touch")
 
 -- Corona globals --
 local display = display
-local native = native
 
 -- Exports --
 local M = {}
 
--- Assigns the color text
-local function SetText (text, r, g, b)
-	text.text = ("Color: #%02X%02X%02X"):format(floor(r * 255), floor(g * 255), floor(b * 255))
-	text.anchorX, text.x = 0, text.parent.m_colors.x
-end
--- ^^ TODO: Generalize for prefix
+-- Color change event packet --
+local CCE = {}
+
 -- Updates the current color according to the hue color and the color node
 local function UpdateColorPick (colors)
 	local picker = colors.parent
@@ -56,12 +51,15 @@ local function UpdateColorPick (colors)
 
 	picker.m_r, picker.m_g, picker.m_b = hsv.RGB_ColorSV(colors.m_rhue, colors.m_ghue, colors.m_bhue, node.m_u, 1 - node.m_v)
 
-	SetText(picker.m_text, picker.m_r, picker.m_g, picker.m_b)
+	-- Alert listeners.
+	CCE.r, CCE.g, CCE.b, CCE.name = picker.m_r, picker.m_g, picker.m_b, "color_change"
+
+	picker:dispatchEvent(CCE)
 end
 
 -- Put the color node somewhere and apply updates
 local function PutColorNode (node, u, v)
-	node.m_u, node.m_v = numeric_ops.ClampIn(u, 0, 1), numeric_ops.ClampIn(v, 0, 1)
+	node.m_u, node.m_v = range.ClampIn(u, 0, 1), range.ClampIn(v, 0, 1)
 
 	local colors = node.parent.m_colors
 
@@ -249,9 +247,6 @@ function M.ColorPicker (group, skin, x, y, w, h) -- precision?
 	overlay.anchorX, overlay.x = 0, colors.x
 	overlay.anchorY, overlay.y = 0, colors.y
 	overlay.blendMode = "multiply"
-
-	--
-	picker.m_text = display.newText(picker, "", 0, colors.y + colors.height + 30, native.systemFont, 18)
 
 	--
 	local bar = display.newGroup()

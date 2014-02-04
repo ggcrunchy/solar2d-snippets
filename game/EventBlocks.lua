@@ -45,7 +45,7 @@ local yield = coroutine.yield
 local bind_utils = require("utils.Bind")
 local dispatch_list = require("game.DispatchList")
 local fx = require("game.FX")
-local numeric_ops = require("numeric_ops")
+local range = require("number_ops.range")
 local tags = lazy_require("editor.Tags")
 local tile_flags = require("game.TileFlags")
 local tile_maps = require("game.TileMaps")
@@ -84,8 +84,8 @@ end)
 local function BindExtents (col1, row1, col2, row2)
 	local ncols, nrows = tile_maps.GetCounts()
 
-	CMin, CMax = numeric_ops.MinMax_Range(col1, col2, ncols)
-	RMin, RMax = numeric_ops.MinMax_Range(row1, row2, nrows)
+	CMin, CMax = range.MinMax_N(col1, col2, ncols)
+	RMin, RMax = range.MinMax_N(row1, row2, nrows)
 end
 
 -- Iterates over a block defined by input

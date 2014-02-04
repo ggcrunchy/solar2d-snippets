@@ -31,11 +31,11 @@ local max = math.max
 -- Modules --
 local index_ops = require("index_ops")
 local iterator_utils = require("iterator_ops.utils")
-local numeric_ops = require("numeric_ops")
+local number_funcs = require("number_ops.funcs")
 
 -- Imports --
 local CellToIndex = index_ops.CellToIndex
-local DivRem = numeric_ops.DivRem
+local DivRem = number_funcs.DivRem
 
 -- Exports --
 local M = {}

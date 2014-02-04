@@ -1,4 +1,4 @@
---- An assortment of useful numeric operations.
+--- Some utilities related to number ranges.
 
 --
 -- Permission is hereby granted, free of charge, to any person obtaining
@@ -24,9 +24,11 @@
 --
 
 -- Standard library imports --
-local floor = math.floor
 local max = math.max
 local min = math.min
+
+-- Cached module references --
+local _MinMax_
 
 -- Exports --
 local M = {}
@@ -44,17 +46,6 @@ function M.ClampIn (n, minb, maxb)
 	end
 
 	return min(max(n, minb), maxb)
-end
-
---- Breaks the result of _a_ / _b_ up into a count and remainder.
--- @number a Dividend.
--- @number b Divisor.
--- @treturn int Number of times that _b_ divides _a_.
--- @treturn number Fractional part of _b_ left over after the integer part is considered.
-function M.DivRem (a, b)
-	local quot = floor(a / b)
-
-	return quot, a - quot * b
 end
 
 --- Utility.
@@ -78,7 +69,7 @@ end
 -- @treturn number Clamped minimum value, &isin; [_m_, +&#x221E;).
 -- @treturn number Clamped maximum value, &isin; (-&#x221E;, _n_].
 function M.MinMax_Interval (a, b, m, n)
-	a, b = M.MinMax(a, b)
+	a, b = _MinMax_(a, b)
 
 	return max(a, m), min(b, n)
 end
@@ -91,21 +82,14 @@ end
 -- @number n Range limit &#x2265; 1.
 -- @treturn number Clamped minimum value, &isin; [1, +&#x221E;).
 -- @treturn number Clamped maximum value, &isin; (-&#x221E;, _n_].
-function M.MinMax_Range (a, b, n)
-	a, b = M.MinMax(a, b)
+function M.MinMax_N (a, b, n)
+	a, b = _MinMax_(a, b)
 
 	return max(a, 1), min(b, n)
 end
 
---- Rounds a number to the nearest multiple of some increment.
--- @number n Number to round.
--- @number inc Increment; by default, 1.
--- @treturn number Rounded result.
-function M.RoundTo (n, inc)
-	inc = inc or 1
-
-	return floor(n / inc + .5) * inc
-end
+-- Cache module members.
+_MinMax_ = M.MinMax
 
 -- Export the module.
 return M

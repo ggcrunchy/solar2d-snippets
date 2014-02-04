@@ -37,9 +37,9 @@ local checkbox = require("ui.Checkbox")
 local common_ui = require("editor.CommonUI")
 local cubic_spline = require("utils.CubicSpline")
 local curves = require("utils.Curves")
-local hilbert = require("numeric_ops.hilbert")
+local hilbert = require("number_ops.hilbert")
 local line_ex = require("ui.LineEx")
-local numeric_ops = require("numeric_ops")
+local number_funcs = require("number_ops.funcs")
 local scenes = require("utils.Scenes")
 local timers = require("game.Timers")
 
@@ -231,7 +231,7 @@ end
 
 --
 local function GetXY (t, div, trail)
-	local s = numeric_ops.RoundTo(t / div) % 2^6
+	local s = number_funcs.RoundTo(t / div) % 2^6
 	local x, y = hilbert.GetXY(6, s)
 	local px, py = Pos(x, y)
 
@@ -280,8 +280,8 @@ local function UpdateTrail (trail, x, y, s)
 end
 
 -- --
-local Min = numeric_ops.RoundTo(2^6 * .2)
-local Max = numeric_ops.RoundTo(2^6 * .8)
+local Min = number_funcs.RoundTo(2^6 * .2)
+local Max = number_funcs.RoundTo(2^6 * .8)
 
 -- --
 local DoAgain, Now

@@ -37,7 +37,7 @@ local wrap = coroutine.wrap
 
 -- Modules --
 local args = require("iterator_ops.args")
-local array_ops = require("array_ops")
+local array_funcs = require("array_ops.funcs")
 local bound_args = require("bound_args")
 local cache_ops = require("cache_ops")
 local class = require("class")
@@ -48,10 +48,10 @@ local wrapper = require("coroutine_ops.wrapper")
 
 -- Imports --
 local Args = args.Args
-local Filter = array_ops.Filter
+local Filter = array_funcs.Filter
 local IsCallable = var_preds.IsCallable
 local Move = table_ops.Move
-local Reverse = array_ops.Reverse
+local Reverse = array_funcs.Reverse
 local Try = exception.Try
 local WithBoundTable = bound_args.WithBoundTable
 local Wrap = wrapper.Wrap

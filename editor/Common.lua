@@ -37,7 +37,7 @@ local type = type
 
 -- Modules --
 local adaptive_table_ops = require("adaptive_table_ops")
-local array_ops = require("array_ops")
+local array_funcs = require("array_ops.funcs")
 local sheet = require("ui.Sheet")
 local tags = lazy_require("editor.Tags")
 
@@ -489,7 +489,7 @@ function M.RemoveDups (list)
 
 	for i = #list, 1, -1 do
 		if list[i] == prev then
-			array_ops.Backfill(list, i)
+			array_funcs.Backfill(list, i)
 		else
 			prev = list[i]
 		end

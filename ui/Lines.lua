@@ -28,7 +28,7 @@ local abs = math.abs
 local sqrt = math.sqrt
 
 -- Modules --
-local array_ops = require("array_ops")
+local array_funcs = require("array_ops.funcs")
 local curves = require("utils.Curves")
 local color = require("ui.Color")
 local line_ex = require("ui.LineEx")
@@ -92,7 +92,7 @@ local function UpdateLines ()
 				group:removeSelf()
 			end
 
-			array_ops.Backfill(Lines, i)
+			array_funcs.Backfill(Lines, i)
 
 		-- Otherwise, if one or both endpoints have changed, rebuild the line. 
 		else

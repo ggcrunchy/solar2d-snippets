@@ -31,7 +31,7 @@ local type = type
 local yield = coroutine.yield
 
 -- Modules --
-local array_ops = require("array_ops")
+local array_funcs = require("array_ops.funcs")
 local common = require("editor.Common")
 local coro = require("iterator_ops.coroutine")
 local dispatch_list = require("game.DispatchList")
@@ -319,7 +319,7 @@ function Link:Break ()
 		local key = GetKey(p1, p2)
 		local links = Links[key]
 
-		array_ops.Backfill(links, FindLink(p1, p2, self))
+		array_funcs.Backfill(links, FindLink(p1, p2, self))
 
 		if #links == 0 then
 			Links[key], p1[p2.id], p2[p1.id] = nil

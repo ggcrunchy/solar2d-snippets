@@ -113,7 +113,6 @@ local function AuxQuantize (op, dx, dy, len, bias)
 	return op(sqrt(dx * dx + dy * dy) / len + (bias or 0))
 end
 
-
 --- Quantizes a distance, as `bin = Round(distance / len + bias)`, rounding down.
 -- @number dx Displacement x-component...
 -- @number dy ...and y-component.

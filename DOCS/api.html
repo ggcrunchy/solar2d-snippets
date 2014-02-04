@@ -32,7 +32,8 @@
 <h2>Modules</h2>
 <ul class="$(kind=='Topics' and '' or 'nowrap'">
   <li><a href="modules/adaptive_table_ops.html">adaptive_table_ops</a></li>
-  <li><a href="modules/array_ops.html">array_ops</a></li>
+  <li><a href="modules/array_ops.funcs.html">funcs</a></li>
+  <li><a href="modules/array_ops.predicates.html">predicates</a></li>
   <li><a href="modules/bitwise_ops.log2.html">log2</a></li>
   <li><a href="modules/bitwise_ops.operators.html">operators</a></li>
   <li><a href="modules/bitwise_ops.powers_of_2.html">powers_of_2</a></li>
@@ -136,10 +137,12 @@
   <li><a href="modules/main.html">main</a></li>
   <li><a href="modules/mask.MarchingSquares.html">MarchingSquares</a></li>
   <li><a href="modules/mesh_ops.html">mesh_ops</a></li>
-  <li><a href="modules/mwc_rng.html">mwc_rng</a></li>
-  <li><a href="modules/numeric_ops.hilbert.html">hilbert</a></li>
-  <li><a href="modules/numeric_ops.morton.html">morton</a></li>
-  <li><a href="modules/numeric_ops.html">numeric_ops</a></li>
+  <li><a href="modules/number_ops.funcs.html">funcs</a></li>
+  <li><a href="modules/number_ops.hilbert.html">hilbert</a></li>
+  <li><a href="modules/number_ops.morton.html">morton</a></li>
+  <li><a href="modules/number_ops.mwc_rng.html">mwc_rng</a></li>
+  <li><a href="modules/number_ops.range.html">range</a></li>
+  <li><a href="modules/number_ops.simplex_noise.html">simplex_noise</a></li>
   <li><a href="modules/overlay.Help.html">Help</a></li>
   <li><a href="modules/overlay.Link.html">Link</a></li>
   <li><a href="modules/proxy.html">proxy</a></li>
@@ -167,7 +170,6 @@
   <li><a href="modules/scene.Level.html">Level</a></li>
   <li><a href="modules/scene.MapEditor.html">MapEditor</a></li>
   <li><a href="modules/scene.Options.html">Options</a></li>
-  <li><a href="modules/simplex_noise.html">simplex_noise</a></li>
   <li><a href="modules/table_ops.html">table_ops</a></li>
   <li><a href="modules/tests.LinksAndTags.html">LinksAndTags</a></li>
   <li><a href="modules/tiles.TreeBG.html">TreeBG</a></li>
@@ -221,8 +223,12 @@
 		<td class="summary">Functionality for members that may either be tables or singletons.</td>
 	</tr>
 	<tr>
-		<td class="name"  nowrap><a href="modules/array_ops.html">array_ops</a></td>
+		<td class="name"  nowrap><a href="modules/array_ops.funcs.html">array_ops.funcs</a></td>
 		<td class="summary">This module provides various utilities that make or operate on arrays.</td>
+	</tr>
+	<tr>
+		<td class="name"  nowrap><a href="modules/array_ops.predicates.html">array_ops.predicates</a></td>
+		<td class="summary">Predicates that operate on arrays.</td>
 	</tr>
 	<tr>
 		<td class="name"  nowrap><a href="modules/bitwise_ops.log2.html">bitwise_ops.log2</a></td>
@@ -646,20 +652,28 @@
 		<td class="summary">Mesh utilities.</td>
 	</tr>
 	<tr>
-		<td class="name"  nowrap><a href="modules/mwc_rng.html">mwc_rng</a></td>
-		<td class="summary">This module implements a multiply-with-carry RNG.</td>
+		<td class="name"  nowrap><a href="modules/number_ops.funcs.html">number_ops.funcs</a></td>
+		<td class="summary">An assortment of useful numeric functions.</td>
 	</tr>
 	<tr>
-		<td class="name"  nowrap><a href="modules/numeric_ops.hilbert.html">numeric_ops.hilbert</a></td>
+		<td class="name"  nowrap><a href="modules/number_ops.hilbert.html">number_ops.hilbert</a></td>
 		<td class="summary">Hilbert curve-type space filling operations.</td>
 	</tr>
 	<tr>
-		<td class="name"  nowrap><a href="modules/numeric_ops.morton.html">numeric_ops.morton</a></td>
+		<td class="name"  nowrap><a href="modules/number_ops.morton.html">number_ops.morton</a></td>
 		<td class="summary">Some Morton number utilities.</td>
 	</tr>
 	<tr>
-		<td class="name"  nowrap><a href="modules/numeric_ops.html">numeric_ops</a></td>
-		<td class="summary">An assortment of useful numeric operations.</td>
+		<td class="name"  nowrap><a href="modules/number_ops.mwc_rng.html">number_ops.mwc_rng</a></td>
+		<td class="summary">This module implements a multiply-with-carry RNG.</td>
+	</tr>
+	<tr>
+		<td class="name"  nowrap><a href="modules/number_ops.range.html">number_ops.range</a></td>
+		<td class="summary">Some utilities related to number ranges.</td>
+	</tr>
+	<tr>
+		<td class="name"  nowrap><a href="modules/number_ops.simplex_noise.html">number_ops.simplex_noise</a></td>
+		<td class="summary">An implementation of Ken Perlin's simplex noise.</td>
 	</tr>
 	<tr>
 		<td class="name"  nowrap><a href="modules/overlay.Help.html">overlay.Help</a></td>
@@ -768,10 +782,6 @@
 	<tr>
 		<td class="name"  nowrap><a href="modules/scene.Options.html">scene.Options</a></td>
 		<td class="summary">Options scene.</td>
-	</tr>
-	<tr>
-		<td class="name"  nowrap><a href="modules/simplex_noise.html">simplex_noise</a></td>
-		<td class="summary">An implementation of Ken Perlin's simplex noise.</td>
 	</tr>
 	<tr>
 		<td class="name"  nowrap><a href="modules/table_ops.html">table_ops</a></td>

@@ -38,7 +38,7 @@ local flow = require("coroutine_ops.flow")
 local grid_iterators = require("iterator_ops.grid")
 local index_ops = require("index_ops")
 local ms = require("mask.MarchingSquares")
-local numeric_ops = require("numeric_ops")
+local number_funcs = require("number_ops.funcs")
 local scenes = require("utils.Scenes")
 local sheet = require("ui.Sheet")
 local timers = require("game.Timers")
@@ -88,8 +88,8 @@ local TileDim = LogicalDim / 4
 
 -- Heh, not exactly the most efficient representation :P
 local function Index (col, row)
-	local qc, rc = numeric_ops.DivRem(col - 1, 4)
-	local qr, rr = numeric_ops.DivRem(row - 1, 4)
+	local qc, rc = number_funcs.DivRem(col - 1, 4)
+	local qr, rr = number_funcs.DivRem(row - 1, 4)
 
 	return 4 * (qr * Pitch + qc * 4 + rr) + rc + 1
 end

@@ -29,7 +29,7 @@
 local assert = assert
 
 -- Modules --
-local array_ops = require("array_ops")
+local array_preds = require("array_ops.predicates")
 local flow_bodies = require("coroutine_ops.flow_bodies")
 
 -- Imports --
@@ -72,19 +72,19 @@ do
 	-- Signal predicates --
 	local Predicates = {
 		-- All signals set --
-		all = array_ops.All,
+		all = array_preds.All,
 
 		-- Any signals set --
-		any = array_ops.Any,
+		any = array_preds.Any,
 
 		-- No signal set --
-		none = array_ops.Any,
+		none = array_preds.Any,
 
 		-- Any signals not set --
-		not_all = array_ops.All,
+		not_all = array_preds.All,
 
 		-- Some signals set --
-		some = array_ops.Some
+		some = array_preds.Some
 	}
 
 	-- Config setup helper
@@ -114,7 +114,7 @@ do
 	-- @param arg Argument.
 	-- @param yvalue Optional value to yield.
 	-- @treturn The signals satisfied the predicate?
-	-- @see array_ops.All, array_ops.Any
+	-- @see array_ops.predicates.All, array_ops.predicates.Any
 	function M.WaitForMultipleSignals (signals, count, pred, update, arg, yvalue)
 		local pred_op = Setup(Config, pred)
 

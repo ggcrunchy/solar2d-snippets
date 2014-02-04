@@ -27,10 +27,10 @@
 local floor = math.floor
 
 -- Modules --
-local numeric_ops = require("numeric_ops")
+local number_funcs = require("number_ops.funcs")
 
 -- Imports --
-local DivRem = numeric_ops.DivRem
+local DivRem = number_funcs.DivRem
 
 -- Exports --
 local M = {}

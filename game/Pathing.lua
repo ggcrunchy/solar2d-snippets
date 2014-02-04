@@ -29,7 +29,7 @@ local insert = table.insert
 local ipairs = ipairs
 
 -- Modules --
-local array_ops = require("array_ops")
+local array_funcs = require("array_ops.funcs")
 local movement = require("game.Movement")
 local tile_flags = require("game.TileFlags")
 
@@ -198,7 +198,7 @@ function M.FindPath (start, goal)
 			-- at a branch); the goal was found (or a non-goal, see above); or we looped.
 			-- Since we iterate the probes in reverse, we can just backfill the gap.
 			if #cur == ncur then
-				array_ops.Backfill(probes, i)
+				array_funcs.Backfill(probes, i)
 			end
 		end
 	end

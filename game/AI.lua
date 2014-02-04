@@ -34,8 +34,8 @@ local type = type
 local dispatch_list = require("game.DispatchList")
 local flow = require("coroutine_ops.flow")
 local movement = require("game.Movement")
-local mwc_rng = require("mwc_rng")
-local numeric_ops = require("numeric_ops")
+local mwc_rng = require("number_ops.mwc_rng")
+local range = require("number_ops.range")
 local tile_flags = require("game.TileFlags")
 local tile_maps = require("game.TileMaps")
 
@@ -137,8 +137,8 @@ function M.GetTileNeighbor_Biased (start, halfx, halfy, gen, biasx, biasy)
 		local gh = halfy - gen() % h + 1
 
 		if gw ~= 0 and gh ~= 0 then
-			col = numeric_ops.ClampIn(col + TSign(gw, biasx), 1, ncols)
-			row = numeric_ops.ClampIn(row + TSign(gh, biasy), 1, nrows)
+			col = range.ClampIn(col + TSign(gw, biasx), 1, ncols)
+			row = range.ClampIn(row + TSign(gh, biasy), 1, nrows)
 
 			tile = tile_maps.GetTileIndex(col, row)
 		end

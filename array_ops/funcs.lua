@@ -38,38 +38,10 @@ local WipeRange = var_ops.WipeRange
 -- Exports --
 local M = {}
 
---- Iterates from _i_ = 1 to _count_ and reports whether **all** `arr[i]` are true.
--- @array arr Array to test.
--- @uint count Number of tests to perform. If absent, `#arr`.
--- @treturn boolean All tests passed?
-function M.All (arr, count)
-	for i = 1, count or #arr do
-		if not arr[i] then
-			return false
-		end
-	end
-
-	return true
-end
-
---- Iterates from _i_ = 1 to _count_ and reports whether **any** `arr[i]` is true.
--- @array arr Array to test.
--- @uint count Number of tests to perform. If absent, `#arr`.
--- @treturn boolean Any test passed?
-function M.Any (arr, count)
-	for i = 1, count or #arr do
-		if arr[i] then
-			return true
-		end
-	end
-
-	return false
-end
-
 -- Bound table getter --
 local GetTable
 
---- Builds a new array, each of whose _count_ elements is a table.
+--- Builds a new array with _count_ elements, each of which is a table.
 --
 -- When called in a bound table context, the binding is used as the destination array.
 -- @uint count
@@ -182,45 +154,6 @@ function M.Reverse (arr, count)
 		i = i + 1
 		j = j - 1
 	end
-end
-
---- Predicate.
--- @array arr1 Array #1.
--- @array arr2 Array #2.
--- @treturn boolean _arr1_ and _arr2_ compared equal (without recursion)?
-function M.ShallowEqual (arr1, arr2)
-	local i = 1
-
-	repeat
-		local v = arr1[i]
-
-		if v ~= arr2[i] then
-			return false
-		end
-
-		i = i + 1
-	until v == nil
-
-	return true
-end
-
---- Iterates from _i_ = 1 to _count_ and reports whether **some** `arr[i]` are true, i.e.
--- 0 < _n_ < _count_, where _n_ is the number of true `arr[i]`.
--- @array arr Array to test.
--- @uint count Number of tests to perform. If absent, `#arr`.
--- @treturn boolean Some tests passed?
-function M.Some (arr, count)
-	count = count or #arr
-
-	local n = 0
-
-	for i = 1, count do
-		if arr[i] then
-			n = n + 1
-		end
-	end
-
-	return n > 0 and n < count
 end
 
 -- Register bound-table functions.
