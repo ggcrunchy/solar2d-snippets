@@ -1,4 +1,4 @@
---- Various spline utilities.
+--- Some utilities for calculating arc lengths.
 --
 -- For purposes of this module, an instance of type **Vector** is a value, e.g. a table,
 -- that has and / or receives **number** members **x** and **y**.

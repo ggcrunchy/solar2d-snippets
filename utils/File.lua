@@ -159,7 +159,7 @@ function M.WatchForFileModification (path, func, base)
 		respath = respath or system.pathForFile(path, base)
 
 		if respath then
-			local now = lfs.attributes(respath, "modification")
+			local now = lfs.attributes(respath, "modification") -- TODO: Directory itself could be deleted, no?
 
 			if modtime and now ~= modtime then
 				func(path)

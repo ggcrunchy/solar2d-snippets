@@ -141,7 +141,7 @@ end
 -- @string stype Spline type.
 -- @tparam ?Coeffs pos If present, position coefficients to evaluate at _t_.
 -- @tparam ?Coeffs tan If present, tangent coefficients to evaluate at _t_.
--- @number t Interpolation time, &isin [0, 1].
+-- @number t Interpolation time, &isin; [0, 1].
 function M.EvaluateCoeffs (stype, pos, tan, t)
 	local eval, t2 = RHS[stype], t * t
 
@@ -203,7 +203,7 @@ local Coeffs = {}
 -- @tparam Vector b ...#2...
 -- @tparam Vector c ...#3...
 -- @tparam Vector d ...and #4.
--- @number t Interpolation time, &isin [0, 1].
+-- @number t Interpolation time, &isin; [0, 1].
 -- @treturn number Position x-coordinate...
 -- @treturn number ...and y-coordinate.
 function M.GetPosition (stype, a, b, c, d, t)
@@ -216,7 +216,7 @@ end
 -- @string stype Spline type.
 -- @array pos Elements 1, 2, 3, 4 are interpreted as arguments _a_, _b_, _c_, _d_
 -- from @{GetPosition}.
--- @number t Interpolation time, &isin [0, 1].
+-- @number t Interpolation time, &isin; [0, 1].
 -- @treturn number Position x-coordinate...
 -- @treturn number ...and y-coordinate.
 function M.GetPosition_Array (stype, pos, t)
@@ -234,7 +234,7 @@ end
 -- @tparam Vector b ...#2...
 -- @tparam Vector c ...#3...
 -- @tparam Vector d ...and #4.
--- @number t Interpolation time, &isin [0, 1].
+-- @number t Interpolation time, &isin; [0, 1].
 -- @treturn number Tangent x-component...
 -- @treturn number ...and y-component.
 function M.GetTangent (stype, a, b, c, d, t)
@@ -247,7 +247,7 @@ end
 -- @string stype Spline type.
 -- @array tan Elements 1, 2, 3, 4 are interpreted as arguments _a_, _b_, _c_, _d_
 -- from @{GetTangent}.
--- @number t Interpolation time, &isin [0, 1].
+-- @number t Interpolation time, &isin; [0, 1].
 -- @treturn number Tangent x-component...
 -- @treturn number ...and y-component.
 function M.GetTangent_Array (stype, tan, t)

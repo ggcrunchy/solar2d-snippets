@@ -163,7 +163,7 @@ local function MakeMaze (block, open)
 	-- to overwriting all slots or building a new table: Since the current ID iterates over
 	-- the number of available slots (and then resets), and since every slot is invalidated
 	-- between occurrences of the ID taking on a given value, all slots will either contain
-	-- some either ID or be invalid, i.e. none will be already explored.
+	-- some other ID or be invalid, i.e. none will be already explored.
 	local new = array_index.RotateIndex(open.id, #open)
 
 	open.id, open[-new] = new

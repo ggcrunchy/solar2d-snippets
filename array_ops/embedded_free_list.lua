@@ -5,6 +5,8 @@
 -- but I might as well put them to use, so those slots instead maintain the linked list of free
 -- positions, for quick reallocation and so on.
 
+-- Might as well pull in some of the other stuff too... doesn't look like it's doing any good not to?
+
 --
 -- Permission is hereby granted, free of charge, to any person obtaining
 -- a copy of this software and associated documentation files (the
