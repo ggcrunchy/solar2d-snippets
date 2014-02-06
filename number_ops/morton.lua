@@ -27,8 +27,8 @@
 local operators = require("bitwise_ops.operators")
 
 -- Imports --
-local band = operators.Band
-local bor = operators.Bor
+local band = operators.And
+local bor = operators.Or
 local lshift = operators.LShift
 local rshift = operators.RShift
 

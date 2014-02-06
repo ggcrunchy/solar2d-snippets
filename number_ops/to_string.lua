@@ -1,4 +1,4 @@
---- An assortment of useful numeric functions.
+--- Some number -> string conversion utilities.
 
 --
 -- Permission is hereby granted, free of charge, to any person obtaining
@@ -24,30 +24,49 @@
 --
 
 -- Standard library imports --
-local floor = math.floor
+local concat = table.concat
+local reverse = string.reverse
 
--- Exports --
-local M = {}
+-- --
+local Acc
 
---- Breaks the result of _a_ / _b_ up into a count and remainder.
--- @number a Dividend.
--- @number b Divisor.
--- @treturn int Number of times that _b_ divides _a_.
--- @treturn number Remainder, i.e. _a_ % _b_.
-function M.DivRem (a, b)
-	local quot = floor(a / b)
+--- DOCME
+function M.Binary (n, block_size, pad)
+	if n == 0 then
+		return "0"
+	else
+		Acc = Acc or {}
 
-	return quot, a - quot * b
-end
+		--
+		local bit, pos, size = 1, 0, (block_size or 4) + 1
 
---- Rounds a number to the nearest multiple of some increment.
--- @number n Number to round.
--- @number inc Increment; by default, 1.
--- @treturn number Rounded result.
-function M.RoundTo (n, inc)
-	inc = inc or 1
+		repeat
+			--
+			pos = pos + 1
 
-	return floor((n + .5 * inc) / inc) * inc
+			if pos % size == 0 then
+				Acc[pos], pos = " ", pos + 1
+			end
+
+			--
+			local char = "0"
+
+			if n % (bit + bit) >= bit then
+				char, n = "1", n - bit
+			end
+
+			Acc[pos], bit = char, bit + bit
+		until n == 0
+
+		-- If desired, pad the result to the block size.
+		if pad then
+			while (pos + 1) % size > 0 do
+				Acc[pos + 1], pos = "0", pos + 1
+			end
+		end
+
+		return reverse(concat(Acc, "", 1, pos))
+	end
 end
 
 -- Export the module.

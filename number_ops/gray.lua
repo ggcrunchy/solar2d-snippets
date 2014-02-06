@@ -1,4 +1,4 @@
---- An assortment of useful numeric functions.
+--- Some Gray code utilities.
 
 --
 -- Permission is hereby granted, free of charge, to any person obtaining
@@ -23,32 +23,58 @@
 -- [ MIT license: http://www.opensource.org/licenses/mit-license.php ]
 --
 
--- Standard library imports --
-local floor = math.floor
+-- Modules --
+local operators = require("bitwise_ops.operators")
+
+-- Imports --
+local band = operators.And
+local bor = operators.Or
+local bxor = operators.Xor
+local rshift = operators.RShift
+
+-- Cached module references --
+local _BinaryToGray_
+local _GrayToBinary_
 
 -- Exports --
 local M = {}
 
---- Breaks the result of _a_ / _b_ up into a count and remainder.
--- @number a Dividend.
--- @number b Divisor.
--- @treturn int Number of times that _b_ divides _a_.
--- @treturn number Remainder, i.e. _a_ % _b_.
-function M.DivRem (a, b)
-	local quot = floor(a / b)
-
-	return quot, a - quot * b
+--- DOCME
+function M.BinaryToGray (n)
+	return bxor(rshift(n, 1), n)
 end
 
---- Rounds a number to the nearest multiple of some increment.
--- @number n Number to round.
--- @number inc Increment; by default, 1.
--- @treturn number Rounded result.
-function M.RoundTo (n, inc)
-	inc = inc or 1
+--
+local function AuxFirstN (n, gray)
+	if gray then
+		local index = _GrayToBinary_(gray)
 
-	return floor((n + .5 * inc) / inc) * inc
+		if index < n then
+			return _BinaryToGray_(index + 1)
+		end
+	else
+		return 0
+	end
 end
+
+--- DOCME
+function M.FirstN (n)
+	return AuxFirstN, n or 2^32 - 1, false
+end
+
+--- DOCME
+function M.GrayToBinary (gray)
+	gray = bxor(gray, rshift(gray, 16))
+	gray = bxor(gray, rshift(gray, 8))
+	gray = bxor(gray, rshift(gray, 4))
+	gray = bxor(gray, rshift(gray, 2))
+
+	return bxor(gray, rshift(gray, 1))
+end
+
+-- Cache module members.
+_BinaryToGray_ = M.BinaryToGray
+_GrayToBinary_ = M.GrayToBinary
 
 -- Export the module.
 return M
