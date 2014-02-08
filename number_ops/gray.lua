@@ -59,7 +59,7 @@ end
 
 --- DOCME
 function M.FirstN (n)
-	return AuxFirstN, n or 2^32 - 1, false
+	return AuxFirstN, (n or 2^32) - 1, false
 end
 
 --- DOCME
