@@ -1,0 +1,708 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+<head>
+    <title>Snippets documentation</title>
+    <link rel="stylesheet" href="../ldoc.css" type="text/css" />
+</head>
+<body>
+
+<div id="container">
+
+<div id="product">
+	<div id="product_logo"></div>
+	<div id="product_name"><big><b></b></big></div>
+	<div id="product_description"></div>
+</div> <!-- id="product" -->
+
+
+<div id="main">
+
+
+<!-- Menu -->
+
+<div id="navigation">
+<br/>
+<h1>Corona SDK snippets</h1>
+
+<ul>
+  <li><a href="../api.html">Index</a></li>
+</ul>
+
+<h2>Contents</h2>
+<ul>
+<li><a href="#Functions">Functions</a></li>
+</ul>
+
+
+<h2>Modules</h2>
+<ul class="$(kind=='Topics' and '' or 'nowrap'">
+  <li><a href="../modules/array_ops.collect.html">collect</a></li>
+  <li><a href="../modules/array_ops.embedded_free_list.html">embedded_free_list</a></li>
+  <li><a href="../modules/array_ops.funcs.html">funcs</a></li>
+  <li><a href="../modules/array_ops.id_occupied.html">id_occupied</a></li>
+  <li><a href="../modules/array_ops.index.html">index</a></li>
+  <li><a href="../modules/array_ops.predicates.html">predicates</a></li>
+  <li><a href="../modules/array_ops.wipe.html">wipe</a></li>
+  <li><a href="../modules/bitwise_ops.log2.html">log2</a></li>
+  <li><a href="../modules/bitwise_ops.operators.html">operators</a></li>
+  <li><a href="../modules/bitwise_ops.powers_of_2.html">powers_of_2</a></li>
+  <li><a href="../modules/SparseArray.html">SparseArray</a></li>
+  <li><a href="../modules/Interpolator.html">Interpolator</a></li>
+  <li><a href="../modules/SectionGroup.html">SectionGroup</a></li>
+  <li><a href="../modules/TaskQueue.html">TaskQueue</a></li>
+  <li><a href="../modules/Timeline.html">Timeline</a></li>
+  <li><a href="../modules/Timer.html">Timer</a></li>
+  <li><a href="../modules/VarFamily.html">VarFamily</a></li>
+  <li><a href="../modules/class.VarFamilyEx.Annex.html">VarFamilyEx.Annex</a></li>
+  <li><a href="../modules/BoolVars.html">BoolVars</a></li>
+  <li><a href="../modules/NumVars.html">NumVars</a></li>
+  <li><a href="../modules/RawVars.html">RawVars</a></li>
+  <li><a href="../modules/TimerVars.html">TimerVars</a></li>
+  <li><a href="../modules/config.Dots.html">Dots</a></li>
+  <li><a href="../modules/config.EditorViews.html">EditorViews</a></li>
+  <li><a href="../modules/config.EventBlocks.html">EventBlocks</a></li>
+  <li><a href="../modules/config.GlobalEvents.html">GlobalEvents</a></li>
+  <li><strong>flow</strong></li>
+  <li><a href="../modules/coroutine_ops.flow_bodies.html">flow_bodies</a></li>
+  <li><a href="../modules/coroutine_ops.per_coroutine.html">per_coroutine</a></li>
+  <li><a href="../modules/coroutine_ops.wrapper.html">wrapper</a></li>
+  <li><a href="../modules/DEBUG.html">DEBUG</a></li>
+  <li><a href="../modules/dot.Switch.html">Switch</a></li>
+  <li><a href="../modules/dot.Warp.html">Warp</a></li>
+  <li><a href="../modules/editor.Common.html">Common</a></li>
+  <li><a href="../modules/editor.CommonUI.html">CommonUI</a></li>
+  <li><a href="../modules/editor.Dialog.Data.html">Dialog.Data</a></li>
+  <li><a href="../modules/editor.Dialog.Items.html">Dialog.Items</a></li>
+  <li><a href="../modules/editor.Dialog.Layout.html">Dialog.Layout</a></li>
+  <li><a href="../modules/editor.Dialog.Methods.html">Dialog.Methods</a></li>
+  <li><a href="../modules/editor.Dialog.Utils.html">Dialog.Utils</a></li>
+  <li><a href="../modules/editor.Dialog.html">Dialog</a></li>
+  <li><a href="../modules/editor.Events.html">Events</a></li>
+  <li><a href="../modules/editor.Grid.html">Grid</a></li>
+  <li><a href="../modules/editor.GridFuncs.html">GridFuncs</a></li>
+  <li><a href="../modules/editor.Links.html">Links</a></li>
+  <li><a href="../modules/editor.Ops.html">Ops</a></li>
+  <li><a href="../modules/editor.Tags.html">Tags</a></li>
+  <li><a href="../modules/editor.views.Audio.html">views.Audio</a></li>
+  <li><a href="../modules/editor.views.Background.html">views.Background</a></li>
+  <li><a href="../modules/editor.views.Dots.html">views.Dots</a></li>
+  <li><a href="../modules/editor.views.EventBlocks.html">views.EventBlocks</a></li>
+  <li><a href="../modules/editor.views.GlobalEvents.html">views.GlobalEvents</a></li>
+  <li><a href="../modules/editor.views.Player.html">views.Player</a></li>
+  <li><a href="../modules/editor.views.Positions.html">views.Positions</a></li>
+  <li><a href="../modules/editor.views.Settings.html">views.Settings</a></li>
+  <li><a href="../modules/editor.views.Tiles.html">views.Tiles</a></li>
+  <li><a href="../modules/editor.views.Triggers.html">views.Triggers</a></li>
+  <li><a href="../modules/effect.Balloons.html">Balloons</a></li>
+  <li><a href="../modules/effect.Fillers.html">Fillers</a></li>
+  <li><a href="../modules/effect.Glow.html">Glow</a></li>
+  <li><a href="../modules/effect.Markers.html">Markers</a></li>
+  <li><a href="../modules/effect.Shadows.html">Shadows</a></li>
+  <li><a href="../modules/effect.Snowfall.html">Snowfall</a></li>
+  <li><a href="../modules/effect.Stars.html">Stars</a></li>
+  <li><a href="../modules/effect.Stash.html">Stash</a></li>
+  <li><a href="../modules/event_block.Maze.html">Maze</a></li>
+  <li><a href="../modules/fill.CellularAutomata.html">CellularAutomata</a></li>
+  <li><a href="../modules/fill.Circle.html">Circle</a></li>
+  <li><a href="../modules/FIXES.html">FIXES</a></li>
+  <li><a href="../modules/game.AI.html">AI</a></li>
+  <li><a href="../modules/game.Collision.html">Collision</a></li>
+  <li><a href="../modules/game.Controls.html">Controls</a></li>
+  <li><a href="../modules/game.DispatchList.html">DispatchList</a></li>
+  <li><a href="../modules/game.Dots.html">Dots</a></li>
+  <li><a href="../modules/game.EventBlocks.html">EventBlocks</a></li>
+  <li><a href="../modules/game.FX.html">FX</a></li>
+  <li><a href="../modules/game.GlobalEvents.html">GlobalEvents</a></li>
+  <li><a href="../modules/game.LevelMap.html">LevelMap</a></li>
+  <li><a href="../modules/game.LevelsList.html">LevelsList</a></li>
+  <li><a href="../modules/game.Movement.html">Movement</a></li>
+  <li><a href="../modules/game.Pathing.html">Pathing</a></li>
+  <li><a href="../modules/game.PathUtils.html">PathUtils</a></li>
+  <li><a href="../modules/game.Persistence.html">Persistence</a></li>
+  <li><a href="../modules/game.Player.html">Player</a></li>
+  <li><a href="../modules/game.Scrolling.html">Scrolling</a></li>
+  <li><a href="../modules/game.TileFlags.html">TileFlags</a></li>
+  <li><a href="../modules/game.TileMaps.html">TileMaps</a></li>
+  <li><a href="../modules/game.Timers.html">Timers</a></li>
+  <li><a href="../modules/game.Transitions.html">Transitions</a></li>
+  <li><a href="../modules/geom2d_ops.predicates.html">predicates</a></li>
+  <li><a href="../modules/geom2d_ops.quantize.html">quantize</a></li>
+  <li><a href="../modules/geom2d_ops.vector.html">vector</a></li>
+  <li><a href="../modules/hash_ops.html">hash_ops</a></li>
+  <li><a href="../modules/hud.Action.html">Action</a></li>
+  <li><a href="../modules/hud.Move.html">Move</a></li>
+  <li><a href="../modules/iterator_ops.args.html">args</a></li>
+  <li><a href="../modules/iterator_ops.coroutine.html">coroutine</a></li>
+  <li><a href="../modules/iterator_ops.grid.html">grid</a></li>
+  <li><a href="../modules/iterator_ops.ipairs.html">ipairs</a></li>
+  <li><a href="../modules/iterator_ops.utils.html">utils</a></li>
+  <li><a href="../modules/main.html">main</a></li>
+  <li><a href="../modules/mask.MarchingSquares.html">MarchingSquares</a></li>
+  <li><a href="../modules/mesh_ops.html">mesh_ops</a></li>
+  <li><a href="../modules/number_ops.funcs.html">funcs</a></li>
+  <li><a href="../modules/number_ops.gray.html">gray</a></li>
+  <li><a href="../modules/number_ops.hilbert.html">hilbert</a></li>
+  <li><a href="../modules/number_ops.integrators.html">integrators</a></li>
+  <li><a href="../modules/number_ops.morton.html">morton</a></li>
+  <li><a href="../modules/number_ops.mwc_rng.html">mwc_rng</a></li>
+  <li><a href="../modules/number_ops.range.html">range</a></li>
+  <li><a href="../modules/number_ops.simplex_noise.html">simplex_noise</a></li>
+  <li><a href="../modules/number_ops.to_string.html">to_string</a></li>
+  <li><a href="../modules/overlay.Help.html">Help</a></li>
+  <li><a href="../modules/overlay.Link.html">Link</a></li>
+  <li><a href="../modules/quaternion_ops.html">quaternion_ops</a></li>
+  <li><a href="../modules/samples.Delaunay.html">Delaunay</a></li>
+  <li><a href="../modules/samples.Fire.html">Fire</a></li>
+  <li><a href="../modules/samples.Hilbert.html">Hilbert</a></li>
+  <li><a href="../modules/samples.HilbertMixer.html">HilbertMixer</a></li>
+  <li><a href="../modules/samples.Hop.html">Hop</a></li>
+  <li><a href="../modules/samples.Nodes.html">Nodes</a></li>
+  <li><a href="../modules/samples.OrbitsAndLattices.html">OrbitsAndLattices</a></li>
+  <li><a href="../modules/samples.Pixels.html">Pixels</a></li>
+  <li><a href="../modules/samples.Plasma.html">Plasma</a></li>
+  <li><a href="../modules/samples.SlowMo.html">SlowMo</a></li>
+  <li><a href="../modules/samples.Snowfall.html">Snowfall</a></li>
+  <li><a href="../modules/samples.Superformulae.html">Superformulae</a></li>
+  <li><a href="../modules/samples.Thoughts.html">Thoughts</a></li>
+  <li><a href="../modules/samples.Ticker.html">Ticker</a></li>
+  <li><a href="../modules/samples.Tiling.html">Tiling</a></li>
+  <li><a href="../modules/samples.Timers.html">Timers</a></li>
+  <li><a href="../modules/scene.Choices.html">Choices</a></li>
+  <li><a href="../modules/scene.EditorSetup.html">EditorSetup</a></li>
+  <li><a href="../modules/scene.Intro.html">Intro</a></li>
+  <li><a href="../modules/scene.Level.html">Level</a></li>
+  <li><a href="../modules/scene.MapEditor.html">MapEditor</a></li>
+  <li><a href="../modules/scene.Options.html">Options</a></li>
+  <li><a href="../modules/spline_ops.arc_length.html">arc_length</a></li>
+  <li><a href="../modules/spline_ops.bezier.html">bezier</a></li>
+  <li><a href="../modules/spline_ops.cubic.html">cubic</a></li>
+  <li><a href="../modules/table_ops.adaptive.html">adaptive</a></li>
+  <li><a href="../modules/table_ops.funcs.html">funcs</a></li>
+  <li><a href="../modules/table_ops.lazy.html">lazy</a></li>
+  <li><a href="../modules/table_ops.predicates.html">predicates</a></li>
+  <li><a href="../modules/table_ops.proxy.html">proxy</a></li>
+  <li><a href="../modules/tektite.class.html">class</a></li>
+  <li><a href="../modules/tektite.errors.html">errors</a></li>
+  <li><a href="../modules/tektite.exception.html">exception</a></li>
+  <li><a href="../modules/tektite.func_ops.html">func_ops</a></li>
+  <li><a href="../modules/tektite.require_ex.html">require_ex</a></li>
+  <li><a href="../modules/tests.LinksAndTags.html">LinksAndTags</a></li>
+  <li><a href="../modules/tiles.TreeBG.html">TreeBG</a></li>
+  <li><a href="../modules/ui.Button.html">Button</a></li>
+  <li><a href="../modules/ui.Checkbox.html">Checkbox</a></li>
+  <li><a href="../modules/ui.Color.html">Color</a></li>
+  <li><a href="../modules/ui.ColorPicker.html">ColorPicker</a></li>
+  <li><a href="../modules/ui.Grid1D.html">Grid1D</a></li>
+  <li><a href="../modules/ui.Grid2D.html">Grid2D</a></li>
+  <li><a href="../modules/ui.HSV.html">HSV</a></li>
+  <li><a href="../modules/ui.Keyboard.html">Keyboard</a></li>
+  <li><a href="../modules/ui.Layout.html">Layout</a></li>
+  <li><a href="../modules/ui.LineEx.html">LineEx</a></li>
+  <li><a href="../modules/ui.Lines.html">Lines</a></li>
+  <li><a href="../modules/ui.LinkGroup.html">LinkGroup</a></li>
+  <li><a href="../modules/ui.Sheet.html">Sheet</a></li>
+  <li><a href="../modules/ui.Skin.html">Skin</a></li>
+  <li><a href="../modules/ui.Touch.html">Touch</a></li>
+  <li><a href="../modules/ui.Utils.html">Utils</a></li>
+  <li><a href="../modules/utils.Audio.html">Audio</a></li>
+  <li><a href="../modules/utils.Bind.html">Bind</a></li>
+  <li><a href="../modules/utils.Curves.html">Curves</a></li>
+  <li><a href="../modules/utils.Device.html">Device</a></li>
+  <li><a href="../modules/utils.File.html">File</a></li>
+  <li><a href="../modules/utils.Flag.html">Flag</a></li>
+  <li><a href="../modules/utils.Frames.html">Frames</a></li>
+  <li><a href="../modules/utils.Mask.html">Mask</a></li>
+  <li><a href="../modules/utils.ObjectHelper.html">ObjectHelper</a></li>
+  <li><a href="../modules/utils.Resource.html">Resource</a></li>
+  <li><a href="../modules/utils.Scenes.html">Scenes</a></li>
+  <li><a href="../modules/utils.String.html">String</a></li>
+  <li><a href="../modules/var_ops.bound_args.html">bound_args</a></li>
+  <li><a href="../modules/var_ops.cache.html">cache</a></li>
+  <li><a href="../modules/var_ops.dump.html">dump</a></li>
+  <li><a href="../modules/var_ops.predicates.html">predicates</a></li>
+</ul>
+
+</div>
+
+<div id="content">
+
+<h1>Module <code>coroutine_ops.flow</code></h1>
+<p>This module defines some control-flow operations for use inside coroutines.</p>
+<p>
+
+</p>
+
+
+<h2><a href="#Functions">Functions</a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#Wait">Wait (duration, update, arg, yvalue)</a></td>
+	<td class="summary">Waits for some time to pass.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#WaitForMultipleSignals">WaitForMultipleSignals (signals, count, pred, update, arg, yvalue)</a></td>
+	<td class="summary">Waits for a group of signals to reach a certain state.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#WaitForMultipleSignals_Timed">WaitForMultipleSignals_Timed (signals, count, pred, update, arg, yvalue)</a></td>
+	<td class="summary">Timed variant of <a href="../modules/coroutine_ops.flow.html#WaitForMultipleSignals">WaitForMultipleSignals</a>, built on top of <a href="../modules/coroutine_ops.flow_bodies.html#Body_Timed">coroutine_ops.flow_bodies.Body_Timed</a>.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#WaitForSignal">WaitForSignal (signals, what, update, arg, yvalue)</a></td>
+	<td class="summary">Waits for a single signal to fire.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#WaitForSignal_Timed">WaitForSignal_Timed (signals, what, update, arg, yvalue)</a></td>
+	<td class="summary">Timed variant of <a href="../modules/coroutine_ops.flow.html#WaitForSignal">WaitForSignal</a>, built on top of <a href="../modules/coroutine_ops.flow_bodies.html#Body_Timed">coroutine_ops.flow_bodies.Body_Timed</a>.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#WaitUntil">WaitUntil (test, update, arg, yvalue)</a></td>
+	<td class="summary">Waits for a test to pass.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#WaitUntil_Timed">WaitUntil_Timed (test, update, arg, use_time, yvalue)</a></td>
+	<td class="summary">Timed variant of <a href="../modules/coroutine_ops.flow.html#WaitUntil">WaitUntil</a>, built on top of <a href="../modules/coroutine_ops.flow_bodies.html#Body_Timed">coroutine_ops.flow_bodies.Body_Timed</a>.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#WaitWhile">WaitWhile (test, update, arg, yvalue)</a></td>
+	<td class="summary">Waits for a test to fail.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#WaitWhile_Timed">WaitWhile_Timed (test, update, arg, use_time, yvalue)</a></td>
+	<td class="summary">Timed variant of <a href="../modules/coroutine_ops.flow.html#WaitWhile">WaitWhile</a>, built on top of <a href="../modules/coroutine_ops.flow_bodies.html#Body_Timed">coroutine_ops.flow_bodies.Body_Timed</a>.</td>
+	</tr>
+</table>
+
+<br/>
+<br/>
+
+
+    <h2><a name="Functions"></a>Functions</h2>
+    <dl class="function">
+    <dt>
+    <a name = "Wait"></a>
+    <strong>Wait (duration, update, arg, yvalue)</strong>
+    </dt>
+    <dd>
+    Waits for some time to pass. </p>
+
+<p> Built on top of <a href="../modules/coroutine_ops.flow_bodies.html#Body_Timed">coroutine_ops.flow_bodies.Body_Timed</a>.
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">duration</span>
+            <span class="types"><span class="type">number</span></span>
+         Time to wait.
+        </li>
+        <li><span class="parameter">update</span>
+            <span class="types"><span class="type">callable</span></span>
+         Optional update logic, called as</p>
+<pre><code>update(time_state, duration, arg)
+</code></pre>
+<p> with <em>time_state</em> as per <a href="../modules/coroutine_ops.flow_bodies.html#Body_Timed">coroutine_ops.flow_bodies.Body_Timed</a>.
+        </li>
+        <li><span class="parameter">arg</span>
+         Argument.
+        </li>
+        <li><span class="parameter">yvalue</span>
+         Optional value to yield.
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">boolean</span></span>
+        The wait completed?
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "WaitForMultipleSignals"></a>
+    <strong>WaitForMultipleSignals (signals, count, pred, update, arg, yvalue)</strong>
+    </dt>
+    <dd>
+    Waits for a group of signals to reach a certain state. </p>
+
+<p> Built on top of <a href="../modules/coroutine_ops.flow_bodies.html#Body">coroutine_ops.flow_bodies.Body</a>.
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">signals</span>
+         Callable or read-indexable signal object. For <em>i</em> = 1 to <em>count</em>,
+ the corresponding test is performed: <code>signals(i)</code> or <code>signals[i]</code>.</p>
+
+<p> A test passes if the return or lookup result is true.
+        </li>
+        <li><span class="parameter">count</span>
+            <span class="types"><span class="type">uint</span></span>
+         Signal count.
+        </li>
+        <li><span class="parameter">pred</span>
+            <span class="types"><a class="type" href="http://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
+
+<p> Predicate name, which may be any of the following:</p>
+
+<ul>
+    <li><strong>"all"</strong>: All tests must pass.</li>
+    <li><strong>"any"</strong>: At least one test must pass.</li>
+    <li><strong>"none"</strong>: No test may pass.</li>
+    <li><strong>"not_all</strong>: At least one test must not pass.</li>
+    <li><strong>"some"</strong>: Some, but not all, tests must pass.</li>
+</ul>
+
+        </li>
+        <li><span class="parameter">update</span>
+            <span class="types"><span class="type">callable</span></span>
+
+<p> Optional update logic, called as</p>
+<pre><code>update(signals, count, arg)
+</code></pre>
+
+        </li>
+        <li><span class="parameter">arg</span>
+         Argument.
+        </li>
+        <li><span class="parameter">yvalue</span>
+         Optional value to yield.
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">The</span></span>
+        signals satisfied the predicate?
+    </ol>
+
+
+    <h3>See also:</h3>
+    <ul>
+         <li><a href="../modules/array_ops.predicates.html#All">array_ops.predicates.All</a></li>
+         <li><a href="../modules/array_ops.predicates.html#Any">array_ops.predicates.Any</a></li>
+    </ul>
+
+
+</dd>
+    <dt>
+    <a name = "WaitForMultipleSignals_Timed"></a>
+    <strong>WaitForMultipleSignals_Timed (signals, count, pred, update, arg, yvalue)</strong>
+    </dt>
+    <dd>
+    Timed variant of <a href="../modules/coroutine_ops.flow.html#WaitForMultipleSignals">WaitForMultipleSignals</a>, built on top of <a href="../modules/coroutine_ops.flow_bodies.html#Body_Timed">coroutine_ops.flow_bodies.Body_Timed</a>.
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">signals</span>
+         Callable or read-indexable signal object.
+        </li>
+        <li><span class="parameter">count</span>
+            <span class="types"><span class="type">uint</span></span>
+         Signal count.
+        </li>
+        <li><span class="parameter">pred</span>
+            <span class="types"><a class="type" href="http://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
+         Predicate name, as per <a href="../modules/coroutine_ops.flow.html#WaitForMultipleSignals">WaitForMultipleSignals</a>.
+        </li>
+        <li><span class="parameter">update</span>
+            <span class="types"><span class="type">callable</span></span>
+         Optional update logic, called as</p>
+<pre><code>update(time_state, signals, count, arg)
+</code></pre>
+<p> with <em>time_state</em> as per <a href="../modules/coroutine_ops.flow_bodies.html#Body_Timed">coroutine_ops.flow_bodies.Body_Timed</a>.
+        </li>
+        <li><span class="parameter">arg</span>
+         Argument.
+        </li>
+        <li><span class="parameter">yvalue</span>
+         Optional value to yield.
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">boolean</span></span>
+        The signals satisfied the predicate?
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "WaitForSignal"></a>
+    <strong>WaitForSignal (signals, what, update, arg, yvalue)</strong>
+    </dt>
+    <dd>
+    Waits for a single signal to fire. </p>
+
+<p> Built on top of <a href="../modules/coroutine_ops.flow_bodies.html#Body">coroutine_ops.flow_bodies.Body</a>.
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">signals</span>
+         Callable or read-indexable signal object. A signal has fired if
+ <code>signals(what)</code> or <code>signals[what]</code> is true.
+        </li>
+        <li><span class="parameter">what</span>
+         Signal to watch.
+        </li>
+        <li><span class="parameter">update</span>
+            <span class="types"><span class="type">callable</span></span>
+
+<p> Optional update logic, called as</p>
+<pre><code>update(signals, what, arg)
+</code></pre>
+
+        </li>
+        <li><span class="parameter">arg</span>
+         Argument.
+        </li>
+        <li><span class="parameter">yvalue</span>
+         Optional value to yield.
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">boolean</span></span>
+        The signal fired?
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "WaitForSignal_Timed"></a>
+    <strong>WaitForSignal_Timed (signals, what, update, arg, yvalue)</strong>
+    </dt>
+    <dd>
+    Timed variant of <a href="../modules/coroutine_ops.flow.html#WaitForSignal">WaitForSignal</a>, built on top of <a href="../modules/coroutine_ops.flow_bodies.html#Body_Timed">coroutine_ops.flow_bodies.Body_Timed</a>.
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">signals</span>
+         Callable or read-indexable signal object.
+        </li>
+        <li><span class="parameter">what</span>
+         Signal to watch.
+        </li>
+        <li><span class="parameter">update</span>
+            <span class="types"><span class="type">callable</span></span>
+         Optional update logic, called as</p>
+<pre><code>update(time_state, signals, what, arg)
+</code></pre>
+<p> with <em>time_state</em> as per <a href="../modules/coroutine_ops.flow_bodies.html#Body_Timed">coroutine_ops.flow_bodies.Body_Timed</a>.
+        </li>
+        <li><span class="parameter">arg</span>
+         Argument.
+        </li>
+        <li><span class="parameter">yvalue</span>
+         Optional value to yield.
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">boolean</span></span>
+        The signal fired?
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "WaitUntil"></a>
+    <strong>WaitUntil (test, update, arg, yvalue)</strong>
+    </dt>
+    <dd>
+    Waits for a test to pass. </p>
+
+<p> Built on top of <a href="../modules/coroutine_ops.flow_bodies.html#Body">coroutine_ops.flow_bodies.Body</a>.
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">test</span>
+            <span class="types"><span class="type">callable</span></span>
+         Test function, with the same signature as <em>update</em>. If it returns
+ true, the wait terminates.
+        </li>
+        <li><span class="parameter">update</span>
+            <span class="types"><span class="type">callable</span></span>
+
+<p> Optional update logic, called as</p>
+<pre><code>update(arg)
+</code></pre>
+
+        </li>
+        <li><span class="parameter">arg</span>
+         Argument.
+        </li>
+        <li><span class="parameter">yvalue</span>
+         Optional value to yield.
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">boolean</span></span>
+        The test passed?
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "WaitUntil_Timed"></a>
+    <strong>WaitUntil_Timed (test, update, arg, use_time, yvalue)</strong>
+    </dt>
+    <dd>
+    Timed variant of <a href="../modules/coroutine_ops.flow.html#WaitUntil">WaitUntil</a>, built on top of <a href="../modules/coroutine_ops.flow_bodies.html#Body_Timed">coroutine_ops.flow_bodies.Body_Timed</a>.
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">test</span>
+            <span class="types"><span class="type">callable</span></span>
+         Test function. If it returns true, the wait terminates.
+        </li>
+        <li><span class="parameter">update</span>
+            <span class="types"><span class="type">callable</span></span>
+         Optional update logic, called as</p>
+<pre><code>update(time_state, arg)
+</code></pre>
+<p> with <em>time_state</em> as per <a href="../modules/coroutine_ops.flow_bodies.html#Body_Timed">coroutine_ops.flow_bodies.Body_Timed</a>.
+        </li>
+        <li><span class="parameter">arg</span>
+         Argument.
+        </li>
+        <li><span class="parameter">use_time</span>
+            <span class="types"><span class="type">bool</span></span>
+         <em>test</em> has the same signature as <em>update</em>? Otherwise, the <em>time_state</em>
+ argument is omitted.
+        </li>
+        <li><span class="parameter">yvalue</span>
+         Optional value to yield.
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">boolean</span></span>
+        The test passed?
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "WaitWhile"></a>
+    <strong>WaitWhile (test, update, arg, yvalue)</strong>
+    </dt>
+    <dd>
+    Waits for a test to fail. </p>
+
+<p> Built on top of <a href="../modules/coroutine_ops.flow_bodies.html#Body">coroutine_ops.flow_bodies.Body</a>.
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">test</span>
+            <span class="types"><span class="type">callable</span></span>
+         Test function, with the same signature as <em>update</em>. If it returns
+ false, the wait terminates.
+        </li>
+        <li><span class="parameter">update</span>
+            <span class="types"><span class="type">callable</span></span>
+
+<p> Optional update logic, called as</p>
+<pre><code>update(arg)
+</code></pre>
+
+        </li>
+        <li><span class="parameter">arg</span>
+         Argument.
+        </li>
+        <li><span class="parameter">yvalue</span>
+         Optional value to yield.
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">boolean</span></span>
+        The test failed?
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "WaitWhile_Timed"></a>
+    <strong>WaitWhile_Timed (test, update, arg, use_time, yvalue)</strong>
+    </dt>
+    <dd>
+    Timed variant of <a href="../modules/coroutine_ops.flow.html#WaitWhile">WaitWhile</a>, built on top of <a href="../modules/coroutine_ops.flow_bodies.html#Body_Timed">coroutine_ops.flow_bodies.Body_Timed</a>.
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">test</span>
+            <span class="types"><span class="type">callable</span></span>
+         Test function. If it returns false, the wait terminates.
+        </li>
+        <li><span class="parameter">update</span>
+            <span class="types"><span class="type">callable</span></span>
+         Optional update logic, called as</p>
+<pre><code>update(time_state, arg)
+</code></pre>
+<p> with <em>time_state</em> as per <a href="../modules/coroutine_ops.flow_bodies.html#Body_Timed">coroutine_ops.flow_bodies.Body_Timed</a>.
+        </li>
+        <li><span class="parameter">arg</span>
+         Argument.
+        </li>
+        <li><span class="parameter">use_time</span>
+            <span class="types"><span class="type">bool</span></span>
+         <em>test</em> has the same signature as <em>update</em>? Otherwise, the <em>time_state</em>
+ argument is omitted.
+        </li>
+        <li><span class="parameter">yvalue</span>
+         Optional value to yield.
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">boolean</span></span>
+        The test failed?
+    </ol>
+
+
+
+
+</dd>
+</dl>
+
+
+</div> <!-- id="content" -->
+</div> <!-- id="main" -->
+<div id="about">
+<i>generated by <a href="http://github.com/stevedonovan/LDoc">LDoc 1.4.0</a></i>
+</div> <!-- id="about" -->
+</div> <!-- id="container" -->
+</body>
+</html>

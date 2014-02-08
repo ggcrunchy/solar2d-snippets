@@ -1,0 +1,797 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+<head>
+    <title>Snippets documentation</title>
+    <link rel="stylesheet" href="../ldoc.css" type="text/css" />
+</head>
+<body>
+
+<div id="container">
+
+<div id="product">
+	<div id="product_logo"></div>
+	<div id="product_name"><big><b></b></big></div>
+	<div id="product_description"></div>
+</div> <!-- id="product" -->
+
+
+<div id="main">
+
+
+<!-- Menu -->
+
+<div id="navigation">
+<br/>
+<h1>Corona SDK snippets</h1>
+
+<ul>
+  <li><a href="../api.html">Index</a></li>
+</ul>
+
+<h2>Contents</h2>
+<ul>
+<li><a href="#Functions">Functions</a></li>
+</ul>
+
+
+<h2>Modules</h2>
+<ul class="$(kind=='Topics' and '' or 'nowrap'">
+  <li><a href="../modules/array_ops.collect.html">collect</a></li>
+  <li><a href="../modules/array_ops.embedded_free_list.html">embedded_free_list</a></li>
+  <li><a href="../modules/array_ops.funcs.html">funcs</a></li>
+  <li><a href="../modules/array_ops.id_occupied.html">id_occupied</a></li>
+  <li><a href="../modules/array_ops.index.html">index</a></li>
+  <li><a href="../modules/array_ops.predicates.html">predicates</a></li>
+  <li><a href="../modules/array_ops.wipe.html">wipe</a></li>
+  <li><a href="../modules/bitwise_ops.log2.html">log2</a></li>
+  <li><a href="../modules/bitwise_ops.operators.html">operators</a></li>
+  <li><a href="../modules/bitwise_ops.powers_of_2.html">powers_of_2</a></li>
+  <li><a href="../modules/SparseArray.html">SparseArray</a></li>
+  <li><a href="../modules/Interpolator.html">Interpolator</a></li>
+  <li><a href="../modules/SectionGroup.html">SectionGroup</a></li>
+  <li><a href="../modules/TaskQueue.html">TaskQueue</a></li>
+  <li><a href="../modules/Timeline.html">Timeline</a></li>
+  <li><a href="../modules/Timer.html">Timer</a></li>
+  <li><a href="../modules/VarFamily.html">VarFamily</a></li>
+  <li><a href="../modules/class.VarFamilyEx.Annex.html">VarFamilyEx.Annex</a></li>
+  <li><a href="../modules/BoolVars.html">BoolVars</a></li>
+  <li><a href="../modules/NumVars.html">NumVars</a></li>
+  <li><a href="../modules/RawVars.html">RawVars</a></li>
+  <li><a href="../modules/TimerVars.html">TimerVars</a></li>
+  <li><a href="../modules/config.Dots.html">Dots</a></li>
+  <li><a href="../modules/config.EditorViews.html">EditorViews</a></li>
+  <li><a href="../modules/config.EventBlocks.html">EventBlocks</a></li>
+  <li><a href="../modules/config.GlobalEvents.html">GlobalEvents</a></li>
+  <li><a href="../modules/coroutine_ops.flow.html">flow</a></li>
+  <li><a href="../modules/coroutine_ops.flow_bodies.html">flow_bodies</a></li>
+  <li><a href="../modules/coroutine_ops.per_coroutine.html">per_coroutine</a></li>
+  <li><a href="../modules/coroutine_ops.wrapper.html">wrapper</a></li>
+  <li><a href="../modules/DEBUG.html">DEBUG</a></li>
+  <li><a href="../modules/dot.Switch.html">Switch</a></li>
+  <li><a href="../modules/dot.Warp.html">Warp</a></li>
+  <li><a href="../modules/editor.Common.html">Common</a></li>
+  <li><a href="../modules/editor.CommonUI.html">CommonUI</a></li>
+  <li><a href="../modules/editor.Dialog.Data.html">Dialog.Data</a></li>
+  <li><a href="../modules/editor.Dialog.Items.html">Dialog.Items</a></li>
+  <li><a href="../modules/editor.Dialog.Layout.html">Dialog.Layout</a></li>
+  <li><a href="../modules/editor.Dialog.Methods.html">Dialog.Methods</a></li>
+  <li><a href="../modules/editor.Dialog.Utils.html">Dialog.Utils</a></li>
+  <li><a href="../modules/editor.Dialog.html">Dialog</a></li>
+  <li><strong>Events</strong></li>
+  <li><a href="../modules/editor.Grid.html">Grid</a></li>
+  <li><a href="../modules/editor.GridFuncs.html">GridFuncs</a></li>
+  <li><a href="../modules/editor.Links.html">Links</a></li>
+  <li><a href="../modules/editor.Ops.html">Ops</a></li>
+  <li><a href="../modules/editor.Tags.html">Tags</a></li>
+  <li><a href="../modules/editor.views.Audio.html">views.Audio</a></li>
+  <li><a href="../modules/editor.views.Background.html">views.Background</a></li>
+  <li><a href="../modules/editor.views.Dots.html">views.Dots</a></li>
+  <li><a href="../modules/editor.views.EventBlocks.html">views.EventBlocks</a></li>
+  <li><a href="../modules/editor.views.GlobalEvents.html">views.GlobalEvents</a></li>
+  <li><a href="../modules/editor.views.Player.html">views.Player</a></li>
+  <li><a href="../modules/editor.views.Positions.html">views.Positions</a></li>
+  <li><a href="../modules/editor.views.Settings.html">views.Settings</a></li>
+  <li><a href="../modules/editor.views.Tiles.html">views.Tiles</a></li>
+  <li><a href="../modules/editor.views.Triggers.html">views.Triggers</a></li>
+  <li><a href="../modules/effect.Balloons.html">Balloons</a></li>
+  <li><a href="../modules/effect.Fillers.html">Fillers</a></li>
+  <li><a href="../modules/effect.Glow.html">Glow</a></li>
+  <li><a href="../modules/effect.Markers.html">Markers</a></li>
+  <li><a href="../modules/effect.Shadows.html">Shadows</a></li>
+  <li><a href="../modules/effect.Snowfall.html">Snowfall</a></li>
+  <li><a href="../modules/effect.Stars.html">Stars</a></li>
+  <li><a href="../modules/effect.Stash.html">Stash</a></li>
+  <li><a href="../modules/event_block.Maze.html">Maze</a></li>
+  <li><a href="../modules/fill.CellularAutomata.html">CellularAutomata</a></li>
+  <li><a href="../modules/fill.Circle.html">Circle</a></li>
+  <li><a href="../modules/FIXES.html">FIXES</a></li>
+  <li><a href="../modules/game.AI.html">AI</a></li>
+  <li><a href="../modules/game.Collision.html">Collision</a></li>
+  <li><a href="../modules/game.Controls.html">Controls</a></li>
+  <li><a href="../modules/game.DispatchList.html">DispatchList</a></li>
+  <li><a href="../modules/game.Dots.html">Dots</a></li>
+  <li><a href="../modules/game.EventBlocks.html">EventBlocks</a></li>
+  <li><a href="../modules/game.FX.html">FX</a></li>
+  <li><a href="../modules/game.GlobalEvents.html">GlobalEvents</a></li>
+  <li><a href="../modules/game.LevelMap.html">LevelMap</a></li>
+  <li><a href="../modules/game.LevelsList.html">LevelsList</a></li>
+  <li><a href="../modules/game.Movement.html">Movement</a></li>
+  <li><a href="../modules/game.Pathing.html">Pathing</a></li>
+  <li><a href="../modules/game.PathUtils.html">PathUtils</a></li>
+  <li><a href="../modules/game.Persistence.html">Persistence</a></li>
+  <li><a href="../modules/game.Player.html">Player</a></li>
+  <li><a href="../modules/game.Scrolling.html">Scrolling</a></li>
+  <li><a href="../modules/game.TileFlags.html">TileFlags</a></li>
+  <li><a href="../modules/game.TileMaps.html">TileMaps</a></li>
+  <li><a href="../modules/game.Timers.html">Timers</a></li>
+  <li><a href="../modules/game.Transitions.html">Transitions</a></li>
+  <li><a href="../modules/geom2d_ops.predicates.html">predicates</a></li>
+  <li><a href="../modules/geom2d_ops.quantize.html">quantize</a></li>
+  <li><a href="../modules/geom2d_ops.vector.html">vector</a></li>
+  <li><a href="../modules/hash_ops.html">hash_ops</a></li>
+  <li><a href="../modules/hud.Action.html">Action</a></li>
+  <li><a href="../modules/hud.Move.html">Move</a></li>
+  <li><a href="../modules/iterator_ops.args.html">args</a></li>
+  <li><a href="../modules/iterator_ops.coroutine.html">coroutine</a></li>
+  <li><a href="../modules/iterator_ops.grid.html">grid</a></li>
+  <li><a href="../modules/iterator_ops.ipairs.html">ipairs</a></li>
+  <li><a href="../modules/iterator_ops.utils.html">utils</a></li>
+  <li><a href="../modules/main.html">main</a></li>
+  <li><a href="../modules/mask.MarchingSquares.html">MarchingSquares</a></li>
+  <li><a href="../modules/mesh_ops.html">mesh_ops</a></li>
+  <li><a href="../modules/number_ops.funcs.html">funcs</a></li>
+  <li><a href="../modules/number_ops.gray.html">gray</a></li>
+  <li><a href="../modules/number_ops.hilbert.html">hilbert</a></li>
+  <li><a href="../modules/number_ops.integrators.html">integrators</a></li>
+  <li><a href="../modules/number_ops.morton.html">morton</a></li>
+  <li><a href="../modules/number_ops.mwc_rng.html">mwc_rng</a></li>
+  <li><a href="../modules/number_ops.range.html">range</a></li>
+  <li><a href="../modules/number_ops.simplex_noise.html">simplex_noise</a></li>
+  <li><a href="../modules/number_ops.to_string.html">to_string</a></li>
+  <li><a href="../modules/overlay.Help.html">Help</a></li>
+  <li><a href="../modules/overlay.Link.html">Link</a></li>
+  <li><a href="../modules/quaternion_ops.html">quaternion_ops</a></li>
+  <li><a href="../modules/samples.Delaunay.html">Delaunay</a></li>
+  <li><a href="../modules/samples.Fire.html">Fire</a></li>
+  <li><a href="../modules/samples.Hilbert.html">Hilbert</a></li>
+  <li><a href="../modules/samples.HilbertMixer.html">HilbertMixer</a></li>
+  <li><a href="../modules/samples.Hop.html">Hop</a></li>
+  <li><a href="../modules/samples.Nodes.html">Nodes</a></li>
+  <li><a href="../modules/samples.OrbitsAndLattices.html">OrbitsAndLattices</a></li>
+  <li><a href="../modules/samples.Pixels.html">Pixels</a></li>
+  <li><a href="../modules/samples.Plasma.html">Plasma</a></li>
+  <li><a href="../modules/samples.SlowMo.html">SlowMo</a></li>
+  <li><a href="../modules/samples.Snowfall.html">Snowfall</a></li>
+  <li><a href="../modules/samples.Superformulae.html">Superformulae</a></li>
+  <li><a href="../modules/samples.Thoughts.html">Thoughts</a></li>
+  <li><a href="../modules/samples.Ticker.html">Ticker</a></li>
+  <li><a href="../modules/samples.Tiling.html">Tiling</a></li>
+  <li><a href="../modules/samples.Timers.html">Timers</a></li>
+  <li><a href="../modules/scene.Choices.html">Choices</a></li>
+  <li><a href="../modules/scene.EditorSetup.html">EditorSetup</a></li>
+  <li><a href="../modules/scene.Intro.html">Intro</a></li>
+  <li><a href="../modules/scene.Level.html">Level</a></li>
+  <li><a href="../modules/scene.MapEditor.html">MapEditor</a></li>
+  <li><a href="../modules/scene.Options.html">Options</a></li>
+  <li><a href="../modules/spline_ops.arc_length.html">arc_length</a></li>
+  <li><a href="../modules/spline_ops.bezier.html">bezier</a></li>
+  <li><a href="../modules/spline_ops.cubic.html">cubic</a></li>
+  <li><a href="../modules/table_ops.adaptive.html">adaptive</a></li>
+  <li><a href="../modules/table_ops.funcs.html">funcs</a></li>
+  <li><a href="../modules/table_ops.lazy.html">lazy</a></li>
+  <li><a href="../modules/table_ops.predicates.html">predicates</a></li>
+  <li><a href="../modules/table_ops.proxy.html">proxy</a></li>
+  <li><a href="../modules/tektite.class.html">class</a></li>
+  <li><a href="../modules/tektite.errors.html">errors</a></li>
+  <li><a href="../modules/tektite.exception.html">exception</a></li>
+  <li><a href="../modules/tektite.func_ops.html">func_ops</a></li>
+  <li><a href="../modules/tektite.require_ex.html">require_ex</a></li>
+  <li><a href="../modules/tests.LinksAndTags.html">LinksAndTags</a></li>
+  <li><a href="../modules/tiles.TreeBG.html">TreeBG</a></li>
+  <li><a href="../modules/ui.Button.html">Button</a></li>
+  <li><a href="../modules/ui.Checkbox.html">Checkbox</a></li>
+  <li><a href="../modules/ui.Color.html">Color</a></li>
+  <li><a href="../modules/ui.ColorPicker.html">ColorPicker</a></li>
+  <li><a href="../modules/ui.Grid1D.html">Grid1D</a></li>
+  <li><a href="../modules/ui.Grid2D.html">Grid2D</a></li>
+  <li><a href="../modules/ui.HSV.html">HSV</a></li>
+  <li><a href="../modules/ui.Keyboard.html">Keyboard</a></li>
+  <li><a href="../modules/ui.Layout.html">Layout</a></li>
+  <li><a href="../modules/ui.LineEx.html">LineEx</a></li>
+  <li><a href="../modules/ui.Lines.html">Lines</a></li>
+  <li><a href="../modules/ui.LinkGroup.html">LinkGroup</a></li>
+  <li><a href="../modules/ui.Sheet.html">Sheet</a></li>
+  <li><a href="../modules/ui.Skin.html">Skin</a></li>
+  <li><a href="../modules/ui.Touch.html">Touch</a></li>
+  <li><a href="../modules/ui.Utils.html">Utils</a></li>
+  <li><a href="../modules/utils.Audio.html">Audio</a></li>
+  <li><a href="../modules/utils.Bind.html">Bind</a></li>
+  <li><a href="../modules/utils.Curves.html">Curves</a></li>
+  <li><a href="../modules/utils.Device.html">Device</a></li>
+  <li><a href="../modules/utils.File.html">File</a></li>
+  <li><a href="../modules/utils.Flag.html">Flag</a></li>
+  <li><a href="../modules/utils.Frames.html">Frames</a></li>
+  <li><a href="../modules/utils.Mask.html">Mask</a></li>
+  <li><a href="../modules/utils.ObjectHelper.html">ObjectHelper</a></li>
+  <li><a href="../modules/utils.Resource.html">Resource</a></li>
+  <li><a href="../modules/utils.Scenes.html">Scenes</a></li>
+  <li><a href="../modules/utils.String.html">String</a></li>
+  <li><a href="../modules/var_ops.bound_args.html">bound_args</a></li>
+  <li><a href="../modules/var_ops.cache.html">cache</a></li>
+  <li><a href="../modules/var_ops.dump.html">dump</a></li>
+  <li><a href="../modules/var_ops.predicates.html">predicates</a></li>
+</ul>
+
+</div>
+
+<div id="content">
+
+<h1>Module <code>editor.Events</code></h1>
+<p>Some operations, e.g.</p>
+<p> for persistence and verification, reused among editor events.</p>
+
+<p> Many of these operations take a <strong>common_ops</strong> argument, namely to be called with one
+ of the <strong>"get"</strong>-type arguments. (Presently, these seem to all operate on grid-bound
+ values.) For an example of such a function, see <a href="../modules/editor.GridFuncs.html#EditErase">editor.GridFuncs.EditErase</a>.</p>
+
+
+<h2><a href="#Functions">Functions</a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#BuildEntry">BuildEntry (level, mod, entry, acc)</a></td>
+	<td class="summary">Helper to build a level-ready entry.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#CheckForNameDups">CheckForNameDups (what, verify, names, values)</a></td>
+	<td class="summary">Helper to detect if a name has been added yet to a set of names.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#CheckNamesInValues">CheckNamesInValues (what, verify, common_ops)</a></td>
+	<td class="summary">Helper to detect if there are duplicate names among a group of values.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#GetIndex">GetIndex (types, name)</a></td>
+	<td class="summary">Getter.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#LoadGroupOfValues_Grid">LoadGroupOfValues_Grid (level, what, mod, grid_func, common_ops)</a></td>
+	<td class="summary">Helper to load a group of value blobs, which values are assumed to be grid-bound in the
+ editor.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#LoadValuesFromEntry">LoadValuesFromEntry (level, mod, values, entry)</a></td>
+	<td class="summary">Helper to load a blob of values.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#ResolveLinks_Build">ResolveLinks_Build (level)</a></td>
+	<td class="summary">Resolves any link information produced by <a href="../modules/editor.Events.html#BuildEntry">BuildEntry</a>.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#ResolveLinks_Load">ResolveLinks_Load (level)</a></td>
+	<td class="summary">Resolves any link information produced by <a href="../modules/editor.Events.html#LoadGroupOfValues_Grid">LoadGroupOfValues_Grid</a> and <a href="../modules/editor.Events.html#LoadValuesFromEntry">LoadValuesFromEntry</a>.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#ResolveLinks_Save">ResolveLinks_Save (level)</a></td>
+	<td class="summary">Resolves any link information produced by <a href="../modules/editor.Events.html#SaveGroupOfValues">SaveGroupOfValues</a> and <a href="../modules/editor.Events.html#SaveValuesIntoEntry">SaveValuesIntoEntry</a>.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#SaveGroupOfValues">SaveGroupOfValues (level, what, mod, common_ops)</a></td>
+	<td class="summary">Helper to save a group of value blobs.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#SaveValuesIntoEntry">SaveValuesIntoEntry (level, mod, values, entry)</a></td>
+	<td class="summary">Helper to save a blob of values.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#SetCurrentIndex">SetCurrentIndex (current, types, name)</a></td>
+	<td class="summary">Setter.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#VerifyValues">VerifyValues (verify, mod, common_ops)</a></td>
+	<td class="summary">Verify all values (i.e.</td>
+	</tr>
+</table>
+
+<br/>
+<br/>
+
+
+    <h2><a name="Functions"></a>Functions</h2>
+    <dl class="function">
+    <dt>
+    <a name = "BuildEntry"></a>
+    <strong>BuildEntry (level, mod, entry, acc)</strong>
+    </dt>
+    <dd>
+    Helper to build a level-ready entry.
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">level</span>
+            <span class="types"><a class="type" href="http://www.lua.org/manual/5.1/manual.html#5.5">table</a></span>
+         Built level state. (Basically, this begins as saved level state, and
+ is restructured into build-appropriate form.)</p>
+
+<p> If <em>from</em> indicates a link, some intermediate state is stored in the <strong>links</strong> table (this
+ being a build, the state is assumed to be well-formed, i.e. this table exists).
+ <a href="../modules/editor.Events.html#ResolveLinks_Build">ResolveLinks_Build</a> should be called once all build operations are complete, to turn
+ this state into application-ready form.</p>
+
+<p> Specifically, if a "prep link" handler exists, it will be stored (with the built entry
+ as key) for lookup during resolution.
+        </li>
+        <li><span class="parameter">mod</span>
+            <span class="types"><a class="type" href="http://www.lua.org/manual/5.1/manual.html#5.5">table</a></span>
+         Module, assumed to contain an <strong>EditorEvent</strong> function corresponding to the
+ type of value being built.</p>
+
+<p> A <strong>"prep_link"</strong> editor event takes as arguments, in order: <em>level</em>, <em>built</em>, where
+ <em>built</em> is the copy of <em>entry</em>, minus the <strong>name</strong> and <strong>uid</strong> fields. If it returns a
+ handler function, that will be called during resolution, cf. <a href="../modules/editor.Events.html#ResolveLinks_Build">ResolveLinks_Build</a>.</p>
+
+<p> A <strong>"build"</strong> editor event takes as arguments, in order: <em>level</em>, <em>entry</em>, <em>built</em>. Any
+ final changes to <em>built</em> may be performed here.
+        </li>
+        <li><span class="parameter">entry</span>
+            <span class="types"><a class="type" href="http://www.lua.org/manual/5.1/manual.html#5.5">table</a></span>
+         Entry to build. The built entry itself will be a copy of this, with <strong>name</strong>
+ and <strong>id</strong> stripped, plus any changes performed in the <strong>"build"</strong> logic; <em>entry</em> itself
+ is left intact in case said logic still has need of those members.
+        </li>
+        <li><span class="parameter">acc</span>
+            <span class="types"><span class="type">array</span></span>
+         Accumulator table, to which the built entry will be appended. If absent, a
+ table is created.
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">array</span></span>
+        <em>acc</em>.
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "CheckForNameDups"></a>
+    <strong>CheckForNameDups (what, verify, names, values)</strong>
+    </dt>
+    <dd>
+    Helper to detect if a name has been added yet to a set of names.  If not, it is added
+ (with the name as key) along with <em>values</em>'s type (for later errors, if necessary);
+ otherwise, an error message is appended to the verify block.
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">what</span>
+            <span class="types"><a class="type" href="http://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
+         What type of value is being named (for error messages)?
+        </li>
+        <li><span class="parameter">verify</span>
+            <span class="types"><span class="type">array</span></span>
+         Verify block.
+        </li>
+        <li><span class="parameter">names</span>
+            <span class="types"><a class="type" href="http://www.lua.org/manual/5.1/manual.html#5.5">table</a></span>
+         Names against which to validate.
+        </li>
+        <li><span class="parameter">values</span>
+            <span class="types"><a class="type" href="http://www.lua.org/manual/5.1/manual.html#5.5">table</a></span>
+         Candidate values to add, if its <strong>name</strong> field is unique.
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">boolean</span></span>
+        Was <em>values</em> a duplicate?
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "CheckNamesInValues"></a>
+    <strong>CheckNamesInValues (what, verify, common_ops)</strong>
+    </dt>
+    <dd>
+    Helper to detect if there are duplicate names among a group of values. </p>
+
+<p> Essentially, this creates a temporary <em>names</em> table and then performs <a href="../modules/editor.Events.html#CheckForNameDups">CheckForNameDups</a>
+ on each blob of values in the group.
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">what</span>
+            <span class="types"><a class="type" href="http://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
+         What type of value is being named (for error messages)?
+        </li>
+        <li><span class="parameter">verify</span>
+            <span class="types"><span class="type">array</span></span>
+         Verify block.
+        </li>
+        <li><span class="parameter">common_ops</span>
+            <span class="types"><span class="type">callable</span></span>
+         Used to supply the values.
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">boolean</span></span>
+        Were there any duplicates?
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "GetIndex"></a>
+    <strong>GetIndex (types, name)</strong>
+    </dt>
+    <dd>
+    Getter.
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">types</span>
+            <span class="types"><span class="type">array</span></span>
+         An array of type name strings.
+        </li>
+        <li><span class="parameter">name</span>
+            <span class="types"><a class="type" href="http://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
+         The name to find.
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">uint</span></span>
+        Index of <em>name</em> in <em>types</em>.
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "LoadGroupOfValues_Grid"></a>
+    <strong>LoadGroupOfValues_Grid (level, what, mod, grid_func, common_ops)</strong>
+    </dt>
+    <dd>
+    Helper to load a group of value blobs, which values are assumed to be grid-bound in the
+ editor.  Some concomitant work is performed in order to produce a consistent grid.
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">level</span>
+            <span class="types"><a class="type" href="http://www.lua.org/manual/5.1/manual.html#5.5">table</a></span>
+         Loaded level state, as per <a href="../modules/editor.Events.html#LoadValuesFromEntry">LoadValuesFromEntry</a>.
+        </li>
+        <li><span class="parameter">what</span>
+            <span class="types"><a class="type" href="http://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
+         The group to load is found under <code>level[what].entries</code>.
+        </li>
+        <li><span class="parameter">mod</span>
+            <span class="types"><a class="type" href="http://www.lua.org/manual/5.1/manual.html#5.5">table</a></span>
+         Module. As per <a href="../modules/editor.Events.html#LoadValuesFromEntry">LoadValuesFromEntry</a>, and in addition must contain a
+ <strong>GetTypes</strong> function, which returns an array of type names.
+        </li>
+        <li><span class="parameter">grid_func</span>
+            <span class="types"><span class="type">callable</span></span>
+         Grid function, used to temporarily enable the grid in order to
+ populate its cells.
+        </li>
+        <li><span class="parameter">common_ops</span>
+            <span class="types"><span class="type">callable</span></span>
+         Used to supply the current tile grid, values, and tiles that belong
+ to the module.
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "LoadValuesFromEntry"></a>
+    <strong>LoadValuesFromEntry (level, mod, values, entry)</strong>
+    </dt>
+    <dd>
+    Helper to load a blob of values.
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">level</span>
+            <span class="types"><a class="type" href="http://www.lua.org/manual/5.1/manual.html#5.5">table</a></span>
+         Loaded level state. (Basically, this begins as saved level state, and
+ is restructured into load-appropriate form.)</p>
+
+<p> If <em>entry</em> indicates a link, some intermediate state is stored in the <strong>links</strong> table
+ (this being a load, the state is assumed to be well-formed, i.e. this table exists).
+ <a href="../modules/editor.Events.html#ResolveLinks_Load">ResolveLinks_Load</a> should be called once all load operations are complete, to turn
+ this state into editor-ready form.
+        </li>
+        <li><span class="parameter">mod</span>
+            <span class="types"><a class="type" href="http://www.lua.org/manual/5.1/manual.html#5.5">table</a></span>
+         Module, assumed to contain an <strong>EditorEvent</strong> function corresponding to the
+ type of value being loaded.</p>
+
+<p> A <strong>"load"</strong> editor event takes as arguments, in order: <em>level</em>, <em>entry</em>, <em>values</em>. Any
+ final changes to <em>values</em> may be performed here.
+        </li>
+        <li><span class="parameter">values</span>
+            <span class="types"><a class="type" href="http://www.lua.org/manual/5.1/manual.html#5.5">table</a></span>
+         Blob of values to populate.
+        </li>
+        <li><span class="parameter">entry</span>
+            <span class="types"><a class="type" href="http://www.lua.org/manual/5.1/manual.html#5.5">table</a></span>
+         Editor state entry which will provide the values to load.
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "ResolveLinks_Build"></a>
+    <strong>ResolveLinks_Build (level)</strong>
+    </dt>
+    <dd>
+    Resolves any link information produced by <a href="../modules/editor.Events.html#BuildEntry">BuildEntry</a>. </p>
+
+<p> In each linked pair, one or both entries may have provided a "prep link" handler. If so,
+ the available handlers are called as</p>
+<pre><code>handler(entry1, entry2, sub1, sub2)
+</code></pre>
+<p> where <em>entry1</em> and <em>sub1</em> are the entry and sublink associated with the handler; <em>entry2</em>
+ and <em>sub2</em> comprise the target. At this point, all entries will have their final <strong>uid</strong>'s,
+ so this is the ideal time to bind everything as the application expects, e.g. via <a href="../modules/utils.Bind.html#">utils.Bind</a>.</p>
+
+<p> Once finished, the editor state is storage-ready.
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">level</span>
+            <span class="types"><a class="type" href="http://www.lua.org/manual/5.1/manual.html#5.5">table</a></span>
+         Saved level state. If present, the <strong>links</strong> table is read and processed;
+ any link information is moved into the entries, and <strong>links</strong> is removed.
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "ResolveLinks_Load"></a>
+    <strong>ResolveLinks_Load (level)</strong>
+    </dt>
+    <dd>
+    Resolves any link information produced by <a href="../modules/editor.Events.html#LoadGroupOfValues_Grid">LoadGroupOfValues_Grid</a> and <a href="../modules/editor.Events.html#LoadValuesFromEntry">LoadValuesFromEntry</a>. </p>
+
+<p> Once finished, the loaded values are ready to be edited.
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">level</span>
+            <span class="types"><a class="type" href="http://www.lua.org/manual/5.1/manual.html#5.5">table</a></span>
+         Saved level state. If present, the <strong>links</strong> table is read, and links are
+ established between editor-side values.
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "ResolveLinks_Save"></a>
+    <strong>ResolveLinks_Save (level)</strong>
+    </dt>
+    <dd>
+    Resolves any link information produced by <a href="../modules/editor.Events.html#SaveGroupOfValues">SaveGroupOfValues</a> and <a href="../modules/editor.Events.html#SaveValuesIntoEntry">SaveValuesIntoEntry</a>. </p>
+
+<p> Once finished, the editor state is storage-ready.</p>
+
+<p> The editor state is placed into a form ready to be consumed by build or load operations.
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">level</span>
+            <span class="types"><a class="type" href="http://www.lua.org/manual/5.1/manual.html#5.5">table</a></span>
+         Saved level state. If present, the <strong>links</strong> table is read, processed, and
+ finally replaced by a "resolved" form.</p>
+
+<p> The "resolved" form is a stream of pairs:</p>
+
+<p> "entry" (literal), entry's ID (string)</p>
+<pre><code>"sub" (literal), entry's sublink name (string)
+  array index of other entry (integer), other entry's sublink name (string)
+</code></pre>
+
+<p> The stream is composed of one or more <strong>"entry"</strong> pairs (an entry), each composed in turn
+ of one or more <strong>"sub"</strong> pairs (its sublinks), each of those in turn made up of lookup
+ information (the sublink's targets).</p>
+
+<p> This is a fat representation, where link information is stored in both directions.
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "SaveGroupOfValues"></a>
+    <strong>SaveGroupOfValues (level, what, mod, common_ops)</strong>
+    </dt>
+    <dd>
+    Helper to save a group of value blobs.
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">level</span>
+            <span class="types"><a class="type" href="http://www.lua.org/manual/5.1/manual.html#5.5">table</a></span>
+         Saved level state, as per <a href="../modules/editor.Events.html#SaveValuesIntoEntry">SaveValuesIntoEntry</a>.
+        </li>
+        <li><span class="parameter">what</span>
+            <span class="types"><a class="type" href="http://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
+         The group to load is found under <code>level[what].entries</code>.
+        </li>
+        <li><span class="parameter">mod</span>
+            <span class="types"><a class="type" href="http://www.lua.org/manual/5.1/manual.html#5.5">table</a></span>
+         Module, as per <a href="../modules/editor.Events.html#SaveValuesIntoEntry">SaveValuesIntoEntry</a>.
+        </li>
+        <li><span class="parameter">common_ops</span>
+            <span class="types"><span class="type">callable</span></span>
+          Used to supply the values that belong to the module.
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "SaveValuesIntoEntry"></a>
+    <strong>SaveValuesIntoEntry (level, mod, values, entry)</strong>
+    </dt>
+    <dd>
+    Helper to save a blob of values. </p>
+
+<p> <strong>N.B.</strong> This may intrusively modify <em>values</em> (namely, adding a <strong>uid</strong> field to it).
+ <a href="../modules/editor.Events.html#ResolveLinks_Save">ResolveLinks_Save</a> will clean up after these modifications.
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">level</span>
+            <span class="types"><a class="type" href="http://www.lua.org/manual/5.1/manual.html#5.5">table</a></span>
+         Saved level state. If <em>values</em> has links, some intermediate state is stored
+ in the <strong>links</strong> table (which is created, if necessary). <a href="../modules/editor.Events.html#ResolveLinks_Save">ResolveLinks_Save</a> should be
+ called once all save operations are complete, to turn this state into save-ready form.</p>
+
+<p> Specifically, <em>values</em>'s representative object is appended to an array, to be iterated;
+ its array position is also stored for quick lookup, with the object as key.</p>
+
+<p> At this stage, the <strong>uid</strong> is set to some unique (within the current batch of saves) string,
+ mainly for easy visual comparison.
+        </li>
+        <li><span class="parameter">mod</span>
+            <span class="types"><a class="type" href="http://www.lua.org/manual/5.1/manual.html#5.5">table</a></span>
+         Module, assumed to contain an <strong>EditorEvent</strong> function corresponding to the
+ type of value being saved.</p>
+
+<p> A <strong>"save"</strong> editor event takes as arguments, in order: <em>level</em>, <em>entry</em>, <em>values</em>. Any
+ final changes to <em>entry</em> may be performed here.
+        </li>
+        <li><span class="parameter">values</span>
+            <span class="types"><a class="type" href="http://www.lua.org/manual/5.1/manual.html#5.5">table</a></span>
+         Blob of values to save.
+        </li>
+        <li><span class="parameter">entry</span>
+            <span class="types"><a class="type" href="http://www.lua.org/manual/5.1/manual.html#5.5">table</a></span>
+         Editor state entry which will receive the saved values.
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">ptable</span></span>
+        <em>entry</em>.
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "SetCurrentIndex"></a>
+    <strong>SetCurrentIndex (current, types, name)</strong>
+    </dt>
+    <dd>
+    Setter.
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">current</span>
+            <span class="types"><span class="type">DisplayObject</span></span>
+         The "current choice" <a href="../modules/ui.Grid1D.html#">ui.Grid1D</a> widget for the current editor view.
+        </li>
+        <li><span class="parameter">types</span>
+            <span class="types"><span class="type">array</span></span>
+         An array of strings, corresponding to the images in <em>current</em>.
+        </li>
+        <li><span class="parameter">name</span>
+            <span class="types"><a class="type" href="http://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
+         A name to find in <em>types</em>.
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "VerifyValues"></a>
+    <strong>VerifyValues (verify, mod, common_ops)</strong>
+    </dt>
+    <dd>
+    Verify all values (i.e.  blobs of editor-side object data) in a given module.
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">verify</span>
+            <span class="types"><a class="type" href="http://www.lua.org/manual/5.1/manual.html#5.5">table</a></span>
+         Verify block.
+        </li>
+        <li><span class="parameter">mod</span>
+            <span class="types"><a class="type" href="http://www.lua.org/manual/5.1/manual.html#5.5">table</a></span>
+         Module, assumed to contain an <strong>EditorEvent</strong> function corresponding to the
+ type of values being verified.</p>
+
+<p> A <strong>"verify"</strong> editor event takes as arguments, in order: <em>verify</em>, <em>values</em>, <em>key</em>, where
+ <em>values</em> is a table of values to verify, and <em>key</em> refers to the key being verified.
+        </li>
+        <li><span class="parameter">common_ops</span>
+            <span class="types"><span class="type">callable</span></span>
+         Used to supply the values that belong to the module.
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+</dl>
+
+
+</div> <!-- id="content" -->
+</div> <!-- id="main" -->
+<div id="about">
+<i>generated by <a href="http://github.com/stevedonovan/LDoc">LDoc 1.4.0</a></i>
+</div> <!-- id="about" -->
+</div> <!-- id="container" -->
+</body>
+</html>

@@ -1,0 +1,828 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+<head>
+    <title>Snippets documentation</title>
+    <link rel="stylesheet" href="../ldoc.css" type="text/css" />
+</head>
+<body>
+
+<div id="container">
+
+<div id="product">
+	<div id="product_logo"></div>
+	<div id="product_name"><big><b></b></big></div>
+	<div id="product_description"></div>
+</div> <!-- id="product" -->
+
+
+<div id="main">
+
+
+<!-- Menu -->
+
+<div id="navigation">
+<br/>
+<h1>Corona SDK snippets</h1>
+
+<ul>
+  <li><a href="../api.html">Index</a></li>
+</ul>
+
+<h2>Contents</h2>
+<ul>
+<li><a href="#Functions">Functions</a></li>
+</ul>
+
+
+<h2>Modules</h2>
+<ul class="$(kind=='Topics' and '' or 'nowrap'">
+  <li><a href="../modules/array_ops.collect.html">collect</a></li>
+  <li><a href="../modules/array_ops.embedded_free_list.html">embedded_free_list</a></li>
+  <li><a href="../modules/array_ops.funcs.html">funcs</a></li>
+  <li><a href="../modules/array_ops.id_occupied.html">id_occupied</a></li>
+  <li><a href="../modules/array_ops.index.html">index</a></li>
+  <li><a href="../modules/array_ops.predicates.html">predicates</a></li>
+  <li><a href="../modules/array_ops.wipe.html">wipe</a></li>
+  <li><a href="../modules/bitwise_ops.log2.html">log2</a></li>
+  <li><a href="../modules/bitwise_ops.operators.html">operators</a></li>
+  <li><a href="../modules/bitwise_ops.powers_of_2.html">powers_of_2</a></li>
+  <li><a href="../modules/SparseArray.html">SparseArray</a></li>
+  <li><a href="../modules/Interpolator.html">Interpolator</a></li>
+  <li><a href="../modules/SectionGroup.html">SectionGroup</a></li>
+  <li><a href="../modules/TaskQueue.html">TaskQueue</a></li>
+  <li><a href="../modules/Timeline.html">Timeline</a></li>
+  <li><a href="../modules/Timer.html">Timer</a></li>
+  <li><a href="../modules/VarFamily.html">VarFamily</a></li>
+  <li><a href="../modules/class.VarFamilyEx.Annex.html">VarFamilyEx.Annex</a></li>
+  <li><a href="../modules/BoolVars.html">BoolVars</a></li>
+  <li><a href="../modules/NumVars.html">NumVars</a></li>
+  <li><a href="../modules/RawVars.html">RawVars</a></li>
+  <li><a href="../modules/TimerVars.html">TimerVars</a></li>
+  <li><a href="../modules/config.Dots.html">Dots</a></li>
+  <li><a href="../modules/config.EditorViews.html">EditorViews</a></li>
+  <li><a href="../modules/config.EventBlocks.html">EventBlocks</a></li>
+  <li><a href="../modules/config.GlobalEvents.html">GlobalEvents</a></li>
+  <li><a href="../modules/coroutine_ops.flow.html">flow</a></li>
+  <li><a href="../modules/coroutine_ops.flow_bodies.html">flow_bodies</a></li>
+  <li><a href="../modules/coroutine_ops.per_coroutine.html">per_coroutine</a></li>
+  <li><a href="../modules/coroutine_ops.wrapper.html">wrapper</a></li>
+  <li><a href="../modules/DEBUG.html">DEBUG</a></li>
+  <li><a href="../modules/dot.Switch.html">Switch</a></li>
+  <li><a href="../modules/dot.Warp.html">Warp</a></li>
+  <li><a href="../modules/editor.Common.html">Common</a></li>
+  <li><a href="../modules/editor.CommonUI.html">CommonUI</a></li>
+  <li><a href="../modules/editor.Dialog.Data.html">Dialog.Data</a></li>
+  <li><a href="../modules/editor.Dialog.Items.html">Dialog.Items</a></li>
+  <li><a href="../modules/editor.Dialog.Layout.html">Dialog.Layout</a></li>
+  <li><a href="../modules/editor.Dialog.Methods.html">Dialog.Methods</a></li>
+  <li><a href="../modules/editor.Dialog.Utils.html">Dialog.Utils</a></li>
+  <li><a href="../modules/editor.Dialog.html">Dialog</a></li>
+  <li><a href="../modules/editor.Events.html">Events</a></li>
+  <li><a href="../modules/editor.Grid.html">Grid</a></li>
+  <li><a href="../modules/editor.GridFuncs.html">GridFuncs</a></li>
+  <li><strong>Links</strong></li>
+  <li><a href="../modules/editor.Ops.html">Ops</a></li>
+  <li><a href="../modules/editor.Tags.html">Tags</a></li>
+  <li><a href="../modules/editor.views.Audio.html">views.Audio</a></li>
+  <li><a href="../modules/editor.views.Background.html">views.Background</a></li>
+  <li><a href="../modules/editor.views.Dots.html">views.Dots</a></li>
+  <li><a href="../modules/editor.views.EventBlocks.html">views.EventBlocks</a></li>
+  <li><a href="../modules/editor.views.GlobalEvents.html">views.GlobalEvents</a></li>
+  <li><a href="../modules/editor.views.Player.html">views.Player</a></li>
+  <li><a href="../modules/editor.views.Positions.html">views.Positions</a></li>
+  <li><a href="../modules/editor.views.Settings.html">views.Settings</a></li>
+  <li><a href="../modules/editor.views.Tiles.html">views.Tiles</a></li>
+  <li><a href="../modules/editor.views.Triggers.html">views.Triggers</a></li>
+  <li><a href="../modules/effect.Balloons.html">Balloons</a></li>
+  <li><a href="../modules/effect.Fillers.html">Fillers</a></li>
+  <li><a href="../modules/effect.Glow.html">Glow</a></li>
+  <li><a href="../modules/effect.Markers.html">Markers</a></li>
+  <li><a href="../modules/effect.Shadows.html">Shadows</a></li>
+  <li><a href="../modules/effect.Snowfall.html">Snowfall</a></li>
+  <li><a href="../modules/effect.Stars.html">Stars</a></li>
+  <li><a href="../modules/effect.Stash.html">Stash</a></li>
+  <li><a href="../modules/event_block.Maze.html">Maze</a></li>
+  <li><a href="../modules/fill.CellularAutomata.html">CellularAutomata</a></li>
+  <li><a href="../modules/fill.Circle.html">Circle</a></li>
+  <li><a href="../modules/FIXES.html">FIXES</a></li>
+  <li><a href="../modules/game.AI.html">AI</a></li>
+  <li><a href="../modules/game.Collision.html">Collision</a></li>
+  <li><a href="../modules/game.Controls.html">Controls</a></li>
+  <li><a href="../modules/game.DispatchList.html">DispatchList</a></li>
+  <li><a href="../modules/game.Dots.html">Dots</a></li>
+  <li><a href="../modules/game.EventBlocks.html">EventBlocks</a></li>
+  <li><a href="../modules/game.FX.html">FX</a></li>
+  <li><a href="../modules/game.GlobalEvents.html">GlobalEvents</a></li>
+  <li><a href="../modules/game.LevelMap.html">LevelMap</a></li>
+  <li><a href="../modules/game.LevelsList.html">LevelsList</a></li>
+  <li><a href="../modules/game.Movement.html">Movement</a></li>
+  <li><a href="../modules/game.Pathing.html">Pathing</a></li>
+  <li><a href="../modules/game.PathUtils.html">PathUtils</a></li>
+  <li><a href="../modules/game.Persistence.html">Persistence</a></li>
+  <li><a href="../modules/game.Player.html">Player</a></li>
+  <li><a href="../modules/game.Scrolling.html">Scrolling</a></li>
+  <li><a href="../modules/game.TileFlags.html">TileFlags</a></li>
+  <li><a href="../modules/game.TileMaps.html">TileMaps</a></li>
+  <li><a href="../modules/game.Timers.html">Timers</a></li>
+  <li><a href="../modules/game.Transitions.html">Transitions</a></li>
+  <li><a href="../modules/geom2d_ops.predicates.html">predicates</a></li>
+  <li><a href="../modules/geom2d_ops.quantize.html">quantize</a></li>
+  <li><a href="../modules/geom2d_ops.vector.html">vector</a></li>
+  <li><a href="../modules/hash_ops.html">hash_ops</a></li>
+  <li><a href="../modules/hud.Action.html">Action</a></li>
+  <li><a href="../modules/hud.Move.html">Move</a></li>
+  <li><a href="../modules/iterator_ops.args.html">args</a></li>
+  <li><a href="../modules/iterator_ops.coroutine.html">coroutine</a></li>
+  <li><a href="../modules/iterator_ops.grid.html">grid</a></li>
+  <li><a href="../modules/iterator_ops.ipairs.html">ipairs</a></li>
+  <li><a href="../modules/iterator_ops.utils.html">utils</a></li>
+  <li><a href="../modules/main.html">main</a></li>
+  <li><a href="../modules/mask.MarchingSquares.html">MarchingSquares</a></li>
+  <li><a href="../modules/mesh_ops.html">mesh_ops</a></li>
+  <li><a href="../modules/number_ops.funcs.html">funcs</a></li>
+  <li><a href="../modules/number_ops.gray.html">gray</a></li>
+  <li><a href="../modules/number_ops.hilbert.html">hilbert</a></li>
+  <li><a href="../modules/number_ops.integrators.html">integrators</a></li>
+  <li><a href="../modules/number_ops.morton.html">morton</a></li>
+  <li><a href="../modules/number_ops.mwc_rng.html">mwc_rng</a></li>
+  <li><a href="../modules/number_ops.range.html">range</a></li>
+  <li><a href="../modules/number_ops.simplex_noise.html">simplex_noise</a></li>
+  <li><a href="../modules/number_ops.to_string.html">to_string</a></li>
+  <li><a href="../modules/overlay.Help.html">Help</a></li>
+  <li><a href="../modules/overlay.Link.html">Link</a></li>
+  <li><a href="../modules/quaternion_ops.html">quaternion_ops</a></li>
+  <li><a href="../modules/samples.Delaunay.html">Delaunay</a></li>
+  <li><a href="../modules/samples.Fire.html">Fire</a></li>
+  <li><a href="../modules/samples.Hilbert.html">Hilbert</a></li>
+  <li><a href="../modules/samples.HilbertMixer.html">HilbertMixer</a></li>
+  <li><a href="../modules/samples.Hop.html">Hop</a></li>
+  <li><a href="../modules/samples.Nodes.html">Nodes</a></li>
+  <li><a href="../modules/samples.OrbitsAndLattices.html">OrbitsAndLattices</a></li>
+  <li><a href="../modules/samples.Pixels.html">Pixels</a></li>
+  <li><a href="../modules/samples.Plasma.html">Plasma</a></li>
+  <li><a href="../modules/samples.SlowMo.html">SlowMo</a></li>
+  <li><a href="../modules/samples.Snowfall.html">Snowfall</a></li>
+  <li><a href="../modules/samples.Superformulae.html">Superformulae</a></li>
+  <li><a href="../modules/samples.Thoughts.html">Thoughts</a></li>
+  <li><a href="../modules/samples.Ticker.html">Ticker</a></li>
+  <li><a href="../modules/samples.Tiling.html">Tiling</a></li>
+  <li><a href="../modules/samples.Timers.html">Timers</a></li>
+  <li><a href="../modules/scene.Choices.html">Choices</a></li>
+  <li><a href="../modules/scene.EditorSetup.html">EditorSetup</a></li>
+  <li><a href="../modules/scene.Intro.html">Intro</a></li>
+  <li><a href="../modules/scene.Level.html">Level</a></li>
+  <li><a href="../modules/scene.MapEditor.html">MapEditor</a></li>
+  <li><a href="../modules/scene.Options.html">Options</a></li>
+  <li><a href="../modules/spline_ops.arc_length.html">arc_length</a></li>
+  <li><a href="../modules/spline_ops.bezier.html">bezier</a></li>
+  <li><a href="../modules/spline_ops.cubic.html">cubic</a></li>
+  <li><a href="../modules/table_ops.adaptive.html">adaptive</a></li>
+  <li><a href="../modules/table_ops.funcs.html">funcs</a></li>
+  <li><a href="../modules/table_ops.lazy.html">lazy</a></li>
+  <li><a href="../modules/table_ops.predicates.html">predicates</a></li>
+  <li><a href="../modules/table_ops.proxy.html">proxy</a></li>
+  <li><a href="../modules/tektite.class.html">class</a></li>
+  <li><a href="../modules/tektite.errors.html">errors</a></li>
+  <li><a href="../modules/tektite.exception.html">exception</a></li>
+  <li><a href="../modules/tektite.func_ops.html">func_ops</a></li>
+  <li><a href="../modules/tektite.require_ex.html">require_ex</a></li>
+  <li><a href="../modules/tests.LinksAndTags.html">LinksAndTags</a></li>
+  <li><a href="../modules/tiles.TreeBG.html">TreeBG</a></li>
+  <li><a href="../modules/ui.Button.html">Button</a></li>
+  <li><a href="../modules/ui.Checkbox.html">Checkbox</a></li>
+  <li><a href="../modules/ui.Color.html">Color</a></li>
+  <li><a href="../modules/ui.ColorPicker.html">ColorPicker</a></li>
+  <li><a href="../modules/ui.Grid1D.html">Grid1D</a></li>
+  <li><a href="../modules/ui.Grid2D.html">Grid2D</a></li>
+  <li><a href="../modules/ui.HSV.html">HSV</a></li>
+  <li><a href="../modules/ui.Keyboard.html">Keyboard</a></li>
+  <li><a href="../modules/ui.Layout.html">Layout</a></li>
+  <li><a href="../modules/ui.LineEx.html">LineEx</a></li>
+  <li><a href="../modules/ui.Lines.html">Lines</a></li>
+  <li><a href="../modules/ui.LinkGroup.html">LinkGroup</a></li>
+  <li><a href="../modules/ui.Sheet.html">Sheet</a></li>
+  <li><a href="../modules/ui.Skin.html">Skin</a></li>
+  <li><a href="../modules/ui.Touch.html">Touch</a></li>
+  <li><a href="../modules/ui.Utils.html">Utils</a></li>
+  <li><a href="../modules/utils.Audio.html">Audio</a></li>
+  <li><a href="../modules/utils.Bind.html">Bind</a></li>
+  <li><a href="../modules/utils.Curves.html">Curves</a></li>
+  <li><a href="../modules/utils.Device.html">Device</a></li>
+  <li><a href="../modules/utils.File.html">File</a></li>
+  <li><a href="../modules/utils.Flag.html">Flag</a></li>
+  <li><a href="../modules/utils.Frames.html">Frames</a></li>
+  <li><a href="../modules/utils.Mask.html">Mask</a></li>
+  <li><a href="../modules/utils.ObjectHelper.html">ObjectHelper</a></li>
+  <li><a href="../modules/utils.Resource.html">Resource</a></li>
+  <li><a href="../modules/utils.Scenes.html">Scenes</a></li>
+  <li><a href="../modules/utils.String.html">String</a></li>
+  <li><a href="../modules/var_ops.bound_args.html">bound_args</a></li>
+  <li><a href="../modules/var_ops.cache.html">cache</a></li>
+  <li><a href="../modules/var_ops.dump.html">dump</a></li>
+  <li><a href="../modules/var_ops.predicates.html">predicates</a></li>
+</ul>
+
+</div>
+
+<div id="content">
+
+<h1>Module <code>editor.Links</code></h1>
+<p>Object linking components.</p>
+<p>
+
+</p>
+
+
+<h2><a href="#Functions">Functions</a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#CleanUp">CleanUp (from, count)</a></td>
+	<td class="summary">Visits a range of objects, performing cleanup on any that have been removed, e.g.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#CountLinks">CountLinks (object, sub)</a></td>
+	<td class="summary">Getter.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#CanLink">CanLink (object1, object2, sub1, sub2)</a></td>
+	<td class="summary">DOCME</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#GetTag">GetTag (object, is_proxy)</a></td>
+	<td class="summary">Getter.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#HasLinks">HasLinks (object, sub)</a></td>
+	<td class="summary">Predicate.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Link:Break">Link:Break ()</a></td>
+	<td class="summary">Breaks this line, after which it will be invalid.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Link:GetObjects">Link:GetObjects ()</a></td>
+	<td class="summary">Getter.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Link:GetOtherObject">Link:GetOtherObject (object)</a></td>
+	<td class="summary">Getter.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Link:IsValid">Link:IsValid ()</a></td>
+	<td class="summary">Checks link validity.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Link:SetBreakFunc">Link:SetBreakFunc (func)</a></td>
+	<td class="summary">Sets logic to call when a link becomes invalid, cf.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#LinkObjects">LinkObjects (object1, object2, sub1, sub2)</a></td>
+	<td class="summary">DOCME</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Links">Links (object, sub)</a></td>
+	<td class="summary">DOCME</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#RemoveTag">RemoveTag (object)</a></td>
+	<td class="summary">DOCME</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#SetRemoveFunc">SetRemoveFunc (func)</a></td>
+	<td class="summary">Setter.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#SetTag">SetTag (object, name)</a></td>
+	<td class="summary">DOCME</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Tagged">Tagged (name)</a></td>
+	<td class="summary">DOCME</td>
+	</tr>
+</table>
+
+<br/>
+<br/>
+
+
+    <h2><a name="Functions"></a>Functions</h2>
+    <dl class="function">
+    <dt>
+    <a name = "CleanUp"></a>
+    <strong>CleanUp (from, count)</strong>
+    </dt>
+    <dd>
+    Visits a range of objects, performing cleanup on any that have been removed, e.g.  by
+ <code>object:removeSelf()</code>.</p>
+
+<p> Cleanup of an object consists in breaking any links it has made, invalidating its proxy,
+ and removing it from its tag's list.
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">from</span>
+            <span class="types"><span class="type">uint</span></span>
+         ID of first (possible) object.
+        </li>
+        <li><span class="parameter">count</span>
+            <span class="types"><span class="type">uint</span></span>
+         Number of objects to check.
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">uint</span></span>
+        First ID after visited objects.
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "CountLinks"></a>
+    <strong>CountLinks (object, sub)</strong>
+    </dt>
+    <dd>
+    Getter.
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">object</span>
+            <span class="types"><span class="type">DisplayObject</span></span>
+
+
+
+        </li>
+        <li><span class="parameter">sub</span>
+            <span class="types"><a class="type" href="http://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
+
+
+
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">uint</span></span>
+        C
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "CanLink"></a>
+    <strong>CanLink (object1, object2, sub1, sub2)</strong>
+    </dt>
+    <dd>
+    DOCME
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">object1</span>
+            <span class="types"><span class="type">DisplayObject</span></span>
+
+
+
+        </li>
+        <li><span class="parameter">object2</span>
+            <span class="types"><span class="type">DisplayObject</span></span>
+
+
+
+        </li>
+        <li><span class="parameter">sub1</span>
+            <span class="types"><a class="type" href="http://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
+
+
+
+        </li>
+        <li><span class="parameter">sub2</span>
+            <span class="types"><a class="type" href="http://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
+
+
+
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+        <li>
+           <span class="types"><span class="type">boolean</span></span>
+        X If true, this is the only return value.</li>
+        <li>
+           <span class="types">optional <a class="type" href="http://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
+        Reason link cannot be formed.</li>
+        <li>
+           <span class="types">optional <span class="type">boolean</span></span>
+        This is a contradiction or "strong" failure, i.e. the predicate will
+ <em>always</em> fail, given the inputs?</li>
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "GetTag"></a>
+    <strong>GetTag (object, is_proxy)</strong>
+    </dt>
+    <dd>
+    Getter.
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">object</span>
+            <span class="types"><span class="type">DisplayObject</span></span>
+
+
+
+        </li>
+        <li><span class="parameter">is_proxy</span>
+            <span class="types"><span class="type">bool</span></span>
+
+
+
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><a class="type" href="http://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
+        N
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "HasLinks"></a>
+    <strong>HasLinks (object, sub)</strong>
+    </dt>
+    <dd>
+    Predicate.
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">object</span>
+            <span class="types"><span class="type">DisplayObject</span></span>
+
+
+
+        </li>
+        <li><span class="parameter">sub</span>
+            <span class="types"><a class="type" href="http://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
+
+
+
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">boolean</span></span>
+        X
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Link:Break"></a>
+    <strong>Link:Break ()</strong>
+    </dt>
+    <dd>
+    Breaks this line, after which it will be invalid. </p>
+
+<p> If the link is already invalid, this is a no-op.
+
+
+
+
+    <h3>See also:</h3>
+    <ul>
+         <a href="../modules/editor.Links.html#Link:IsValid">Link:IsValid</a>
+    </ul>
+
+
+</dd>
+    <dt>
+    <a name = "Link:GetObjects"></a>
+    <strong>Link:GetObjects ()</strong>
+    </dt>
+    <dd>
+    Getter.
+
+
+    <h3>Returns:</h3>
+    <ol>
+        <li>
+           <span class="types"><span class="type">boolean</span></span>
+        The link is still intact?</p>
+
+<p> When <strong>false</strong>, this is the only return value.</li>
+        <li>
+           <span class="types">optional <span class="type">pobject</span></span>
+        Linked object #1...</li>
+        <li>
+           <span class="types">optional <span class="type">pobject</span></span>
+        ...and #2.</li>
+        <li>
+           <span class="types">optional <a class="type" href="http://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
+        Sublink of object #1...</li>
+        <li>
+           <span class="types">optional <a class="type" href="http://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
+        ...and object #2.</li>
+    </ol>
+
+
+    <h3>See also:</h3>
+    <ul>
+         <a href="../modules/editor.Links.html#Link:IsValid">Link:IsValid</a>
+    </ul>
+
+
+</dd>
+    <dt>
+    <a name = "Link:GetOtherObject"></a>
+    <strong>Link:GetOtherObject (object)</strong>
+    </dt>
+    <dd>
+    Getter.
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">object</span>
+            <span class="types"><span class="type">DisplayObject</span></span>
+         Object, which may be paired in the link.
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+        <li>
+           <span class="types">optional <span class="type">pobject</span></span>
+        If the link is valid and <em>object</em> was one of its linked objects, the
+ other object; otherwise, <strong>nil</strong>.</li>
+        <li>
+           <span class="types">optional <a class="type" href="http://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
+        If an object was returned, its sublink; if absent, <strong>nil</strong>.</li>
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Link:IsValid"></a>
+    <strong>Link:IsValid ()</strong>
+    </dt>
+    <dd>
+    Checks link validity.  Links are invalid after <a href="../modules/editor.Links.html#Link:Break">Link:Break</a>, or if one or both of
+ the proxied objects has been removed by e.g. <code>object:removeSelf()</code>.
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">boolean</span></span>
+        The link is still intact?
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Link:SetBreakFunc"></a>
+    <strong>Link:SetBreakFunc (func)</strong>
+    </dt>
+    <dd>
+    Sets logic to call when a link becomes invalid, cf.  <a href="../modules/editor.Links.html#Link:IsValid">Link:IsValid</a>.</p>
+
+<p> Called as</p>
+<pre><code>func(link, object1, object2, sub1, sub2)
+</code></pre>
+<p> where <em>object1</em> and <em>object2</em> were the linked objects and <em>sub1</em> and <em>sub2</em> were their
+ respective sublinks. In the case that <em>object*</em> has been removed, it will be <strong>nil</strong>.</p>
+
+<p> <strong>N.B.</strong> This may be triggered lazily, i.e. outside of <a href="../modules/editor.Links.html#Link:Break">Link:Break</a>, either via one of
+ the other link methods or <a href="../modules/editor.Links.html#CleanUp">CleanUp</a>.
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">func</span>
+            <span class="types"><span class="type">callable</span></span>
+         Function to assign, or <strong>nil</strong> to disable the logic.
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "LinkObjects"></a>
+    <strong>LinkObjects (object1, object2, sub1, sub2)</strong>
+    </dt>
+    <dd>
+    DOCME
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">object1</span>
+            <span class="types"><span class="type">DisplayObject</span></span>
+
+
+
+        </li>
+        <li><span class="parameter">object2</span>
+            <span class="types"><span class="type">DisplayObject</span></span>
+
+
+
+        </li>
+        <li><span class="parameter">sub1</span>
+            <span class="types"><a class="type" href="http://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
+
+
+
+        </li>
+        <li><span class="parameter">sub2</span>
+            <span class="types"><a class="type" href="http://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
+
+
+
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+        <li>
+           <span class="types"><span class="type">LinkHandle</span></span>
+        L</li>
+        <li>
+           <span class="types"><a class="type" href="http://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
+        S</li>
+        <li>
+           <span class="types"><span class="type">boolean</span></span>
+        B</li>
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Links"></a>
+    <strong>Links (object, sub)</strong>
+    </dt>
+    <dd>
+    DOCME
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">object</span>
+            <span class="types"><span class="type">DisplayObject</span></span>
+
+
+
+        </li>
+        <li><span class="parameter">sub</span>
+            <span class="types"><a class="type" href="http://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
+
+
+
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">iterator</span></span>
+        X
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "RemoveTag"></a>
+    <strong>RemoveTag (object)</strong>
+    </dt>
+    <dd>
+    DOCME
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">object</span>
+            <span class="types"><span class="type">DisplayObject</span></span>
+
+
+
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "SetRemoveFunc"></a>
+    <strong>SetRemoveFunc (func)</strong>
+    </dt>
+    <dd>
+    Setter.
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">func</span>
+            <span class="types"><span class="type">callable</span></span>
+         X
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "SetTag"></a>
+    <strong>SetTag (object, name)</strong>
+    </dt>
+    <dd>
+    DOCME
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">object</span>
+            <span class="types"><span class="type">DisplayObject</span></span>
+
+
+
+        </li>
+        <li><span class="parameter">name</span>
+            <span class="types"><a class="type" href="http://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
+
+
+
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Tagged"></a>
+    <strong>Tagged (name)</strong>
+    </dt>
+    <dd>
+    DOCME
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">name</span>
+            <span class="types"><a class="type" href="http://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
+         N
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">iterator</span></span>
+        X
+    </ol>
+
+
+
+
+</dd>
+</dl>
+
+
+</div> <!-- id="content" -->
+</div> <!-- id="main" -->
+<div id="about">
+<i>generated by <a href="http://github.com/stevedonovan/LDoc">LDoc 1.4.0</a></i>
+</div> <!-- id="about" -->
+</div> <!-- id="container" -->
+</body>
+</html>
