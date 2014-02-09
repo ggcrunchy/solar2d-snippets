@@ -77,7 +77,7 @@ end
 -- In the compound case, there are two special ways to call the event:
 --
 -- * If **"n"** is the first argument, returns the number of component events, _n_.
--- * If "i" is the first argument, the second argument, _i_, is interpreted as an index.
+-- * If **"i"** is the first argument, the second argument, _i_, is interpreted as an index.
 -- If _i_ is an integer &isin; [1, _n_], returns compound event #_i_; otherwise, **nil**.
 --
 -- Otherwise, each component event is called with the compound event's arguments.

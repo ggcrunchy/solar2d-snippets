@@ -58,7 +58,7 @@ local LHS = {}
 -- spline's geometry, and mapped / updated later when geometry is supplied.
 local RHS = {}
 
--- Left-hand side B&eacute;zier evaluator
+-- Left-hand side Bezier evaluator
 function LHS.bezier (a, b, c, d)
 	local B = 3 * (b - a)
 	local C = 3 * (a + c - 2 * b)
@@ -67,7 +67,7 @@ function LHS.bezier (a, b, c, d)
 	return D, C, B
 end
 
---- Right-hand side B&eacute;zier evaluator
+-- Right-hand side Bezier evaluator
 function RHS.bezier (coeffs, a, b, c, d)
 	coeffs.a = a - 3 * (b - c) - d
 	coeffs.b = 3 * (b - 2 * c + d)
@@ -129,7 +129,7 @@ function LHS.catmull_rom (a, b, c, d)
 	return D, C, B
 end
 
---- Right-hand side Catmull-Rom evaluator
+-- Right-hand side Catmull-Rom evaluator
 function RHS.catmull_rom (coeffs, a, b, c, d)
 	coeffs.a = .5 * (-b + 2 * c - d)
 	coeffs.b = .5 * (2 * a - 5 * c + 3 * d)
@@ -265,7 +265,7 @@ function LHS.hermite (a, b, c, d)
 	return D, C, B
 end
 
---- Right-hand side Hermite evaluator
+-- Right-hand side Hermite evaluator
 function RHS.hermite (coeffs, a, b, c, d)
 	coeffs.a = a - 3 * c + 2 * d
 	coeffs.b = 3 * c - 2 * d

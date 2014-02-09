@@ -94,7 +94,7 @@ do
 
 	--- Integrates _func_ via [Romberg integration](http://www.geometrictools.com/Documentation/NumericalIntegration.pdf).
 	-- @callable func Called as
-	--   y = func(x)
+	--    y = func(x)
 	-- where _x_ and _y_ are numbers.
 	-- @number a Lower limit of integration.
 	-- @number b Upper limit of integration.

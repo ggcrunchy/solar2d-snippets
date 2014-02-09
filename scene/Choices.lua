@@ -51,6 +51,7 @@ local Scene = storyboard.newScene()
 -- Samples names --
 -- Various notes
 local Names = {
+--	"TESTING",
 	"Delaunay",
 	"Fire",
 	"Hilbert",
@@ -71,14 +72,9 @@ local Names = {
 	"Editor"
 }
 
--- --
-local CX
-
 --
 local function SetCurrent (current, index)
 	current.text = "Current: " .. Names[index]
-
-	current.anchorX, current.x = 0, CX
 
 	current.m_id = index
 end
@@ -104,7 +100,7 @@ function Scene:createScene ()
 		Choices:insertRow(add_row)
 	end
 
-	CX = Choices.contentBounds.xMax + 20
+	Current.anchorX, Current.x = 0, Choices.contentBounds.xMax + 20
 
 	SetCurrent(Current, 1)
 
