@@ -35,36 +35,17 @@ local resource_utils = require("utils.Resource")
 
 -- Forward references --
 local band
-local bxor
 
 if operators.HasBitLib() then -- Bit library available
 	band = operators.And
-	bxor = operators.Xor
 else -- Otherwise, make equivalent for hash purposes
 	function band (a, n)
 		return a % (n + 1)
 	end
-
-	function bxor (a, b)
-		local c, mask = a, 128
-
-		a = a % 256
-		c = c - a
-
-		for _ = 1, 8 do
-			local amask = a >= mask and mask or 0
-			local bmask = b >= mask and mask or 0
-
-			if amask ~= bmask then
-				c = c + mask
-			end
-
-			mask, a, b = .5 * mask, a - amask, b - bmask
-		end
-
-		return c
-	end
 end
+
+-- Imports --
+local bxor = operators.Xor
 
 -- Exports --
 local M = {}
