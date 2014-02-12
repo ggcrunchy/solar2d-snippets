@@ -27,19 +27,17 @@
 local pairs = pairs
 local rawget = rawget
 local rawset = rawset
-local select = select
 local setmetatable = setmetatable
 local type = type
-local unpack = unpack
+
+-- Modules --
+local color = require("ui.Color")
 
 -- Corona globals --
 local display = display
 
 -- Exports --
 local M = {}
-
--- Intermediate storage, used to pass varargs to line:setColor() via unpack() --
-local Color = {}
 
 -- Get the wrapped object
 local function Object (line)
@@ -87,14 +85,8 @@ function LineMethods:append (x, y)
 			end
 		end
 
-		-- If a color was assigned to the pseudo-line, commit it.
-		if object.m_ncomps then
-			Color[1], Color[2], Color[3], Color[4] = object.m_r, object.m_g, object.m_b, object.m_a
-
-			line:setStrokeColor(unpack(Color, 1, object.m_ncomps))
-
-			Color[1], Color[2], Color[3], Color[4] = nil
-		end
+		-- Commit any color assigned to the pseudo-line.
+		color.SetStrokeColor(line, object)
 
 		-- Retain the first point (for any close() operation, and doing double duty as an
 		-- "is line" predicate). Assign the line object and evict the dummy.
@@ -126,15 +118,12 @@ end
 
 --- DOCME
 function LineMethods:setStrokeColor (...)
-	local n, object = select("#", ...), Object(self)
+	local object = Object(self)
 
 	if IsLine(object) then
 		object:setStrokeColor(...)
-	elseif n > 0 then
-		object.m_r, object.m_g, object.m_b, object.m_a = ...
-		object.m_ncomps = n
 	else
-		object.m_ncomps = nil
+		color.PackColor(object, ...)
 	end
 end
 

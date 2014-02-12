@@ -25,7 +25,9 @@
 
 -- Standard library imports --
 local assert = assert
+local select = select
 local type = type
+local unpack = unpack
 
 -- Exports --
 local M = {}
@@ -59,6 +61,65 @@ function M.GetColor (color)
 	end
 end
 
+-- Intermediate storage, used to pass varargs to line:set*Color() via unpack() --
+local Color = {}
+
+--
+local DefPacker
+
+--- DOCME
+function M.MakePacker (opts)
+	if opts then
+		local kcomps = opts.comps or "m_ncomps"
+		local kr = opts.r or "m_r"
+		local kg = opts.g or "m_g"
+		local kb = opts.b or "m_b"
+		local ka = opts.a or "m_a"
+
+		return function(object, how, ...)
+			--
+			if how == "pack" then
+				local n = select("#", ...)
+
+				if n > 0 then
+					object[kr], object[kg], object[kb], object[ka] = ...
+					object[kcomps] = n
+				else
+					object[kcomps] = nil
+				end
+
+			--
+			elseif how == "fill" or how == "stroke" then
+				local from, method = ... or object, how == "fill" and "setFillColor" or "setStrokeColor"
+				local n = from[kcomps]
+
+				if n then
+					Color[1], Color[2], Color[3], Color[4] = from[kr], from[kg], from[kb], from[ka]
+
+					object[method](object, unpack(Color, 1, n))
+
+					Color[1], Color[2], Color[3], Color[4] = nil
+				end
+			end
+		end
+	else
+		return DefPacker
+	end
+end
+
+--
+DefPacker = M.MakePacker{}
+
+--- DOCME
+function M.PackColor (object, ...)
+	DefPacker(object, "pack", ...)
+end
+
+--- DOCME
+function M.PackColor_Custom (object, packer, ...)
+	(packer or DefPacker)(object, "pack", ...)
+end
+
 --- WIP
 -- @param name
 -- @param color
@@ -68,6 +129,26 @@ function M.RegisterColor (name, color)
 	assert(type(color) == "table" or type(color) == "userdata", "Invalid color")
 
 	Colors[name] = color
+end
+
+--- DOCME
+function M.SetFillColor (object, from)
+	DefPacker(object, "fill", from)
+end
+
+--- DOCME
+function M.SetFillColor_Custom (object, packer, from)
+	(packer or DefPacker)(object, "fill", from)
+end
+
+--- DOCME
+function M.SetStrokeColor (object, from)
+	DefPacker(object, "stroke", from)
+end
+
+--- DOCME
+function M.SetStrokeColor_Custom (object, packer, from)
+	(packer or DefPacker)(object, "stroke", from)
 end
 
 -- Export the module.

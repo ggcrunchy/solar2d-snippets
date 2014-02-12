@@ -1,4 +1,5 @@
---- Image effect demo.
+--- An implementation of summed area tables.
+-- TODO: Extend to 3D? ND? Move to geom_ops?
 
 --
 -- Permission is hereby granted, free of charge, to any person obtaining
@@ -23,20 +24,29 @@
 -- [ MIT license: http://www.opensource.org/licenses/mit-license.php ]
 --
 
--- Corona globals --
-local system = system
+-- Exports --
+local M = {}
 
--- 
-if system.getInfo("environment") == "simulator" then
-	-- Pull an image (asked for beforehand?), getImageData(), pipe in as JSON or whatever
-	--	system.openURL("file://" .. system.pathForFile("html/get_png_pixels/index.html"))
-	-- TODO: do via HTTP requests instead
+-- I(x,y) = sum(x' <= x, y' <= y){i(x',y')}
 
---
-else
-	-- Do the same as the simulator-else, in a web view?
-	-- Otherwise, if available, use the new pixel sampler API's
-end
+-- I(x,y) = i(x,y) + I(x-1,y) + I(x,y-1) - I(x-1,y-1)
 
--- Given stream, go to town on the data!
--- Some effects are planned
+-- Rect:
+-- A --------- B
+-- |           |
+-- D --------- C
+
+-- Area: sum(x0 <= x <= x1, y0 <= y <= y1){i(x,y)} = I(C) + I(A) - I(B) - I(D)
+
+-- M.New(w, h)
+
+-- M.Set(T, col, row, value)
+
+-- M.Set_Multi(T, values)
+
+-- M.Area (col1, row1, col2, row2)
+
+-- M.Area_To (col, row)
+
+-- Export the module.
+return M
