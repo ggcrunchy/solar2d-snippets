@@ -26,8 +26,9 @@
 -- Corona globals --
 local system = system
 
--- 
-if system.getInfo("environment") == "simulator" then
+-- Windows: no web views
+if system.getInfo("platformName") == "Win" then
+	-- Could hardcode image name and generate file in temps (erasing if already there...)
 	-- Pull an image (asked for beforehand?), getImageData(), pipe in as JSON or whatever
 	--	system.openURL("file://" .. system.pathForFile("html/get_png_pixels/index.html"))
 	-- TODO: do via HTTP requests instead
@@ -38,5 +39,38 @@ else
 	-- Otherwise, if available, use the new pixel sampler API's
 end
 
--- Given stream, go to town on the data!
--- Some effects are planned
+-- Modules --
+local buttons = require("ui.Button")
+local scenes = require("utils.Scenes")
+
+-- Corona modules --
+local storyboard = require("storyboard")
+
+-- Timers demo scene --
+local Scene = storyboard.newScene()
+
+--
+function Scene:createScene ()
+	buttons.Button(self.view, nil, 120, 75, 200, 50, scenes.Opener{ name = "scene.Choices" }, "Go Back")
+end
+
+Scene:addEventListener("createScene")
+
+--
+function Scene:enterScene ()
+	-- Some input selection
+	-- Wait for results
+		-- Given stream, go to town on the data!
+	-- Some effects are planned
+end
+
+Scene:addEventListener("enterScene")
+
+--
+function Scene:exitScene ()
+
+end
+
+Scene:addEventListener("exitScene")
+
+return Scene
