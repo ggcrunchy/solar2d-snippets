@@ -23,8 +23,16 @@
 -- [ MIT license: http://www.opensource.org/licenses/mit-license.php ]
 --
 
+-- Modules --
+local buttons = require("ui.Button")
+local file = require("utils.File")
+local scenes = require("utils.Scenes")
+
 -- Corona globals --
 local system = system
+
+-- Corona modules --
+local storyboard = require("storyboard")
 
 -- Windows: no web views
 if system.getInfo("platformName") == "Win" then
@@ -35,16 +43,9 @@ if system.getInfo("platformName") == "Win" then
 
 --
 else
-	-- Do the same as the simulator-else, in a web view?
+	-- Do the same, in a web view?
 	-- Otherwise, if available, use the new pixel sampler API's
 end
-
--- Modules --
-local buttons = require("ui.Button")
-local scenes = require("utils.Scenes")
-
--- Corona modules --
-local storyboard = require("storyboard")
 
 -- Timers demo scene --
 local Scene = storyboard.newScene()
