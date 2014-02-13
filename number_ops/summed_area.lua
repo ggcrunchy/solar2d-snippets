@@ -35,14 +35,13 @@ local M = {}
 
 -- Cached module references --
 local _Area_
-local _New_
 
---
+-- Width to pitch helper
 local function Pitch (w)
 	return w + 1
 end
 
---
+-- Computes an index, minding dummy cells
 local function Index (col, row, pitch)
 	return row * pitch + col + 1
 end
@@ -60,57 +59,86 @@ end
 
 -- I(x,y) = i(x,y) + I(x-1,y) + I(x,y-1) - I(x-1,y-1)
 
---
-local function Sum (sat, index, col, row, w)
-	local pitch = Pitch(w)
+-- Visitor over the lower-right swath of the table
+local function DoSwath (sat, func, index, col, row, w)
+	local extra, pitch = w - col + 1, Pitch(w)
+	local above = index - pitch
 
 	for _ = row, sat.m_h do
-		for i = 0, w - col + 1 do
-			local above = index - pitch
+		local vl, vul = sat[index - 1], sat[above - 1]
 
-			sat[index] = sat[index] - sat[index - 1] - sat[above] + sat[above - 1]
+		for i = index, index + extra do
+			local vi, va = sat[index], sat[i - pitch]
+
+			sat[index], vl, vul = func(vi, vl, va, vul), vi, va
 		end
 
-		index = index + pitch
+		index, above = index + pitch, index
 	end
 end
 
 --
+local function AuxSum (vi, vl, va, vul)
+	return vi - vl - va + vul
+end
+
+-- Converts the lower-right swath of the table (in value form) to sum form
+local function Sum (sat, index, col, row, w)
+	DoSwath(sat, AuxSum, index, col, row, w)
+end
+
+-- Converts a 2x2 grid to sum form
+local function AuxUnravel (vi, vl, va, vul)
+	return vi + vl + va - vul
+end
+
+-- Converts the lower-right swath of the table (in sum form) to value form
 local function Unravel (sat, index, col, row, w)
-	local pitch = Pitch(w)
-
-	for _ = row, sat.m_h do
-		for i = 0, w - col + 1 do
-			local above = index - pitch
-
-			sat[index] = sat[index] + sat[index - 1] + sat[above] - sat[above - 1]
-		end
-
-		index = index + pitch
-	end
+	DoSwath(sat, AuxUnravel, index, col, row, w)
+	-- err... I suppose this has to go the other way :(
+	-- So the DoSwath is probably just for sums
+	-- In any case, each unravel is followed by a sum (assuming there isn't any use for a mass-unravel...)
 end
 
 --- DOCME
 function M.New_Grid (values, ncols, nrows)
+	--
 	local n = #values
 
 	nrows = max(nrows or 1, ceil(n / ncols))
 
-	local sat, pitch = _New_(ncols, nrows), Pitch(ncols)
-	local index, vi = Index(1, 1, pitch) - 1, 0
-	local saved = index + 1
+	--
+	local sat, pitch = { m_w = ncols, m_h = nrows }, Pitch(ncols)
+
+	for i = 1, pitch do
+		sat[i] = 0
+	end
+
+	--
+	local index, vi = pitch + 1, 0
 
 	for _ = 1, nrows do
-		for col = 1, min(ncols, n - vi) do
+		sat[index] = 0
+
+		--
+		local count = min(ncols, n - vi)
+
+		for col = 1, count do
 			vi = vi + 1
 
 			sat[index + col] = values[vi]
 		end
 
+		-- If the values have been exhausted, pad with zeroes.
+		for col = count + 1, ncols do
+			sat[index + col] = 0
+		end
+
 		index = index + pitch
 	end
 
-	Sum(sat, saved, 1, 1, ncols)
+	--
+	Sum(sat, pitch + 1, 1, 1, ncols)
 
 	return sat
 end
@@ -127,7 +155,7 @@ function M.Set (T, col, row, value)
 	Sum(T, index, col, row, w)
 end
 
--- --
+-- Value that have been dirtied during this set --
 local Dirty = {}
 
 --- DOCME
@@ -156,7 +184,7 @@ function M.Set_Multi (T, values)
 		for i = n, 1, -2 do
 			local index, value = Dirty[i - 1], Dirty[i]
 
-			T[index], Dirty[i - 1], Dirty[i] = value
+			T[index] = value
 		end
 
 		Sum(T, index, minc, minr, w)
@@ -198,7 +226,6 @@ end
 
 -- Cache module members.
 _Area_ = M.Area
-_New_ = M.New
 
 -- Export the module.
 return M
