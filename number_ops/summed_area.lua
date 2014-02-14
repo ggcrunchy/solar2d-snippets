@@ -68,9 +68,11 @@ local function Sum (sat, index, col, row, w)
 		local vl, vul = sat[index - 1], sat[above - 1]
 
 		for i = index, index + extra do
-			local vi, va = sat[i], sat[i - pitch]
+			local va = sat[i - pitch]
 
-			sat[i], vl, vul = vi - vl - va + vul, vi, va
+			vl = sat[i] + vl + va - vul
+
+			sat[i], vul = vl, va
 		end
 
 		index, above = index + pitch, index
@@ -80,7 +82,7 @@ end
 --- DOCME
 function M.New_Grid (values, ncols, nrows)
 	--
-	local n = #values / 2
+	local n = #values
 
 	nrows = max(nrows or 1, ceil(n / ncols))
 
@@ -113,31 +115,41 @@ function M.New_Grid (values, ncols, nrows)
 
 		index = index + pitch
 	end
-
+	--[[
+print("BEFORE")
+DDD(sat)
+--]]
 	--
 	Sum(sat, pitch + 2, 1, 1, ncols)
-
+--[[
+print("AREA")
+DDD(sat)
+UUU(sat, pitch + 2, 1, 1, ncols)
+print("UNRAVELED")
+DDD(sat)
+print("")
+--]]
 	return sat
 end
 
 -- Converts the lower-right swath of the table (in sum form) to value form
 local function Unravel (sat, index, col, row, w)
 	local extra, pitch, last = w - col, Pitch(w), #sat
-	local above = last - pitch
 
-	while last >= index do
+	repeat
+		local above = last - pitch
 		local vi, va = sat[last], sat[above]
 
-		for i = last, last - extra do
-			local vl, vul = sat[i - 1], sat[above - 1]
+		for i = last, last - extra, -1 do
+			local vl, vul = sat[i - 1], sat[i - pitch - 1]
 
-			sat[index], vi, va = vi + vl + va - vul, vl, vul
+			sat[i], vi, va = vi - vl - va + vul, vl, vul
 		end
 
-		last, above = above, above - pitch
-	end
+		last = above
+	until last < index
 end
-
+--UUU=Unravel
 --- DOCME
 function M.Set (T, col, row, value)
 	local w = T.m_w
@@ -221,19 +233,38 @@ end
 function M.Area_Total (T)
 	return _Area_(T, 0, 0, T.m_w, T.m_h)
 end
-
+--[[
+local function DumpGrid (g)
+	local ii=1
+	for r = 1, g.m_h + 1 do
+		local t={}
+		for c = 1, g.m_w + 1 do
+			t[#t+1] = string.format("%i", g[ii])
+			ii=ii+1
+		end
+		print(table.concat(t, " "))
+	end
+	print("")
+	print("W, H, N", g.m_w, g.m_h, #g)
+	print("AREA?", M.Area_Total(g))
+	print("")
+end
+DDD=DumpGrid
+--]]
 -- Cache module members.
 _Area_ = M.Area
 --[[
 local aa=M.New(3, 4)
 local bb=M.New(4, 5)
 local cc=M.New_Grid({}, 2, 4)
-local dd=M.New_Grid({2,2,3,3,4,4,1,2},2,2)
-local ee=M.New_Grid({2,2,3,3,4,4},2,2)
-print(M.Area_Total(aa))
-print(M.Area_Total(bb))
-print(M.Area_Total(cc))
-print(M.Area_Total(dd))
-print(M.Area_Total(ee))]]
+local dd=M.New_Grid({2,3,4,1},2,2)
+local ee=M.New_Grid({2,3,4},2,2)
+
+print(DumpGrid(aa))
+print(DumpGrid(bb))
+print(DumpGrid(cc))
+print(DumpGrid(dd))
+print(DumpGrid(ee))
+--]]
 -- Export the module.
 return M
