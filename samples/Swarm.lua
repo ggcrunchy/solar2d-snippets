@@ -23,9 +23,23 @@
 -- [ MIT license: http://www.opensource.org/licenses/mit-license.php ]
 --
 
+-- Standard library imports --
+local cos = math.cos
+local max = math.max
+local min = math.min
+local pairs = pairs
+local pi = math.pi
+local random = math.random
+local sin = math.sin
+
 -- Modules --
+local array_index = require("array_ops.index")
 local buttons = require("ui.Button")
 local scenes = require("utils.Scenes")
+
+-- Corona globals --
+local display = display
+local timer = timer
 
 -- Corona modules --
 local storyboard = require("storyboard")
@@ -40,9 +54,84 @@ end
 
 Scene:addEventListener("createScene")
 
+-- --
+local NCols, NRows = 10, 10
+
+-- --
+local CellW, CellH = math.ceil(display.contentWidth / NCols), math.ceil(display.contentHeight / NRows)
+
+--
+local function UpdateGrid (grid, object, radius, op)
+	local x, y = object.x, object.y
+	local col1 = max(array_index.FitToSlot(x - radius, 0, CellW), 1)
+	local row1 = array_index.FitToSlot(y - radius, 0, CellH)
+	local col2 = min(array_index.FitToSlot(x + radius, 0, CellW), NCols)
+	local row2 = array_index.FitToSlot(y + radius, 0, CellH)
+
+	for row = max(row1, 1), min(row2, NRows) do
+		local index = (row - 1) * NCols + 1
+
+		for col = 0, col2 - col1 do
+			op(grid[index + col], object, grid, index + col)
+		end
+	end
+end
+
+--
+local function AddToCell (cell, object, grid, index)
+	cell = cell or {}
+
+	cell[object], grid[index] = true, cell
+end
+
+--
+local function RemoveFromCell (cell, object)
+	cell[object] = nil
+end
+
+--
+local function LookAtNeighbors (cell, object)
+	for boid in pairs(cell) do
+		if boid ~= object then
+			-- THIS AND THAT
+		end
+	end
+end
+
+-- --
+local NBoids = 10
+
+-- --
+local BoidRadius = 15
+
+-- --
+local Neighborhood = math.ceil(BoidRadius * 2.1)
+
+-- --
+local FlockRadius = 140
+
 --
 function Scene:enterScene ()
+	self.swarm = display.newGroup()
+
+	self.view:insert(self.swarm)
+
 	-- Dart throwing! (space out the boids)
+	local angle, da, grid = 0, 2 * pi / NBoids, {}
+
+	for i = 1, NBoids do
+		local ca, sa = cos(angle), sin(angle)
+		local x = display.contentCenterX + FlockRadius * ca + random(-25, 25) * sa
+		local y = display.contentCenterY + FlockRadius * sa + random(-25, 25) * ca
+		local boid = display.newCircle(self.swarm, x, y, BoidRadius)
+
+		-- Initial headings?
+
+		angle = angle + da
+
+		UpdateGrid(grid, boid, Neighborhood, AddToCell)
+	end
+
 	-- Track a target
 	-- For boids in SET do
 		-- Guess target position
@@ -61,13 +150,41 @@ function Scene:enterScene ()
 		-- Swirl around and stuff
 	-- Wander
 		-- Random, maybe walls at the edges
+	--
+	self.update = timer.performWithDelay(35, function()
+		local swarm = self.swarm
+
+		--
+		for i = 1, swarm.numChildren do
+			local boid = swarm[i]
+
+			-- Prep boid? (velocity, cum. force, etc.)
+
+			UpdateGrid(grid, boid, Neighborhood, LookAtNeighbors)
+
+			-- Compute all relevant forces
+		end
+
+		--
+		for i = 1, swarm.numChildren do
+			local boid = swarm[i]
+
+			UpdateGrid(grid, boid, Neighborhood, RemoveFromCell)
+
+			-- Move!
+
+			UpdateGrid(grid, boid, Neighborhood, AddToCell)
+		end
+	end, 0)
 end
 
 Scene:addEventListener("enterScene")
 
 --
 function Scene:exitScene ()
+	timer.cancel(self.update)
 
+	self.swarm:removeSelf()
 end
 
 Scene:addEventListener("exitScene")

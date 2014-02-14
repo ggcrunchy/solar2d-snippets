@@ -59,8 +59,8 @@ end
 
 -- I(x,y) = i(x,y) + I(x-1,y) + I(x,y-1) - I(x-1,y-1)
 
--- Visitor over the lower-right swath of the table
-local function DoSwath (sat, func, index, col, row, w)
+-- Converts the lower-right swath of the table (in value form) to sum form
+local function Sum (sat, index, col, row, w)
 	local extra, pitch = w - col + 1, Pitch(w)
 	local above = index - pitch
 
@@ -68,36 +68,31 @@ local function DoSwath (sat, func, index, col, row, w)
 		local vl, vul = sat[index - 1], sat[above - 1]
 
 		for i = index, index + extra do
-			local vi, va = sat[index], sat[i - pitch]
+			local vi, va = sat[i], sat[i - pitch]
 
-			sat[index], vl, vul = func(vi, vl, va, vul), vi, va
+			sat[i], vl, vul = vi - vl - va + vul, vi, va
 		end
 
 		index, above = index + pitch, index
 	end
 end
 
---
-local function AuxSum (vi, vl, va, vul)
-	return vi - vl - va + vul
-end
-
--- Converts the lower-right swath of the table (in value form) to sum form
-local function Sum (sat, index, col, row, w)
-	DoSwath(sat, AuxSum, index, col, row, w)
-end
-
--- Converts a 2x2 grid to sum form
-local function AuxUnravel (vi, vl, va, vul)
-	return vi + vl + va - vul
-end
-
 -- Converts the lower-right swath of the table (in sum form) to value form
 local function Unravel (sat, index, col, row, w)
-	DoSwath(sat, AuxUnravel, index, col, row, w)
-	-- err... I suppose this has to go the other way :(
-	-- So the DoSwath is probably just for sums
-	-- In any case, each unravel is followed by a sum (assuming there isn't any use for a mass-unravel...)
+	local extra, pitch, last = w - col + 1, Pitch(w), #sat
+	local above = last - pitch
+
+	while last >= index do
+		local vi, va = sat[last], sat[above]
+
+		for i = last, last - extra do
+			local vl, vul = sat[i - 1], sat[above - 1]
+
+			sat[index], vi, va = vi + vl + va - vul, vl, vul
+		end
+
+		last, above = above, above - pitch
+	end
 end
 
 --- DOCME

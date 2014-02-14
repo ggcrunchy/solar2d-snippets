@@ -29,6 +29,9 @@
 -- Modules --
 local operators = require("bitwise_ops.operators")
 
+-- Cached module references --
+local _MakeGenerator_
+
 -- Forward references --
 local band
 local lshift
@@ -104,6 +107,30 @@ function M.MakeGenerator (
 		return result
 	end
 end
+
+--- Variant of @{MakeGenerator} with behavior like @{math.random}.
+-- @treturn function DOCMEORE
+function M.MakeGenerator_Lib (
+  z, -- uint: Z seed; if absent, uses a default.
+  w -- uint: W Seed; if absent, uses a default.
+)
+	local gen = _MakeGenerator_(z, w)
+
+	return function(a, b)
+		if a then
+			if not b then
+				a, b = 1, a
+			end
+
+			return a + gen() % (b - a)
+		else
+			return gen(true)
+		end
+	end
+end
+
+-- Cache module members.
+_MakeGenerator_ = M.MakeGenerator
 
 -- Export the module.
 return M
