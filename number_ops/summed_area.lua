@@ -33,17 +33,10 @@ local unpack = unpack
 -- Exports --
 local M = {}
 
--- Cached module references --
-local _Area_
-
--- Width to pitch helper
-local function Pitch (w)
-	return w + 1
-end
-
--- Computes an index, minding dummy cells
-local function Index (col, row, pitch)
-	return row * pitch + col + 1
+--- Getter.
+-- @param T DOCMEMORE
+function M.GetDims (T)
+	return T.m_w, T.m_h
 end
 
 --- DOCME
@@ -57,9 +50,18 @@ function M.New (w, h)
 	return sat
 end
 
--- I(x,y) = i(x,y) + I(x-1,y) + I(x,y-1) - I(x-1,y-1)
+-- Computes an index, minding dummy cells
+local function Index (col, row, pitch)
+	return row * pitch + col + 1
+end
 
--- Converts the lower-right swath of the table (in value form) to sum form
+-- Width to pitch helper
+local function Pitch (w)
+	return w + 1
+end
+
+-- Converts a lower-right region of the table from value to sum form
+-- sum(x, y) = value(x, y) + sum(x - 1, y) + sum(x, y - 1) - sum(x - 1, y - 1)
 local function Sum (sat, index, col, row, w)
 	local extra, pitch = w - col, Pitch(w)
 	local above = index - pitch
@@ -81,25 +83,25 @@ end
 
 --- DOCME
 function M.New_Grid (values, ncols, nrows)
-	--
+	-- Get the row count, using the provided one if possible. 
 	local n = #values
 
 	nrows = max(nrows or 1, ceil(n / ncols))
 
-	--
+	-- Create a new table and zero the guard row on top.
 	local sat, pitch = { m_w = ncols, m_h = nrows }, Pitch(ncols)
 
 	for i = 1, pitch do
 		sat[i] = 0
 	end
 
-	--
+	-- Load values into the remaining rows. Prepend a zero to each row as a guard.
 	local index, vi = pitch + 1, 0
 
 	for _ = 1, nrows do
 		sat[index] = 0
 
-		--
+		-- Try to fill a row with values.
 		local count = min(ncols, n - vi)
 
 		for col = 1, count do
@@ -115,11 +117,11 @@ function M.New_Grid (values, ncols, nrows)
 
 		index = index + pitch
 	end
-	--[[
+--[[
 print("BEFORE")
 DDD(sat)
 --]]
-	--
+	-- Put the table into sum form.
 	Sum(sat, pitch + 2, 1, 1, ncols)
 --[[
 print("AREA")
@@ -132,7 +134,8 @@ print("")
 	return sat
 end
 
--- Converts the lower-right swath of the table (in sum form) to value form
+-- Converts a lower-right region of the table from sum to value form
+-- value(x, y) = sum(x, y) - sum(x - 1, y) - sum(x, y - 1) + sum(x - 1, y - 1)
 local function Unravel (sat, index, col, row, w)
 	local extra, pitch, last = w - col, Pitch(w), #sat
 
@@ -149,7 +152,7 @@ local function Unravel (sat, index, col, row, w)
 		last = above
 	until last < index
 end
---UUU=Unravel
+
 --- DOCME
 function M.Set (T, col, row, value)
 	local w = T.m_w
@@ -170,19 +173,23 @@ function M.Set_Multi (T, values)
 	local w, h, n = T.m_w, T.m_h, 0
 	local minc, minr, pitch = 1 / 0, 1 / 0, Pitch(w)
 
-	--
+	-- Make a list of any values not outside the grid.
 	for i = 1, #values, 3 do
 		local col, row, value = unpack(values, i, i + 2)
 
-		if col > 0 and row > 0 and col < w and row < h then
+		if col >= 1 and row >= 1 and col <= w and row <= h then
 			Dirty[n + 1] = Index(col, row, pitch)
 			Dirty[n + 2] = value
 
+			-- Record the lowest column and row.
 			minc, minr, n = min(col, minc), min(row, minr), n + 2
 		end
 	end
 
-	--
+	-- If any values were chosen, apply them. Transform the lower-right region (the corner of
+	-- this being given by the lowest column and row, as found during the search) into value
+	-- form, write the new values (in case of duplicated indices, the last value is arbitrarily
+	-- used), and transform the region back into sum form.
 	if n > 0 then
 		local index = Index(minc, minr, pitch)
 
@@ -196,42 +203,57 @@ function M.Set_Multi (T, values)
 	end
 end
 
--- Rect:
--- A --------- B
--- |           |
--- D --------- C
+--- DOCME
+function M.Sum (T, col, row)
+	local w, h = T.m_w, T.m_h
 
--- Area: sum(x0 <= x <= x1, y0 <= y <= y1){i(x,y)} = I(C) + I(A) - I(B) - I(D)
+	col, row = col or w, row or h
+
+	if col >= 1 and row >= 1 and col <= w and row <= h then
+		return T[Index(col, row, Pitch(w))]
+	else
+		return 0
+	end
+end
 
 --- DOCME
-function M.Area (T, col1, row1, col2, row2)
+function M.SumOverArea (T, col1, row1, col2, row2)
 	local lrc, lrr = max(col1, col2), max(row1, row2)
 
 	if lrc > 0 and lrr > 0 then
-		local ulc, ulr, w = col1 + col2 - lrc, row1 + row2 - lrr, T.m_w
+		local ulc, ulr, w = max(col1 + col2 - lrc, 0), max(row1 + row2 - lrr, 0), T.m_w
 
 		lrc, lrr = min(lrc, w), min(lrr, T.m_h)
 
-		if ulc < lrc and ulr < lrr then
-			local pitch = Pitch(w)
-			local index = Index(lrc, lrr, pitch)
-			local above = index - pitch
+		-- A --------- B
+		-- |           |
+		-- D --------- C
+		--
+		-- sum(x0 <= x <= x1, y0 <= y <= y1){ value(x, y) } = sum(C) + sum(A) - sum(B) - sum(D)
+		local pitch, dc = Pitch(w), lrc - ulc
+		local ul = Index(ulc, ulr, pitch)
+		local lr = Index(lrc, lrr, pitch)
 
-			return T[index] + T[above - 1] - T[index - 1] - T[above]
-		end
+		return T[ul] + T[lr] - T[ul + dc] - T[lr - dc]
 	end
 
 	return 0
 end
 
 --- DOCME
-function M.Area_ToCell (T, col, row)
-	return _Area_(T, 0, 0, col, row)
-end
+function M.Value (T, col, row)
+	local w, value = T.m_w
 
---- DOCME
-function M.Area_Total (T)
-	return _Area_(T, 0, 0, T.m_w, T.m_h)
+	if col >= 1 and row >= 1 and col <= w and row <= T.m_h then
+		local pitch = Pitch(w)
+		local index = Index(col, row, pitch)
+		local above = index - pitch
+
+		-- See note for Unravel()
+		value = T[index] - T[index - 1] - T[above] + T[above - 1]
+	end
+
+	return value or 0
 end
 --[[
 local function DumpGrid (g)
@@ -245,26 +267,21 @@ local function DumpGrid (g)
 		print(table.concat(t, " "))
 	end
 	print("")
-	print("W, H, N", g.m_w, g.m_h, #g)
-	print("AREA?", M.Area_Total(g))
+	print("W, H, N, AREA", g.m_w, g.m_h, #g, M.Sum(g))
 	print("")
 end
-DDD=DumpGrid
---]]
--- Cache module members.
-_Area_ = M.Area
---[[
+DDD,UUU=DumpGrid,Unravel
 local aa=M.New(3, 4)
 local bb=M.New(4, 5)
 local cc=M.New_Grid({}, 2, 4)
 local dd=M.New_Grid({2,3,4,1},2,2)
 local ee=M.New_Grid({2,3,4},2,2)
 
-print(DumpGrid(aa))
-print(DumpGrid(bb))
-print(DumpGrid(cc))
-print(DumpGrid(dd))
-print(DumpGrid(ee))
+DumpGrid(aa)
+DumpGrid(bb)
+DumpGrid(cc)
+DumpGrid(dd)
+DumpGrid(ee)
 --]]
 -- Export the module.
 return M
