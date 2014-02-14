@@ -61,7 +61,7 @@ end
 
 -- Converts the lower-right swath of the table (in value form) to sum form
 local function Sum (sat, index, col, row, w)
-	local extra, pitch = w - col + 1, Pitch(w)
+	local extra, pitch = w - col, Pitch(w)
 	local above = index - pitch
 
 	for _ = row, sat.m_h do
@@ -77,28 +77,10 @@ local function Sum (sat, index, col, row, w)
 	end
 end
 
--- Converts the lower-right swath of the table (in sum form) to value form
-local function Unravel (sat, index, col, row, w)
-	local extra, pitch, last = w - col + 1, Pitch(w), #sat
-	local above = last - pitch
-
-	while last >= index do
-		local vi, va = sat[last], sat[above]
-
-		for i = last, last - extra do
-			local vl, vul = sat[i - 1], sat[above - 1]
-
-			sat[index], vi, va = vi + vl + va - vul, vl, vul
-		end
-
-		last, above = above, above - pitch
-	end
-end
-
 --- DOCME
 function M.New_Grid (values, ncols, nrows)
 	--
-	local n = #values
+	local n = #values / 2
 
 	nrows = max(nrows or 1, ceil(n / ncols))
 
@@ -133,9 +115,27 @@ function M.New_Grid (values, ncols, nrows)
 	end
 
 	--
-	Sum(sat, pitch + 1, 1, 1, ncols)
+	Sum(sat, pitch + 2, 1, 1, ncols)
 
 	return sat
+end
+
+-- Converts the lower-right swath of the table (in sum form) to value form
+local function Unravel (sat, index, col, row, w)
+	local extra, pitch, last = w - col, Pitch(w), #sat
+	local above = last - pitch
+
+	while last >= index do
+		local vi, va = sat[last], sat[above]
+
+		for i = last, last - extra do
+			local vl, vul = sat[i - 1], sat[above - 1]
+
+			sat[index], vi, va = vi + vl + va - vul, vl, vul
+		end
+
+		last, above = above, above - pitch
+	end
 end
 
 --- DOCME
@@ -176,10 +176,8 @@ function M.Set_Multi (T, values)
 
 		Unravel(T, index, minc, minr, w)
 
-		for i = n, 1, -2 do
-			local index, value = Dirty[i - 1], Dirty[i]
-
-			T[index] = value
+		for i = 1, n, 2 do
+			T[Dirty[i]] = Dirty[i + 1]
 		end
 
 		Sum(T, index, minc, minr, w)
@@ -215,12 +213,27 @@ function M.Area (T, col1, row1, col2, row2)
 end
 
 --- DOCME
-function M.Area_To (T, col, row)
+function M.Area_ToCell (T, col, row)
 	return _Area_(T, 0, 0, col, row)
+end
+
+--- DOCME
+function M.Area_Total (T)
+	return _Area_(T, 0, 0, T.m_w, T.m_h)
 end
 
 -- Cache module members.
 _Area_ = M.Area
-
+--[[
+local aa=M.New(3, 4)
+local bb=M.New(4, 5)
+local cc=M.New_Grid({}, 2, 4)
+local dd=M.New_Grid({2,2,3,3,4,4,1,2},2,2)
+local ee=M.New_Grid({2,2,3,3,4,4},2,2)
+print(M.Area_Total(aa))
+print(M.Area_Total(bb))
+print(M.Area_Total(cc))
+print(M.Area_Total(dd))
+print(M.Area_Total(ee))]]
 -- Export the module.
 return M
