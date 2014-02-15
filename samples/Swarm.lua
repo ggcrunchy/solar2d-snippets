@@ -35,11 +35,13 @@ local sin = math.sin
 -- Modules --
 local array_index = require("array_ops.index")
 local buttons = require("ui.Button")
+local hsv = require("ui.HSV")
 local scenes = require("utils.Scenes")
 
 -- Corona globals --
 local display = display
 local timer = timer
+local transition = transition
 
 -- Corona modules --
 local storyboard = require("storyboard")
@@ -111,6 +113,24 @@ local Neighborhood = math.ceil(BoidRadius * 2.1)
 local FlockRadius = 140
 
 --
+local function SetHue (boid, init)
+	local hue = init and random() or boid.m_hue + (random() - .5) * .07
+
+	boid:setFillColor(hsv.RGB_FromHSV(hue, boid.m_sat, boid.m_value))
+
+	boid.m_hue = hue
+end
+
+-- --
+local Params = {
+	onComplete = function(boid)
+		-- Given velocity, set target
+		-- Set hue target?
+		-- Fire again? Set flag?
+	end
+}
+
+--
 function Scene:enterScene ()
 	self.swarm = display.newGroup()
 
@@ -124,6 +144,12 @@ function Scene:enterScene ()
 		local x = display.contentCenterX + FlockRadius * ca + random(-25, 25) * sa
 		local y = display.contentCenterY + FlockRadius * sa + random(-25, 25) * ca
 		local boid = display.newCircle(self.swarm, x, y, BoidRadius)
+
+		--
+		boid.m_sat = .2 + random() * .7
+		boid.m_value = 1 - random() * .35
+
+		SetHue(boid, true)
 
 		-- Initial headings?
 
@@ -169,10 +195,14 @@ function Scene:enterScene ()
 		for i = 1, swarm.numChildren do
 			local boid = swarm[i]
 
+			--
 			UpdateGrid(grid, boid, Neighborhood, RemoveFromCell)
 
 			-- Move!
+			-- Vary the boid's color a little.
+			SetHue(boid)
 
+			--
 			UpdateGrid(grid, boid, Neighborhood, AddToCell)
 		end
 	end, 0)

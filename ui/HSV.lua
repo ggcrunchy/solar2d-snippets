@@ -30,6 +30,8 @@ local unpack = unpack
 
 -- Cached module references --
 local _FindHue_
+local _RGB_ColorSV_
+local _RGB_Hue_
 local _RGB_HueInterval_
 
 -- Exports --
@@ -166,6 +168,13 @@ function M.RGB_ColorSV (hue_r, hue_g, hue_b, sat, value)
 end
 
 --- DOCME
+function M.RGB_FromHSV (hue, sat, value)
+	local hr, hg, hb = _RGB_Hue_(hue)
+
+	return _RGB_ColorSV_(hr, hg, hb, sat, value)
+end
+
+--- DOCME
 function M.RGB_Hue (hue)
 	return _RGB_HueInterval_(modf(6 * (hue % 1) + 1))
 end
@@ -181,6 +190,8 @@ end
 
 -- Cache module members.
 _FindHue_ = M.FindHue
+_RGB_ColorSV_ = M.RGB_ColorSV
+_RGB_Hue_ = M.RGB_Hue
 _RGB_HueInterval_ = M.RGB_HueInterval
 
 -- Export the module.
