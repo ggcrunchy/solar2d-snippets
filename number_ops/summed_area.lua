@@ -189,14 +189,15 @@ function M.Set_Multi (T, values)
 	-- If any values were chosen, apply them. Transform the lower-right region (the corner of
 	-- this being given by the lowest column and row, as found during the search) into value
 	-- form, write the new values (in case of duplicated indices, the last value is arbitrarily
-	-- used), and transform the region back into sum form.
+	-- used), and transform the region back into sum form. Afterward, overwrite the values in
+	-- the dirty list, which may be object references.
 	if n > 0 then
 		local index = Index(minc, minr, pitch)
 
 		Unravel(T, index, minc, minr, w)
 
 		for i = 1, n, 2 do
-			T[Dirty[i]] = Dirty[i + 1]
+			T[Dirty[i]], Dirty[i + 1] = Dirty[i + 1], false
 		end
 
 		Sum(T, index, minc, minr, w)
@@ -256,12 +257,28 @@ function M.Value (T, col, row)
 	return value or 0
 end
 --[[
+local function Num (n)
+	return string.format("%i", n)
+end
+
+local function GetXY (n)
+	if n == 0 then
+		return 0, 0
+	else
+		return n.x, n.y
+	end
+end
+
+local function Pair (n)
+	return string.format("(%i, %i)", GetXY(n))
+end
+
 local function DumpGrid (g)
 	local ii=1
 	for r = 1, g.m_h + 1 do
 		local t={}
 		for c = 1, g.m_w + 1 do
-			t[#t+1] = string.format("%i", g[ii])
+			t[#t+1] = Elem(g[ii])
 			ii=ii+1
 		end
 		print(table.concat(t, " "))
@@ -270,6 +287,8 @@ local function DumpGrid (g)
 	print("W, H, N, AREA", g.m_w, g.m_h, #g, M.Sum(g))
 	print("")
 end
+
+
 DDD,UUU=DumpGrid,Unravel
 local aa=M.New(3, 4)
 local bb=M.New(4, 5)
@@ -277,11 +296,44 @@ local cc=M.New_Grid({}, 2, 4)
 local dd=M.New_Grid({2,3,4,1},2,2)
 local ee=M.New_Grid({2,3,4},2,2)
 
+Elem = Num
+
 DumpGrid(aa)
 DumpGrid(bb)
 DumpGrid(cc)
 DumpGrid(dd)
 DumpGrid(ee)
+
+local PairMT = {}
+
+function PairMT.__add (a, b)
+	if a == 0 or b == 0 then
+		return a == 0 and b or a
+	else
+		return setmetatable({ x = a.x + b.x, y = a.y + b.y }, PairMT)
+	end
+end
+
+function PairMT.__sub (a, b)
+	if b == 0 then
+		return a
+	else
+		local ax, ay = GetXY(a)
+
+		return setmetatable({ x = ax - b.x, y = ay - b.y }, PairMT)
+	end
+end
+
+local function NewPair (x, y)
+	return setmetatable({ x = x, y = y }, PairMT)
+end
+
+Elem = Pair
+
+local ff = M.New_Grid({NewPair(2, 7),NewPair(3, 14),NewPair(4,1),NewPair(1,0)},2,2)
+
+DumpGrid(ff)
+
 --]]
 -- Export the module.
 return M
