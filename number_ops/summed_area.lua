@@ -1,4 +1,11 @@
 --- An implementation of summed area tables.
+--
+-- In a well-behaved table, all elements must be able to be added and subtracted from one
+-- another, and in either case 0 must be an acceptable input.
+--
+-- Numbers work out of the box. Otherwise, a so-called **Value** element would typically
+-- implement **__add** and **__sub** metamethods, returning objects with the same metatable.
+
 -- TODO: Extend to 3D? ND? Move to geom_ops?
 
 --
@@ -34,12 +41,17 @@ local unpack = unpack
 local M = {}
 
 --- Getter.
--- @param T DOCMEMORE
+-- @tparam SummedAreaTable T
+-- @treturn uint Width...
+-- @treturn uint ...and height.
 function M.GetDims (T)
 	return T.m_w, T.m_h
 end
 
---- DOCME
+--- Creates a new summed area table, with all sums 0.
+-- @uint w Width...
+-- @uint h ...and height.
+-- @treturn SummedAreaTable New table.
 function M.New (w, h)
 	local sat = { m_w = w, m_h = h }
 
@@ -62,11 +74,11 @@ end
 
 -- Converts a lower-right region of the table from value to sum form
 -- sum(x, y) = value(x, y) + sum(x - 1, y) + sum(x, y - 1) - sum(x - 1, y - 1)
-local function Sum (sat, index, col, row, w)
+local function Sum (sat, index, col, row, w, h)
 	local extra, pitch = w - col, Pitch(w)
 	local above = index - pitch
 
-	for _ = row, sat.m_h do
+	for _ = row, h do
 		local vl, vul = sat[index - 1], sat[above - 1]
 
 		for i = index, index + extra do
@@ -81,7 +93,16 @@ local function Sum (sat, index, col, row, w)
 	end
 end
 
---- DOCME
+--- Creates a new summed area table, populated with values, in sum form.
+-- @array values Values to assign, from left to right (traversing rows from top to bottom).
+-- If _nrows_ is large, or #_values_ is not a multiple of _ncols_, there will be unassigned
+-- trailing values, which are interpreted as 0.
+--
+-- The elements are assumed to be consistent per the module summary.
+-- @uint ncols Number of table columns, &ge; 1...
+-- @uint? nrows ...and number of rows; if absent, 1. If the product of _ncols_ and _nrows_ is
+-- insufficient to contain _values_, the actual row count will be the minimum needed.
+-- @treturn SummedAreaTable New table.
 function M.New_Grid (values, ncols, nrows)
 	-- Get the row count, using the provided one if possible. 
 	local n = #values
@@ -117,20 +138,10 @@ function M.New_Grid (values, ncols, nrows)
 
 		index = index + pitch
 	end
---[[
-print("BEFORE")
-DDD(sat)
---]]
+
 	-- Put the table into sum form.
-	Sum(sat, pitch + 2, 1, 1, ncols)
---[[
-print("AREA")
-DDD(sat)
-UUU(sat, pitch + 2, 1, 1, ncols)
-print("UNRAVELED")
-DDD(sat)
-print("")
---]]
+	Sum(sat, pitch + 2, 1, 1, ncols, nrows)
+
 	return sat
 end
 
@@ -153,22 +164,38 @@ local function Unravel (sat, index, col, row, w)
 	until last < index
 end
 
---- DOCME
+--- Sets a value in the table, updating sums as necessary.
+-- @tparam SummedAreaTable T
+-- @uint col Column...
+-- @uint row ...and row.
+-- @tparam number|Value value Value to assign (assumed to be consistent with element type).
 function M.Set (T, col, row, value)
-	local w = T.m_w
-	local index = Index(col, row, Pitch(w))
+	local w, h = T.m_w, T.m_h
 
-	Unravel(T, index, col, row, w)
+	if col >= 1 and row >= 1 and col <= w and row <= h then
+		local index = Index(col, row, Pitch(w))
 
-	T[index] = value
+		Unravel(T, index, col, row, w, h)
 
-	Sum(T, index, col, row, w)
+		T[index] = value
+
+		Sum(T, index, col, row, w, h)
+	end
 end
 
 -- Value that have been dirtied during this set --
 local Dirty = {}
 
---- DOCME
+--- Variant of @{Set} for updating multiple table values.
+-- @tparam SummedAreaTable T
+-- @array values Triples of values, structured as:
+--
+-- * Column...
+-- * ...row...
+-- * ...value to assign (assumed to be consistent with element type).
+--
+-- Out-of-bounds assignments are ignored. Assigning different values to the same cell
+-- is undefined; duplicates are no-ops.
 function M.Set_Multi (T, values)
 	local w, h, n = T.m_w, T.m_h, 0
 	local minc, minr, pitch = 1 / 0, 1 / 0, Pitch(w)
@@ -194,17 +221,21 @@ function M.Set_Multi (T, values)
 	if n > 0 then
 		local index = Index(minc, minr, pitch)
 
-		Unravel(T, index, minc, minr, w)
+		Unravel(T, index, minc, minr, w, h)
 
 		for i = 1, n, 2 do
 			T[Dirty[i]], Dirty[i + 1] = Dirty[i + 1], false
 		end
 
-		Sum(T, index, minc, minr, w)
+		Sum(T, index, minc, minr, w, h)
 	end
 end
 
---- DOCME
+--- Getter.
+-- @tparam SummedAreaTable T
+-- @uint? col Column at which to evaluate the sum (if absent, table width)...
+-- @uint? row ...and row (if absent, table height).
+-- @treturn number|Value Sum. If the coordinate is out-of-bounds, 0.
 function M.Sum (T, col, row)
 	local w, h = T.m_w, T.m_h
 
@@ -217,7 +248,17 @@ function M.Sum (T, col, row)
 	end
 end
 
---- DOCME
+--- Computes the sum over a sub-area in the table.
+--
+-- The columns and rows will be reordered, if necessary. The columns are clamped between
+-- 0 and the table width, inclusive, and the rows between 0 and the table height.
+-- @tparam SummedAreaTable T
+-- @uint col1 A column...
+-- @uint row1 ...and row.
+-- @uint col2 Another column...
+-- @uint row2 ...and row.
+-- @treturn number|Value X Sum. If both coordinates are out-of-bounds or the area is
+-- degenerate, 0.
 function M.SumOverArea (T, col1, row1, col2, row2)
 	local lrc, lrr = max(col1, col2), max(row1, row2)
 
@@ -241,9 +282,14 @@ function M.SumOverArea (T, col1, row1, col2, row2)
 	return 0
 end
 
---- DOCME
+--- Gets the value of a table cell, i.e. the pre-summed input as assigned in @{New_Grid},
+-- @{Set}, or @{Set_Multi}.
+-- @tparam SummedAreaTable T
+-- @uint col Column...
+-- @uint row ...and row.
+-- @treturn number|Value Value. If the coordinate is out-of-bounds, 0.
 function M.Value (T, col, row)
-	local w, value = T.m_w
+	local w = T.m_w
 
 	if col >= 1 and row >= 1 and col <= w and row <= T.m_h then
 		local pitch = Pitch(w)
@@ -251,89 +297,11 @@ function M.Value (T, col, row)
 		local above = index - pitch
 
 		-- See note for Unravel()
-		value = T[index] - T[index - 1] - T[above] + T[above - 1]
+		return T[index] - T[index - 1] - T[above] + T[above - 1]
 	end
 
-	return value or 0
-end
---[[
-local function Num (n)
-	return string.format("%i", n)
+	return 0
 end
 
-local function GetXY (n)
-	if n == 0 then
-		return 0, 0
-	else
-		return n.x, n.y
-	end
-end
-
-local function Pair (n)
-	return string.format("(%i, %i)", GetXY(n))
-end
-
-local function DumpGrid (g)
-	local ii=1
-	for r = 1, g.m_h + 1 do
-		local t={}
-		for c = 1, g.m_w + 1 do
-			t[#t+1] = Elem(g[ii])
-			ii=ii+1
-		end
-		print(table.concat(t, " "))
-	end
-	print("")
-	print("W, H, N, AREA", g.m_w, g.m_h, #g, M.Sum(g))
-	print("")
-end
-
-
-DDD,UUU=DumpGrid,Unravel
-local aa=M.New(3, 4)
-local bb=M.New(4, 5)
-local cc=M.New_Grid({}, 2, 4)
-local dd=M.New_Grid({2,3,4,1},2,2)
-local ee=M.New_Grid({2,3,4},2,2)
-
-Elem = Num
-
-DumpGrid(aa)
-DumpGrid(bb)
-DumpGrid(cc)
-DumpGrid(dd)
-DumpGrid(ee)
-
-local PairMT = {}
-
-function PairMT.__add (a, b)
-	if a == 0 or b == 0 then
-		return a == 0 and b or a
-	else
-		return setmetatable({ x = a.x + b.x, y = a.y + b.y }, PairMT)
-	end
-end
-
-function PairMT.__sub (a, b)
-	if b == 0 then
-		return a
-	else
-		local ax, ay = GetXY(a)
-
-		return setmetatable({ x = ax - b.x, y = ay - b.y }, PairMT)
-	end
-end
-
-local function NewPair (x, y)
-	return setmetatable({ x = x, y = y }, PairMT)
-end
-
-Elem = Pair
-
-local ff = M.New_Grid({NewPair(2, 7),NewPair(3, 14),NewPair(4,1),NewPair(1,0)},2,2)
-
-DumpGrid(ff)
-
---]]
 -- Export the module.
 return M

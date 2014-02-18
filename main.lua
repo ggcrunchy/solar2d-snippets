@@ -119,28 +119,12 @@ end
 -- Install printf as the default var dump routine.
 var_dump.SetDefaultOutf(printf)
 
--- Checks for vdump --
-local Checks
-
 --- Helper to dump generic variable.
 -- @param var Variable to dump.
--- @param name If provided, the dump will check if it has been called with this name
--- before; if _limit_ has been reached, dumps will be ignored.
--- @uint limit Maximum number of times to allow a dump with _name_; if absent, 1.
+-- @param name As per @{var_ops.dump.Print}.
+-- @uint limit As per @{var_ops.dump.Print}.
 function vdump (var, name, limit)
-	if name then
-		Checks = Checks or {}
-
-		local check = Checks[name] or 0
-
-		if check >= (limit or 1) then
-			return
-		else
-			Checks[name] = check + 1
-		end
-	end
-
-	var_dump.Print(var)
+	var_dump.Print(var, name and { name = name, limit = limit })
 end
 
 -- Kick off the app.

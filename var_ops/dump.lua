@@ -25,6 +25,7 @@
 --
 
 -- Standard library imports --
+local assert = assert
 local format = string.format
 local insert = table.insert
 local ipairs = ipairs
@@ -51,13 +52,17 @@ local M = {}
 local DefaultOutf
 
 -- Ordered list of type names --
-local Names = { "integer", "string", "number", "boolean", "function", "table", "thread", "userdata", "cdata" }
+local Names = { "integer", "string", "number", "boolean", "function", "table", "thread", "userdata" }
+
+if pcall(require, "ffi") then
+	Names[#Names + 1] = "cdata"
+end
 
 -- Key formats --
 local KeyFormats = { integer = "%s[%i] = %s", number = "%s[%f] = %s", string = "%s%s = %s" }
 
 -- Returns: Type name, pretty print form of value
-local function Pretty (v, guard)
+local function Pretty (v, guard, tfunc)
 	local vtype = type(v)
 
 	if vtype == "number" and IsInteger(v) then
@@ -66,6 +71,8 @@ local function Pretty (v, guard)
 		return "string", format("\"%s\"", v)
 	elseif vtype == "table" then
 		if guard[v] then
+			tfunc(v, "cycle")
+
 			return "cycle", format("CYCLE, %s", tostring(v))
 		else
 			return "table", "{"
@@ -81,12 +88,14 @@ local function KeyComp (k1, k2)
 end
 
 -- Prints a table level
-local function PrintLevel (t, outf, indent, guard)
+local function PrintLevel (t, outf, tfunc, indent, guard)
 	local lists = SubTablesOnDemand()
 	local member_indent = indent .. "   "
 
 	-- Mark this table to guard against cycles.
 	guard[t] = true
+
+	tfunc(t, "new_table")
 
 	-- Collect fields into tables.
 	for k in pairs(t) do
@@ -117,13 +126,13 @@ local function PrintLevel (t, outf, indent, guard)
 				if HasMeta(v, "__tostring") then
 					vstr = tostring(v)
 				else
-					vtype, vstr = Pretty(v, guard)
+					vtype, vstr = Pretty(v, guard, tfunc)
 				end
 
 				outf(kformat or "%s[%s] = %s", member_indent, kformat and k or tostring(k), vstr)
 
 				if vtype == "table" then
-					PrintLevel(v, outf, member_indent, guard)
+					PrintLevel(v, outf, tfunc, member_indent, guard)
 				end
 			end
 		end
@@ -133,23 +142,70 @@ local function PrintLevel (t, outf, indent, guard)
 	outf("%s} (%s)", indent, tostring(t))
 end
 
+-- Checks for early out --
+local Checks
+
+-- Has the guard name been used up to the limit?
+local function EarlyOut (name, limit)
+	if name then
+		Checks = Checks or {}
+
+		local check = Checks[name] or 0
+
+		if check >= (limit or 1) then
+			return true
+		else
+			Checks[name] = check + 1
+		end
+	end
+end
+
+-- Default table function: no-op
+local function DefTableFunc () end
+
 --- Pretty prints a variable.
 --
 -- If a variable has a **"tostring"** metamethod, this is invoked and the result is printed.
 -- Otherwise, some "pretty" behavior is applied to it; if the variable is a table, it will
 -- do a member-wise print, recursing on subtables (with cycle guards).
 -- @param var Variable to print.
--- @callable outf Formatted output routine, i.e. with an interface like @{string.format};
--- if absent, the default output function is used.
--- @string indent Initial indent string; if absent, the empty string.
+-- @ptable? opts Optional print options. Fields:
+--
+-- * **indent**: Initial indent string; if absent, the empty string.
 --
 -- If _var_ is a table, this is prepended to each line of the printout.
+-- * **outf**: Formatted output routine, i.e. with an interface like @{string.format};
+-- if absent, the default output function is used.
+-- * **table_func**: Table function. When a new table _t_ is encountered during the print,
+-- the call `table_func(t, "new_table")` is performed; if the same table is found again
+-- later, each such time the call `table_func(t, "cycle")` is made.
+-- * name When provided, an early-out check will see if a printout has been performed
+-- with _name_; if so, and if _limit_ has been reached, the printout is a no-op.
+-- @uint limit Maximum number of times to allow a printout with _name_; if absent, 1.
+--
+-- Ignored if _name_ is absent.
 -- @see SetDefaultOutf
-function M.Print (var, outf, indent)
-	outf = outf or DefaultOutf
-	indent = indent or ""
+function M.Print (var, opts)
+	local indent, outf, tfunc
 
+	if opts then
+		if EarlyOut(opts.name, opts.limit) then
+			return
+		end
+
+		indent = opts.indent
+		outf = opts.outf
+		tfunc = opts.table_func
+	end
+
+	indent = indent or ""
+	outf = outf or DefaultOutf
+	tfunc = tfunc or DefTableFunc
+-- @param name If provided, the dump will check if it has been called with this name
+-- before; if _limit_ has been reached, dumps will be ignored.
+-- @uint limit Maximum number of times to allow a dump with _name_; if absent, 1.
 	assert(IsCallable(outf), "Invalid output function")
+	assert(IsCallable(tfunc), "Invalid table function")
 
 	if HasMeta(var, "__tostring") then
 		outf("%s%s", indent, tostring(var))
@@ -157,7 +213,7 @@ function M.Print (var, outf, indent)
 	elseif type(var) == "table" then
 		outf("%stable: {", indent)
 
-		PrintLevel(var, outf, indent, {})
+		PrintLevel(var, outf, tfunc, indent, {})
 
 	else
 		local vtype, vstr = Pretty(var)
