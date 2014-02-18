@@ -79,7 +79,7 @@ local InterfacePreds, Interfaces = {}, {}
 --- DOCME
 function M.AddInterfaces (type, ...)
 	for _, v in args.Args(...) do
-		adaptive.AddToSet(Interfaces, type, v)
+		adaptive.AddToMap(Interfaces, type, v)
 	end
 end
 
@@ -88,7 +88,7 @@ function M.AddInterfaces_Pred (type, ...)
 	local preds = InterfacePreds[type] or {}
 
 	for _, what, pred in args.ArgsByN(2, ...) do
-		adaptive.AddToSet(Interfaces, type, what)
+		adaptive.AddToMap(Interfaces, type, what)
 
 		preds[what] = pred
 	end
@@ -274,13 +274,13 @@ end
 
 --- DOCME
 function M.Implements (object, what)
-	return adaptive.InSet(Interfaces[Types[object]], what)
+	return adaptive.InMap(Interfaces[Types[object]], what)
 end
 
 --- DOCME
 function M.Implements_Pred (object, what, def, ...)
 	local type = Types[object]
-	local implements = adaptive.InSet(Interfaces[type], what)
+	local implements = adaptive.InMap(Interfaces[type], what)
 
 	if implements then
 		local preds = InterfacePreds[type]

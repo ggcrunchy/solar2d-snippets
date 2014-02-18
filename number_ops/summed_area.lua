@@ -42,7 +42,7 @@ local M = {}
 
 --- Getter.
 -- @tparam SummedAreaTable T
--- @treturn uint Width...
+-- @treturn uint Table width...
 -- @treturn uint ...and height.
 function M.GetDims (T)
 	return T.m_w, T.m_h

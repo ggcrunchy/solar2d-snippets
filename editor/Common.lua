@@ -309,11 +309,11 @@ function M.GetTag (etype, on_editor_event)
 		if topts == "sources_and_targets" then
 			local sub_links = {}
 
-			for k in adaptive.IterSet(ret1) do
+			for k in adaptive.IterMap(ret1) do
 				sub_links[k] = "event_target"
 			end
 
-			for k in adaptive.IterSet(ret2) do
+			for k in adaptive.IterMap(ret2) do
 				sub_links[k] = "event_source"
 			end
 

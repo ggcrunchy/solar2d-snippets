@@ -57,7 +57,7 @@ local function NoReclaim () end
 -- * _reclaim_: May be absent, in which case it is a no-op. Called as
 --    reclaim(s)
 -- Any complex iterator state should be cleaned up here. If _reclaim_ must be paranoid that
--- it terminated normally (i.e. that the **for** loop terminated), preparation should be
+-- it terminated normally (namely, that the **for** loop terminated), preparation should be
 -- done in the false branch of _done_.
 --
 -- Afterward this instance is put in the cache.

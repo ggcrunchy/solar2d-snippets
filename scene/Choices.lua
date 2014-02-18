@@ -49,7 +49,6 @@ end
 local Scene = storyboard.newScene()
 
 -- Samples names --
--- Various notes
 local Names = {
 --	"TESTING",
 	"Delaunay",

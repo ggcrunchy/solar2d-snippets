@@ -179,9 +179,9 @@ local function DefTableFunc () end
 -- * **table_func**: Table function. When a new table _t_ is encountered during the print,
 -- the call `table_func(t, "new_table")` is performed; if the same table is found again
 -- later, each such time the call `table_func(t, "cycle")` is made.
--- * name When provided, an early-out check will see if a printout has been performed
+-- * **name** When provided, an early-out check will see if a printout has been performed
 -- with _name_; if so, and if _limit_ has been reached, the printout is a no-op.
--- @uint limit Maximum number of times to allow a printout with _name_; if absent, 1.
+-- * **limit** Maximum number of times to allow a printout with _name_; if absent, 1.
 --
 -- Ignored if _name_ is absent.
 -- @see SetDefaultOutf

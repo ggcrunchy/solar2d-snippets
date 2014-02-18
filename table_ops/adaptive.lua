@@ -37,7 +37,7 @@ local M = {}
 -- @ptable t
 -- @param k
 -- @param v
-function M.AddToSet (t, k, v)
+function M.AddToMap (t, k, v)
 	--
 	local cur = t[k]
 
@@ -80,18 +80,18 @@ function M.Append (t, k, v)
 end
 
 --- DOCME
--- @param set X
+-- @param map X
 -- @param v V
 -- @treturn boolean B
-function M.InSet (set, v)
-	if type(set) == "table" then
-		return set[v] ~= nil
+function M.InMap (map, v)
+	if type(map) == "table" then
+		return map[v] ~= nil
 	else
-		return v ~= nil and set == v
+		return v ~= nil and map == v
 	end
 end
 
---
+-- Iterates nil or singleton posing as array
 local function Single_Array (arr, i)
 	if i == 0 then
 		return 1, arr, true
@@ -109,38 +109,40 @@ function M.IterArray (arr)
 	end
 end
 
---
-local function Single_Set (set, guard)
-	if set ~= guard then
-		return set, false
+-- Iterates nil or singleton posing as map
+local function Single_Map (map, guard)
+	if map ~= guard then
+		return map, false
 	end
 end
 
 --- DOCME
--- @param set X
+-- @param map X
 -- @treturn iterator I
-function M.IterSet (set)
-	if type(set) == "table" then
-		return pairs(set)
+function M.IterMap (map)
+	if type(map) == "table" then
+		return pairs(map)
 	else
-		return Single_Set, set
+		return Single_Map, map
 	end
 end
 
---
+-- Tries to remove a value from the adaptive container, returning nil if it became (or already was) empty
 local function AuxRemove (func, cur, v)
-	local has_elems
+	local has_more
 
 	if type(cur) == "table" then
-		has_elems = func(cur, v)
+		has_more = func(cur, v) ~= nil
 	else
-		has_elems = cur ~= v
+		has_more = cur ~= v
 	end
 
-	return has_elems and cur or nil
+	if has_more then
+		return cur
+	end
 end
 
---
+-- Tries to remove a value from an array-type adaptive container
 local function ArrayRemove (arr, v)
 	for i, elem in ipairs(arr) do
 		if elem == v then
@@ -158,16 +160,16 @@ function M.RemoveFromArray (t, k, v)
 	t[k] = AuxRemove(ArrayRemove, t[k], v)
 end
 
---
-local function SetRemove (set, v)
-	set[v] = nil
+-- Tries to remove a value from a map-type adaptive container
+local function MapRemove (map, v)
+	map[v] = nil
 
-	return next(set)
+	return next(map)
 end
 
 --- DOCME
-function M.RemoveFromSet (t, k, v)
-	t[k] = AuxRemove(SetRemove, t[k], v)
+function M.RemoveFromMap (t, k, v)
+	t[k] = AuxRemove(MapRemove, t[k], v)
 end
 
 -- Export the module.

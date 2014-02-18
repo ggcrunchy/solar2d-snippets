@@ -32,6 +32,9 @@
 
 -- Standard library imports --
 local abs = math.abs
+local ipairs = ipairs
+local log = math.log
+local sqrt = math.sqrt
 
 -- Cached module references --
 local _Bezier2_
