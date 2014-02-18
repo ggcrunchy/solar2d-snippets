@@ -76,7 +76,7 @@ local Perms = setmetatable({
 local Perms12 = setmetatable({}, MT)
 
 for i = 1, 256 do
-	Perms12[i] =  Perms[i] % 12 + 1
+	Perms12[i] = Perms[i] % 12 + 1
 	Perms[i] = Perms[i] + 1
 end
 

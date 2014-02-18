@@ -47,7 +47,7 @@ end
 function M.RoundTo (n, inc)
 	inc = inc or 1
 
-	return floor((n + .5 * inc) / inc) * inc
+	return floor(n / inc + .5) * inc
 end
 
 -- Export the module.
