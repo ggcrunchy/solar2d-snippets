@@ -184,6 +184,7 @@ function Scene:enterScene ()
 		for i = 1, swarm.numChildren do
 			local boid = swarm[i]
 
+			boid.m_fx, boid.m_fy = 0, 0
 			-- Prep boid? (velocity, cum. force, etc.)
 
 			UpdateGrid(grid, boid, Neighborhood, LookAtNeighbors)
