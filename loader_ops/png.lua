@@ -26,54 +26,93 @@
 --
 
 -- Standard library imports --
+local assert = assert
+local byte = string.byte
+local char = string.char
+local concat = table.concat
+local pcall = pcall
+local gmatch = string.gmatch
 local open = io.open
 
 -- Exports --
 local M = {}
 
+-- Helper to read out N bytes
+local function Read (png, n, shift, div)
+	local str = assert(png:read(n), "Unable to read integer")
+	local sum, mul = 0, 2^shift
+
+	for c in gmatch(str) do
+		local num = byte(c)
+
+		if num ~= 0 then
+			sum = sum + mul * num
+		end
+
+		mul = mul / 256
+	end
+
+	return sum
+end
+
+-- Reads out four bytes as an integer
+local function ReadU32 (png)
+	return Read(png, 4, 24)
+end
+
+--- DOCME
+function M.GetDims (name)
+	local png, w, h = open(name, "rb")
+
+	if png then
+		png:read(12)
+
+		if png:read(4) == "IHDR" then
+			w = ReadU32(png)
+			h = ReadU32(png)
+		end
+
+		png:close()
+	end
+
+	return w ~= nil, w, h
+end
+
+--
+local function AuxLoad (png)
+	local bits, bit_len, colors, color_type, data, has_alpha, palette, w, h
+
+	png:read(8) -- PNG signature
+
+	while true do
+		local size = ReadU32(png)
+		local code = png:read(4)
+
+		-- Image Header --
+		if code == "IDHR" then
+			w = ReadU32(png)
+			h = ReadU32(png)
+			bits = png:read(1)
+			color_type = png:read(1)
+
+			png:read(3) -- compression, filter, interlace methods
+
+		-- Animation... --
 --[[
-  PNG = (function() {
-    function PNG(data) {
-      var chunkSize, colors, delayDen, delayNum, frame, i, index, key, section, short, text, _i, _j, _ref;
-      this.data = data;
-      this.pos = 8;
-      this.palette = [];
-      this.imgData = [];
-      this.transparency = {};
-      this.animation = null;
-      this.text = {};
-      frame = null;
-      while (true) {
-        chunkSize = this.readUInt32();
-        section = ((function() {
-          var _i, _results;
-          _results = [];
-          for (i = _i = 0; _i < 4; i = ++_i) {
-            _results.push(String.fromCharCode(this.data[this.pos++]));
-          }
-          return _results;
-        }).call(this)).join('');
-        switch (section) {
-          case 'IHDR':
-            this.width = this.readUInt32();
-            this.height = this.readUInt32();
-            this.bits = this.data[this.pos++];
-            this.colorType = this.data[this.pos++];
-            this.compressionMethod = this.data[this.pos++];
-            this.filterMethod = this.data[this.pos++];
-            this.interlaceMethod = this.data[this.pos++];
-            break;
-          case 'acTL':
+		elseif code == "acTL" then
             this.animation = {
               numFrames: this.readUInt32(),
               numPlays: this.readUInt32() || Infinity,
               frames: []
             };
-            break;
-          case 'PLTE':
-            this.palette = this.read(chunkSize);
-            break;
-          case 'fcTL':
+]]
+		-- Palette --
+		elseif code == "PLTE" then
+			palette = png:read(size)
+
+		-- Frame... --
+--[[
+		elseif code == "fcTL" then
             if (frame) {
               this.animation.frames.push(frame);
             }
@@ -90,19 +129,17 @@ local M = {}
             frame.disposeOp = this.data[this.pos++];
             frame.blendOp = this.data[this.pos++];
             frame.data = [];
-            break;
-          case 'IDAT':
-          case 'fdAT':
-            if (section === 'fdAT') {
-              this.pos += 4;
-              chunkSize -= 4;
-            }
-            data = (frame != null ? frame.data : void 0) || this.imgData;
-            for (i = _i = 0; 0 <= chunkSize ? _i < chunkSize : _i > chunkSize; i = 0 <= chunkSize ? ++_i : --_i) {
-              data.push(this.data[this.pos++]);
-            }
-            break;
-          case 'tRNS':
+]]
+		-- Image Data /  --
+		elseif code == "IDAT" then --or "fdAT" then
+			data = data or {}
+
+--			if frame then else ...
+			data[#data + 1] = png:read(size)
+
+		-- Transparency? --
+--[[
+		elseif code == "tRNS" then
             this.transparency = {};
             switch (this.colorType) {
               case 3:
@@ -120,76 +157,77 @@ local M = {}
               case 2:
                 this.transparency.rgb = this.read(chunkSize);
             }
-            break;
-          case 'tEXt':
+]]
+		-- Textual Information --
+--[[
+		elseif code == "tEXt" then
             text = this.read(chunkSize);
             index = text.indexOf(0);
             key = String.fromCharCode.apply(String, text.slice(0, index));
             this.text[key] = String.fromCharCode.apply(String, text.slice(index + 1));
-            break;
-          case 'IEND':
-            if (frame) {
-              this.animation.frames.push(frame);
-            }
-            this.colors = (function() {
-              switch (this.colorType) {
-                case 0:
-                case 3:
-                case 4:
-                  return 1;
-                case 2:
-                case 6:
-                  return 3;
-              }
-            }).call(this);
-            this.hasAlphaChannel = (_ref = this.colorType) === 4 || _ref === 6;
-            colors = this.colors + (this.hasAlphaChannel ? 1 : 0);
-            this.pixelBitlength = this.bits * colors;
-            this.colorSpace = (function() {
-              switch (this.colors) {
-                case 1:
-                  return 'DeviceGray';
-                case 3:
-                  return 'DeviceRGB';
-              }
-            }).call(this);
-            this.imgData = new Uint8Array(this.imgData);
-            return;
-          default:
-            this.pos += chunkSize;
-        }
-        this.pos += 4;
-        if (this.pos > this.data.length) {
-          throw new Error("Incomplete or corrupt PNG file");
-        }
-      }
-      return;
-    }
+]]
+		-- Image End --
+		elseif code == "IEND" then
+			data = concat(data, "")
 
-    PNG.prototype.read = function(bytes) {
-      var i, _i, _results;
-      _results = [];
-      for (i = _i = 0; 0 <= bytes ? _i < bytes : _i > bytes; i = 0 <= bytes ? ++_i : --_i) {
-        _results.push(this.data[this.pos++]);
-      }
-      return _results;
-    };
+            -- if (frame) this.animation.frames.push(frame);
 
-    PNG.prototype.readUInt32 = function() {
-      var b1, b2, b3, b4;
-      b1 = this.data[this.pos++] << 24;
-      b2 = this.data[this.pos++] << 16;
-      b3 = this.data[this.pos++] << 8;
-      b4 = this.data[this.pos++];
-      return b1 | b2 | b3 | b4;
-    };
+			if color_type == 0 or color_type == 3 or color_type == 4 then
+				colors = 1
+			elseif color_type == 2 or color_type == 6 then
+				colors = 3
+			end
 
-    PNG.prototype.readUInt16 = function() {
-      var b1, b2;
-      b1 = this.data[this.pos++] << 8;
-      b2 = this.data[this.pos++];
-      return b1 | b2;
-    };
+			has_alpha = color_type == 4 or color_type == 6
+			colors = colors + (has_alpha and 1 or 0)
+			bit_len = bits * colors
+			
+			-- color space = (colors == 1): "gray" / (colors == 3) : "rgb"
+
+			break
+
+		-- Default --
+		else
+			png:read(size)
+		end
+
+		png:read(4) -- CRC
+
+		-- assert(seek(cur) <= seek(end), "Incomplete or corrupt PNG file")
+	end
+
+	--
+	return function(what, arg1, arg2)
+		if what == "get_pixel" then
+			-- at (arg1, arg2)
+		else
+			-- get frame, set frame, has alpha, etc.
+		end
+	end
+end
+
+--- DOCME
+function M.Load (name)
+	--
+	local png, func = open(name, "rb")
+
+	if png then
+		local ok, result = pcall(AuxLoad, png)
+
+		png:close()
+
+		if ok then
+			func = result
+		else
+			return nil, result
+		end
+	end
+
+	return func
+end
+--[[
+  PNG = (function() {
+
 
     PNG.prototype.decodePixels = function(data) {
       var byte, c, col, i, left, length, p, pa, paeth, pb, pc, pixelBytes, pixels, pos, row, scanlineLength, upper, upperLeft, _i, _j, _k, _l, _m;
@@ -331,14 +369,9 @@ local M = {}
       this.copyToImageData(ret, this.decodePixels());
       return ret;
     };
+]]
 
-    scratchCanvas = document.createElement('canvas');
-
-    scratchCtx = scratchCanvas.getContext('2d');
-
-	-- SNIP makeImage
-
-    PNG.prototype.decodeFrames = function(ctx) {
+--[[
       var frame, i, imageData, pixels, _i, _len, _ref, _results;
       if (!this.animation) {
         return;
@@ -354,9 +387,6 @@ local M = {}
         _results.push(frame.image = makeImage(imageData));
       }
       return _results;
-    };
-
-    -- snip animation and rendering (not purpose of this version)
 ]]
 
 -- Export the module.
