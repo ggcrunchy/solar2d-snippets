@@ -116,9 +116,6 @@ local M = {}
 -- N.B. This, and other operators defined herein, do not (YET?) correct for negative arguments
 M.And = band
 
---- DOCME
-M.BNot = bnot
-
 --- Predicate.
 -- @treturn boolean Bit library exists?
 function M.HasBitLib ()
@@ -127,6 +124,9 @@ end
 
 --- DOCME
 M.LShift = lshift
+
+--- DOCME
+M.Not = bnot
 
 --- DOCME
 M.Or = bor
