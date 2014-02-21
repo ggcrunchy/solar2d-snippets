@@ -34,6 +34,7 @@ local concat = table.concat
 local floor = math.floor
 local gmatch = string.gmatch
 local open = io.open
+local pcall = pcall
 local sub = string.sub
 local unpack = unpack
 
@@ -179,7 +180,7 @@ local function DecodePixels (data, bit_len, w, h)
 		return {}
 	end
 
-	data = zlib.NewFlateStream(data).GetBytes()
+	data = zlib.NewFlateStream(data):GetBytes()
 
 	local pixel_bytes = bit_len / 8
 	local scanline_len = pixel_bytes * w
@@ -331,15 +332,21 @@ end
 
 --- DOCME
 function M.Load (name)
-	local png, contents = open(name, "rb")
+	local png, result = open(name, "rb")
 
 	if png then
-		contents = png:read("*a")
+		local contents, ok = png:read("*a")
 
 		png:close()
+
+		ok, result = pcall(AuxLoad, contents)
+
+		if ok then
+			return result
+		end
 	end
 
-	return contents and AuxLoad(contents)
+	return nil, result
 end
 
 -- Export the module.

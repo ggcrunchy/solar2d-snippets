@@ -126,6 +126,11 @@ var_dump.SetDefaultOutf(printf)
 function vdump (var, name, limit)
 	var_dump.Print(var, name and { name = name, limit = limit })
 end
-
+--[[
+local png = require("loader_ops.png")
+local func = png.Load(system.pathForFile("UI_Assets/Arrow.png"))
+print(func("get_dims"))
+local data = func("get_pixels")
+--]]
 -- Kick off the app.
 scenes.GoToScene{ name = "scene.Intro" }

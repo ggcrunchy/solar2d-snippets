@@ -53,14 +53,18 @@ local operators = require("bitwise_ops.operators")
 local band
 
 if operators.HasBitLib() then -- Bit library available
-	band = operators.And
+	band = operators.band
 else -- Otherwise, make equivalent for zlib purposes
 	function band (a, n)
 		return a % (n + 1)
 	end
 end
-
+--[[
+local operators = require("plugin.bit")
+band=operators.band
+]]
 -- Imports --
+local band_strict = operators.band
 local bnot = operators.bnot
 local bor = operators.bor
 local lshift = operators.lshift
@@ -79,7 +83,7 @@ local function Slice (t, from, to)
 	local slice = {}
 
 	for i = from, to do
-		slice[#slice] = t[i]
+		slice[#slice + 1] = t[i]
 	end
 
 	return slice
@@ -157,7 +161,11 @@ local function GenHuffmanTable (lengths)
 end
 
 -- --
-local FlateStream = { __index = DecodeStream }
+local FlateStream = {}
+
+FlateStream.__index = FlateStream
+
+setmetatable(FlateStream, { __index = DecodeStream })
 
 --
 local function AuxGet (FS, n)
@@ -188,9 +196,10 @@ end
 function FlateStream:GetCode (codes)
 	local max_len = codes.max_len
 	local buf, size = AuxGet(self, max_len)
+--print(band(buf, lshift(1, max_len) - 1) + 1, #codes)
 	local code = codes[band(buf, lshift(1, max_len) - 1) + 1]
 	local clen, cval = rshift(code, 16), band(code, 0xFFFF)
-
+--print(size, clen)
 	assert(size ~= 0 and size >= clen and clen ~= 0, "Bad encoding in flate stream")
 
 	self.m_code_buf = rshift(buf, clen)
@@ -218,16 +227,21 @@ local function Compressed (FS, fixed_codes)
 
 		-- Build the code lengths code table.
 		local map, clc_lens = lut.CodeLenCodeMap, {}
+		local count = FS:GetBits(4) + 4
 
-		for i = 1, FS:GetBits(4) + 4 do
-			clc_lens[map[i]] = FS:GetBits(3)
+		for i = 1, count do
+			clc_lens[map[i] + 1] = FS:GetBits(3)
+		end
+
+		for i = count + 1, #map do
+			clc_lens[map[i] + 1] = 0
 		end
 
 		local clc_tab = GenHuffmanTable(clc_lens)
 
 		-- Build the literal and distance code tables.
 		local i, len, codes, code_lens = 1, 0, num_lit_codes + num_dist_codes, {}
-
+print("A")
 		while i <= codes do
 			local code = FS:GetCode(clc_tab)
 
@@ -241,7 +255,7 @@ local function Compressed (FS, fixed_codes)
 				len, i, code_lens[i] = code, i + 1, code
 			end
 		end
-
+print("B")
 		return GenHuffmanTable(Slice(code_lens, 1, num_lit_codes)), GenHuffmanTable(Slice(code_lens, num_lit_codes + 1, codes))
 	end
 end
@@ -300,7 +314,7 @@ function FlateStream:ReadBlock ()
 
 	-- Compressed block.
 	local lit_ct, dist_ct = Compressed(self, hdr == 1)
-
+print("C")
 	while true do
 		repeat
 			local code = self:GetCode(lit_ct)
@@ -323,6 +337,7 @@ function FlateStream:ReadBlock ()
 			end
 		until true -- simulate "continue" with "break"
 	end
+print("D")
 end
 
 --- DOCME
@@ -332,7 +347,7 @@ function M.NewFlateStream (bytes)
 	assert(cmf ~= -1 and flg ~= -1, "Invalid header in flate stream")
     assert(band(cmf, 0x0f) == 0x08, "Unknown compression method in flate stream")
     assert((lshift(cmf, 8) + flg) % 31 == 0, "Bad FCHECK in flate stream")
-    assert(band(flg, 0x20) == 0, "FDICT bit set in flate stream")
+    assert(band_strict(flg, 0x20) == 0, "FDICT bit set in flate stream")
 
 	local fs = AuxNewStream(FlateStream)
 
