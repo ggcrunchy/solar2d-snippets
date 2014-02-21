@@ -132,7 +132,7 @@ local DecodeAlgorithm = {
 	end,
 
 	-- 2 --
-	function(byte, _, pixels, i, _, pixel_bytes, scanline_len, row)
+	function(byte, pixels, i, _, pixel_bytes, scanline_len, row)
 		local col = GetCol(i, pixel_bytes)
 		local upper = row > 0 and GetUpper(pixels, i, pixel_bytes, row, col, scanline_len) or 0
 
@@ -187,7 +187,7 @@ local function DecodePixels (data, bit_len, w, h)
 	local pixels, len, row, pos = {}, #data, 0, 1, 1
 
 	while pos <= len do
-		local algo = assert(data[pos] + 1, "Invalid filter algorithm")
+		local algo = assert(DecodeAlgorithm[data[pos] + 1], "Invalid filter algorithm")
 
 		pos = pos + 1
 	

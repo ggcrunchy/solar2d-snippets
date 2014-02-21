@@ -123,12 +123,22 @@ function M.NewDecodeStream ()
 end
 
 --
-local function GenHuffmanTable (lengths)
+local function GenHuffmanTable (from)
+	-- Compact the lengths.
+	local lengths = {}
+
+	for i, len in ipairs(from) do
+		if len > 0 then
+			lengths[#lengths + 1] = i - 1
+			lengths[#lengths + 1] = len
+		end
+	end
+
 	-- Find max code length.
 	local max_len = 0
 
-	for _, len in ipairs(lengths) do
-		max_len = max(len, max_len)
+	for i = 2, #lengths, 2 do
+		max_len = max(lengths[i], max_len)
 	end
 
 	-- Build the table.
@@ -136,8 +146,8 @@ local function GenHuffmanTable (lengths)
 	local code, skip = 0, 2
 
 	for i = 1, max_len do
-		for j, len in ipairs(lengths) do
-			if i == len then
+		for j = 1, #lengths, 2 do
+			if i == lengths[j + 1] then
 				-- Bit-reverse the code.
 				local code2, t = 0, code
 
@@ -146,8 +156,10 @@ local function GenHuffmanTable (lengths)
 				end
 
 				-- Fill the table entries.
+				local slot = lengths[j]
+
 				for k = code2 + 1, size, skip do
-					codes[k] = bor(lshift(i, 16), j)
+					codes[k] = bor(lshift(i, 16), slot)
 				end
 
 				code = code + 1
