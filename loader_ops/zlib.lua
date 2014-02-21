@@ -42,6 +42,7 @@ local byte = string.byte
 local char = string.char
 local ipairs = ipairs
 local max = math.max
+local min = math.min
 local setmetatable = setmetatable
 
 -- Modules --
@@ -73,112 +74,43 @@ local DecodeStream = {}
 
 DecodeStream.__index = DecodeStream
 
---- DOCME (seems pointless in Lua...)
-function DecodeStream:EnsureBuffer (requested)
---[[
-      var buffer = this.buffer;
-      var current = buffer ? buffer.byteLength : 0;
-      if (requested < current)
-        return buffer;
-      var size = 512;
-      while (size < requested)
-        size <<= 1;
-      var buffer2 = new Uint8Array(size);
-      for (var i = 0; i < current; ++i)
-        buffer2[i] = buffer[i];
-      return this.buffer = buffer2;
-]]
-end
+--
+local function Slice (t, from, to)
+	local slice = {}
 
---- DOCME
-function DecodeStream:GetByte ()
---[[
-      var pos = this.pos;
-      while (this.bufferLength <= pos) {
-        if (this.eof)
-          return null;
-        this.readBlock();
-      }
-      return this.buffer[this.pos++];
-]]
+	for i = from, to do
+		slice[#slice] = t[i]
+	end
+
+	return slice
 end
 
 --- DOCME
 function DecodeStream:GetBytes (length)
---[[
-      var pos = this.pos;
+	local pos, up_to = self.m_pos, 1 / 0
 
-      if (length) {
-        this.ensureBuffer(pos + length);
-        var end = pos + length;
+	if length then
+		up_to = pos + length
 
-        while (!this.eof && this.bufferLength < end)
-          this.readBlock();
+		while not self.m_eof and #self < up_to do
+			self:ReadBlock()
+		end
+	else
+		while not self.m_eof do
+			self:ReadBlock()
+		end
+	end
 
-        var bufEnd = this.bufferLength;
-        if (end > bufEnd)
-          end = bufEnd;
-      } else {
-        while (!this.eof)
-          this.readBlock();
+	up_to = min(#self, up_to)
 
-        var end = this.bufferLength;
-      }
+	self.m_pos = up_to
 
-      this.pos = end;
-      return this.buffer.subarray(pos, end);
-]]
-end
-
---- DOCME
-function DecodeStream:GetChar ()
---[[
-      var pos = this.pos;
-      while (this.bufferLength <= pos) {
-        if (this.eof)
-          return null;
-        this.readBlock();
-      }
-      return String.fromCharCode(this.buffer[this.pos++]);
-]]
-end
-
---- DOCME
-function DecodeStream:LookChar ()
---[[
-      var pos = this.pos;
-      while (this.bufferLength <= pos) {
-        if (this.eof)
-          return null;
-        this.readBlock();
-      }
-      return String.fromCharCode(this.buffer[this.pos]);
-]]
-end
-
---- DOCME
-function DecodeStream:MakeSubStream (start, length, dict)
---[[
-      var end = start + length;
-      while (this.bufferLength <= end && !this.eof)
-        this.readBlock();
-      return new Stream(this.buffer, start, length, dict);
-]]
-end
-
---- DOCME
-function DecodeStream:Reset ()
-	self.m_pos = 0
-end
-
---- DOCME
-function DecodeStream:Skip (n)
-	self.m_pos = self.m_pos + max(n or 1, 1)
+	return Slice(self, pos, up_to - 1)
 end
 
 --
 local function AuxNewStream (mt)
-	return setmetatable({ m_pos = 0, m_buf_len = 0, m_eof = false }, mt)
+	return setmetatable({ m_pos = 1, m_eof = false }, mt)
 end
 
 --- DOCME
@@ -227,76 +159,53 @@ end
 -- --
 local FlateStream = { __index = DecodeStream }
 
---- DOCME
-function FlateStream:GetBits (bits)
---[[
-    var codeSize = this.codeSize;
-    var codeBuf = this.codeBuf;
-    var bytes = this.bytes;
-    var bytesPos = this.bytesPos;
+--
+local function AuxGet (FS, n)
+	local buf, size, bytes, pos = FS.m_code_buf, FS.m_code_size, FS.m_bytes, FS.m_bytes_pos
 
-    var b;
-    while (codeSize < bits) {
-      if (typeof (b = bytes[bytesPos++]) == 'undefined')
-        error('Bad encoding in flate stream');
-      codeBuf |= b << codeSize;
-      codeSize += 8;
-    }
-    b = codeBuf & ((1 << bits) - 1);
-    this.codeBuf = codeBuf >> bits;
-    this.codeSize = codeSize -= bits;
-    this.bytesPos = bytesPos;
-    return b;
-]]
+	while size < n do
+		buf = bor(buf, lshift(byte(bytes, pos), size))
+		size, pos = size + 8, pos + 1
+	end
+
+	FS.m_bytes_pos = pos
+
+	return buf, size
 end
 
 --- DOCME
-function FlateStream:GetCode (t)
---[[
-    var codes = table[0];
-    var maxLen = table[1];
-    var codeSize = this.codeSize;
-    var codeBuf = this.codeBuf;
-    var bytes = this.bytes;
-    var bytesPos = this.bytesPos;
+function FlateStream:GetBits (bits)
+	local buf, size = AuxGet(self, bits)
+	local bval = band(buf, lshift(1, bits) - 1)
 
-    while (codeSize < maxLen) {
-      var b;
-      if (typeof (b = bytes[bytesPos++]) == 'undefined')
-        error('Bad encoding in flate stream');
-      codeBuf |= (b << codeSize);
-      codeSize += 8;
-    }
-    var code = codes[codeBuf & ((1 << maxLen) - 1)];
-    var codeLen = code >> 16;
-    var codeVal = code & 0xffff;
-    if (codeSize == 0 || codeSize < codeLen || codeLen == 0)
-      error('Bad encoding in flate stream');
-    this.codeBuf = (codeBuf >> codeLen);
-    this.codeSize = (codeSize - codeLen);
-    this.bytesPos = bytesPos;
-    return codeVal;
-]]
+	self.m_code_buf = rshift(buf, bits)
+	self.m_code_size = size - bits
+
+	return bval
+end
+
+--- DOCME
+function FlateStream:GetCode (codes)
+	local max_len = codes.max_len
+	local buf, size = AuxGet(self, max_len)
+	local code = codes[band(buf, lshift(1, max_len) - 1) + 1]
+	local clen, cval = rshift(code, 16), band(code, 0xFFFF)
+
+	assert(size ~= 0 and size >= clen and clen ~= 0, "Bad encoding in flate stream")
+
+	self.m_code_buf = rshift(buf, clen)
+	self.m_code_size = size - clen
+
+	return cval
 end
 
 --
 local function Repeat (stream, array, i, len, offset, what)
---[[
-      var repeat = stream.getBits(len) + offset;
-      while (repeat-- > 0)
-        array[i++] = what; -- Freaking JavaScript! (i is... ugh)
-]]
-end
-
---
-local function Slice (t, from, to)
-	local slice = {}
-
-	for i = from, to do
-		slice[#slice] = t[i]
+	for _ = 1, stream:GetBits(len) + offset do
+		array[i], i = what, i + 1
 	end
 
-	return slice
+	return i
 end
 
 --
@@ -315,70 +224,47 @@ local function Compressed (FS, fixed_codes)
 		end
 
 		local clc_tab = GenHuffmanTable(clc_lens)
---[=[
-      // build the literal and distance code tables
-      var len = 0;
-      var i = 0;
-      var codes = numLitCodes + numDistCodes;
-      var codeLengths = new Array(codes);
-      while (i < codes) {
-        var code = this.getCode(codeLenCodeTab);
-        if (code == 16) {
-          repeat(this, codeLengths, 2, 3, len);
-        } else if (code == 17) {
-          repeat(this, codeLengths, 3, 3, len = 0);
-        } else if (code == 18) {
-          repeat(this, codeLengths, 7, 11, len = 0);
-        } else {
-          codeLengths[i++] = len = code;
-        }
-      }
 
-      litCodeTable =
-        this.generateHuffmanTable(codeLengths.slice(0, numLitCodes));
-      distCodeTable =
-        this.generateHuffmanTable(codeLengths.slice(numLitCodes, codes));
-]=]
+		-- Build the literal and distance code tables.
+		local i, len, codes, code_lens = 1, 0, num_lit_codes + num_dist_codes, {}
+
+		while i <= codes do
+			local code = FS:GetCode(clc_tab)
+
+			if code == 16 then
+				i = Repeat(FS, code_lens, i, 2, 3, len)
+			elseif code == 17 then
+				len, i = 0, Repeat(FS, code_lens, i, 3, 3, 0)
+			elseif code == 18 then
+				len, i = 0, Repeat(FS, code_lens, i, 7, 11, 0)
+			else
+				len, i, code_lens[i] = code, i + 1, code
+			end
+		end
+
+		return GenHuffmanTable(Slice(code_lens, 1, num_lit_codes)), GenHuffmanTable(Slice(code_lens, num_lit_codes + 1, codes))
+	end
 end
 
 --
 local function Uncompressed (FS)
---[[
-      var bytes = this.bytes;
-      var bytesPos = this.bytesPos;
-      var b;
+	local bytes, pos = FS.m_bytes, FS.m_bytes_pos
+	local b1, b2, b3, b4 = byte(bytes, pos, pos + 3)
+	local block_len = bor(b1, lshift(b2, 8))
+	local check = bor(b3, lshift(b4, 8))
 
-      if (typeof (b = bytes[bytesPos++]) == 'undefined')
-        error('Bad block header in flate stream');
-      var blockLen = b;
-      if (typeof (b = bytes[bytesPos++]) == 'undefined')
-        error('Bad block header in flate stream');
-      blockLen |= (b << 8);
-      if (typeof (b = bytes[bytesPos++]) == 'undefined')
-        error('Bad block header in flate stream');
-      var check = b;
-      if (typeof (b = bytes[bytesPos++]) == 'undefined')
-        error('Bad block header in flate stream');
-      check |= (b << 8);
-      if (check != (~blockLen & 0xffff))
-        error('Bad uncompressed block length in flate stream');
+	assert(check == band(bnot(block_len), 0xFFFF), "Bad uncompressed block length in flate stream")
 
-      this.codeBuf = 0;
-      this.codeSize = 0;
+	pos = pos + 4
 
-      var bufferLength = this.bufferLength;
-      var buffer = this.ensureBuffer(bufferLength + blockLen);
-      var end = bufferLength + blockLen;
-      this.bufferLength = end;
-      for (var n = bufferLength; n < end; ++n) {
-        if (typeof (b = bytes[bytesPos++]) == 'undefined') {
-          this.eof = true;
-          break;
-        }
-        buffer[n] = b;
-      }
-      this.bytesPos = bytesPos;
-]]
+	FS.m_code_buf, FS.m_code_size = 0, 0
+
+	for _ = 1, block_len do
+		-- EOF?
+		FS[#FS + 1], pos = byte(bytes, pos), pos + 1
+	end
+
+	FS.m_bytes_pos = pos
 end
 
 --
@@ -415,78 +301,28 @@ function FlateStream:ReadBlock ()
 	-- Compressed block.
 	local lit_ct, dist_ct = Compressed(self, hdr == 1)
 
-	local buffer = self.m_buffer
-	local limit, pos = buffer and self.m_buf_len or 0, self.m_buf_len
-
 	while true do
 		repeat
 			local code = self:GetCode(lit_ct)
 
 			if code < 256 then
-				if pos + 1 >= limit then
-					-- ensure buffer
-					-- limit = buffer length
-				end
-
-				buffer[pos], pos = code, pos + 1
+				self[#self + 1] = code
 
 				break
 			elseif code == 256 then
-				self.m_buf_len = pos
-
 				return
 			end
 
 			local len = GetAmount(self, lut.LengthDecode, code - 257)
 			local dist = GetAmount(self, lut.DistDecode, self:GetCode(dist_ct))
+			local pos = #self
+			local from = pos - dist
 
-			if pos + len >= limit then
-				-- Needed?
+			for i = 1, len do
+				self[pos + i] = self[from + i]
 			end
-
-			for _ = 1, len do
-				buffer[pos], pos = buffer[pos - dist], pos + 1
-			end
-		until true -- to simulate "continue" with "break"
+		until true -- simulate "continue" with "break"
 	end
---[[
-    var buffer = this.buffer;
-    var limit = buffer ? buffer.length : 0;
-    var pos = this.bufferLength;
-    while (true) {
-      var code1 = this.getCode(litCodeTable);
-      if (code1 < 256) {
-        if (pos + 1 >= limit) {
-          buffer = this.ensureBuffer(pos + 1);
-          limit = buffer.length;
-        }
-        buffer[pos++] = code1;
-        continue;
-      }
-      if (code1 == 256) {
-        this.bufferLength = pos;
-        return;
-      }
-      code1 -= 257;
-      code1 = lengthDecode[code1];
-      var code2 = code1 >> 16;
-      if (code2 > 0)
-        code2 = this.getBits(code2);
-      var len = (code1 & 0xffff) + code2;
-      code1 = this.getCode(distCodeTable);
-      code1 = distDecode[code1];
-      code2 = code1 >> 16;
-      if (code2 > 0)
-        code2 = this.getBits(code2);
-      var dist = (code1 & 0xffff) + code2;
-      if (pos + len >= limit) {
-        buffer = this.ensureBuffer(pos + len);
-        limit = buffer.length;
-      }
-      for (var k = 0; k < len; ++k, ++pos)
-        buffer[pos] = buffer[pos - dist];
-    }
-]]
 end
 
 --- DOCME
