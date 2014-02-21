@@ -32,9 +32,9 @@ local byte = string.byte
 local char = string.char
 local concat = table.concat
 local floor = math.floor
-local pcall = pcall
 local gmatch = string.gmatch
 local open = io.open
+local sub = string.sub
 local unpack = unpack
 
 -- Modules --
@@ -43,12 +43,16 @@ local zlib = require("loader_ops.zlib")
 -- Exports --
 local M = {}
 
+--
+local function Sub (str, pos, n)
+	return sub(str, pos, pos + n - 1)
+end
+
 -- Helper to read out N bytes
-local function Read (png, n, shift, div)
-	local str = assert(png:read(n), "Unable to read integer")
+local function Read (png, pos, n, shift)
 	local sum, mul = 0, 2^shift
 
-	for c in gmatch(str) do
+	for c in gmatch(Sub(png, pos, n), ".") do
 		local num = byte(c)
 
 		if num ~= 0 then
@@ -62,8 +66,8 @@ local function Read (png, n, shift, div)
 end
 
 -- Reads out four bytes as an integer
-local function ReadU32 (png)
-	return Read(png, 4, 24)
+local function ReadU32 (png, pos)
+	return Read(png, pos, 4, 24)
 end
 
 --- DOCME
@@ -179,7 +183,7 @@ local function DecodePixels (data, bit_len, w, h)
 
 	local pixel_bytes = bit_len / 8
 	local scanline_len = pixel_bytes * w
-	local pixels, len, row, pos, c = {}, #data, 0, 1, 1
+	local pixels, len, row, pos = {}, #data, 0, 1, 1
 
 	while pos <= len do
 		local algo = assert(data[pos] + 1, "Invalid filter algorithm")
@@ -239,33 +243,42 @@ local function CopyToImageData (data, bit_len, colors, has_alpha, palette, n)
 end
 
 --
+local function ReadU8 (str, pos)
+	return byte(sub(str, pos))
+end
+
+--
 local function AuxLoad (png)
 	local bits, bit_len, colors, color_type, data, has_alpha, palette, w, h
 
-	png:read(8) -- PNG signature
+	assert(sub(png, 1, 8) == "\137\080\078\071\013\010\026\010", "Image is not a PNG")
+
+	local pos, total = 9, #png
 
 	while true do
-		local size = ReadU32(png)
-		local code = png:read(4)
+		local size = ReadU32(png, pos)
+		local code = Sub(png, pos + 4, 4)
+
+		pos = pos + 8
 
 		-- Image Header --
-		if code == "IDHR" then
-			w = ReadU32(png)
-			h = ReadU32(png)
-			bits = png:read(1)
-			color_type = png:read(1)
+		if code == "IHDR" then
+			w = ReadU32(png, pos)
+			h = ReadU32(png, pos + 4)
+			bits = ReadU8(png, pos + 8)
+			color_type = ReadU8(png, pos + 9)
 
-			png:read(3) -- compression, filter, interlace methods
+			-- compression, filter, interlace methods
 
 		-- Palette --
 		elseif code == "PLTE" then
-			palette = png:read(size)
+			palette = Sub(png, pos, size)
 
 		-- Image Data --
 		elseif code == "IDAT" then
 			data = data or {}
 
-			data[#data + 1] = png:read(size)
+			data[#data + 1] = Sub(png, pos, size)
 
 		-- Image End --
 		elseif code == "IEND" then
@@ -284,15 +297,11 @@ local function AuxLoad (png)
 			-- color space = (colors == 1): "gray" / (colors == 3) : "rgb"
 
 			break
-
-		-- Default --
-		else
-			png:read(size)
 		end
 
-		png:read(4) -- CRC
+		pos = pos + size + 4 -- Chunk + CRC
 
-		-- assert(seek(cur) <= seek(end), "Incomplete or corrupt PNG file")
+		assert(pos <= total, "Incomplete or corrupt PNG file")
 	end
 
 	--
@@ -322,22 +331,15 @@ end
 
 --- DOCME
 function M.Load (name)
-	--
-	local png, func = open(name, "rb")
+	local png, contents = open(name, "rb")
 
 	if png then
-		local ok, result = pcall(AuxLoad, png)
+		contents = png:read("*a")
 
 		png:close()
-
-		if ok then
-			func = result
-		else
-			return nil, result
-		end
 	end
 
-	return func
+	return contents and AuxLoad(contents)
 end
 
 -- Export the module.
