@@ -37,10 +37,10 @@ local func_ops = require("tektite.func_ops")
 local operators = require("bitwise_ops.operators")
 
 -- Imports --
-local band = operators.And
-local bor = operators.Or
-local lshift = operators.LShift
-local rshift = operators.RShift
+local band = operators.band
+local bor = operators.bor
+local lshift = operators.lshift
+local rshift = operators.rshift
 
 -- Cookies --
 local _set_name = {}

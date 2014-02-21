@@ -27,6 +27,9 @@
 local concat = table.concat
 local reverse = string.reverse
 
+-- Exports --
+local M = {}
+
 -- --
 local Acc
 
@@ -36,6 +39,11 @@ function M.Binary (n, block_size, pad)
 		return "0"
 	else
 		Acc = Acc or {}
+
+		--
+		if n < 0 then
+			n = n % 2^32
+		end
 
 		--
 		local bit, pos, size = 1, 0, (block_size or 4) + 1

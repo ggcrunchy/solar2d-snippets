@@ -160,8 +160,8 @@ do
 	local G3 = 3 * G - 1
 
 	if operators.HasBitLib() then -- Bit library available
-		band = operators.And
-		bor = operators.Or
+		band = operators.band
+		bor = operators.bor
 	else -- Otherwise, make 1-bit equivalents
 		local min = math.min
 

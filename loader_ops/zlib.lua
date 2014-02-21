@@ -60,10 +60,10 @@ else -- Otherwise, make equivalent for zlib purposes
 end
 
 -- Imports --
-local bnot = operators.Not
-local bor = operators.Or
-local lshift = operators.LShift
-local rshift = operators.RShift
+local bnot = operators.bnot
+local bor = operators.bor
+local lshift = operators.lshift
+local rshift = operators.rshift
 
 -- Exports --
 local M = {}
@@ -280,7 +280,7 @@ function FlateStream:GetCode (t)
 end
 
 --
-local function Repeat (stream, array, len, offset, what)
+local function Repeat (stream, array, i, len, offset, what)
 --[[
       var repeat = stream.getBits(len) + offset;
       while (repeat-- > 0)
@@ -288,18 +288,62 @@ local function Repeat (stream, array, len, offset, what)
 ]]
 end
 
---- DOCME
-function FlateStream:ReadBlock ()
-	-- Read block header.
-	local hdr = self:GetBits(3)
+--
+local function Slice (t, from, to)
+	local slice = {}
 
-	if band(hdr, 1) ~= 0 then
-		self.m_eof = true
+	for i = from, to do
+		slice[#slice] = t[i]
 	end
 
-	hdr = rshift(hdr, 1)
+	return slice
+end
+
+--
+local function Compressed (FS, fixed_codes)
+	if fixed_codes then
+		return lut.FixedListCodeTab, lut.FixedDistCodeTab
+	else
+		local num_lit_codes = FS:GetBits(5) + 257
+		local num_dist_codes = FS:GetBits(5) + 1
+
+		-- Build the code lengths code table.
+		local map, clc_lens = lut.CodeLenCodeMap, {}
+
+		for i = 1, FS:GetBits(4) + 4 do
+			clc_lens[map[i]] = FS:GetBits(3)
+		end
+
+		local clc_tab = GenHuffmanTable(clc_lens)
 --[=[
-    if (hdr == 0) { // uncompressed block
+      // build the literal and distance code tables
+      var len = 0;
+      var i = 0;
+      var codes = numLitCodes + numDistCodes;
+      var codeLengths = new Array(codes);
+      while (i < codes) {
+        var code = this.getCode(codeLenCodeTab);
+        if (code == 16) {
+          repeat(this, codeLengths, 2, 3, len);
+        } else if (code == 17) {
+          repeat(this, codeLengths, 3, 3, len = 0);
+        } else if (code == 18) {
+          repeat(this, codeLengths, 7, 11, len = 0);
+        } else {
+          codeLengths[i++] = len = code;
+        }
+      }
+
+      litCodeTable =
+        this.generateHuffmanTable(codeLengths.slice(0, numLitCodes));
+      distCodeTable =
+        this.generateHuffmanTable(codeLengths.slice(numLitCodes, codes));
+]=]
+end
+
+--
+local function Uncompressed (FS)
+--[[
       var bytes = this.bytes;
       var bytesPos = this.bytesPos;
       var b;
@@ -334,52 +378,78 @@ function FlateStream:ReadBlock ()
         buffer[n] = b;
       }
       this.bytesPos = bytesPos;
-      return;
-    }
+]]
+end
 
-    var litCodeTable;
-    var distCodeTable;
-    if (hdr == 1) { // compressed block, fixed codes
-      litCodeTable = fixedLitCodeTab;
-      distCodeTable = fixedDistCodeTab;
-    } else if (hdr == 2) { // compressed block, dynamic codes
-      var numLitCodes = this.getBits(5) + 257;
-      var numDistCodes = this.getBits(5) + 1;
-      var numCodeLenCodes = this.getBits(4) + 4;
+--
+local function GetAmount (FS, t, code)
+	code = t[code + 1]
 
-      // build the code lengths code table
-      var codeLenCodeLengths = Array(codeLenCodeMap.length);
-      var i = 0;
-      while (i < numCodeLenCodes)
-        codeLenCodeLengths[codeLenCodeMap[i++]] = this.getBits(3);
-      var codeLenCodeTab = this.generateHuffmanTable(codeLenCodeLengths);
+	local code2 = rshift(code, 16)
 
-      // build the literal and distance code tables
-      var len = 0;
-      var i = 0;
-      var codes = numLitCodes + numDistCodes;
-      var codeLengths = new Array(codes);
-      while (i < codes) {
-        var code = this.getCode(codeLenCodeTab);
-        if (code == 16) {
-          repeat(this, codeLengths, 2, 3, len);
-        } else if (code == 17) {
-          repeat(this, codeLengths, 3, 3, len = 0);
-        } else if (code == 18) {
-          repeat(this, codeLengths, 7, 11, len = 0);
-        } else {
-          codeLengths[i++] = len = code;
-        }
-      }
+	if code2 > 0 then
+		code2 = FS:GetBits(code2)
+	end
 
-      litCodeTable =
-        this.generateHuffmanTable(codeLengths.slice(0, numLitCodes));
-      distCodeTable =
-        this.generateHuffmanTable(codeLengths.slice(numLitCodes, codes));
-    } else {
-      error('Unknown block type in flate stream');
-    }
+	return band(code, 0xFFFF) + code2
+end
 
+--- DOCME
+function FlateStream:ReadBlock ()
+	-- Read block header.
+	local hdr = self:GetBits(3)
+
+	if band(hdr, 1) ~= 0 then
+		self.m_eof = true
+	end
+
+	hdr = rshift(hdr, 1)
+
+	assert(hdr < 3, "Unknown block type in flate stream")
+
+	-- Uncompressed block.
+	if hdr == 0 then
+		return Uncompressed(self)
+	end
+
+	-- Compressed block.
+	local lit_ct, dist_ct = Compressed(self, hdr == 1)
+
+	local buffer = self.m_buffer
+	local limit, pos = buffer and self.m_buf_len or 0, self.m_buf_len
+
+	while true do
+		repeat
+			local code = self:GetCode(lit_ct)
+
+			if code < 256 then
+				if pos + 1 >= limit then
+					-- ensure buffer
+					-- limit = buffer length
+				end
+
+				buffer[pos], pos = code, pos + 1
+
+				break
+			elseif code == 256 then
+				self.m_buf_len = pos
+
+				return
+			end
+
+			local len = GetAmount(self, lut.LengthDecode, code - 257)
+			local dist = GetAmount(self, lut.DistDecode, self:GetCode(dist_ct))
+
+			if pos + len >= limit then
+				-- Needed?
+			end
+
+			for _ = 1, len do
+				buffer[pos], pos = buffer[pos - dist], pos + 1
+			end
+		until true -- to simulate "continue" with "break"
+	end
+--[[
     var buffer = this.buffer;
     var limit = buffer ? buffer.length : 0;
     var pos = this.bufferLength;
@@ -416,7 +486,7 @@ function FlateStream:ReadBlock ()
       for (var k = 0; k < len; ++k, ++pos)
         buffer[pos] = buffer[pos - dist];
     }
-]=]
+]]
 end
 
 --- DOCME

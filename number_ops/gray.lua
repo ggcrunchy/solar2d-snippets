@@ -27,10 +27,10 @@
 local operators = require("bitwise_ops.operators")
 
 -- Imports --
-local band = operators.And
-local bor = operators.Or
-local bxor = operators.Xor
-local rshift = operators.RShift
+local band = operators.band
+local bor = operators.bor
+local bxor = operators.bxor
+local rshift = operators.rshift
 
 -- Cached module references --
 local _BinaryToGray_

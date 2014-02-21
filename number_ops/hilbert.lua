@@ -37,10 +37,10 @@ local rshift
 
 -- Imports --
 if operators.HasBitLib() then -- Bit library available
-	band = operators.And
-	bor = operators.Or
-	lshift = operators.LShift
-	rshift = operators.RShift
+	band = operators.band
+	bor = operators.bor
+	lshift = operators.lshift
+	rshift = operators.rshift
 else -- Otherwise, make equivalents for Hilbert curve purposes
 	function band (x, n)
 		return x % (n + 1)

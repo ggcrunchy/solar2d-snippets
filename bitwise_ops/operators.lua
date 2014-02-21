@@ -25,7 +25,6 @@
 
 -- Standard library imports --
 local floor = math.floor
-local ldexp = math.ldexp
 
 -- Modules --
 local has_bit, bit = pcall(require, "bit") -- Prefer BitOp
@@ -34,25 +33,30 @@ if not has_bit then
 	bit = bit32 -- Fall back to bit32 if available
 end
 
--- Forward references --
-local band
-local bnot
-local bor
-local bxor
-local lshift
-local rshift
+-- Exports --
+local M = {}
 
--- Imports --
 if bit then -- Bit library available
-	band = bit.band
-	bnot = bit.bnot
-	bor = bit.bor
-	bxor = bit.bxor
-	lshift = bit.lshift
-	rshift = bit.rshift
-else -- Otherwise, make equivalents for low-bit purposes
-	lshift = ldexp
+	M.band = bit.band
+	M.bnot = bit.bnot
+	M.bor = bit.bor
+	M.bxor = bit.bxor
+	M.lshift = bit.lshift
+	M.rshift = bit.rshift
 
+	-- Imports --
+	local rshift = bit.rshift
+
+	--- DOCME
+	function M.SignBit (n)
+		return rshift(floor(n), 31)
+	end
+
+	--- DOCME
+	function M.SignBit_At (n, x)
+		return rshift(floor(n), 31 - x)
+	end
+else -- Otherwise, make equivalents for low-bit purposes
 	-- Logical op LUT's
 	local And, Or, Xor = {}, {}, {}
 
@@ -72,9 +76,16 @@ else -- Otherwise, make equivalents for low-bit purposes
 		Xor[i] = Or[i] - And[i]
 	end
 
+	-- Fix negatives
+	local function Fix (n)
+		return n % 2^32
+	end
+
 	-- Bitwise op helper
 	local function AuxOp (a, b, t)
 		local sum, n = 0, 1
+
+		a, b = Fix(a), Fix(b)
 
 		while a > 0 or b > 0 do
 			local abits = a % 4
@@ -88,54 +99,52 @@ else -- Otherwise, make equivalents for low-bit purposes
 		return sum
 	end
 
-	function band (a, b)
+	--- DOCME
+	function M.band (a, b)
 		return AuxOp(a, b, And)
 	end
 
-	function bor (a, b)
+	--- DOCME
+	function M.bnot (x)
+		return 2^32 - Fix(x) - 1
+	end
+
+	--- DOCME
+	function M.bor (a, b)
 		return AuxOp(a, b, Or)
 	end
 
-	function bxor (a, b)
+	--- DOCME
+	function M.bxor (a, b)
 		return AuxOp(a, b, Xor)
 	end
 
-	function bnot (x)
-		return -1 - x
+	--- DOCME
+	function M.lshift (x, n)
+		return Fix(x) * 2^n
 	end
 
-	function rshift (x, n)
-		return floor(lshift(x, -n))
+	--- DOCME
+	function M.rshift (x, n)
+		return floor(Fix(x) * 2^-n)
+	end
+
+	-- Emulated version of SignBit
+	function M.SignBit (n)
+		return n < 0 and 1 or 0
+	end
+
+	-- Emulated version of SignBit_At
+	function M.SignBit_At (n, x)
+		return n < 0 and 2^x or 0
 	end
 end
-
--- Exports --
-local M = {}
-
---- DOCME
--- N.B. This, and other operators defined herein, do not (YET?) correct for negative arguments
-M.And = band
 
 --- Predicate.
 -- @treturn boolean Bit library exists?
 function M.HasBitLib ()
 	return bit ~= nil
 end
-
---- DOCME
-M.LShift = lshift
-
---- DOCME
-M.Not = bnot
-
---- DOCME
-M.Or = bor
-
---- DOCME
-M.RShift = rshift
-
---- DOCME
-M.Xor = bxor
 
 -- Export the module.
 return M

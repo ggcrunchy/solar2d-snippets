@@ -37,7 +37,7 @@ local resource_utils = require("utils.Resource")
 local band
 
 if operators.HasBitLib() then -- Bit library available
-	band = operators.And
+	band = operators.band
 else -- Otherwise, make equivalent for hash purposes
 	function band (a, n)
 		return a % (n + 1)
@@ -45,7 +45,7 @@ else -- Otherwise, make equivalent for hash purposes
 end
 
 -- Imports --
-local bxor = operators.Xor
+local bxor = operators.bxor
 
 -- Exports --
 local M = {}

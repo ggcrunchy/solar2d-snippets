@@ -39,9 +39,9 @@ local rshift
 
 -- Imports --
 if operators.HasBitLib() then -- Bit library available
-	band = operators.And
-	lshift = operators.LShift
-	rshift = operators.RShift
+	band = operators.band
+	lshift = operators.lshift
+	rshift = operators.rshift
 else -- Otherwise, make equivalents for RNG purposes
 	local floor = math.floor
 

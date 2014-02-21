@@ -27,10 +27,10 @@
 local operators = require("bitwise_ops.operators")
 
 -- Imports --
-local band = operators.And
-local bor = operators.Or
-local lshift = operators.LShift
-local rshift = operators.RShift
+local band = operators.band
+local bor = operators.bor
+local lshift = operators.lshift
+local rshift = operators.rshift
 
 -- Helper to extract a component from a Morton triple
 -- The shift and mask constants are those same ones used in AuxMorton, but in reverse order
