@@ -184,27 +184,29 @@ local function DecodePixels (data, bit_len, w, h)
 
 	local pixel_bytes = bit_len / 8
 	local scanline_len = pixel_bytes * w
-	local pixels, len, row, pos = {}, #data, 0, 1, 1
+	local pixels, len, row, rpos, wpos = {}, #data, 0, 1, 1, 1
 
-	while pos <= len do
-		local algo = assert(DecodeAlgorithm[data[pos] + 1], "Invalid filter algorithm")
+	while rpos <= len do
+		local algo = assert(DecodeAlgorithm[data[rpos] + 1], "Invalid filter algorithm")
 
-		pos = pos + 1
+		rpos = rpos + 1
 	
 		for i = 1, scanline_len do
-			pixels[pos], pos = algo(data[pos], pixels, i - 1, pos, pixel_bytes, scanline_len, row), pos + 1
+			pixels[wpos], rpos, wpos = algo(data[rpos], pixels, i - 1, wpos, pixel_bytes, scanline_len, row), rpos + 1, wpos + 1
 		end
 
 		row = row + 1
 	end
+
+	return pixels
 end
 
 --
-local function GetIndex (pixels, palette, index, count)
+local function GetIndex (pixels, palette, i, j)
 	if palette then
-		return pixels[index / 4 + 1] * 4 + 1
+		return pixels[(i - 1) / 4 + 1] * 4 + 1
 	else
-		return index * count + 1
+		return j
 	end
 end
 
@@ -216,8 +218,8 @@ local function GetColor1 (input, i, j)
 end
 
 --
-local function CopyToImageData (data, bit_len, colors, has_alpha, palette, n)
-	local pixels, output, input = DecodePixels(data, bit_len), {}
+local function CopyToImageData (pixels, colors, has_alpha, palette, n)
+	local data, input = {}
 
 	if palette then
 		palette, colors, has_alpha = DecodePalette(palette), 4, true
@@ -236,11 +238,13 @@ local function CopyToImageData (data, bit_len, colors, has_alpha, palette, n)
 	end
 
 	for i = 1, n, 4 do
-		local k = GetIndex(pixels, palette, i - 1, count)
+		local k = GetIndex(pixels, palette, i, j)
 		local r, g, b, alpha = get_color(input, k, k + count - 1)
 
-		data[i], data[i + 1], data[i + 2], data[i + 3] = r, g, b, alpha or 255
+		data[i], data[i + 1], data[i + 2], data[i + 3], j = r, g, b, alpha or 255, k + count
 	end
+
+	return data
 end
 
 --

@@ -253,7 +253,7 @@ local function Compressed (FS, fixed_codes)
 
 		-- Build the literal and distance code tables.
 		local i, len, codes, code_lens = 1, 0, num_lit_codes + num_dist_codes, {}
-print("A")
+
 		while i <= codes do
 			local code = FS:GetCode(clc_tab)
 
@@ -267,7 +267,7 @@ print("A")
 				len, i, code_lens[i] = code, i + 1, code
 			end
 		end
-print("B")
+
 		return GenHuffmanTable(Slice(code_lens, 1, num_lit_codes)), GenHuffmanTable(Slice(code_lens, num_lit_codes + 1, codes))
 	end
 end
@@ -326,7 +326,7 @@ function FlateStream:ReadBlock ()
 
 	-- Compressed block.
 	local lit_ct, dist_ct = Compressed(self, hdr == 1)
-print("C")
+
 	while true do
 		repeat
 			local code = self:GetCode(lit_ct)
