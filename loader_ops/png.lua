@@ -29,10 +29,10 @@
 local abs = math.abs
 local assert = assert
 local byte = string.byte
-local char = string.char
 local concat = table.concat
 local floor = math.floor
 local gmatch = string.gmatch
+local min = math.min
 local open = io.open
 local pcall = pcall
 local sub = string.sub
@@ -111,7 +111,7 @@ end
 
 --
 local function GetLeft (pixels, i, pos, pixel_bytes)
-	return i < pixel_bytes and 0 or pixels[pos - pixel_bytes + 1]
+	return i < pixel_bytes and 0 or pixels[pos - pixel_bytes]
 end
 
 --
@@ -121,17 +121,17 @@ end
 
 -- --
 local DecodeAlgorithm = {
-	-- 0 --
+	-- None --
 	function(byte)
 		return byte
 	end,
 
-	-- 1 --
+	-- Sub --
 	function(byte, pixels, i, pos, pixel_bytes)
 		return (byte + GetLeft(pixels, i, pos, pixel_bytes)) % 256
 	end,
 
-	-- 2 --
+	-- Up --
 	function(byte, pixels, i, _, pixel_bytes, scanline_len, row)
 		local col = GetCol(i, pixel_bytes)
 		local upper = row > 0 and GetUpper(pixels, i, pixel_bytes, row, col, scanline_len) or 0
@@ -139,7 +139,7 @@ local DecodeAlgorithm = {
 		return (byte + upper) % 256
 	end,
 
-	-- 3 --
+	-- Average --
 	function(byte, pixels, i, pos, pixel_bytes, scanline_len, row)
 		local col, left = GetCol(i, pixel_bytes), GetLeft(pixels, i, pos, pixel_bytes)
 		local upper = row > 0 and GetUpper(pixels, i, pixel_bytes, row, col, scanline_len) or 0
@@ -147,7 +147,7 @@ local DecodeAlgorithm = {
 		return (byte + floor(left + upper) / 2) % 256
 	end,
 
-	-- 4 --
+	-- Paeth --
 	function(byte, pixels, i, pos, pixel_bytes, scanline_len, row)
 		local col, left, upper, ul = GetCol(i, pixel_bytes), GetLeft(pixels, i, pos, pixel_bytes), 0, 0
 
@@ -182,20 +182,26 @@ local function DecodePixels (data, bit_len, w, h)
 
 	data = zlib.NewFlateStream(data):GetBytes()
 
-	local pixel_bytes = bit_len / 8
-	local scanline_len = pixel_bytes * w
-	local pixels, len, row, rpos, wpos = {}, #data, 0, 1, 1, 1
+	local pixels, nbytes = {}, bit_len / 8
+	local row, nscan, wpos = 0, nbytes * w, 1
+	local n, w = #data
 
-	while rpos <= len do
+	for rpos = 1, n, nscan + 1 do
 		local algo = assert(DecodeAlgorithm[data[rpos] + 1], "Invalid filter algorithm")
 
-		rpos = rpos + 1
-	
-		for i = 1, scanline_len do
-			pixels[wpos], rpos, wpos = algo(data[rpos], pixels, i - 1, wpos, pixel_bytes, scanline_len, row), rpos + 1, wpos + 1
+		w = min(nscan, n - rpos)
+
+		for i = 1, w do
+			pixels[wpos] = algo(data[rpos + i], pixels, i - 1, wpos, nbytes, nscan, row)
+
+			wpos = wpos + 1
 		end
 
 		row = row + 1
+	end
+
+	for i = 1, nscan - w do
+		pixels[wpos], wpos = 0, wpos + 1
 	end
 
 	return pixels

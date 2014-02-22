@@ -128,9 +128,21 @@ function vdump (var, name, limit)
 end
 --[[
 local png = require("loader_ops.png")
-local func = png.Load(system.pathForFile("UI_Assets/Arrow.png"))
-print(func("get_dims"))
+local func = png.Load(system.pathForFile("UI_Assets/tabBar_tabSelectedLeft.png"))
+local w, h = func("get_dims")
 local data = func("get_pixels")
+local i, y = 1, 100
+for _ = 1, h do
+	local x = 100
+	for _ = 1, w do
+		local pixel=display.newRect(0, 0, 1, 1)
+		pixel.anchorX, pixel.x = 0, x
+		pixel.anchorY, pixel.y = 0, y
+		pixel:setFillColor(data[i]/255,data[i+1]/255,data[i+2]/255,data[i+3]/255)
+		x,i=x+1,i+4
+	end
+	y=y+1
+end
 --]]
 -- Kick off the app.
 scenes.GoToScene{ name = "scene.Intro" }

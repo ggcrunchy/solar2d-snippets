@@ -39,7 +39,6 @@ From the original:
 -- Standard library imports --
 local assert = assert
 local byte = string.byte
-local char = string.char
 local ipairs = ipairs
 local max = math.max
 local min = math.min
@@ -59,10 +58,7 @@ else -- Otherwise, make equivalent for zlib purposes
 		return a % (n + 1)
 	end
 end
---[[
-local operators = require("plugin.bit")
-band=operators.band
-]]
+
 -- Imports --
 local band_strict = operators.band
 local bnot = operators.bnot
@@ -124,7 +120,7 @@ end
 
 --
 local function GenHuffmanTable (from)
-	-- Compact the lengths.
+	-- Cull 0 lengths (optimization).
 	local lengths = {}
 
 	for i, len in ipairs(from) do
@@ -208,10 +204,10 @@ end
 function FlateStream:GetCode (codes)
 	local max_len = codes.max_len
 	local buf, size = AuxGet(self, max_len)
---print(band(buf, lshift(1, max_len) - 1) + 1, #codes)
+
 	local code = codes[band(buf, lshift(1, max_len) - 1) + 1]
 	local clen, cval = rshift(code, 16), band(code, 0xFFFF)
---print(size, clen)
+
 	assert(size ~= 0 and size >= clen and clen ~= 0, "Bad encoding in flate stream")
 
 	self.m_code_buf = rshift(buf, clen)
@@ -232,7 +228,7 @@ end
 --
 local function Compressed (FS, fixed_codes)
 	if fixed_codes then
-		return lut.FixedListCodeTab, lut.FixedDistCodeTab
+		return lut.FixedLitCodeTab, lut.FixedDistCodeTab
 	else
 		local num_lit_codes = FS:GetBits(5) + 257
 		local num_dist_codes = FS:GetBits(5) + 1
@@ -349,7 +345,6 @@ function FlateStream:ReadBlock ()
 			end
 		until true -- simulate "continue" with "break"
 	end
-print("D")
 end
 
 --- DOCME
