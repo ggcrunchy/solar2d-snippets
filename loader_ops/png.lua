@@ -71,22 +71,39 @@ local function ReadU32 (png, pos)
 	return Read(png, pos, 4, 24)
 end
 
+-- --
+local Signature = "\137\080\078\071\013\010\026\010"
+
+--
+local function ReadU8 (str, pos)
+	return byte(sub(str, pos))
+end
+
+--
+local function ReadHeader (str, pos)
+	local w = ReadU32(str, pos)
+	local h = ReadU32(str, pos + 4)
+	local nbits = ReadU8(str, pos + 8)
+	local ctype = ReadU8(str, pos + 9)
+
+	return w, h, nbits, ctype
+end
+
 --- DOCME
-function M.GetDims (name)
-	local png, w, h = open(name, "rb")
+function M.GetInfo (name)
+	local png = open(name, "rb")
 
 	if png then
-		png:read(12)
-
-		if png:read(4) == "IHDR" then
-			w = ReadU32(png)
-			h = ReadU32(png)
-		end
+		local str = png:read(24)
 
 		png:close()
+
+		if sub(str, 1, 8) == Signature and sub(str, 13, 16) == "IHDR" then
+			return true, ReadHeader(str, 17)
+		end
 	end
 
-	return w ~= nil, w, h
+	return false
 end
 
 --
@@ -254,15 +271,10 @@ local function CopyToImageData (pixels, colors, has_alpha, palette, n)
 end
 
 --
-local function ReadU8 (str, pos)
-	return byte(sub(str, pos))
-end
-
---
 local function AuxLoad (png)
 	local bits, bit_len, colors, color_type, data, has_alpha, palette, w, h
 
-	assert(sub(png, 1, 8) == "\137\080\078\071\013\010\026\010", "Image is not a PNG")
+	assert(sub(png, 1, 8) == Signature, "Image is not a PNG")
 
 	local pos, total = 9, #png
 
@@ -274,10 +286,7 @@ local function AuxLoad (png)
 
 		-- Image Header --
 		if code == "IHDR" then
-			w = ReadU32(png, pos)
-			h = ReadU32(png, pos + 4)
-			bits = ReadU8(png, pos + 8)
-			color_type = ReadU8(png, pos + 9)
+			w, h, bits, color_type = ReadHeader(png, pos)
 
 			-- compression, filter, interlace methods
 

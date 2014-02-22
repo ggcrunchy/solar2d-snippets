@@ -1,27 +1,17 @@
 settings =
 {
---[[
-plugins =
-    {
-        -- key is the name passed to Lua's 'require()'
-        ["plugin.bit"] =
-        {
-            -- required
-            publisherId = "com.coronalabs",
-        },
-    },    ]]
-        android =
-        {
-        --        versionCode = "3"
-        },
-    
-        androidPermissions =
-        {
-			"android.permission.INTERNET"
-        },
-    
-        orientation =
-        {
-                default = "landscape"
-        } 
+	android =
+	{
+	-- versionCode = "3"
+	},
+
+	androidPermissions =
+	{
+		"android.permission.INTERNET"
+	},
+
+	orientation =
+	{
+		default = "landscape"
+	} 
 }

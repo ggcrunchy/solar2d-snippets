@@ -23,29 +23,17 @@
 -- [ MIT license: http://www.opensource.org/licenses/mit-license.php ]
 --
 
+-- Standard library imports --
+local ipairs = ipairs
+
 -- Modules --
 local buttons = require("ui.Button")
 local file = require("utils.File")
+local png = require("loader_ops.png")
 local scenes = require("utils.Scenes")
-
--- Corona globals --
-local system = system
 
 -- Corona modules --
 local storyboard = require("storyboard")
-
--- Windows: no web views
-if system.getInfo("platformName") == "Win" then
-	-- Could hardcode image name and generate file in temps (erasing if already there...)
-	-- Pull an image (asked for beforehand?), getImageData(), pipe in as JSON or whatever
-	--	system.openURL("file://" .. system.pathForFile("html/get_png_pixels/index.html"))
-	-- TODO: do via HTTP requests instead
-
---
-else
-	-- Do the same, in a web view?
-	-- Otherwise, if available, use the new pixel sampler API's
-end
 
 -- Timers demo scene --
 local Scene = storyboard.newScene()
@@ -59,6 +47,32 @@ Scene:addEventListener("createScene")
 
 --
 function Scene:enterScene ()
+	--
+	local images = file.EnumerateFiles("UI_Assets", { exts = "png" })
+
+	for _, name in ipairs(images) do
+		--
+	end
+--[=[
+---[[
+local png = require("loader_ops.png")
+local func = png.Load(system.pathForFile("UI_Assets/tabIcon@2x.png"))
+local w, h = func("get_dims")
+local data = func("get_pixels")
+local i, y = 1, 100
+for _ = 1, h do
+	local x = 100
+	for _ = 1, w do
+		local pixel=display.newRect(0, 0, 1, 1)
+		pixel.anchorX, pixel.x = 0, x
+		pixel.anchorY, pixel.y = 0, y
+		pixel:setFillColor(data[i]/255,data[i+1]/255,data[i+2]/255,data[i+3]/255)
+		x,i=x+1,i+4
+	end
+	y=y+1
+end
+--]]
+]=]
 	-- Some input selection
 	-- Wait for results
 		-- Given stream, go to town on the data!
