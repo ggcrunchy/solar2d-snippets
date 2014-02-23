@@ -31,7 +31,6 @@ local assert = assert
 local byte = string.byte
 local concat = table.concat
 local floor = math.floor
-local gmatch = string.gmatch
 local min = math.min
 local open = io.open
 local sub = string.sub
@@ -51,7 +50,7 @@ else -- Otherwise, make equivalent for PNG purposes
 		return a % 256
 	end
 end
-
+local ttt, oc = TTT, os.clock
 -- Exports --
 local M = {}
 
@@ -60,42 +59,22 @@ local function Sub (str, pos, n)
 	return sub(str, pos, pos + n - 1)
 end
 
--- Helper to read out N bytes
-local function Read (png, pos, n, shift)
-	local sum, mul = 0, 2^shift
-
-	for c in gmatch(Sub(png, pos, n), ".") do
-		local num = byte(c)
-
-		if num ~= 0 then
-			sum = sum + mul * num
-		end
-
-		mul = mul / 256
-	end
-
-	return sum
-end
-
 -- Reads out four bytes as an integer
 local function ReadU32 (png, pos)
-	return Read(png, pos, 4, 24)
+	local a, b, c, d = byte(png, pos, pos + 3)
+
+	return a * 2^24 + b * 2^16 + c * 2^8 + d
 end
 
 -- --
 local Signature = "\137\080\078\071\013\010\026\010"
 
 --
-local function ReadU8 (str, pos)
-	return byte(sub(str, pos))
-end
-
---
 local function ReadHeader (str, pos)
 	local w = ReadU32(str, pos)
 	local h = ReadU32(str, pos + 4)
-	local nbits = ReadU8(str, pos + 8)
-	local ctype = ReadU8(str, pos + 9)
+	local nbits = byte(str, pos + 8)
+	local ctype = byte(str, pos + 9)
 
 	return w, h, nbits, ctype
 end
@@ -133,11 +112,11 @@ local function DecodePalette (palette, yfunc)
 		pos = pos + 4
 
 		--
-		if pos >= check then
-			check = check + PaletteCheckDist
+	--	if pos >= check then
+	--		check = check + PaletteCheckDist
 
-			yfunc()
-		end
+		--	yfunc("decode_palette")
+	--	end
 	end
 
 	return decoded
@@ -145,7 +124,9 @@ end
 
 --
 local function GetCol (i, pixel_bytes)
-	return (i - i % pixel_bytes) / pixel_bytes
+	local imod = i % pixel_bytes
+
+	return (i - imod) / pixel_bytes, imod
 end
 
 --
@@ -154,8 +135,8 @@ local function GetLeft (pixels, i, pos, pixel_bytes)
 end
 
 --
-local function GetUpper (pixels, i, pixel_bytes, row, col, sl_len)
-	return pixels[(row - 1) * sl_len + col * pixel_bytes + (i % pixel_bytes) + 1]
+local function GetUpper (pixels, imod, pixel_bytes, roff, col)
+	return pixels[roff + col * pixel_bytes + imod + 1]
 end
 
 -- --
@@ -166,29 +147,36 @@ local DecodeAlgorithm = {
 	end,
 
 	-- Up --
-	function(pixels, i, _, pixel_bytes, scanline_len, row)
-		local col = GetCol(i, pixel_bytes)
+	function(pixels, i, _, pixel_bytes, roff)
+		local col, imod = GetCol(i, pixel_bytes)
 
-		return row > 0 and GetUpper(pixels, i, pixel_bytes, row, col, scanline_len) or 0
+		return roff >= 0 and GetUpper(pixels, imod, pixel_bytes, roff, col) or 0
 	end,
 
 	-- Average --
-	function(pixels, i, pos, pixel_bytes, scanline_len, row)
-		local col, left = GetCol(i, pixel_bytes), GetLeft(pixels, i, pos, pixel_bytes)
-		local upper = row > 0 and GetUpper(pixels, i, pixel_bytes, row, col, scanline_len) or 0
+	function(pixels, i, pos, pixel_bytes, roff)
+		local left = GetLeft(pixels, i, pos, pixel_bytes)
 
-		return floor((left + upper) / 2)
+		if roff >= 0 then
+			local col, imod = GetCol(i, pixel_bytes)
+
+			return floor((left + GetUpper(pixels, imod, pixel_bytes, roff, col)) / 2)
+		else
+			return left
+		end
 	end,
 
 	-- Paeth --
-	function(pixels, i, pos, pixel_bytes, scanline_len, row)
-		local col, left, upper, ul = GetCol(i, pixel_bytes), GetLeft(pixels, i, pos, pixel_bytes), 0, 0
+	function(pixels, i, pos, pixel_bytes, roff)
+		local left, upper, ul = GetLeft(pixels, i, pos, pixel_bytes), 0, 0
 
-		if row > 0 then
-			upper = GetUpper(pixels, i, pixel_bytes, row, col, scanline_len)
+		if roff >= 0 then
+			local col, imod = GetCol(i, pixel_bytes)
+
+			upper = GetUpper(pixels, imod, pixel_bytes, roff, col)
 
 			if col > 0 then
-				ul = GetUpper(pixels, i, pixel_bytes, row, col - 1, scanline_len)
+				ul = GetUpper(pixels, imod, pixel_bytes, roff, col - 1)
 			end
 		end
 
@@ -215,10 +203,10 @@ local function DecodePixels (data, bit_len, w, h, yfunc)
 	end
 
 	data = zlib.NewFlateStream(data):GetBytes(yfunc and { yfunc = yfunc })
-
+local t1=oc()
 	local pixels, nbytes = {}, bit_len / 8
-	local row, nscan, wpos = 0, nbytes * w, 1
-	local n, check, rw = #data, DecodeCheckDist
+	local nscan, wpos, n = nbytes * w, 1, #data
+	local roff, check, rw = -nscan, DecodeCheckDist
 
 	for rpos = 1, n, nscan + 1 do
 		rw = min(nscan, n - rpos)
@@ -230,32 +218,32 @@ local function DecodePixels (data, bit_len, w, h, yfunc)
 			algo = assert(DecodeAlgorithm[algo], "Invalid filter algorithm")
 
 			for i = 1, rw do
-				pixels[wpos] = band(data[rpos + i] + algo(pixels, i - 1, wpos, nbytes, nscan, row), 0xFF)
+				pixels[wpos] = band(data[rpos + i] + algo(pixels, i - 1, wpos, nbytes, roff), 0xFF)
 
 				wpos = wpos + 1
 			end
 
 		--
 		else
-			for i = 1, rw do
-				pixels[wpos], wpos = data[rpos + i], wpos + 1
+			for i = rpos + 1, rpos + rw do
+				pixels[wpos], wpos = data[i], wpos + 1
 			end
 		end
 
 		--
-		row = row + 1
+		roff = roff + nscan
 
-		if row == check then
-			check = check + DecodeCheckDist
+	--	if row == check then
+		--	check = check + DecodeCheckDist
 
-			yfunc()
-		end
+		--	yfunc("decode_pixels")
+	--	end
 	end
 
 	for i = 1, nscan - rw do
 		pixels[wpos], wpos = 0, wpos + 1
 	end
-
+ttt.decode=oc()-t1
 	return pixels
 end
 
@@ -280,6 +268,7 @@ local CopyCheckDist = 120
 
 --
 local function CopyToImageData (pixels, colors, has_alpha, palette, n, yfunc)
+local t1=oc()
 	local data, check, input = {}, CopyCheckDist
 
 	if palette then
@@ -304,13 +293,13 @@ local function CopyToImageData (pixels, colors, has_alpha, palette, n, yfunc)
 
 		data[i], data[i + 1], data[i + 2], data[i + 3], j = r, g, b, alpha or 255, k + count
 
-		if i >= check then
-			check = check + CopyCheckDist
+	--	if i >= check then
+		--	check = check + CopyCheckDist
 
-			yfunc()
-		end
+		--	yfunc("copy")
+	--	end
 	end
-
+ttt.copy=oc()-t1
 	return data
 end
 
@@ -343,15 +332,11 @@ local function AuxLoad (png, yfunc)
 		elseif code == "PLTE" then
 			palette = Sub(png, pos, size)
 
-			yfunc()
-
 		-- Image Data --
 		elseif code == "IDAT" then
 			data = data or {}
 
 			data[#data + 1] = Sub(png, pos, size)
-
-			yfunc()
 
 		-- Image End --
 		elseif code == "IEND" then

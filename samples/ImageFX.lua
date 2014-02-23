@@ -27,7 +27,7 @@
 local ipairs = ipairs
 local unpack = unpack
 local yield = coroutine.yield
-
+TTT={}
 -- Modules --
 local buttons = require("ui.Button")
 local common_ui = require("editor.CommonUI")
@@ -80,8 +80,6 @@ function Scene:enterScene ()
 	--
 	local images, dir, busy = file.EnumerateFiles(Dir, { exts = "png" }), Dir .. "/"
 
-	Since = system.getTimer()
-
 	self.images = common_ui.Listbox(self.view, 275, 20, {
 		height = 120,
 
@@ -95,11 +93,14 @@ function Scene:enterScene ()
 			if not self.busy then
 				native.setActivityIndicator(true)
 
+				Since = system.getTimer()
+
 				self.busy = timers.WrapEx(function()
 					local func = png.Load(system.pathForFile(dir .. images[index]), Watch)
 
 					if func then
 						local data = func("get_pixels")
+vdump(TTT)
 						local w, h = func("get_dims")
 						local i, y = 1, 155
 --local p = w * 4
@@ -143,7 +144,7 @@ function Scene:enterScene ()
 	local ii = math.sqrt(hgrad + vgrad) / 255
 
 						pixel:setFillColor(ii)
-]]
+--]]
 								pixel:setFillColor(r / 255, g / 255, b / 255, a / 255)
 
 								x, i = x + 1, i + 4

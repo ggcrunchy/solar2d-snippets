@@ -39,7 +39,6 @@ From the original:
 -- Standard library imports --
 local assert = assert
 local byte = string.byte
-local ipairs = ipairs
 local max = math.max
 local min = math.min
 local setmetatable = setmetatable
@@ -68,21 +67,22 @@ local rshift = operators.rshift
 
 -- Exports --
 local M = {}
-
+local ttt, oc = TTT, os.clock
+ttt.rb=0
 -- --
 local DecodeStream = {}
 
 DecodeStream.__index = DecodeStream
 
 --
-local function Slice (t, from, to)
-	local slice = {}
+local function Slice (t, from, to, into)
+	local slice, j = into or {}, 1
 
 	for i = from, to do
-		slice[#slice + 1] = t[i]
+		slice[j], j = t[i], j + 1
 	end
 
-	return slice
+	return slice, j - 1
 end
 
 --
@@ -94,7 +94,7 @@ function DecodeStream:GetBytes (opts)
 	local pos, up_to = self.m_pos, 1 / 0
 
 	if opts and opts.length then
-		up_to = pos + length
+		up_to = pos + opts.length
 
 		while not self.m_eof and #self < up_to do
 			self:ReadBlock(yfunc)
@@ -109,7 +109,7 @@ function DecodeStream:GetBytes (opts)
 
 	self.m_pos = up_to
 
-	return Slice(self, pos, up_to - 1)
+	return (Slice(self, pos, up_to - 1))
 end
 
 --
@@ -125,58 +125,61 @@ end
 -- --
 local HuffmanCheckDist = 50
 
---
-local function GenHuffmanTable (from, yfunc)
-	-- Cull 0 lengths (optimization).
-	local lengths = {}
+-- --
+local Lengths = {}
 
-	for i, len in ipairs(from) do
+--
+local function GenHuffmanTable (codes, from, yfunc, n)
+	-- Find max code length, culling 0 lengths as an optimization.
+	local max_len, nlens = 0, 0
+
+	for i = 1, n or #from do
+		local len = from[i]
+
 		if len > 0 then
-			lengths[#lengths + 1] = i - 1
-			lengths[#lengths + 1] = len
+			Lengths[nlens + 1] = i - 1
+			Lengths[nlens + 2] = len
+
+			max_len, nlens = max(len, max_len), nlens + 2
 		end
 	end
 
-	-- Find max code length.
-	local max_len = 0
-
-	for i = 2, #lengths, 2 do
-		max_len = max(lengths[i], max_len)
-	end
-
 	-- Build the table.
-	local codes, size = { max_len = max_len }, lshift(1, max_len)
-	local code, skip, step, check = 0, 2, 1, HuffmanCheckDist
+	local code, skip, step, cword, size, check = 0, 2, 1, 2^16, 2^max_len, HuffmanCheckDist
+
+	codes.max_len, codes.mask = max_len, size - 1
 
 	for i = 1, max_len do
-		for j = 1, #lengths, 2 do
-			if i == lengths[j + 1] then
+		for j = 1, nlens, 2 do
+			if i == Lengths[j + 1] then
 				-- Bit-reverse the code.
 				local code2, t = 0, code
 
-				for _ = 0, i - 1 do
-					code2, t = bor(code2 + code2, band(t, 0x1)), rshift(t, 1)
+				for _ = 1, i do
+					local bit = t % 2
+
+					code2, t = 2 * code2 + bit, (t - bit) / 2
 				end
 
 				-- Fill the table entries.
-				local slot = lengths[j]
+				local entry = cword + Lengths[j]
 
 				for k = code2 + 1, size, skip do
-					codes[k] = bor(lshift(i, 16), slot)
+					codes[k] = entry
 				end
 
 				code, step = code + 1, step + 1
 
 				--
-				if step == check then
-					check = check + HuffmanCheckDist
+			--	if step == check then
+			--		check = check + HuffmanCheckDist
 
-					yfunc()
-				end
+				--	yfunc("huff")
+			--	end
 			end
 		end
 
-		code, skip = code + code, skip + skip
+		code, skip, cword = code + code, skip + skip, cword + 2^16
 	end
 
 	return codes
@@ -192,9 +195,10 @@ setmetatable(FlateStream, { __index = DecodeStream })
 --
 local function AuxGet (FS, n)
 	local buf, size, bytes, pos = FS.m_code_buf, FS.m_code_size, FS.m_bytes, FS.m_bytes_pos
-
+local a=2^size
 	while size < n do
-		buf = bor(buf, lshift(byte(bytes, pos), size))
+		buf = buf + byte(bytes, pos) * a--bor(buf, byte(bytes, pos) * 2^size)
+		a=a*256
 		size, pos = size + 8, pos + 1
 	end
 
@@ -206,7 +210,7 @@ end
 --- DOCME
 function FlateStream:GetBits (bits)
 	local buf, size = AuxGet(self, bits)
-	local bval = band(buf, lshift(1, bits) - 1)
+	local bval = band(buf, 2^bits - 1)
 
 	self.m_code_buf = rshift(buf, bits)
 	self.m_code_size = size - bits
@@ -216,11 +220,11 @@ end
 
 --- DOCME
 function FlateStream:GetCode (codes)
-	local max_len = codes.max_len
-	local buf, size = AuxGet(self, max_len)
+	local buf, size = AuxGet(self, codes.max_len)
 
-	local code = codes[band(buf, lshift(1, max_len) - 1) + 1]
-	local clen, cval = rshift(code, 16), band(code, 0xFFFF)
+	local code = codes[band(buf, codes.mask) + 1]
+	local cval = band(code, 0xFFFF)
+	local clen = (code - cval) / 2^16
 
 	assert(size ~= 0 and size >= clen and clen ~= 0, "Bad encoding in flate stream")
 
@@ -242,6 +246,12 @@ end
 -- --
 local CompressedCheckDist = 50
 
+-- --
+local LitSlice, DistSlice = {}, {}
+
+-- --
+local LHT, DHT = {}, {}
+
 --
 local function Compressed (FS, fixed_codes, yfunc)
 	if fixed_codes then
@@ -251,21 +261,21 @@ local function Compressed (FS, fixed_codes, yfunc)
 		local num_dist_codes = FS:GetBits(5) + 1
 
 		-- Build the code lengths code table.
-		local map, clc_lens = lut.CodeLenCodeMap, {}
-		local count = FS:GetBits(4) + 4
+		local map, clc_lens, clc_tab = lut.CodeLenCodeMap, LHT, DHT
+		local count, n = FS:GetBits(4) + 4, #map
 
 		for i = 1, count do
 			clc_lens[map[i] + 1] = FS:GetBits(3)
 		end
 
-		for i = count + 1, #map do
+		for i = count + 1, n do
 			clc_lens[map[i] + 1] = 0
 		end
 
-		local clc_tab = GenHuffmanTable(clc_lens, yfunc)
+		GenHuffmanTable(clc_tab, clc_lens, yfunc, n)
 
 		-- Build the literal and distance code tables.
-		local i, len, codes, code_lens, check = 1, 0, num_lit_codes + num_dist_codes, {}, CompressedCheckDist
+		local i, len, codes, code_lens, check = 1, 0, num_lit_codes + num_dist_codes, LHT, CompressedCheckDist
 
 		while i <= codes do
 			local code = FS:GetCode(clc_tab)
@@ -281,17 +291,20 @@ local function Compressed (FS, fixed_codes, yfunc)
 			end
 
 			--
-			if i >= check then
-				check = check + CompressedCheckDist
+		--	if i >= check then
+		--		check = check + CompressedCheckDist
 
-				yfunc()
-			end
+			--	yfunc("codes")
+		--	end
 		end
 
-		local lslice = Slice(code_lens, 1, num_lit_codes)
-		local dslice = Slice(code_lens, num_lit_codes + 1, codes)
+		local _, lj = Slice(code_lens, 1, num_lit_codes, LitSlice)
+		local _, dj = Slice(code_lens, num_lit_codes + 1, codes, DistSlice)
 
-		return GenHuffmanTable(lslice, yfunc), GenHuffmanTable(dslice, yfunc)
+		GenHuffmanTable(LHT, LitSlice, yfunc, lj)
+		GenHuffmanTable(DHT, DistSlice, yfunc, dj)
+
+		return LHT, DHT
 	end
 end
 
@@ -320,25 +333,27 @@ end
 local function GetAmount (FS, t, code)
 	code = t[code + 1]
 
-	local code2 = rshift(code, 16)
+	local low = band(code, 0xFFFF)
+	local code2 = (code - low) / 2^16
 
 	if code2 > 0 then
 		code2 = FS:GetBits(code2)
 	end
 
-	return band(code, 0xFFFF) + code2
+	return low + code2
 end
 
 --- DOCME
 function FlateStream:ReadBlock (yfunc)
+local t1=oc()
 	-- Read block header.
 	local hdr = self:GetBits(3)
 
 	if band(hdr, 1) ~= 0 then
-		self.m_eof = true
+		self.m_eof, hdr = true, hdr - 1
 	end
 
-	hdr = rshift(hdr, 1)
+	hdr = hdr / 2
 
 	assert(hdr < 3, "Unknown block type in flate stream")
 
@@ -349,30 +364,28 @@ function FlateStream:ReadBlock (yfunc)
 
 	-- Compressed block.
 	local lit_ct, dist_ct = Compressed(self, hdr == 1, yfunc)
+	local ld, dd, pos = lut.LengthDecode, lut.DistDecode, #self + 1
 
 	while true do
-		repeat
-			local code = self:GetCode(lit_ct)
+		local code = self:GetCode(lit_ct)
 
-			if code < 256 then
-				self[#self + 1] = code
-
-				break
-			elseif code == 256 then
-				return
-			end
-
-			local len = GetAmount(self, lut.LengthDecode, code - 257)
-			local dist = GetAmount(self, lut.DistDecode, self:GetCode(dist_ct))
-			local pos = #self
+		if code > 256 then
+			local len = GetAmount(self, ld, code - 257)
+			local dist = GetAmount(self, dd, self:GetCode(dist_ct)) + 1
 			local from = pos - dist
 
-			for i = 1, len do
-				self[pos + i] = self[from + i]
+			for i = from + 1, from + len do
+				self[pos], pos = self[i], pos + 1
 			end
 
-			yfunc()
-		until true -- simulate "continue" with "break"
+		--	yfunc("read")
+
+		elseif code < 256 then
+			self[pos], pos = code, pos + 1
+		else
+ttt.rb=ttt.rb+oc()-t1
+			return
+		end
 	end
 end
 
