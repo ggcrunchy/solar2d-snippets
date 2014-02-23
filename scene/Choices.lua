@@ -35,6 +35,8 @@ local layout = require("ui.Layout")
 local scenes = require("utils.Scenes")
 
 -- Corona globals --
+local display = display
+local native = native
 local system = system
 
 -- Corona modules --

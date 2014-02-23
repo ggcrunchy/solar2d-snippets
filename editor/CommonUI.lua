@@ -189,7 +189,7 @@ end
 -- @treturn DisplayObject Listbox object.
 -- TODO: Update, reincorporate former Adder docs...
 function M.Listbox (group, x, y, options)
-	local lopts = { left = x, top = y, width = 300, height = 150 }
+	local lopts = { left = x, top = y, width = options.width or 300, height = options.height or 150 }
 
 	-- On Render --
 	local get_text = options.get_text

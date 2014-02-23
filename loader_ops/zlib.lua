@@ -85,19 +85,23 @@ local function Slice (t, from, to)
 	return slice
 end
 
+--
+local function DefYieldFunc () end
+
 --- DOCME
-function DecodeStream:GetBytes (length)
+function DecodeStream:GetBytes (opts)
+	local yfunc = (opts and opts.yfunc) or DefYieldFunc
 	local pos, up_to = self.m_pos, 1 / 0
 
-	if length then
+	if opts and opts.length then
 		up_to = pos + length
 
 		while not self.m_eof and #self < up_to do
-			self:ReadBlock()
+			self:ReadBlock(yfunc)
 		end
 	else
 		while not self.m_eof do
-			self:ReadBlock()
+			self:ReadBlock(yfunc)
 		end
 	end
 
@@ -118,8 +122,11 @@ function M.NewDecodeStream ()
 	return AuxNewStream(DecodeStream)
 end
 
+-- --
+local HuffmanCheckDist = 50
+
 --
-local function GenHuffmanTable (from)
+local function GenHuffmanTable (from, yfunc)
 	-- Cull 0 lengths (optimization).
 	local lengths = {}
 
@@ -139,7 +146,7 @@ local function GenHuffmanTable (from)
 
 	-- Build the table.
 	local codes, size = { max_len = max_len }, lshift(1, max_len)
-	local code, skip = 0, 2
+	local code, skip, step, check = 0, 2, 1, HuffmanCheckDist
 
 	for i = 1, max_len do
 		for j = 1, #lengths, 2 do
@@ -158,7 +165,14 @@ local function GenHuffmanTable (from)
 					codes[k] = bor(lshift(i, 16), slot)
 				end
 
-				code = code + 1
+				code, step = code + 1, step + 1
+
+				--
+				if step == check then
+					check = check + HuffmanCheckDist
+
+					yfunc()
+				end
 			end
 		end
 
@@ -225,8 +239,11 @@ local function Repeat (stream, array, i, len, offset, what)
 	return i
 end
 
+-- --
+local CompressedCheckDist = 50
+
 --
-local function Compressed (FS, fixed_codes)
+local function Compressed (FS, fixed_codes, yfunc)
 	if fixed_codes then
 		return lut.FixedLitCodeTab, lut.FixedDistCodeTab
 	else
@@ -245,10 +262,10 @@ local function Compressed (FS, fixed_codes)
 			clc_lens[map[i] + 1] = 0
 		end
 
-		local clc_tab = GenHuffmanTable(clc_lens)
+		local clc_tab = GenHuffmanTable(clc_lens, yfunc)
 
 		-- Build the literal and distance code tables.
-		local i, len, codes, code_lens = 1, 0, num_lit_codes + num_dist_codes, {}
+		local i, len, codes, code_lens, check = 1, 0, num_lit_codes + num_dist_codes, {}, CompressedCheckDist
 
 		while i <= codes do
 			local code = FS:GetCode(clc_tab)
@@ -262,9 +279,19 @@ local function Compressed (FS, fixed_codes)
 			else
 				len, i, code_lens[i] = code, i + 1, code
 			end
+
+			--
+			if i >= check then
+				check = check + CompressedCheckDist
+
+				yfunc()
+			end
 		end
 
-		return GenHuffmanTable(Slice(code_lens, 1, num_lit_codes)), GenHuffmanTable(Slice(code_lens, num_lit_codes + 1, codes))
+		local lslice = Slice(code_lens, 1, num_lit_codes)
+		local dslice = Slice(code_lens, num_lit_codes + 1, codes)
+
+		return GenHuffmanTable(lslice, yfunc), GenHuffmanTable(dslice, yfunc)
 	end
 end
 
@@ -303,7 +330,7 @@ local function GetAmount (FS, t, code)
 end
 
 --- DOCME
-function FlateStream:ReadBlock ()
+function FlateStream:ReadBlock (yfunc)
 	-- Read block header.
 	local hdr = self:GetBits(3)
 
@@ -317,11 +344,11 @@ function FlateStream:ReadBlock ()
 
 	-- Uncompressed block.
 	if hdr == 0 then
-		return Uncompressed(self)
+		return Uncompressed(self, yfunc)
 	end
 
 	-- Compressed block.
-	local lit_ct, dist_ct = Compressed(self, hdr == 1)
+	local lit_ct, dist_ct = Compressed(self, hdr == 1, yfunc)
 
 	while true do
 		repeat
@@ -343,6 +370,8 @@ function FlateStream:ReadBlock ()
 			for i = 1, len do
 				self[pos + i] = self[from + i]
 			end
+
+			yfunc()
 		until true -- simulate "continue" with "break"
 	end
 end

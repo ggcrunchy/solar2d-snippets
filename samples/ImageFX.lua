@@ -25,12 +25,22 @@
 
 -- Standard library imports --
 local ipairs = ipairs
+local unpack = unpack
+local yield = coroutine.yield
 
 -- Modules --
 local buttons = require("ui.Button")
+local common_ui = require("editor.CommonUI")
 local file = require("utils.File")
 local png = require("loader_ops.png")
 local scenes = require("utils.Scenes")
+local timers = require("game.Timers")
+
+-- Corona globals --
+local display = display
+local native = native
+local system = system
+local timer = timer
 
 -- Corona modules --
 local storyboard = require("storyboard")
@@ -45,34 +55,127 @@ end
 
 Scene:addEventListener("createScene")
 
+-- --
+local Dir = "Background_Assets"
+
+-- --
+local CW, CH = display.contentWidth, display.contentHeight
+
+-- --
+local Since
+
+--
+local function Watch ()
+	local now = system.getTimer()
+
+	if now - Since > 100 then
+		Since = now
+
+		yield()
+	end
+end
+
 --
 function Scene:enterScene ()
 	--
-	local images = file.EnumerateFiles("UI_Assets", { exts = "png" })
+	local images, dir, busy = file.EnumerateFiles(Dir, { exts = "png" }), Dir .. "/"
+
+	Since = system.getTimer()
+
+	self.images = common_ui.Listbox(self.view, 275, 20, {
+		height = 120,
+
+		-- --
+		get_text = function(index)
+			return images[index]
+		end,
+
+		-- --
+		press = function(index)
+			if not self.busy then
+				native.setActivityIndicator(true)
+
+				self.busy = timers.WrapEx(function()
+					local func = png.Load(system.pathForFile(dir .. images[index]), Watch)
+
+					if func then
+						local data = func("get_pixels")
+						local w, h = func("get_dims")
+						local i, y = 1, 155
+--local p = w * 4
+						for Y = 1, h do
+							local x = 5
+
+							for X = 1, w do
+								local pixel = display.newRect(self.view, 0, 0, 1, 1)
+								local r, g, b, a = unpack(data, i, i + 3)
+
+								pixel.anchorX, pixel.x = 0, x
+								pixel.anchorY, pixel.y = 0, y
+--[[
+	local li, ri, ui, bi
+	if X == 1 or X == w then
+		if X == 1 then
+			li, ri = i, i + 4
+		else
+			li, ri = i - 4, i
+		end
+	else
+		li, ri = i - 4, i + 4
+	end
+	if Y == 1 or Y == h then
+		if Y==1 then
+			ui, bi = i, i + p
+		else
+			ui, bi = i - p, i
+		end
+	else
+		ui, bi = i - p, i + p
+	end
+	local lg, lr, lb, la = unpack(data, li, li + 3)
+	local rg, rr, rb, ra = unpack(data, ri, ri + 3)
+	local ug, ur, ub, ua = unpack(data, ui, ui + 3)
+	local bg, br, bb, ba = unpack(data, bi, bi + 3)
+
+	local hgrad = (rg - lg)^2 + (rr - lr)^2 + (rb - lb)^2 + (ra - la)^2
+	local vgrad = (bg - ug)^2 + (br - ur)^2 + (bb - ub)^2 + (ba - ba)^2
+
+	local ii = math.sqrt(hgrad + vgrad) / 255
+
+						pixel:setFillColor(ii)
+]]
+								pixel:setFillColor(r / 255, g / 255, b / 255, a / 255)
+
+								x, i = x + 1, i + 4
+							end
+
+							Watch()
+
+							y = y + 1
+						end
+					end
+
+					--
+					native.setActivityIndicator(false)
+
+					self.busy = nil
+				end)
+			end
+		end
+	})
+
+	--
+	local add_row = common_ui.ListboxRowAdder()
 
 	for _, name in ipairs(images) do
-		--
+		local path = system.pathForFile(dir .. name)
+		local ok, w, h = png.GetInfo(path)
+
+		if ok and w <= CW - 10 and h <= CH - 150 then
+			self.images:insertRow(add_row)
+		end
 	end
---[=[
----[[
-local png = require("loader_ops.png")
-local func = png.Load(system.pathForFile("UI_Assets/tabIcon@2x.png"))
-local w, h = func("get_dims")
-local data = func("get_pixels")
-local i, y = 1, 100
-for _ = 1, h do
-	local x = 100
-	for _ = 1, w do
-		local pixel=display.newRect(0, 0, 1, 1)
-		pixel.anchorX, pixel.x = 0, x
-		pixel.anchorY, pixel.y = 0, y
-		pixel:setFillColor(data[i]/255,data[i+1]/255,data[i+2]/255,data[i+3]/255)
-		x,i=x+1,i+4
-	end
-	y=y+1
-end
---]]
-]=]
+
 	-- Some input selection
 	-- Wait for results
 		-- Given stream, go to town on the data!
@@ -83,7 +186,13 @@ Scene:addEventListener("enterScene")
 
 --
 function Scene:exitScene ()
+	if self.busy then
+		timer.cancel(self.busy)
+	end
 
+	self.images:removeSelf()
+
+	self.busy = nil
 end
 
 Scene:addEventListener("exitScene")

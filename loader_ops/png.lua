@@ -34,12 +34,23 @@ local floor = math.floor
 local gmatch = string.gmatch
 local min = math.min
 local open = io.open
-local pcall = pcall
 local sub = string.sub
 local unpack = unpack
 
 -- Modules --
 local zlib = require("loader_ops.zlib")
+local operators = require("bitwise_ops.operators")
+
+-- Forward references --
+local band
+
+if operators.HasBitLib() then -- Bit library available
+	band = operators.band
+else -- Otherwise, make equivalent for PNG purposes
+	function band (a)
+		return a % 256
+	end
+end
 
 -- Exports --
 local M = {}
@@ -106,9 +117,13 @@ function M.GetInfo (name)
 	return false
 end
 
+-- --
+local PaletteCheckDist = 200
+
 --
-local function DecodePalette (palette)
+local function DecodePalette (palette, yfunc)
 	local pos, decoded = 1, {}
+	local check = PaletteCheckDist
 
 	for i = 1, #palette, 3 do
 		local r, g, b = unpack(palette, i, i + 2)
@@ -116,6 +131,13 @@ local function DecodePalette (palette)
 		decoded[pos], decoded[pos + 1], decoded[pos + 2], decoded[pos + 3] = r, g, b, 255
 
 		pos = pos + 4
+
+		--
+		if pos >= check then
+			check = check + PaletteCheckDist
+
+			yfunc()
+		end
 	end
 
 	return decoded
@@ -138,34 +160,28 @@ end
 
 -- --
 local DecodeAlgorithm = {
-	-- None --
-	function(byte)
-		return byte
-	end,
-
 	-- Sub --
-	function(byte, pixels, i, pos, pixel_bytes)
-		return (byte + GetLeft(pixels, i, pos, pixel_bytes)) % 256
+	function(pixels, i, pos, pixel_bytes)
+		return GetLeft(pixels, i, pos, pixel_bytes)
 	end,
 
 	-- Up --
-	function(byte, pixels, i, _, pixel_bytes, scanline_len, row)
+	function(pixels, i, _, pixel_bytes, scanline_len, row)
 		local col = GetCol(i, pixel_bytes)
-		local upper = row > 0 and GetUpper(pixels, i, pixel_bytes, row, col, scanline_len) or 0
 
-		return (byte + upper) % 256
+		return row > 0 and GetUpper(pixels, i, pixel_bytes, row, col, scanline_len) or 0
 	end,
 
 	-- Average --
-	function(byte, pixels, i, pos, pixel_bytes, scanline_len, row)
+	function(pixels, i, pos, pixel_bytes, scanline_len, row)
 		local col, left = GetCol(i, pixel_bytes), GetLeft(pixels, i, pos, pixel_bytes)
 		local upper = row > 0 and GetUpper(pixels, i, pixel_bytes, row, col, scanline_len) or 0
 
-		return (byte + floor(left + upper) / 2) % 256
+		return floor((left + upper) / 2)
 	end,
 
 	-- Paeth --
-	function(byte, pixels, i, pos, pixel_bytes, scanline_len, row)
+	function(pixels, i, pos, pixel_bytes, scanline_len, row)
 		local col, left, upper, ul = GetCol(i, pixel_bytes), GetLeft(pixels, i, pos, pixel_bytes), 0, 0
 
 		if row > 0 then
@@ -176,48 +192,67 @@ local DecodeAlgorithm = {
 			end
 		end
 
-		local p, paeth = left + upper - ul
+		local p = left + upper - ul
 		local pa, pb, pc = abs(p - left), abs(p - upper), abs(p - ul)
 
 		if pa <= pb and pa <= pc then
-			paeth = left
+			return left
 		elseif pb <= pc then
-			paeth = upper
+			return upper
 		else
-			paeth = ul
+			return ul
 		end
-
-		return (byte + paeth) % 256
 	end
 }
 
+-- --
+local DecodeCheckDist = 15
+
 --
-local function DecodePixels (data, bit_len, w, h)
+local function DecodePixels (data, bit_len, w, h, yfunc)
 	if #data == 0 then
 		return {}
 	end
 
-	data = zlib.NewFlateStream(data):GetBytes()
+	data = zlib.NewFlateStream(data):GetBytes(yfunc and { yfunc = yfunc })
 
 	local pixels, nbytes = {}, bit_len / 8
 	local row, nscan, wpos = 0, nbytes * w, 1
-	local n, w = #data
+	local n, check, rw = #data, DecodeCheckDist
 
 	for rpos = 1, n, nscan + 1 do
-		local algo = assert(DecodeAlgorithm[data[rpos] + 1], "Invalid filter algorithm")
+		rw = min(nscan, n - rpos)
 
-		w = min(nscan, n - rpos)
+		--
+		local algo = data[rpos]
 
-		for i = 1, w do
-			pixels[wpos] = algo(data[rpos + i], pixels, i - 1, wpos, nbytes, nscan, row)
+		if algo > 0 then
+			algo = assert(DecodeAlgorithm[algo], "Invalid filter algorithm")
 
-			wpos = wpos + 1
+			for i = 1, rw do
+				pixels[wpos] = band(data[rpos + i] + algo(pixels, i - 1, wpos, nbytes, nscan, row), 0xFF)
+
+				wpos = wpos + 1
+			end
+
+		--
+		else
+			for i = 1, rw do
+				pixels[wpos], wpos = data[rpos + i], wpos + 1
+			end
 		end
 
+		--
 		row = row + 1
+
+		if row == check then
+			check = check + DecodeCheckDist
+
+			yfunc()
+		end
 	end
 
-	for i = 1, nscan - w do
+	for i = 1, nscan - rw do
 		pixels[wpos], wpos = 0, wpos + 1
 	end
 
@@ -240,9 +275,12 @@ local function GetColor1 (input, i, j)
 	return v, v, v, alpha
 end
 
+-- --
+local CopyCheckDist = 120
+
 --
-local function CopyToImageData (pixels, colors, has_alpha, palette, n)
-	local data, input = {}
+local function CopyToImageData (pixels, colors, has_alpha, palette, n, yfunc)
+	local data, check, input = {}, CopyCheckDist
 
 	if palette then
 		palette, colors, has_alpha = DecodePalette(palette), 4, true
@@ -265,16 +303,27 @@ local function CopyToImageData (pixels, colors, has_alpha, palette, n)
 		local r, g, b, alpha = get_color(input, k, k + count - 1)
 
 		data[i], data[i + 1], data[i + 2], data[i + 3], j = r, g, b, alpha or 255, k + count
+
+		if i >= check then
+			check = check + CopyCheckDist
+
+			yfunc()
+		end
 	end
 
 	return data
 end
 
 --
-local function AuxLoad (png)
+local function DefYieldFunc () end
+
+--
+local function AuxLoad (png, yfunc)
 	local bits, bit_len, colors, color_type, data, has_alpha, palette, w, h
 
 	assert(sub(png, 1, 8) == Signature, "Image is not a PNG")
+
+	yfunc = yfunc or DefYieldFunc
 
 	local pos, total = 9, #png
 
@@ -294,11 +343,15 @@ local function AuxLoad (png)
 		elseif code == "PLTE" then
 			palette = Sub(png, pos, size)
 
+			yfunc()
+
 		-- Image Data --
 		elseif code == "IDAT" then
 			data = data or {}
 
 			data[#data + 1] = Sub(png, pos, size)
+
+			yfunc()
 
 		-- Image End --
 		elseif code == "IEND" then
@@ -331,9 +384,9 @@ local function AuxLoad (png)
 		-- Get Pixels --
 		if what == "get_pixels" then
 			if not pixels then
-				local decoded = DecodePixels(data, bit_len, w, h)
+				local decoded = DecodePixels(data, bit_len, w, h, yfunc)
 
-				pixels, data = pixels or CopyToImageData(decoded, colors, has_alpha, palette, w * h * 4)
+				pixels, data = pixels or CopyToImageData(decoded, colors, has_alpha, palette, w * h * 4, yfunc)
 			end
 
 			return pixels
@@ -341,6 +394,11 @@ local function AuxLoad (png)
 		-- Get Dimensions --
 		elseif what == "get_dims" then
 			return w, h
+
+		-- Set Yield Func --
+		-- arg: Yield function
+		elseif what == "set_yield_func" then
+			yfunc = arg or DefYieldFunc
 
 		-- NYI --
 		else
@@ -350,22 +408,18 @@ local function AuxLoad (png)
 end
 
 --- DOCME
-function M.Load (name)
-	local png, result = open(name, "rb")
+function M.Load (name, yfunc)
+	local png = open(name, "rb")
 
 	if png then
-		local contents, ok = png:read("*a")
+		local contents = png:read("*a")
 
 		png:close()
 
-		ok, result = pcall(AuxLoad, contents)
-
-		if ok then
-			return result
-		end
+		return AuxLoad(contents, yfunc)
 	end
 
-	return nil, result
+	return nil
 end
 
 -- Export the module.
