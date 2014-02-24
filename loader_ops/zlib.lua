@@ -49,7 +49,6 @@ local operators = require("bitwise_ops.operators")
 -- Imports --
 local band = operators.band
 local bnot = operators.bnot
-local bor = operators.bor
 local rshift = operators.rshift
 
 -- Exports --
@@ -77,7 +76,7 @@ local function GenHuffmanTable (codes, from, yfunc, n)
 	-- Build the table.
 	local code, skip, cword, size = 0, 2, 2^16, 2^max_len
 
-	codes.max_len, codes.mask = max_len, size - 1
+	codes.max_len, codes.size = max_len, size
 
 	for i = 1, max_len do
 		for j = 1, nlens, 2 do
@@ -111,15 +110,13 @@ local function GenHuffmanTable (codes, from, yfunc, n)
 end
 
 --
-local function AuxGet (FS, n)
-	local buf, size, bytes, pos = FS.m_code_buf, FS.m_code_size, FS.m_bytes, FS.m_bytes_pos
-local a=2^size
-	while size < n do
-		buf = buf + byte(bytes, pos) * a--bor(buf, byte(bytes, pos) * 2^size)
-		-- TODO: Is this ^^^^ okay? (can first addition trample buf?)... I hope so, as it sped it up!!
-		a=a*256
-		size, pos = size + 8, pos + 1
-	end
+local function AuxGet (FS, n, buf, size)
+	local bytes, pos, shift = FS.m_bytes, FS.m_bytes_pos, 2^size
+
+	repeat
+		buf = buf + byte(bytes, pos) * shift
+		size, pos, shift = size + 8, pos + 1, shift * 256
+	until shift >= n
 
 	FS.m_bytes_pos = pos
 
@@ -128,11 +125,15 @@ end
 
 --
 local function GetBits (FS, bits)
-	local buf, size = AuxGet(FS, bits)
-	local high = 2^bits
-	local bval = buf % high
+	local buf, size, bsize = FS.m_code_buf, FS.m_code_size, 2^bits
 
-	FS.m_code_buf = (buf - bval) / high
+	if size < bits then
+		buf, size = AuxGet(FS, bsize, buf, size)
+	end
+
+	local bval = buf % bsize
+
+	FS.m_code_buf = (buf - bval) / bsize
 	FS.m_code_size = size - bits
 
 	return bval
@@ -140,9 +141,13 @@ end
 
 --- DOCME
 local function GetCode (FS, codes)
-	local buf, size = AuxGet(FS, codes.max_len)
+	local buf, size, csize = FS.m_code_buf, FS.m_code_size, codes.size
 
-	local code = codes[buf % (codes.mask + 1) + 1]
+	if size < codes.max_len then
+		buf, size = AuxGet(FS, csize, buf, size)
+	end
+
+	local code = codes[buf % csize + 1]
 	local cval = code % 2^16
 	local clen = (code - cval) / 2^16
 
