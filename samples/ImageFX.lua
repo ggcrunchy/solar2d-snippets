@@ -27,7 +27,7 @@
 local ipairs = ipairs
 local unpack = unpack
 local yield = coroutine.yield
-TTT={}
+
 -- Modules --
 local buttons = require("ui.Button")
 local common_ui = require("editor.CommonUI")
@@ -100,7 +100,6 @@ function Scene:enterScene ()
 
 					if func then
 						local data = func("get_pixels")
-vdump(TTT)
 						local w, h = func("get_dims")
 						local i, y = 1, 155
 --local p = w * 4

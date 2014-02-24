@@ -38,19 +38,7 @@ local unpack = unpack
 
 -- Modules --
 local zlib = require("loader_ops.zlib")
-local operators = require("bitwise_ops.operators")
 
--- Forward references --
-local band
-
-if operators.HasBitLib() then -- Bit library available
-	band = operators.band
-else -- Otherwise, make equivalent for PNG purposes
-	function band (a)
-		return a % 256
-	end
-end
-local ttt, oc = TTT, os.clock
 -- Exports --
 local M = {}
 
@@ -96,13 +84,9 @@ function M.GetInfo (name)
 	return false
 end
 
--- --
-local PaletteCheckDist = 200
-
 --
 local function DecodePalette (palette, yfunc)
 	local pos, decoded = 1, {}
-	local check = PaletteCheckDist
 
 	for i = 1, #palette, 3 do
 		local r, g, b = unpack(palette, i, i + 2)
@@ -111,12 +95,7 @@ local function DecodePalette (palette, yfunc)
 
 		pos = pos + 4
 
-		--
-	--	if pos >= check then
-	--		check = check + PaletteCheckDist
-
-		--	yfunc("decode_palette")
-	--	end
+		yfunc()
 	end
 
 	return decoded
@@ -193,9 +172,6 @@ local DecodeAlgorithm = {
 	end
 }
 
--- --
-local DecodeCheckDist = 15
-
 --
 local function DecodePixels (data, bit_len, w, h, yfunc)
 	if #data == 0 then
@@ -203,10 +179,10 @@ local function DecodePixels (data, bit_len, w, h, yfunc)
 	end
 
 	data = zlib.NewFlateStream(data):GetBytes(yfunc and { yfunc = yfunc })
-local t1=oc()
+
 	local pixels, nbytes = {}, bit_len / 8
 	local nscan, wpos, n = nbytes * w, 1, #data
-	local roff, check, rw = -nscan, DecodeCheckDist
+	local roff, rw = -nscan
 
 	for rpos = 1, n, nscan + 1 do
 		rw = min(nscan, n - rpos)
@@ -218,7 +194,7 @@ local t1=oc()
 			algo = assert(DecodeAlgorithm[algo], "Invalid filter algorithm")
 
 			for i = 1, rw do
-				pixels[wpos] = band(data[rpos + i] + algo(pixels, i - 1, wpos, nbytes, roff), 0xFF)
+				pixels[wpos] = (data[rpos + i] + algo(pixels, i - 1, wpos, nbytes, roff)) % 256
 
 				wpos = wpos + 1
 			end
@@ -233,17 +209,13 @@ local t1=oc()
 		--
 		roff = roff + nscan
 
-	--	if row == check then
-		--	check = check + DecodeCheckDist
-
-		--	yfunc("decode_pixels")
-	--	end
+		yfunc()
 	end
 
 	for i = 1, nscan - rw do
 		pixels[wpos], wpos = 0, wpos + 1
 	end
-ttt.decode=oc()-t1
+
 	return pixels
 end
 
@@ -263,13 +235,9 @@ local function GetColor1 (input, i, j)
 	return v, v, v, alpha
 end
 
--- --
-local CopyCheckDist = 120
-
 --
 local function CopyToImageData (pixels, colors, has_alpha, palette, n, yfunc)
-local t1=oc()
-	local data, check, input = {}, CopyCheckDist
+	local data, input = {}
 
 	if palette then
 		palette, colors, has_alpha = DecodePalette(palette), 4, true
@@ -293,13 +261,9 @@ local t1=oc()
 
 		data[i], data[i + 1], data[i + 2], data[i + 3], j = r, g, b, alpha or 255, k + count
 
-	--	if i >= check then
-		--	check = check + CopyCheckDist
-
-		--	yfunc("copy")
-	--	end
+		yfunc()
 	end
-ttt.copy=oc()-t1
+
 	return data
 end
 
