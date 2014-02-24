@@ -36,17 +36,17 @@ local sqrt = math.sqrt
 local M = {}
 
 --- DOCME
-function M.Abs (r, i)
-	return sqrt(r * r + i * i)
+function M.Abs (a, b)
+	return sqrt(a * a + b * b)
 end
 
 --- DOCME
-function M.Add (r1, i1, r2, i2)
-	return r1 + r2, i1 + i2
+function M.Add (a, b, c, d)
+	return a + c, b + d
 end
 
 --- DOCME
-function M.Atan (r, i)
+function M.Atan (a, b)
 	--[[
 http://mathforum.org/library/drmath/view/72732.html
 im(arctan(x + iy)) =
@@ -71,32 +71,32 @@ when x = 0 and -1 < y < 1, or
 end
 
 --- DOCME
-function M.Conjugate (r, i)
-	return r, -i
+function M.Conjugate (a, b)
+	return a, -b
 end
 
 --- DOCME
-function M.Exp (r, i)
-	local t = exp(r)
+function M.Exp (a, b)
+	local t = exp(a)
 
-	return t * cos(i), t * sin(i)
+	return t * cos(b), t * sin(b)
 end
 
 --- DOCME
-function M.Inverse (r, i)
-	local denom = r * r + i * i
+function M.Inverse (a, b)
+	local denom = a * a + b * b
 
-	return r / denom, -i / denom
+	return a / denom, -b / denom
 end
 
 --- DOCME
-function M.Log (r, i)
-	return sqrt(r * r + i * i), atan2(i, r)
+function M.Log (a, b)
+	return .5 * log(a * a + b * b), atan2(b, a)
 end
 
 --- DOCME
-function M.Mul (r1, i1, r2, i2)
-	return r1 * r2 - i1 * i2, i1 * r2 + r1 * i2
+function M.Mul (a, b, c, d)
+	return a * c - b * d, b * c + a * d
 end
 
 --- DOCME
@@ -111,13 +111,15 @@ function M.Polar (theta, radius)
 end
 
 --- DOCME
-function M.Pow (r, i, n)
---	(r + j * i)^n
--- exp(n * ln(r + j * i))?
+function M.Pow (a, b, n)
+	local r = exp(.5 * n * log(a * a + b * b))
+	local theta = n * atan2(b, a)
+
+	return r * cos(theta), r * sin(theta)
 end
 
 --- DOCME
-function M.Pow_Complex (r1, i1, r2, i2)
+function M.Pow_Complex (a, b, c, d)
 	--[[
 http://mathforum.org/library/drmath/view/52251.html
 Any real number a can be written as e^ln(a); so
@@ -138,24 +140,74 @@ you find
 end
 
 --- DOCME
-function M.RaiseReal (n, r, i)
-	local t, theta = n^r, i * log(r)
+function M.RaiseReal (a, b, n)
+	local t, theta = n^a, b * log(a)
 
 	return t * cos(theta), t * sin(theta)
 end
 
 --- DOCME
-function M.Scale (r, i, k)
-	return k * r, k * i
+function M.Scale (a, b, k)
+	return k * a, k * b
 end
 
 --- DOCME
-function M.Sub (r1, i1, r2, i2)
-	return r1 - r2, i1 - i2
+function M.Sub (a, b, c, d)
+	return a - c, b - d
 end
 
--- Version with metamethods
--- Also "cached" ones?
+--
+local function MakeMT (new)
+	return {
+		__add = function(c1, c2)
+		end,
+
+		__div = function(c1, c2)
+		end,
+
+		__len = function(c)
+		end,
+
+		__mul = function(c1, c2)
+		end,
+
+		__pow = function(c1, c2)
+		end,
+
+		__sub = function(c1, c2)
+		end,
+
+		__unm = function(c)
+		end
+	}
+end
+
+-- --
+local ComplexMT = MakeMT(function()
+	-- return { x = 0, y = 0 }
+end)
+
+-- --
+local CachedMT = MakeMT(function()
+	-- local c = remove(cache) or {}
+	-- c.cache = cache
+	-- cache = c
+	-- return c
+end)
+
+--- DOCME
+function M.BeginCache ()
+	-- Enter cache mode!
+end
+
+--- DOCME
+function M.Claim (c)
+end
+
+--- DOCME
+function M.CleanUpCache ()
+	-- Clean up cache
+end
 
 -- Export the module.
 return M
