@@ -27,10 +27,14 @@
 local atan2 = math.atan2
 local cos = math.cos
 local exp = math.exp
+local getmetatable = getmetatable
 local log = math.log
 local pi = math.pi
+local remove = table.remove
+local setmetatable = setmetatable
 local sin = math.sin
 local sqrt = math.sqrt
+local type = type
 
 -- Exports --
 local M = {}
@@ -157,56 +161,126 @@ function M.Sub (a, b, c, d)
 end
 
 --
-local function MakeMT (new)
-	return {
-		__add = function(c1, c2)
-		end,
+local New
 
-		__div = function(c1, c2)
-		end,
+--
+local function Get (c)
+	if type(c) == "number" then
+		return c, 0
+	else
+		return c.m_r, c.m_i
+	end
+end
 
-		__len = function(c)
-		end,
+--
+local function Complex (a, b)
+	local c = New()
 
-		__mul = function(c1, c2)
-		end,
+	c.m_r, c.m_i = a, b
 
-		__pow = function(c1, c2)
-		end,
+	return c
+end
 
-		__sub = function(c1, c2)
-		end,
+--
+local ComplexMT = {
+	__add = function(c1, c2)
+		local a, b = Get(c1)
+		local c, d = Get(c2)
+		
+		return Complex(a + b, c + d)
+	end,
 
-		__unm = function(c)
+	__div = function(c1, c2)
+		-- c1 = number? (inverse * c1)
+		-- c2 = number? scale
+		-- normal
+	end,
+
+	Imag = function(c)
+		return Complex(0, c.m_i)
+	end,
+
+	__len = function(c)
+		-- abs
+	end,
+
+	__mul = function(c1, c2)
+		-- Scale, if c1 or c2 is number
+	end,
+
+	__pow = function(c1, c2)
+		-- c1 = number? raise
+		-- c2 = number? pow
+		-- pow_complex
+	end,
+
+	Real = function(c)
+		return Complex(c.m_r, 0)
+	end,
+
+	__sub = function(c1, c2)
+		local a, b = Get(c1)
+		local c, d = Get(c2)
+		
+		return Complex(a - b, c - d)
+	end,
+
+	__unm = function(c)
+		local a, b = Get(c)
+
+		return Complex(-a, -b)
+	end
+}
+
+ComplexMT.__index = ComplexMT
+
+--
+local function DefNew ()
+	return setmetatable({}, ComplexMT)
+end
+
+-- --
+local Cache, Active = {}, {}
+
+--
+local function CachedNew ()
+	local c, n = remove(Cache) or DefNew(), #Active + 1
+
+	c.m_index, Active[n] = n, c
+
+	return c
+end
+
+--
+New = DefNew
+
+--- DOCME
+function M.Begin ()
+	New = CachedNew
+end
+
+--- DOCME
+function M.Detach (c)
+	local index = c.m_index
+
+	if index then
+		Active[index], c.m_index = false
+	end
+end
+
+--- DOCME
+function M.End ()
+	for i = #Active, 1, -1 do
+		local c = Active[i]
+
+		if c then
+			Cache[#Cache + 1] = c
 		end
-	}
-end
 
--- --
-local ComplexMT = MakeMT(function()
-	-- return { x = 0, y = 0 }
-end)
+		Active[i] = nil
+	end
 
--- --
-local CachedMT = MakeMT(function()
-	-- local c = remove(cache) or {}
-	-- c.cache = cache
-	-- cache = c
-	-- return c
-end)
-
---- DOCME
-function M.BeginCache ()
-	-- Enter cache mode!
-end
-
---- DOCME
-function M.Claim (c)
-end
-
---- DOCME
-function M.CleanUpCache ()
-	-- Clean up cache
+	New = DefNew
 end
 
 -- Export the module.

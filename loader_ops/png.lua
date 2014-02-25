@@ -371,5 +371,8 @@ function M.Load (name, yfunc)
 	return nil
 end
 
+--- DOCME
+M.LoadString = AuxLoad
+
 -- Export the module.
 return M
