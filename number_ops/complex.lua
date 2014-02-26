@@ -113,6 +113,13 @@ function M.Mul (a, b, c, d)
 end
 
 --- DOCME
+function M.Normalize (a, b)
+	local mag = sqrt(a * a + b * b)
+
+	return a / mag, b / mag
+end
+
+--- DOCME
 function M.Pow (a, b, n)
 	local r = exp(.5 * n * log(a * a + b * b))
 	local theta = n * atan2(b, a)
@@ -132,10 +139,13 @@ end
 
 --- DOCME
 function M.RaiseReal (n, a, b)
-	local t, theta = n^a, b * log(a)
+	local t, theta = n^a, b * log(n)
 
 	return t * cos(theta), t * sin(theta)
 end
+
+--- DOCME
+M.Reciprocal = M.Inverse
 
 --- DOCME
 function M.Scale (a, b, k)
@@ -222,8 +232,8 @@ end
 --- DOCME
 ComplexMT.Inverse = Unary(M.Inverse)
 
---- DOCME
-ComplexMT.__len = ComplexMT.Abs
+--- DOCME ... not in 5.1, or needs newproxy()
+ComplexMT.__len = M.Abs
 
 --- DOCME
 ComplexMT.Log = Unary(M.Log)
@@ -232,12 +242,18 @@ ComplexMT.Log = Unary(M.Log)
 ComplexMT.__mul = Binary(M.Mul)
 
 --- DOCME
+ComplexMT.Normalize = Unary(M.Normalize)
+
+--- DOCME
 ComplexMT.__pow = Binary(M.Pow_Complex)
 
 --- DOCME
 function ComplexMT:Real ()
 	return Complex(self.m_r, 0)
 end
+
+--- DOCME
+ComplexMT.Reciprocal = M.Reciprocal
 
 --- DOCME
 ComplexMT.__sub = Binary(M.Sub)
@@ -273,6 +289,9 @@ New = DefNew
 function M.Begin ()
 	New = CachedNew
 end
+
+--- DOCME
+M.Complex = Complex
 
 --- DOCME
 function M.Detach (c)
