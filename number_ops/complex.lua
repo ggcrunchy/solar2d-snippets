@@ -219,6 +219,9 @@ ComplexMT.Arg = Unary_Scalar(M.Arg)
 ComplexMT.Atan = Unary(M.Atan)
 
 --- DOCME
+ComplexMT.Conjugate = Unary(M.Conjugate)
+
+--- DOCME
 ComplexMT.__div = Binary(M.Div)
 
 --- DOCME
