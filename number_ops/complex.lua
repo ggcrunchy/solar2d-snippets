@@ -30,12 +30,15 @@ local cos = math.cos
 local exp = math.exp
 local getmetatable = getmetatable
 local log = math.log
+local pairs = pairs
 local pi = math.pi
-local remove = table.remove
 local setmetatable = setmetatable
 local sin = math.sin
 local sqrt = math.sqrt
 local type = type
+
+-- Modules --
+local cache = require("var_ops.cache")
 
 -- Exports --
 local M = {}
@@ -161,8 +164,8 @@ end
 local New
 
 --
-local function Complex (a, b)
-	local c = New()
+local function Make (new, a, b)
+	local c = new()
 
 	c.m_r, c.m_i = a, b
 
@@ -170,12 +173,18 @@ local function Complex (a, b)
 end
 
 --
-local function Get (c)
-	if type(c) == "number" then
-		return c, 0
-	else
-		return c.m_r, c.m_i
-	end
+local function Complex (a, b)
+	return Make(New, a, b)
+end
+
+--
+local ComplexMT = {}
+
+ComplexMT.__index = ComplexMT
+
+--
+local function DefNew ()
+	return setmetatable({}, ComplexMT)
 end
 
 --
@@ -193,6 +202,15 @@ local function Unary_Scalar (func)
 end
 
 --
+local function Get (c)
+	if type(c) == "number" then
+		return c, 0
+	else
+		return c.m_r, c.m_i
+	end
+end
+
+--
 local function Binary (func)
 	return function(c1, c2)
 		local a, b = Get(c1)
@@ -200,11 +218,6 @@ local function Binary (func)
 		return Complex(func(a, b, Get(c2)))
 	end
 end
-
---
-local ComplexMT = {}
-
-ComplexMT.__index = ComplexMT
 
 --- DOCME
 ComplexMT.Abs = Unary_Scalar(M.Abs)
@@ -223,6 +236,14 @@ ComplexMT.Conjugate = Unary(M.Conjugate)
 
 --- DOCME
 ComplexMT.__div = Binary(M.Div)
+
+--- DOCME
+ComplexMT.Dup = Unary(Complex)
+
+--- DOCME
+ComplexMT.Dup_Raw = Unary(function(a, b)
+	return Make(DefNew, a, b)
+end)
 
 --- DOCME
 ComplexMT.Exp = Unary(M.Exp)
@@ -268,57 +289,19 @@ function ComplexMT:__unm ()
 	return Complex(-a, -b)
 end
 
---
-local function DefNew ()
-	return setmetatable({}, ComplexMT)
-end
-
--- --
-local Cache, Active = {}, {}
-
---
-local function CachedNew ()
-	local c, n = remove(Cache) or DefNew(), #Active + 1
-
-	c.m_index, Active[n] = n, c
-
-	return c
-end
-
---
-New = DefNew
+-- 
+local Cache = cache.RecycleGroup(DefNew, function(new)
+	New = new
+end)
 
 --- DOCME
-function M.Begin ()
-	New = CachedNew
-end
+M.Begin = Cache.Begin
 
 --- DOCME
 M.Complex = Complex
 
 --- DOCME
-function M.Detach (c)
-	local index = c.m_index
-
-	if index then
-		Active[index], c.m_index = false
-	end
-end
-
---- DOCME
-function M.End ()
-	for i = #Active, 1, -1 do
-		local c = Active[i]
-
-		if c then
-			Cache[#Cache + 1], c.m_index = c
-		end
-
-		Active[i] = nil
-	end
-
-	New = DefNew
-end
+M.End = Cache.End
 
 -- Export the module.
 return M

@@ -40,6 +40,82 @@ local WipeRange = wipe.WipeRange
 -- Exports --
 local M = {}
 
+--- DOCME
+function M.RecycleGroup (new, set_new, opts)
+	local active, index = {}, 0
+
+	set_new(new)
+
+	--
+	local function CachedNew ()
+		index = index + 1
+
+		local item = active[index]
+
+		if not item then
+			item = new()
+
+			active[index] = item
+		end
+
+		return item
+	end
+
+	--
+	local gfuncs, def = {}, new
+
+	function gfuncs.Begin ()
+		new = CachedNew
+
+		set_new(new)
+	end
+
+	--
+	function gfuncs.End (n)
+		for i = n or 0, #active + 1, -1 do
+			active[i] = nil
+		end
+
+		new, index = def, 0
+
+		set_new(def)
+	end
+
+	--
+	if opts and opts.get_index then
+		function gfuncs.GetIndex ()
+			return index
+		end
+	end
+
+	--
+	if opts and opts.get_size then
+		function gfuncs.GetSize ()
+			return #active
+		end
+	end
+
+	--
+	if opts and opts.remove then
+		function gfuncs.Remove (i)
+			local item = active[i]
+
+			if item then
+				if i >= index then
+					index = index - 1
+				end
+
+				local n = #active
+
+				active[i] = active[n]
+				active[n] = nil
+			end
+		end
+	end
+
+	return gfuncs
+end
+
 --- Builds a simple cache.
 -- @treturn function Cache function.
 --
