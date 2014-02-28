@@ -116,6 +116,16 @@ function M.Mul (a, b, c, d)
 end
 
 --- DOCME
+function M.Mul_I (a, b)
+	return -b, a
+end
+
+--- DOCME
+function M.Mul_NegI (a, b)
+	return b, -a
+end
+
+--- DOCME
 function M.Normalize (a, b)
 	local mag = sqrt(a * a + b * b)
 
@@ -264,6 +274,12 @@ ComplexMT.Log = Unary(M.Log)
 
 --- DOCME
 ComplexMT.__mul = Binary(M.Mul)
+
+--- DOCME
+ComplexMT.Mul_I = Unary(M.Mul_I)
+
+--- DOCME
+ComplexMT.Mul_NegI = Unary(M.Mul_NegI)
 
 --- DOCME
 ComplexMT.Normalize = Unary(M.Normalize)
