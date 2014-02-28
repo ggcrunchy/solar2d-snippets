@@ -260,7 +260,7 @@ ComplexMT.Exp = Unary(M.Exp)
 
 --- DOCME
 function ComplexMT:Imag ()
-	return Complex(0, self.m_i)
+	return self.m_i
 end
 
 --- DOCME
@@ -289,7 +289,7 @@ ComplexMT.__pow = Binary(M.Pow_Complex)
 
 --- DOCME
 function ComplexMT:Real ()
-	return Complex(self.m_r, 0)
+	return self.m_r
 end
 
 --- DOCME
