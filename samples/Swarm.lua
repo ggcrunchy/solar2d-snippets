@@ -24,6 +24,7 @@
 --
 
 -- Standard library imports --
+local atan2 = math.atan2
 local cos = math.cos
 local max = math.max
 local min = math.min
@@ -38,6 +39,7 @@ local array_index = require("array_ops.index")
 local buttons = require("ui.Button")
 local hsv = require("ui.HSV")
 local scenes = require("utils.Scenes")
+local simplex_noise = require("number_ops.simplex_noise")
 local touch = require("ui.Touch")
 
 -- Corona globals --
@@ -72,14 +74,16 @@ local function SetValue (event)
 end
 -- /HACK
 
-	local left, top, xmax = 20, 130, -1
+	local width = 120
+	local right = display.contentWidth - 20
+	local left, top, xmin = (right - width), 20, 1 / 0
 	local y = top
 
 	for k, v in pairs{
-		max_speed = 4,
+		max_speed = 15, seek = 15,
 		cohesion = 15, separation = 15,
-		avoid_walls = 15, seek = 15,
-		wander = 15
+		avoid_walls = 15, wall_dist = 25,
+		wander = 15, wander_radius = 30
 	} do
 		local slider = widget.newSlider{
 			top = y, left = left,
@@ -97,22 +101,23 @@ end
 
 		text:setFillColor(0, 1, 0)
 
-		text.anchorX = 0
-		text.x = slider.x + slider.width / 2 + 15
+		text.anchorX = 1
+		text.x = slider.x - slider.width / 2 - 15
 		text.y = slider.y
 
-		xmax = max(xmax, text.x + text.width)
+		xmin = min(xmin, text.x - text.width)
 	end
 
 	local nitems = self.panel.numChildren
 	local ymax = max(self.panel[nitems - 1].contentBounds.yMax, self.panel[nitems].contentBounds.yMax)
-	print(ymax, top)
-	local back = display.newRoundedRect(self.panel, 0, 0, xmax - left + 20, ymax - top + 20, 15)
+	local back = display.newRoundedRect(self.panel, 0, 0, right - xmin + 20, ymax - top + 20, 15)
 
-	back:setFillColor(.7, .4)
+	back:setFillColor(.6, .4)
+	back:setStrokeColor(.3)
 
-	back.anchorX, back.x = 0, left - 10
+	back.anchorX, back.x = 0, xmin - 10
 	back.anchorY, back.y = 0, top - 10
+	back.strokeWidth = 4
 end
 
 Scene:addEventListener("createScene")
@@ -191,10 +196,15 @@ local Params = {
 	end
 }
 
+-- --
+local WallDist
+
 --
 local function AvoidWalls (boid)
 	return 0, 0
 --[[
+See e.g. Mat Buckland's "Programming Game AI By Example" 
+
   //the feelers are contained in a std::vector, m_Feelers
   CreateFeelers();
   
@@ -309,9 +319,21 @@ local function Separation (boid, neighbors)
 	return 0, 0
 end
 
+-- --
+local Jitter = .8
+
+-- --
+local WanderRadius
+
 --
-local function Wander (boid)
-	return 0, 0
+local function Wander (boid, dt)
+	local angle = -pi + 2 * simplex_noise.Simplex2D(boid.x, boid.y) * pi
+	local hx, hy, jitter = boid.m_hx, boid.m_hy, Jitter * dt
+	local sx, sy, cura = -hy, hx, atan2(hy, hx)
+	hx, hy = cos(angle), sin(angle)
+	return WanderRadius * hx, WanderRadius * hy
+
+--	return 0, 0
 --[[
  //this behavior is dependent on the update rate, so this line must
   //be included when using time independent framerate.
@@ -349,12 +371,12 @@ local AvoidWallsW, CohesionW, SeekW, SeparationW, WanderW
 local TargetX, TargetY
 
 --
-local function ComputeSteeringForce (boid)
+local function ComputeSteeringForce (boid, dt)
 	local neighbors = boid.m_neighbors
 	local awx, awy = AvoidWalls(boid)
 	local sx, sy = Separation(boid, neighbors)
 	local cx, cy = Cohesion(boid, neighbors)
-	local wx, wy = Wander(boid)
+	local wx, wy = Wander(boid, dt)
 	local spx, spy = Seek(boid, TargetX, TargetY)
 
 	--
@@ -381,6 +403,10 @@ function Scene:enterScene ()
 	self.center = display.newCircle(self.view, display.contentCenterX, display.contentCenterY, 20)
 
 	self.center:addEventListener("touch", DragObject)
+	self.center:setFillColor(.2, .4)
+	self.center:setStrokeColor(0, 0, 1)
+
+	self.center.strokeWidth = 3
 
 	--
 	for _, slider in pairs(self.sliders) do
@@ -405,9 +431,12 @@ function Scene:enterScene ()
 
 		SetHue(boid, true)
 
-		-- Initial headings?
+		--
 		boid.m_vx = -1 + 2 * random()
 		boid.m_vy = -1 + 2 * random()
+
+		boid.m_hx = boid.m_vx
+		boid.m_hy = boid.m_vy
 
 		angle = angle + da
 
@@ -439,9 +468,11 @@ function Scene:enterScene ()
 		--
 		MaxSpeed = sliders.max_speed.value
 		AvoidWallsW = sliders.avoid_walls.value / 20
-		CohesionW = sliders.cohesion.value / 20
+		CohesionW = sliders.cohesion.value / 5
 		SeekW = sliders.seek.value / 20
-		SeparationW = sliders.separation.value / 20
+		SeparationW = sliders.separation.value / 100
+		WallDist = sliders.wall_dist.value / 30
+		WanderRadius = 1 + sliders.wander_radius.value / 20
 		WanderW = sliders.wander.value / 20
 
 		--
@@ -451,7 +482,7 @@ function Scene:enterScene ()
 			-- Prep boid? (velocity, cum. force, etc.)
 
 			UpdateGrid(grid, boid, Neighborhood, EnumNeighbors)
-			ComputeSteeringForce(boid)
+			ComputeSteeringForce(boid, dt)
 		end
 
 		--
@@ -461,13 +492,24 @@ function Scene:enterScene ()
 			--
 			UpdateGrid(grid, boid, Neighborhood, RemoveFromCell)
 
+			-- TODO: Compare with RK4
 			local vx, vy = boid.m_vx, boid.m_vy
 
 			boid.x = boid.x + vx * dt
 			boid.y = boid.y + vy * dt
 
-			boid.m_vx = vx + boid.m_fx * dt
-			boid.m_vy = vy + boid.m_fy * dt
+			vx = vx + boid.m_fx * dt
+			vy = vy + boid.m_fy * dt
+
+			boid.m_vx = vx
+			boid.m_vy = vy
+
+			local mag = sqrt(vx * vx + vy * vy)
+
+			if mag > 1e-9 then
+				boid.m_hx = vx / mag
+				boid.m_hy = vy / mag
+			end
 
 			-- Vary the boid's color a little.
 			SetHue(boid)
