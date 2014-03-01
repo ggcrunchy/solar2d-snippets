@@ -76,50 +76,14 @@ void cubicMVCs(const vector<Point2D> &poly, const vector<int> &edge, const Point
 
 /*** CubicMVCs.cpp */
 
-inline double inner(const Point2D &a, const Point2D &b) {
-	return a.x*b.x+a.y*b.y;
-}
 inline double area(const Point2D &a, const Point2D &b) {
 	return a.y*b.x-a.x*b.y;
-}
-inline double dist(const Point2D &a, const Point2D &b) {
-	return sqrt((a.x-b.x)*(a.x-b.x)+(a.y-b.y)*(a.y-b.y));
-}
-inline double distSquare(const Point2D &a, const Point2D &b) {
-	return (a.x-b.x)*(a.x-b.x)+(a.y-b.y)*(a.y-b.y);
-}
-inline double modulus(const Point2D &a) {
-	return sqrt(a.x*a.x+a.y*a.y);
-}
-inline Point2D conj(const Point2D &a) {
-	return Point2D(a.x, -a.y);
 }
 inline Point2D rotateL(const Point2D &a) {
 	return Point2D(-a.y, a.x);
 }
 inline Point2D rotateR(const Point2D &a) {
 	return Point2D(a.y, -a.x);
-}
-Point2D operator + (const Point2D &a, const Point2D &b) {
-	return Point2D(a.x+b.x, a.y+b.y);
-}
-Point2D operator - (const Point2D &a, const Point2D &b) {
-	return Point2D(a.x-b.x, a.y-b.y);
-}
-Point2D operator * (const Point2D &a, double t) {
-	return Point2D(a.x*t, a.y*t);
-}
-Point2D operator * (double t, const Point2D &a) {
-	return Point2D(a.x*t, a.y*t);
-}
-Point2D operator / (const Point2D &a, double t) {
-	return Point2D(a.x/t, a.y/t);
-}
-Point2D operator * (const Point2D &a, const Point2D &b) {
-	return Point2D(a.x*b.x-a.y*b.y, a.x*b.y+a.y*b.x);
-}
-Point2D operator / (const Point2D &a, const Point2D &b) {
-	return Point2D(a.x*b.x+a.y*b.y, -a.x*b.y+a.y*b.x)/inner(b, b);
 }
 Point2D log(const Point2D &a) {
 	double R = log(inner(a, a))/2;

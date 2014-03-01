@@ -26,6 +26,8 @@
 -- Standard library imports --
 local assert = assert
 local remove = table.remove
+local pcall = pcall
+local setmetatable = setmetatable
 local type = type
 
 -- Modules --
@@ -41,74 +43,96 @@ local WipeRange = wipe.WipeRange
 local M = {}
 
 --- DOCME
-function M.RecycleGroup (new, set_new, opts)
-	local active, index = {}, 0
+function M.Factory (create_mt)
+	return function()
+		--
+		local mt = {}
 
-	set_new(new)
+		mt.__index = mt
 
-	--
-	local function CachedNew ()
-		index = index + 1
+		--
+		local active, index, has_begun = {}, 0, false
 
-		local item = active[index]
+		--
+		local function new (use_def)
+			if has_begun and not use_def then
+				index = index + 1
 
-		if not item then
-			item = new()
+				local item = active[index]
 
-			active[index] = item
-		end
+				if not item then
+					item = setmetatable({}, mt)
 
-		return item
-	end
-
-	--
-	local def = new
-
-	return function(what, arg)
-		-- Begin --
-		if what == "begin" then
-			new = CachedNew
-
-			set_new(new)
-
-		-- End --
-		-- arg: Size limit to impose on cache
-		elseif what == "end" then
-			for i = arg or 0, #active + 1, -1 do
-				active[i] = nil
-			end
-
-			new, index = def, 0
-
-			set_new(def)
-
-		-- Has Begun? --
-		elseif what == "has_begun" then
-			return new == CachedNew
-
-		-- Remove --
-		-- arg: Removal index
-		elseif what == "remove" then
-			local item = active[arg]
-
-			if item then
-				if arg >= index then
-					index = index - 1
+					active[index] = item
 				end
 
-				local n = #active
-
-				active[arg] = active[n]
-				active[n] = nil
+				return item
+			else
+				return setmetatable({}, mt)
 			end
+		end
 
-		-- Get Index --
-		elseif what == "get_index" then
-			return index
+		--
+		local make = create_mt(mt, new)
 
-		-- Get Size --
-		elseif what == "get_size" then
-			return #active
+		--
+		return function(what, arg)
+			-- Begin --
+			if what == "begin" then
+				has_begun = true
+
+				return make
+
+			-- End --
+			-- arg: Size limit to impose on cache
+			elseif what == "end" then
+				for i = arg or 0, #active + 1, -1 do
+					active[i] = nil
+				end
+
+				index, has_begun = 0, false
+
+			-- In --
+			-- arg: Function to call
+			elseif what == "in" then
+				local prev = has_begun
+
+				has_begun = true
+
+				local ok, result = pcall(arg, make)
+
+				has_begun = prev
+
+				return ok, result
+
+			-- Has Begun? --
+			elseif what == "has_begun" then
+				return has_begun
+
+			-- Remove --
+			-- arg: Removal index
+			elseif what == "remove" then
+				local item = active[arg]
+
+				if item then
+					if arg >= index then
+						index = index - 1
+					end
+
+					local n = #active
+
+					active[arg] = active[n]
+					active[n] = nil
+				end
+
+			-- Get Index --
+			elseif what == "get_index" then
+				return index
+
+			-- Get Size --
+			elseif what == "get_size" then
+				return #active
+			end
 		end
 	end
 end

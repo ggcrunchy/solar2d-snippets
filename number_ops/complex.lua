@@ -170,148 +170,132 @@ function M.Sub (a, b, c, d)
 	return a - c, b - d
 end
 
---
-local New
-
---
-local function Make (new, a, b)
-	local c = new()
-
-	c.m_r, c.m_i = a, b
-
-	return c
-end
-
---
-local function Complex (a, b)
-	return Make(New, a, b)
-end
-
---
-local ComplexMT = {}
-
-ComplexMT.__index = ComplexMT
-
---
-local function DefNew ()
-	return setmetatable({}, ComplexMT)
-end
-
---
-local function Unary (func)
-	return function(c)
-		return Complex(func(c.m_r, c.m_i))
-	end
-end
-
---
-local function Unary_Scalar (func)
-	return function(c)
-		return func(c.m_r, c.m_i)
-	end
-end
-
---
-local function Get (c)
-	if type(c) == "number" then
-		return c, 0
-	else
-		return c.m_r, c.m_i
-	end
-end
-
---
-local function Binary (func)
-	return function(c1, c2)
-		local a, b = Get(c1)
-		
-		return Complex(func(a, b, Get(c2)))
-	end
-end
-
---- DOCME
-ComplexMT.Abs = Unary_Scalar(M.Abs)
-
---- DOCME
-ComplexMT.__add = Binary(M.Add)
-
---- DOCME
-ComplexMT.Arg = Unary_Scalar(M.Arg)
-
---- DOCME
-ComplexMT.Atan = Unary(M.Atan)
-
---- DOCME
-ComplexMT.Conjugate = Unary(M.Conjugate)
-
---- DOCME
-ComplexMT.__div = Binary(M.Div)
-
---- DOCME
-ComplexMT.Dup = Unary(Complex)
-
---- DOCME
-ComplexMT.Dup_Raw = Unary(function(a, b)
-	return Make(DefNew, a, b)
-end)
-
---- DOCME
-ComplexMT.Exp = Unary(M.Exp)
-
---- DOCME
-function ComplexMT:Imag ()
-	return self.m_i
-end
-
---- DOCME
-ComplexMT.Inverse = Unary(M.Inverse)
-
---- DOCME ... not in 5.1, or needs newproxy()
-ComplexMT.__len = M.Abs
-
---- DOCME
-ComplexMT.Log = Unary(M.Log)
-
---- DOCME
-ComplexMT.__mul = Binary(M.Mul)
-
---- DOCME
-ComplexMT.Mul_I = Unary(M.Mul_I)
-
---- DOCME
-ComplexMT.Mul_NegI = Unary(M.Mul_NegI)
-
---- DOCME
-ComplexMT.Normalize = Unary(M.Normalize)
-
---- DOCME
-ComplexMT.__pow = Binary(M.Pow_Complex)
-
---- DOCME
-function ComplexMT:Real ()
-	return self.m_r
-end
-
---- DOCME
-ComplexMT.Reciprocal = M.Reciprocal
-
---- DOCME
-ComplexMT.__sub = Binary(M.Sub)
-
---- DOCME
-function ComplexMT:__unm ()
-	local a, b = Get(self)
-
-	return Complex(-a, -b)
-end
-
 --- DOCME 
-M.Cache = cache.RecycleGroup(DefNew, function(new)
-	New = new
-end)
+M.CacheFactory = cache.Factory(function(ComplexMT, new)
+	--
+	local function Complex (a, b, use_def)
+		local c = new(use_def)
 
---- DOCME
-M.Complex = Complex
+		c.m_r, c.m_i = a, b
+
+		return c
+	end
+
+	--
+	local function Unary (func)
+		return function(c)
+			return Complex(func(c.m_r, c.m_i))
+		end
+	end
+
+	--
+	local function Unary_Scalar (func)
+		return function(c)
+			return func(c.m_r, c.m_i)
+		end
+	end
+
+	--
+	local function Get (c)
+		if type(c) == "number" then
+			return c, 0
+		else
+			return c.m_r, c.m_i
+		end
+	end
+
+	--
+	local function Binary (func)
+		return function(c1, c2)
+			local a, b = Get(c1)
+			
+			return Complex(func(a, b, Get(c2)))
+		end
+	end
+
+	--- DOCME
+	ComplexMT.Abs = Unary_Scalar(M.Abs)
+
+	--- DOCME
+	ComplexMT.__add = Binary(M.Add)
+
+	--- DOCME
+	ComplexMT.Arg = Unary_Scalar(M.Arg)
+
+	--- DOCME
+	ComplexMT.Atan = Unary(M.Atan)
+
+	--- DOCME
+	ComplexMT.Conjugate = Unary(M.Conjugate)
+
+	--- DOCME
+	ComplexMT.__div = Binary(M.Div)
+
+	--- DOCME
+	ComplexMT.Dup = Unary(Complex)
+
+	--- DOCME
+	ComplexMT.Dup_Raw = Unary(function(a, b)
+		return Complex(a, b, true)
+	end)
+
+	--- DOCME
+	function ComplexMT.__eq (c1, c2)
+		return c1.m_r == c2.m_r and c1.m_i == c2.m_i
+	end
+
+	--- DOCME
+	ComplexMT.Exp = Unary(M.Exp)
+
+	--- DOCME
+	function ComplexMT:Imag ()
+		return self.m_i
+	end
+
+	--- DOCME
+	ComplexMT.Inverse = Unary(M.Inverse)
+
+	--- DOCME ... not in 5.1, or needs newproxy()
+	ComplexMT.__len = M.Abs
+
+	--- DOCME
+	ComplexMT.Log = Unary(M.Log)
+
+	--- DOCME
+	ComplexMT.__mul = Binary(M.Mul)
+
+	--- DOCME
+	ComplexMT.Mul_I = Unary(M.Mul_I)
+
+	--- DOCME
+	ComplexMT.Mul_NegI = Unary(M.Mul_NegI)
+
+	--- DOCME
+	ComplexMT.Normalize = Unary(M.Normalize)
+
+	--- DOCME
+	ComplexMT.__pow = Binary(M.Pow_Complex)
+
+	--- DOCME
+	function ComplexMT:Real ()
+		return self.m_r
+	end
+
+	--- DOCME
+	ComplexMT.Reciprocal = M.Reciprocal
+
+	--- DOCME
+	ComplexMT.__sub = Binary(M.Sub)
+
+	--- DOCME
+	function ComplexMT:__unm ()
+		local a, b = Get(self)
+
+		return Complex(-a, -b)
+	end	
+
+	return Complex
+end)
 
 -- Export the module.
 return M
