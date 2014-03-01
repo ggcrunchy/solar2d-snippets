@@ -62,58 +62,55 @@ function M.RecycleGroup (new, set_new, opts)
 	end
 
 	--
-	local gfuncs, def = {}, new
+	local def = new
 
-	function gfuncs.Begin ()
-		new = CachedNew
+	return function(what, arg)
+		-- Begin --
+		if what == "begin" then
+			new = CachedNew
 
-		set_new(new)
-	end
+			set_new(new)
 
-	--
-	function gfuncs.End (n)
-		for i = n or 0, #active + 1, -1 do
-			active[i] = nil
-		end
+		-- End --
+		-- arg: Size limit to impose on cache
+		elseif what == "end" then
+			for i = arg or 0, #active + 1, -1 do
+				active[i] = nil
+			end
 
-		new, index = def, 0
+			new, index = def, 0
 
-		set_new(def)
-	end
+			set_new(def)
 
-	--
-	if opts and opts.get_index then
-		function gfuncs.GetIndex ()
-			return index
-		end
-	end
+		-- Has Begun? --
+		elseif what == "has_begun" then
+			return new == CachedNew
 
-	--
-	if opts and opts.get_size then
-		function gfuncs.GetSize ()
-			return #active
-		end
-	end
-
-	--
-	if opts and opts.remove then
-		function gfuncs.Remove (i)
-			local item = active[i]
+		-- Remove --
+		-- arg: Removal index
+		elseif what == "remove" then
+			local item = active[arg]
 
 			if item then
-				if i >= index then
+				if arg >= index then
 					index = index - 1
 				end
 
 				local n = #active
 
-				active[i] = active[n]
+				active[arg] = active[n]
 				active[n] = nil
 			end
+
+		-- Get Index --
+		elseif what == "get_index" then
+			return index
+
+		-- Get Size --
+		elseif what == "get_size" then
+			return #active
 		end
 	end
-
-	return gfuncs
 end
 
 --- Builds a simple cache.

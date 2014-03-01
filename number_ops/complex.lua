@@ -305,19 +305,13 @@ function ComplexMT:__unm ()
 	return Complex(-a, -b)
 end
 
--- 
-local Cache = cache.RecycleGroup(DefNew, function(new)
+--- DOCME 
+M.Cache = cache.RecycleGroup(DefNew, function(new)
 	New = new
 end)
 
 --- DOCME
-M.Begin = Cache.Begin
-
---- DOCME
 M.Complex = Complex
-
---- DOCME
-M.End = Cache.End
 
 -- Export the module.
 return M
