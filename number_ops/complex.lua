@@ -90,6 +90,13 @@ function M.Conjugate (a, b)
 end
 
 --- DOCME
+function M.Distance (a, b, c, d)
+	local dr, di = c - a, d - b
+
+	return sqrt(dr * dr + di * di)
+end
+
+--- DOCME
 function M.Div (a, b, c, d)
 	local denom = c * c + d * d
 
@@ -212,7 +219,15 @@ M.CacheFactory = cache.Factory(function(ComplexMT, new)
 	ComplexMT.Atan = uf(M.Atan)
 
 	--- DOCME
+	function ComplexMT:Components ()
+		return self.m_r, self.m_i
+	end
+
+	--- DOCME
 	ComplexMT.Conjugate = uf(M.Conjugate)
+
+	--- DOCME
+	ComplexMT.Distance = bf_scalar(M.Distance)
 
 	--- DOCME
 	ComplexMT.__div = bf(M.Div)

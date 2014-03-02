@@ -107,33 +107,38 @@ Point2D atan(const Point2D &a) {
 
 --
 local function BoundaryCoords (poly, p, v, gn, gt, i, j, at, n1, n2)
+	--
 	for i = 1, n1 do
 		v[i] = 0
 	end
 
+	local dist_i = p:Distance(poly[i])
+	local dist_j = p:Distance(poly[j])
+	local sum_dists = dist_i + dist_j
+	local alpha_i = dist_j / sum_dists
+	local alpha_j = dist_i / sum_dists
+	local cubic_i, cubic_j = alpha_i^3, alpha_j^3
+	local diff_cubics = cubic_i - cubic_j
+
+	v[i] = alpha_i + diff_cubics
+	v[j] = alpha_j - diff_cubics
+
+	--
 	for i = 1, n2 do
 		gt[i], gn[i] = 0, 0
 	end
---[[
-	double distI = dist(p, poly[i])
-	double distJ = dist(p, poly[j])
-	double distIJ = dist(poly[i], poly[j])
-	double alphaI = distJ/(distI+distJ)
-	double alphaJ = distI/(distI+distJ)
-	double cubicI = alphaI*alphaI*alphaJ
-	double cubicJ = alphaJ*alphaJ*alphaI
-	v[i] = alphaI+cubicI-cubicJ
-	v[j] = alphaJ+cubicJ-cubicI
-	gt[at + 1] = distIJ*cubicI;
-	gt[at + 2] = distIJ*cubicJ;
-]]
+
+	local dist_ij = poly[i]:Distance(poly[j])
+
+	gt[at + 1] = dist_ij * cubic_i
+	gt[at + 2] = dist_ij * cubic_j
 end
 
 -- --
 local A, B, C = {}, {}, {}
 
 -- --
-local Y, Z = {}, {}
+local Y, Z, Z3 = {}, {}, {}
 
 -- --
 local V = { {}, {}, {} }
@@ -149,6 +154,7 @@ local function Init (poly, p, n1, n2)
 	for i = 1, n1 do
 		Y[i] = poly[i] - p
 		Z[i] = Y[i]:Normalize()
+		Z3[i] = Z[i]^3
 	end
 
 	A[1], A[2], A[3] = 0, 0, 0
@@ -168,22 +174,237 @@ local function Init (poly, p, n1, n2)
 	end
 end
 
+--[[
+	double coscosI = (valueI+intgI.x)/2;
+	double sinsinI = (valueI-intgI.x)/2;
+	double sincosI = intgI.y/2;
+	double coscosJ = (valueJ+intgJ.x)/2;
+	double sinsinJ = (valueJ-intgJ.x)/2;
+	double sincosJ = intgJ.y/2;
+	B[1] += 2*(coscosI+coscosJ);
+	B[2] += 2*(sincosI+sincosJ);
+	C[1] += 2*(sincosI+sincosJ);
+	C[2] += 2*(sinsinI+sinsinJ);
+	gIJ = -vecIJ.x*(coscosI+coscosJ)-vecIJ.y*(sincosI+sincosJ);
+	gnCoeff[1][at + 1] += (vecIJ.y*coscosI-vecIJ.x*sincosI);
+	gnCoeff[1][at + 2] += (vecIJ.y*coscosJ-vecIJ.x*sincosJ);
+	vCoeff[1][i] -= gIJ*invDistIJ;
+	vCoeff[1][j] += gIJ*invDistIJ;
+	gIJ = -vecIJ.x*(sincosI+sincosJ)-vecIJ.y*(sinsinI+sinsinJ);
+	gnCoeff[2][at + 1] += (vecIJ.y*sincosI-vecIJ.x*sinsinI);
+	gnCoeff[2][at + 2] += (vecIJ.y*sincosJ-vecIJ.x*sinsinJ);
+]]
+
+--[[
+	coscosI = (valueI+intgI.x)/2;
+	sinsinI = (valueI-intgI.x)/2;
+	sincosI = intgI.y/2;
+	coscosJ = (valueJ+intgJ.x)/2;
+	sinsinJ = (valueJ-intgJ.x)/2;
+	sincosJ = intgJ.y/2;
+	gtCoeff[1][at + 1] -= (vecIJ.x*coscosI+vecIJ.y*sincosI);
+	gtCoeff[1][at + 2] += (vecIJ.x*coscosJ+vecIJ.y*sincosJ);
+	gtCoeff[2][at + 1] -= (vecIJ.x*sincosI+vecIJ.y*sinsinI);
+	gtCoeff[2][at + 2] += (vecIJ.x*sincosJ+vecIJ.y*sinsinJ);
+]]
+
+-- --
+local Cache = complex.CacheFactory()
+
+--
+local function RealJ2 (c)
+	return 2 * (c:Mul_NegI():Real())
+end
+
+--
+local function UnpackToZ (from, base)
+	local r, i = from:Components()
+
+	return i / 2, (base + r) / 2, (base - r) / 2
+end
+
 --
 local function Middle (v, gn, gt, i, j, at)
+	local make = Cache("begin")
+
 	--
 	local yi, yj = Y[i], Y[j]
 	local dy = yj - yi
-	local area, dist_sqr = abs(yi:Area(yj)), dy:Norm()
+	local area, dist_sqr, result = abs(yi:Area(yj)), dy:Norm()
 
-	if area < 1e-10 * dist_sqr then
-		local max_inner = (1 + 1e-10) * dist_sqr
-
-		return dy:Inner(yi) > max_inner and dy:Inner(yj) < max_inner
-	end
+	--
+	if area > 1e-10 * dist_sqr then
+		local dist = sqrt(dist_sqr)
+		local idist = 1 / dist
 --[[
-	double distIJ = sqrt(distSquareIJ);
-	double invDistIJ = 1.00/distIJ;
+	L(i) = | p(i + 1) - p(i) | <- dist
 
+	t(i), scalar = | p[t] - p(i) | / | p(i + 1) - p(i) | <- ?
+
+	t(i), vector { t(i;X) t(i;Y) } = (p(i+1) - p(i)) / L(i) <- ?
+	n(i) = { n(i;X) n(i;Y) } = outward normal of { p(i) p(i+1) }
+]]
+		--
+		local uci, ucj = yi:Conjugate(), yj:Conjugate()
+		local denom = (yi * ucj):Imag() * 2
+		local m, k, z = (uci / denom):Mul_I(), ((uci - ucj) / denom):Mul_I(), Z[i]
+		local M, K, iz, ik = m:Conjugate(), k:Conjugate(), 1 / z, 1 / k
+		local t = (m * z + M * iz) / (k * z + K * iz)
+
+--[[
+	Z(i;k,0,0) = C(3,0,k)
+	Z(i;k,1,0) = Real(C(2,1,k))
+	Z(i;k,0,1) = Imag(C(2,1,k))
+	Z(i;k,1,1) = 1/2*Imag(C(1,2,k))
+	Z(i;k,2,0) = 1/2*[ C(1,0,k) + Real(C(1,2,k)) ]
+	Z(i;k,0,2) = 1/2*[ C(1,0,k) - Real(C(1,2,k)) ]
+]]
+
+		--
+		local I0 = (Z3[j] - Z3[i]) / 3
+		local I1, I2 = Z[j] - Z[i], -I0:Conjugate()
+
+		--
+		local kI0, mI0 = k * I0, m * I0
+		local kI1, mI1 = k * I1, m * I1
+		local MI1, KI1 = M * I1, K * I1
+		local kk, mm = k * k, m * m
+		local kM, mK = k * M, m * K
+		local kK2, mM2 = 2 * k:Norm(), 2 * m:Norm()
+
+		--
+		local c300 = RealJ2(kk * (kI0 + 3 * KI1))
+		local c301 = RealJ2(kk * (mI0 + MI1) + kK2 * mI1)
+		local c302 = RealJ2(mm * (kI0 + KI1) + mM2 * kI1)
+		local c303 = RealJ2(mm * (mI0 + 3 * MI1))
+--[[
+C(3,0,0) = 2*Real(-j*[ k^3I0 + 3k^2KI1 ]) -- kk * (kI0 + 3 * KI1) -> Mul_NegI():Real() * 2
+C(3,0,1) = 2*Real(-j*[ k^2mI0 + (k^2M + 2kKm)I1 ]) -- kk * mI0 + (kM + 2mK) * kI1
+C(3,0,2) = 2*Real(-j*[ m^2kI0 + (m^2K + 2mMk)I1 ]) -- mm * kI0 + (mK + 2kM) * mI1
+C(3,0,3) = 2*Real(-j*[ m^3I0 + 3m^2MI1 ]) -- mm * (mI0 + 3 * MI1)
+]]
+		--
+		local kx = ik:Abs()
+		local H0 = kx * ((Z[j] * kx):Atan() - (z * kx):Atan())
+		local H1 = (I1 - K * H0) * ik
+
+		--
+		local KK, MM = K * K, M * M
+		local m_k, M_K = m * ik, M / K
+		local mm_k, MI2 = m * m_k, M * I2
+
+		--
+		local c210 = (k * kI0 + kK2 * I1 + KK * I2):Mul_I()
+		local c211 = (k * mI0 + (kM + mK) * I1 + K * MI2):Mul_I()
+		local c212 = (m * mI0 + mM2 * I1 + MM * I2):Mul_I()
+		local c213 = (mm_k * mI0 + MM * MI2 / (KK * K)):Mul_I() + mm * (3 * M - m_k * K) * H1 + MM * (3 * m - M_K * k) * H0
+--[[
+C(2,1,0) = j*[ k^2I0 + 2kKI1 + K^2I2 ] -- k * (kI0 + 2 * KI1) + ? (K * K * I2) <- ? -> MulI()
+C(2,1,1) = j*[ kmI0 + (kM + mK)I1 + KMI2 ] -- k * (mI0 + MI1) + K * (m * I1 + M * I2)
+C(2,1,2) = j*[ m^2I0 + 2mMI1 + M^2I2 ] -- m * (mI0 + 2 * MI1) + ?
+C(2,1,3) = j*[ m^3/k*I0 + M^3/K^3*I2 ] + (3m^2M - m^3K/k)H1 + (3mM^2 - M^3k/K)H0 
+]]
+		--
+		local factor = mM2 - 2 * (mm_k * K):Real()
+
+		--
+		local c100 = RealJ2(kI1)
+		local c101 = RealJ2(mI1)
+		local c102 = RealJ2(m_k * mI1) + factor * H0
+--[[
+	-- mm_k * mI0 + MM_K * I2 / KK) + (3 * mm * M - mK * mm_k) * H1 + (3 * MM * m - MM_K * kM) * H0
+
+C(1,0,0) = 2 * Real(-j*kI1) -- DONE! (Mul_NegI():Real() * 2
+C(1,0,1) = 2 * Real(-j*mI1)
+
+	-- FACTOR = (mM - mm_k * K) * 2
+
+C(1,0,2) = 2 * Real(-j*m^2/k*I1) + 2(mM - Real(m^2K/k))H0 -- mm_k * I1
+]]
+		local c120 = (kI0 + KI1):Mul_NegI()
+		local c121 = (mI0 + MI1):Mul_NegI()
+		local c122 = (m_k * mI0 + M_K * MI1):Mul_NegI() + factor * H1
+--[[
+C(1,2,0) = -j * [ kI0 + KI1 ] -- DONE! (Mul_NegI)
+C(1,2,1) = -j * [ mI0 + MI1 ] -- DONE!
+C(1,2,2) = -j * [ m^2/k*I0 + M^2/K*I1 ] + 2(mM - Real(m^2K/k))H1 -- mm_k * I0 + MM_K * I1 + FACTOR * H1
+]]
+
+		--
+		local z000, z010, z001 = c300, c210:Components()
+		local z100, z110, z101 = c301, c211:Components()
+		local z200, z210, z201 = c302, c212:Components()
+		local z300, z310, z301 = c303, c213:Components()
+		local z011, z020, z002 = UnpackToZ(c120, c100)
+		local z111, z120, z102 = UnpackToZ(c121, c101)
+		local z211, z220, z202 = UnpackToZ(c122, c102)
+		
+--[[
+	Z(i;k,0,0) = C(3,0,k)
+	Z(i;k,1,0) = Real(C(2,1,k))
+	Z(i;k,0,1) = Imag(C(2,1,k))
+	Z(i;k,1,1) = 1/2*Imag(C(1,2,k))
+	Z(i;k,2,0) = 1/2*[ C(1,0,k) + Real(C(1,2,k)) ]
+	Z(i;k,0,2) = 1/2*[ C(1,0,k) - Real(C(1,2,k)) ]
+]]
+
+--[[
+m(0) = 0, n(0) = 0
+m(1) = 1, n(1) = 0
+m(2) = 0, n(2) = 1
+U(0) = 6, U(1) = U(2) = 3; V(0) = 3, V(1) = V(2) = 1
+
+a(i, 0) = ? -> U, V = 6, 3; mn(0,0) = 0,0
+a(i, 1) = ? -> U, V = 3, 1; mn(1,1) = 1,0
+a(i, 2) = ? -> U, V = 3, 1; mn(2,2) = 0,1
+
+Note... m(j+1) should obviously be m(j) + 1! (And so on...)
+
+a(i, j) =	U(j)[ Z(i;0,m(j),n(j)) - 3Z(i;2,m(j),n(j)) + 2Z(i;3,m(j),n(j)) ]
+			+ 6V(j)t(i;X)/L(i)[ Z(i;2,m(j+1),n(j)) - Z(i;3,m(j+1),n(j)) ]
+			+ 6V(j)t(i;Y)/L(i)[ Z(i;2,m(j),n(j+1)) - Z(i;3,m(j),n(j+1)) ]
+			+ U(j)[ 3Z(i-1;2,m(j),n(j) - 2Z(i-1;3,m(j),n(j)) ]
+			- 6V(j)t(i-1;X)/L(i-1)[ Z(i-1;2,m(j+1),n(j)) - Z(i-1;3,m(j+1),n(j)) ]
+			- 6V(j)t(i-1;Y)/L(i-1)[ Z(i-1;2,m(j),n(j+1)) - Z(i-1;3,m(j),n(j+1)) ] (whoo!)
+
+a(i, 0) = 6 * (z000 - 3 * z200 + 2 * z300)
+			+ 18 * t.x / dist * (z210 - z310)
+			+ 18 * t.y / dist * (z201 - z301)
+			+ 18 * (3 * zp200 - 2 * zp300)
+			- 18 * pt.x / distp * (zp210 - zp310)
+			- 18 * pt.y / distp * (zp201 - zp301)
+
+argh... keep around t? (And precompute first instance, I guess...)
+
+b(-, i, 0) = ?
+b(+, i, 0) = ?
+b(-, i, 1) = ?
+b(+, i, 1) = ?
+b(-, i, 2) = ?
+b(+, i, 2) = ?
+
+b(+;i,j) = 	U(j)[ L(i)Z(i;1,m(j),n(j)) - 2Z(i;2,m(j),n(j)) + L(j)Z(i;3,m(j),n(j)) ]
+			- V(j)t(i;X)[ Z(i;1,m(j+1),n(j)) - 4Z(i;2,m(j+1),n(j)) + 3Z(i;3,m(j+1),n(j)) ]
+			- V(j)t(i;Y)[ Z(i;1,m(j),n(j+1)) - 4Z(i;2,m(j),n(j+1)) + 3Z(i;3,m(j),n(j+1)) ]
+
+b(-;i,j) =	U(j)[ Z(i-1;2,m(j),n(j)) - L(i-1)Z(i-1;3,m(j),n(j)) ]
+			- V(j)t(i-1;X)[ 2Z(i-1;2,m(j+1),n(j)) - 3Z(i-1;3,m(j+1),n(j)) ]
+			- V(j)t(i-1;Y)[ 2Z(i-1;2,m(j),n(j+1)) - 3Z(i-1;3,m(j),n(j+1)) ]
+
+c(-, i, 0) = ?
+c(+, i, 0) = ?
+c(-, i, 1) = ?
+c(+, i, 1) = ?
+c(-, i, 2) = ?
+c(+, i, 2) = ?
+
+c(+;i,j) =	V(j)n(i;X)[ Z(i;1,m(j+1),n(j)) - Z(i;0,m(j+1),n(j)) ]
+			+ V(j)n(i;Y)[ Z(i;1,m(j),n(j+1)) - Z(i;0,m(j),n(j + 1)) ]
+
+c(-;i,j) =	V(j)n(i-1;X)Z(i-1;1,m(j+1),n(j)) - V(j)n(i-1;Y)Z(i-1;1,m(j),n(j+1))
+]]
+
+--[[
 	Point2D alphaI = y[j]/areaIJ;
 	Point2D kappaI[2] = {Point2D(alphaI.y/2, alphaI.x/2), Point2D(alphaI.y/2, -alphaI.x/2)};
 	Point2D alphaJ = y[i]/(-areaIJ);
@@ -255,8 +476,8 @@ local function Middle (v, gn, gt, i, j, at)
 	C[1] += 2*(sincosI+sincosJ);
 	C[2] += 2*(sinsinI+sinsinJ);
 	gIJ = -vecIJ.x*(coscosI+coscosJ)-vecIJ.y*(sincosI+sincosJ);
-	gnCoeff[1][2*i+0] += (vecIJ.y*coscosI-vecIJ.x*sincosI);
-	gnCoeff[1][2*i+1] += (vecIJ.y*coscosJ-vecIJ.x*sincosJ);
+	gnCoeff[1][at + 1] += (vecIJ.y*coscosI-vecIJ.x*sincosI);
+	gnCoeff[1][at + 2] += (vecIJ.y*coscosJ-vecIJ.x*sincosJ);
 	vCoeff[1][i] -= gIJ*invDistIJ;
 	vCoeff[1][j] += gIJ*invDistIJ;
 	gIJ = -vecIJ.x*(sincosI+sincosJ)-vecIJ.y*(sinsinI+sinsinJ);
@@ -321,11 +542,22 @@ local function Middle (v, gn, gt, i, j, at)
 
 	for k = 1, 3 do
 		local vk, gtk = v[k], gt[k]
+		local diff = gtk[at + 1] - gtk[at + 2]
 
-		vk[i] += (gtk[at + 1] - gtk[at + 2])*invDistIJ;
-		vk[j] -= (gtk[at + 1] - gtk[at + 2])*invDistIJ;
+		vk[i] = vk[i] + diff * idist
+		vk[j] = vk[j] - diff * idist
 	end
 ]]
+	--
+	else
+		local max_inner = (1 + 1e-10) * dist_sqr
+
+		result = dy:Inner(yi) > max_inner and dy:Inner(yj) < max_inner
+	end
+
+	Cache("end")
+
+	return result
 end
 
 --
@@ -370,7 +602,9 @@ function M.CubicMVC (poly, p, v, gn, gt)
 	local i, at = n, 0
 
 	for j = 1, n do
-		if Middle(v, gn, gt, i, j, at) then
+		local on_boundary = Middle(v, gn, gt, i, j, at)
+
+		if on_boundary then
 			BoundaryCoords(poly, p, v, gn, gt, i, j, at, n, n2)
 
 			return
@@ -390,8 +624,9 @@ function M.CubicMVC_Edges (poly, edges, p, v, gn, gt)
 
 	for _ = 1, ne / 2 do
 		local i, j = edges[at + 1], edges[at + 2]
+		local on_boundary = Middle(v, gn, gt, i, j, at)
 
-		if Middle(v, gn, gt, i, j, at) then
+		if on_boundary then
 			BoundaryCoords(poly, p, v, gn, gt, i, j, at, np, ne)
 
 			return
