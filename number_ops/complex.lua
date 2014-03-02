@@ -35,10 +35,10 @@ local pi = math.pi
 local setmetatable = setmetatable
 local sin = math.sin
 local sqrt = math.sqrt
-local type = type
 
 -- Modules --
 local cache = require("var_ops.cache")
+local tuple = require("number_ops.tuple")
 
 -- Exports --
 local M = {}
@@ -51,6 +51,11 @@ end
 --- DOCME
 function M.Add (a, b, c, d)
 	return a + c, b + d
+end
+
+--- DOCME
+function M.Area (a, b, c, d)
+	return b * c - a * d
 end
 
 --- DOCME
@@ -99,6 +104,11 @@ function M.Exp (a, b)
 end
 
 --- DOCME
+function M.Inner (a, b, c, d)
+	return a * c + b * d
+end
+
+--- DOCME
 function M.Inverse (a, b)
 	local denom = a * a + b * b
 
@@ -123,6 +133,16 @@ end
 --- DOCME
 function M.Mul_NegI (a, b)
 	return b, -a
+end
+
+--- DOCME
+function M.Negate (a, b)
+	return -a, -b
+end
+
+--- DOCME
+function M.Norm (a, b)
+	return a * a + b * b
 end
 
 --- DOCME
@@ -172,70 +192,36 @@ end
 
 --- DOCME 
 M.CacheFactory = cache.Factory(function(ComplexMT, new)
-	--
-	local function Complex (a, b, use_def)
-		local c = new(use_def)
-
-		c.m_r, c.m_i = a, b
-
-		return c
-	end
-
-	--
-	local function Unary (func)
-		return function(c)
-			return Complex(func(c.m_r, c.m_i))
-		end
-	end
-
-	--
-	local function Unary_Scalar (func)
-		return function(c)
-			return func(c.m_r, c.m_i)
-		end
-	end
-
-	--
-	local function Get (c)
-		if type(c) == "number" then
-			return c, 0
-		else
-			return c.m_r, c.m_i
-		end
-	end
-
-	--
-	local function Binary (func)
-		return function(c1, c2)
-			local a, b = Get(c1)
-			
-			return Complex(func(a, b, Get(c2)))
-		end
-	end
+	local Complex, call, get2 = tuple.PairMethods_NewGet(new, "m_r", "m_i")
+	local uf, uf_scalar = tuple.PairMethods_Unary(Complex, call)
+	local bf, bf_scalar = tuple.PairMethods_Binary(Complex, get2)
 
 	--- DOCME
-	ComplexMT.Abs = Unary_Scalar(M.Abs)
+	ComplexMT.Abs = uf_scalar(M.Abs)
 
 	--- DOCME
-	ComplexMT.__add = Binary(M.Add)
+	ComplexMT.__add = bf(M.Add)
 
 	--- DOCME
-	ComplexMT.Arg = Unary_Scalar(M.Arg)
+	ComplexMT.Area = bf_scalar(M.Area)
 
 	--- DOCME
-	ComplexMT.Atan = Unary(M.Atan)
+	ComplexMT.Arg = uf_scalar(M.Arg)
 
 	--- DOCME
-	ComplexMT.Conjugate = Unary(M.Conjugate)
+	ComplexMT.Atan = uf(M.Atan)
 
 	--- DOCME
-	ComplexMT.__div = Binary(M.Div)
+	ComplexMT.Conjugate = uf(M.Conjugate)
 
 	--- DOCME
-	ComplexMT.Dup = Unary(Complex)
+	ComplexMT.__div = bf(M.Div)
 
 	--- DOCME
-	ComplexMT.Dup_Raw = Unary(function(a, b)
+	ComplexMT.Dup = uf(Complex)
+
+	--- DOCME
+	ComplexMT.Dup_Raw = uf(function(a, b)
 		return Complex(a, b, true)
 	end)
 
@@ -245,7 +231,7 @@ M.CacheFactory = cache.Factory(function(ComplexMT, new)
 	end
 
 	--- DOCME
-	ComplexMT.Exp = Unary(M.Exp)
+	ComplexMT.Exp = uf(M.Exp)
 
 	--- DOCME
 	function ComplexMT:Imag ()
@@ -253,28 +239,34 @@ M.CacheFactory = cache.Factory(function(ComplexMT, new)
 	end
 
 	--- DOCME
-	ComplexMT.Inverse = Unary(M.Inverse)
+	ComplexMT.Inner = bf_scalar(M.Inner)
+
+	--- DOCME
+	ComplexMT.Inverse = uf(M.Inverse)
 
 	--- DOCME ... not in 5.1, or needs newproxy()
-	ComplexMT.__len = M.Abs
+	ComplexMT.__len = ComplexMT.Abs
 
 	--- DOCME
-	ComplexMT.Log = Unary(M.Log)
+	ComplexMT.Log = uf(M.Log)
 
 	--- DOCME
-	ComplexMT.__mul = Binary(M.Mul)
+	ComplexMT.__mul = bf(M.Mul)
 
 	--- DOCME
-	ComplexMT.Mul_I = Unary(M.Mul_I)
+	ComplexMT.Mul_I = uf(M.Mul_I)
 
 	--- DOCME
-	ComplexMT.Mul_NegI = Unary(M.Mul_NegI)
+	ComplexMT.Mul_NegI = uf(M.Mul_NegI)
 
 	--- DOCME
-	ComplexMT.Normalize = Unary(M.Normalize)
+	ComplexMT.Norm = uf_scalar(M.Norm)
 
 	--- DOCME
-	ComplexMT.__pow = Binary(M.Pow_Complex)
+	ComplexMT.Normalize = uf(M.Normalize)
+
+	--- DOCME
+	ComplexMT.__pow = bf(M.Pow_Complex)
 
 	--- DOCME
 	function ComplexMT:Real ()
@@ -282,20 +274,20 @@ M.CacheFactory = cache.Factory(function(ComplexMT, new)
 	end
 
 	--- DOCME
-	ComplexMT.Reciprocal = M.Reciprocal
+	ComplexMT.Reciprocal = ComplexMT.Inverse
 
 	--- DOCME
-	ComplexMT.__sub = Binary(M.Sub)
+	ComplexMT.__sub = bf(M.Sub)
 
 	--- DOCME
-	function ComplexMT:__unm ()
-		local a, b = Get(self)
+	ComplexMT.__unm = uf(M.Negate)
 
-		return Complex(-a, -b)
-	end	
-
+	--
 	return Complex
 end)
+
+--- DOCME
+M.New = M.CacheFactory("get_uncached_maker")
 
 -- Export the module.
 return M

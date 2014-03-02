@@ -44,94 +44,109 @@ local M = {}
 
 --- DOCME
 function M.Factory (create_mt)
-	return function()
+	local uncached_make
+
+	return function(how)
+		if how == "get_uncached_maker" and uncached_make then
+			return uncached_make
+		end
+
 		--
 		local mt = {}
 
 		mt.__index = mt
 
 		--
-		local active, index, has_begun = {}, 0, false
-
-		--
-		local function new (use_def)
-			if has_begun and not use_def then
-				index = index + 1
-
-				local item = active[index]
-
-				if not item then
-					item = setmetatable({}, mt)
-
-					active[index] = item
-				end
-
-				return item
-			else
-				return setmetatable({}, mt)
-			end
+		local function def ()
+			return setmetatable({}, mt)
 		end
 
 		--
-		local make = create_mt(mt, new)
+		if how == "get_uncached_maker" then
+			uncached_make = create_mt(mt, def)
+
+			return uncached_make
 
 		--
-		return function(what, arg)
-			-- Begin --
-			if what == "begin" then
-				has_begun = true
+		else
+			local active, index, has_begun = {}, 0, false
 
-				return make
+			--
+			local make = create_mt(mt, function(use_def)
+				if has_begun and not use_def then
+					index = index + 1
 
-			-- End --
-			-- arg: Size limit to impose on cache
-			elseif what == "end" then
-				for i = arg or 0, #active + 1, -1 do
-					active[i] = nil
-				end
+					local item = active[index]
 
-				index, has_begun = 0, false
+					if not item then
+						item = def()
 
-			-- In --
-			-- arg: Function to call
-			elseif what == "in" then
-				local prev = has_begun
-
-				has_begun = true
-
-				local ok, result = pcall(arg, make)
-
-				has_begun = prev
-
-				return ok, result
-
-			-- Has Begun? --
-			elseif what == "has_begun" then
-				return has_begun
-
-			-- Remove --
-			-- arg: Removal index
-			elseif what == "remove" then
-				local item = active[arg]
-
-				if item then
-					if arg >= index then
-						index = index - 1
+						active[index] = item
 					end
 
-					local n = #active
-
-					active[arg] = active[n]
-					active[n] = nil
+					return item
+				else
+					return def()
 				end
+			end)
 
-			-- Get Index --
-			elseif what == "get_index" then
-				return index
+			return function(what, arg)
+				-- Begin --
+				if what == "begin" then
+					has_begun = true
 
-			-- Get Size --
-			elseif what == "get_size" then
-				return #active
+					return make
+
+				-- End --
+				-- arg: Size limit to impose on cache
+				elseif what == "end" then
+					for i = arg or 0, #active + 1, -1 do
+						active[i] = nil
+					end
+
+					index, has_begun = 0, false
+
+				-- In --
+				-- arg: Function to call
+				elseif what == "in" then
+					local prev = has_begun
+
+					has_begun = true
+
+					local ok, result = pcall(arg, make)
+
+					has_begun = prev
+
+					return ok, result
+
+				-- Has Begun? --
+				elseif what == "has_begun" then
+					return has_begun
+
+				-- Remove --
+				-- arg: Removal index
+				elseif what == "remove" then
+					local item = active[arg]
+
+					if item then
+						if arg >= index then
+							index = index - 1
+						end
+
+						local n = #active
+
+						active[arg] = active[n]
+						active[n] = nil
+					end
+
+				-- Get Index --
+				elseif what == "get_index" then
+					return index
+
+				-- Get Size --
+				elseif what == "get_size" then
+					return #active
+				end
 			end
 		end
 	end

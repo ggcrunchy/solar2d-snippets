@@ -24,10 +24,12 @@
 --
 
 -- Standard library imports --
+local abs = math.abs
+local sqrt = math.sqrt
 local type = type
 
 -- Modules --
---local complex = require("number_ops.complex")
+local complex = require("number_ops.complex")
 
 -- Exports --
 local M = {}
@@ -76,15 +78,12 @@ void cubicMVCs(const vector<Point2D> &poly, const vector<int> &edge, const Point
 
 /*** CubicMVCs.cpp */
 
-inline double area(const Point2D &a, const Point2D &b) {
-	return a.y*b.x-a.x*b.y;
-}
 inline Point2D rotateL(const Point2D &a) {
 	return Point2D(-a.y, a.x);
-}
+} <- Mul_I
 inline Point2D rotateR(const Point2D &a) {
 	return Point2D(a.y, -a.x);
-}
+} <- Mul_NegI
 Point2D log(const Point2D &a) {
 	double R = log(inner(a, a))/2;
 	double I = 0.00;
@@ -98,18 +97,11 @@ Point2D log(const Point2D &a) {
 		I = atan(a.y/a.x)+2*M_PI;
 	}else if(a.x < 0.00) {
 		I = atan(a.y/a.x)+M_PI;
-	}
+	} <- I part?
 	return Point2D(R, I);
 }
 Point2D atan(const Point2D &a) {
 	return rotateR(log((1+rotateL(a))/(1-rotateL(a))))/2;
-}
-
-bool crossOrigin(const Point2D &a, const Point2D &b) {
-	double areaAB = abs(area(a, b));
-	double distSquareAB = distSquare(a, b);
-	double maxInner = (1+1E-10)*distSquareAB;
-	return areaAB < 1E-10*distSquareAB && inner(a-b, a) < maxInner && inner(b-a, b) < maxInner;
 }
 ]]
 
@@ -178,13 +170,17 @@ end
 
 --
 local function Middle (v, gn, gt, i, j, at)
---[[
-	double areaIJ = area(y[j], y[i]);
-	double distSquareIJ = distSquare(y[i], y[j]);
-	if(abs(areaIJ) < 1E-10*distSquareIJ) {
-		return crossOrigin(y[i], y[j])
-	}
+	--
+	local yi, yj = Y[i], Y[j]
+	local dy = yj - yi
+	local area, dist_sqr = abs(yi:Area(yj)), dy:Norm()
 
+	if area < 1e-10 * dist_sqr then
+		local max_inner = (1 + 1e-10) * dist_sqr
+
+		return dy:Inner(yi) > max_inner and dy:Inner(yj) < max_inner
+	end
+--[[
 	double distIJ = sqrt(distSquareIJ);
 	double invDistIJ = 1.00/distIJ;
 
@@ -338,6 +334,7 @@ local function Resolve (v, gn, gt, n1, n2)
 	local l2 = B[3] * C[1] - B[1] * C[3]
 	local l3 = B[1] * C[2] - B[2] * C[1]
 
+	--
 	local sum = A[1] * l1 + A[2] * l2 + A[3] * l3
 
 	if sum ~= 0 then
@@ -346,12 +343,14 @@ local function Resolve (v, gn, gt, n1, n2)
 		l1, l2, l3 = l1 * isum, l2 * isum, l3 * isum
 	end
 
+	--
 	local v1, v2, v3 = V[1], V[2], V[3]
 
 	for i = 1, n1 do
 		v[i] = l1 * v1[i] + l2 * v2[i] + l3 * v3[i]
 	end
 
+	--
 	local gn1, gn2, gn3 = GN[1], GN[2], GN[3]
 	local gt1, gt2, gt3 = GT[1], GT[2], GT[3]
 
