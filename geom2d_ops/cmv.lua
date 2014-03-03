@@ -261,8 +261,8 @@ local function Middle (v, gn, gt, i, j, at)
 ]]
 
 		--
-		local I0 = (Z3[j] - Z3[i]) / 3
-		local I1, I2 = Z[j] - Z[i], -I0:Conjugate()
+		local I0, I1 = (Z3[j] - Z3[i]) / 3, Z[j] - z
+		local I2 = -I1:Conjugate()
 
 		--
 		local kI0, mI0 = k * I0, m * I0
@@ -374,7 +374,7 @@ a(i, 0) = 6 * (z000 - 3 * z200 + 2 * z300)
 			- 18 * pt.x / distp * (zp210 - zp310)
 			- 18 * pt.y / distp * (zp201 - zp301)
 
-argh... keep around t? (And precompute first instance, I guess...)
+pt = GT?
 
 b(-, i, 0) = ?
 b(+, i, 0) = ?
@@ -542,10 +542,10 @@ c(-;i,j) =	V(j)n(i-1;X)Z(i-1;1,m(j+1),n(j)) - V(j)n(i-1;Y)Z(i-1;1,m(j),n(j+1))
 
 	for k = 1, 3 do
 		local vk, gtk = v[k], gt[k]
-		local diff = gtk[at + 1] - gtk[at + 2]
+		local diff = (gtk[at + 1] - gtk[at + 2]) * idist
 
-		vk[i] = vk[i] + diff * idist
-		vk[j] = vk[j] - diff * idist
+		vk[i] = vk[i] + diff
+		vk[j] = vk[j] - diff
 	end
 ]]
 	--
