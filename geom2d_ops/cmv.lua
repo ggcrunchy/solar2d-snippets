@@ -246,7 +246,7 @@ local function Middle (v, gn, gt, i, j, at)
 ]]
 		--
 		local uci, ucj = yi:Conjugate(), yj:Conjugate()
-		local denom = (yi * ucj):Imag() * 2
+		local denom = (yi * ucj):Imag() * 2 -- area * 2
 		local m, k, z = (uci / denom):Mul_I(), ((uci - ucj) / denom):Mul_I(), Z[i]
 		local M, K, iz, ik = m:Conjugate(), k:Conjugate(), 1 / z, 1 / k
 
@@ -255,17 +255,17 @@ local function Middle (v, gn, gt, i, j, at)
 
 	uci = (a, -b)
 	ucj = (c, -d)
-	yi * ucj = (a, b) * (c, -d) = a * c + b * d, b * c + a * d
-	denom = IMAG(^^) * 2 = 2 * (bc + ad)
+	yi * ucj = (a, b) * (c, -d) = a * c + b * d, b * c - a * d
+	denom = IMAG(^^) * 2 = 2 * (bc - ad)
 * i = -b, a
-	m = (b, a) / [2*(bc + ad)], M = (b, -a) / [2*(bc + ad)]
-	k = (b - d, a - c) / [2*(bc + ad)], K = (b - d, c - a) / [2*(bc + ad)]
+	m = (b, a) / denom, M = (b, -a) / denom
+	k = (b - d, a - c) / denom, K = (b - d, c - a) / denom
 
 	alphaI = (c, d) / (bc - ad)
-	kappaI = { (d, c) / [2*(bc - ad)], (d, -c) / [2*(bc - ad)] }
+	kappaI = { (d, c) / denom, (d, -c) / denom } = n, N (for lack of a better term...)
 	alphaJ = (a, b) / -(bc - ad)
-	kappaJ = { (b, a) / [-2*(bc - ad)], (b, -a) / [-2*(bc - ad)] }
-	kappa = { (d - b, c - a) / [2*(bc - ad)], (d - b, a - c) / [2*(bc - ad)] }
+	kappaJ = { (b, a) / -denom, (b, -a) / -denom } = -m, -M...
+	kappa = { (d - b, c - a) / denom, (d - b, a - c) / denom } = -k, -K...
 
 	Point2D alphaI = y[j]/areaIJ;
 	Point2D kappaI[2] = {Point2D(alphaI.y/2, alphaI.x/2), Point2D(alphaI.y/2, -alphaI.x/2)};
@@ -276,6 +276,38 @@ local function Middle (v, gn, gt, i, j, at)
 -- ALMOST a match...
 
 	Point2D vecIJ = (y[j]-y[i])*invDistIJ; <- prospective tangent?
+
+	// cache intermediate variables to accelerate the computation
+	Point2D kappaSquare = kappa[0]*kappa[0]; = kk
+	Point2D kappaIntgIJ1 = kappa[0]*intgIJ1; = -k * I1 = -kI1
+	Point2D kappaConjIntgIJ0 = kappa[1]*intgIJ0; = -K * I0
+	Point2D kappaIJ = kappaI[0]*kappaJ[0]; = n * -m
+	Point2D kappaKappaI = kappa[0]*kappaI[0]; = -k * n
+	Point2D kappaI2 = kappaI[0]*kappaI[0]; = n * n
+	Point2D kappaI3 = kappaI[0]*kappaI2; = n * n * n
+	Point2D kappaIIntgIJ2 = kappaI[0]*intgIJ2; = n * I0
+	double kappaIAbsSquare = (kappaI[0]*kappaI[1]).x; = n * N
+	Point2D kappaKappaJ = kappa[0]*kappaJ[0]; = km
+	Point2D kappaJ2 = kappaJ[0]*kappaJ[0]; = mm
+	Point2D kappaJ3 = kappaJ[0]*kappaJ2; = -mm * m
+	Point2D kappaJIntgIJ2 = kappaJ[0]*intgIJ2; = -m * I0
+	double kappaJAbsSquare = (kappaJ[0]*kappaJ[1]).x; = mM
+
+C(2,1,0) = j*[ k^2I0 + 2kKI1 + K^2I2 ]
+Z(i;k,1,0) = Real(C(2,1,k))
+Z(i;k,0,1) = Imag(C(2,1,k))
+
+	// compute A[0], vCoeff[0]
+	Point2D tmpI = kappa[1]*kappaI[0]; = -K * n
+	Point2D tmpJ = kappa[1]*kappaJ[0]; = Km
+	double valueI = 2*(kappaSquare*kappaIIntgIJ2+(tmpI+2*tmpI.x)*kappaIntgIJ1).y;
+	-- 2 * Imag(kk * n * I0 + (-K * n + 2 * Real(-K * n)) * -kI1)
+	-- 2 * Imag(kk * -m * I0 + (Km + 2 * Real(Km)) * -kI1)
+	double valueJ = 2*(kappaSquare*kappaJIntgIJ2+(tmpJ+2*tmpJ.x)*kappaIntgIJ1).y;
+	vCoeff[0][i] += 2*valueI;
+	vCoeff[0][j] += 2*valueJ;
+	A[0] += 2*(valueI+valueJ);
++= 4 * Imag((n - m) * kk * I0 + [K * (m - n) + 2 * Real(K * (m - n))] * -kI1)
 ]]
 
 --[[
@@ -396,7 +428,7 @@ a(i, j) =	U(j)[ Z(i;0,m(j),n(j)) - 3Z(i;2,m(j),n(j)) + 2Z(i;3,m(j),n(j)) ]
 			+ 6V(j)t(i;Y)/L(i)[ Z(i;2,m(j),n(j+1)) - Z(i;3,m(j),n(j+1)) ]
 			+ U(j)[ 3Z(i-1;2,m(j),n(j) - 2Z(i-1;3,m(j),n(j)) ]
 			- 6V(j)t(i-1;X)/L(i-1)[ Z(i-1;2,m(j+1),n(j)) - Z(i-1;3,m(j+1),n(j)) ]
-			- 6V(j)t(i-1;Y)/L(i-1)[ Z(i-1;2,m(j),n(j+1)) - Z(i-1;3,m(j),n(j+1)) ] (whoo!)
+			- 6V(j)t(i-1;Y)/L(i-1)[ Z(i-1;2,m(j),n(j+1)) - Z(i-1;3,m(j),n(j+1)) ]
 
 a(i, 0) = 6 * (z000 - 3 * z200 + 2 * z300)
 			+ 18 * t.x / dist * (z210 - z310)
@@ -436,31 +468,6 @@ c(-;i,j) =	V(j)n(i-1;X)Z(i-1;1,m(j+1),n(j)) - V(j)n(i-1;Y)Z(i-1;1,m(j),n(j+1))
 ]]
 
 --[[
-	// cache intermediate variables to accelerate the computation
-	Point2D kappaSquare = kappa[0]*kappa[0];
-	Point2D kappaIntgIJ1 = kappa[0]*intgIJ1;
-	Point2D kappaConjIntgIJ0 = kappa[1]*intgIJ0;
-	Point2D kappaIJ = kappaI[0]*kappaJ[0];
-	Point2D kappaKappaI = kappa[0]*kappaI[0];
-	Point2D kappaI2 = kappaI[0]*kappaI[0];
-	Point2D kappaI3 = kappaI[0]*kappaI2;
-	Point2D kappaIIntgIJ2 = kappaI[0]*intgIJ2;
-	double kappaIAbsSquare = (kappaI[0]*kappaI[1]).x;
-	Point2D kappaKappaJ = kappa[0]*kappaJ[0];
-	Point2D kappaJ2 = kappaJ[0]*kappaJ[0];
-	Point2D kappaJ3 = kappaJ[0]*kappaJ2;
-	Point2D kappaJIntgIJ2 = kappaJ[0]*intgIJ2;
-	double kappaJAbsSquare = (kappaJ[0]*kappaJ[1]).x;
-
-	// compute A[0], vCoeff[0]
-	Point2D tmpI = kappa[1]*kappaI[0];
-	Point2D tmpJ = kappa[1]*kappaJ[0];
-	double valueI = 2*(kappaSquare*kappaIIntgIJ2+(tmpI+2*tmpI.x)*kappaIntgIJ1).y;
-	double valueJ = 2*(kappaSquare*kappaJIntgIJ2+(tmpJ+2*tmpJ.x)*kappaIntgIJ1).y;
-	vCoeff[0][i] += 2*valueI;
-	vCoeff[0][j] += 2*valueJ;
-	A[0] += 2*(valueI+valueJ);
-
 	// compute A[1], A[2], B[0], C[0], vCoeff[1], vCoeff[2], gCoeff[0]
 	Point2D intgI = rotateR(kappa[0]*kappaIIntgIJ2+2*tmpI.x*intgIJ1+kappaI[1]*kappaConjIntgIJ0);
 	Point2D intgJ = rotateR(kappa[0]*kappaJIntgIJ2+2*tmpJ.x*intgIJ1+kappaJ[1]*kappaConjIntgIJ0);
@@ -699,7 +706,7 @@ a(i, j) =	U(j)[ Z(i;0,m(j),n(j)) - 3Z(i;2,m(j),n(j)) + 2Z(i;3,m(j),n(j)) ]
 			+ 6V(j)t(i;Y)/L(i)[ Z(i;2,m(j),n(j+1)) - Z(i;3,m(j),n(j+1)) ]
 			+ U(j)[ 3Z(i-1;2,m(j),n(j) - 2Z(i-1;3,m(j),n(j)) ]
 			- 6V(j)t(i-1;X)/L(i-1)[ Z(i-1;2,m(j+1),n(j)) - Z(i-1;3,m(j+1),n(j)) ]
-			- 6V(j)t(i-1;Y)/L(i-1)[ Z(i-1;2,m(j),n(j+1)) - Z(i-1;3,m(j),n(j+1)) ] (whoo!)
+			- 6V(j)t(i-1;Y)/L(i-1)[ Z(i-1;2,m(j),n(j+1)) - Z(i-1;3,m(j),n(j+1)) ]
 
 b(+;i,j) = 	U(j)[ L(i)Z(i;1,m(j),n(j)) - 2Z(i;2,m(j),n(j)) + L(j)Z(i;3,m(j),n(j)) ]
 			- V(j)t(i;X)[ Z(i;1,m(j+1),n(j)) - 4Z(i;2,m(j+1),n(j)) + 3Z(i;3,m(j+1),n(j)) ]
@@ -762,6 +769,357 @@ C(1,0,2) = 2 * Real(-j*m^2/k*I1) + 2(mM - Real(m^2K/k))H0
 C(1,2,0) = -j * [ kI0 + KI1 ]
 C(1,2,1) = -j * [ mI0 + MI1 ]
 C(1,2,2) = -j * [ m^2/k*I0 + M^2/K*I1 ] + 2(mM - Real(m^2K/k))H1
+]]
+
+-- TODO: Poisson MVC:
+
+--[[
+/*** PoissonMVCs.cpp */
+
+static vector<Point2D> zeta;
+static vector<Point2D> xi;
+
+inline double inner(const Point2D &a, const Point2D &b) {
+	return a.x*b.x+a.y*b.y;
+}
+inline double area(const Point2D &a, const Point2D &b) {
+	return a.y*b.x-a.x*b.y;
+}
+inline double dist(const Point2D &a, const Point2D &b) {
+	return sqrt((a.x-b.x)*(a.x-b.x)+(a.y-b.y)*(a.y-b.y));
+}
+inline double distSquare(const Point2D &a, const Point2D &b) {
+	return (a.x-b.x)*(a.x-b.x)+(a.y-b.y)*(a.y-b.y);
+}
+inline double modulus(const Point2D &a) {
+	return sqrt(a.x*a.x+a.y*a.y);
+}
+inline Point2D rotateL(const Point2D &a) {
+	return Point2D(-a.y, a.x);
+}
+inline Point2D rotateR(const Point2D &a) {
+	return Point2D(a.y, -a.x);
+}
+Point2D operator + (const Point2D &a, const Point2D &b) {
+	return Point2D(a.x+b.x, a.y+b.y);
+}
+Point2D operator - (const Point2D &a, const Point2D &b) {
+	return Point2D(a.x-b.x, a.y-b.y);
+}
+Point2D operator * (const Point2D &a, double t) {
+	return Point2D(a.x*t, a.y*t);
+}
+Point2D operator * (double t, const Point2D &a) {
+	return Point2D(a.x*t, a.y*t);
+}
+Point2D operator / (const Point2D &a, double t) {
+	return Point2D(a.x/t, a.y/t);
+}
+Point2D operator * (const Point2D &a, const Point2D &b) {
+	return Point2D(a.x*b.x-a.y*b.y, a.x*b.y+a.y*b.x);
+}
+Point2D operator / (const Point2D &a, const Point2D &b) {
+	return Point2D(a.x*b.x+a.y*b.y, a.y*b.x-a.x*b.y)/inner(b, b);
+}
+Point2D log(const Point2D &a) {
+	double R = log(inner(a, a))/2;
+	double I = 0.00;
+	if(a.x == 0 && a.y > 0) {
+		I = M_PI/2;
+	}else if(a.x == 0 && a.y < 0) {
+		I = -M_PI/2;
+	}else if(a.x > 0.00) {
+		I = atan(a.y/a.x);
+	}else if(a.x < 0.00 && a.y >= 0) {
+		I = atan(a.y/a.x)+M_PI;
+	}else if(a.x < 0.00 && a.y < 0) {
+		I = atan(a.y/a.x)-M_PI;
+	}
+	return Point2D(R, I);
+}
+
+bool crossOrigin(const Point2D &a, const Point2D &b) {
+	double areaAB = abs(area(a, b));
+	double distSquareAB = distSquare(a, b);
+	double maxInner = (1+1E-10)*distSquareAB;
+	return areaAB < 1E-10*distSquareAB && inner(a-b, a) < maxInner && inner(b-a, b) < maxInner;
+}
+
+bool checkPolygon(const vector<Point2D> &p) {
+	if(int(p.size()) < 3) {
+		std::cout << "Invalid Polygon" << std::endl;
+		return false;
+	}
+	for(int i = 0;  i < int(p.size());  i++) {
+		int j = (i+1)%int(p.size());
+		if(p[i].x == p[j].x && p[i].y == p[j].y) {
+			std::cout << "Invalid Polygon" << std::endl;
+			return false;
+		}
+	}
+	return true;
+}
+bool checkBaseCircle(const Point2D &p, BaseCircle c) {
+	if(c.r < 0.00) {
+		std::cout << "Invalid Circle" << std::endl;
+		return false;
+	}
+	if(c.r > 0.00 && distSquare(Point2D(c.cx, c.cy), p) > c.r*c.r) {
+		std::cout << "Invalid Circle" << std::endl;
+		return false;
+	}else if(c.r == 0.00 && distSquare(Point2D(c.cx, c.cy), Point2D(0.00,0.00)) > 1.00) {
+		std::cout << "Invalid Circle" << std::endl;
+		return false;
+	}
+	return true;
+}
+bool checkBaseCircle(const vector<Point2D> &poly, BaseCircle c) {
+	if(c.r < 0.00) {
+		std::cout << "Invalid Circle" << std::endl;
+		return false;
+	}
+	if(c.r > 0.00) {
+		for(int i = 0;  i < int(poly.size());  i++) {
+			if(distSquare(Point2D(c.cx, c.cy), poly[i]) > c.r*c.r) {
+				std::cout << "Invalid Circle" << std::endl;
+				return false;
+			}
+		}
+	}else if(c.r == 0.00 && distSquare(Point2D(c.cx, c.cy), Point2D(0.00,0.00)) > 1.00) {
+		std::cout << "Invalid Circle" << std::endl;
+		return false;
+	}
+	return true;
+}
+
+void boundaryCoords(const vector<Point2D> &poly, const Point2D &p, vector<double> &coords, int i, int j) {
+	for(int k = 0;  k < int(poly.size());  k++) {
+		coords[k] = 0.00;
+	}
+	double distI = dist(p, poly[i]);
+	double distJ = dist(p, poly[j]);
+	coords[i] = distJ/(distI+distJ);
+	coords[j] = distI/(distI+distJ);
+}
+
+void poissonMVCs(const vector<Point2D> &poly, const Point2D &p, vector<double> &coords, BaseCircle c) {
+/*	if(checkPolygon(poly) == false) {
+		return;
+	}
+	if(checkBaseCircle(p, c) == false) {
+		return;
+	}
+*/
+	if(c.r == 0) {	// infinite radius
+		c.cx += p.x;
+		c.cy += p.y;
+		c.r = 1.00;
+	}else {			// finite radius
+		c.cx = p.x+(c.cx-p.x)/c.r;
+		c.cy = p.y+(c.cy-p.y)/c.r;
+		c.r = 1.00;
+	}
+	zeta.resize(int(poly.size()));
+	xi.resize(int(poly.size()));
+	for(int i = 0;  i < int(poly.size());  i++) {
+		zeta[i] = poly[i]-p;
+	}
+	for(int i = 0;  i < int(poly.size());  i++) {
+		coords[i] = 0.00;
+	}
+	if(abs(c.cx-p.x) < 1E-10 && abs(c.cy-p.y) < 1E-10) {
+		for(int i = 0;  i < int(poly.size());  i++) {
+			xi[i] = zeta[i]/modulus(zeta[i]);
+		}
+		for(int i = 0;  i < int(poly.size());  i++) {
+			int j = (i+1)%int(poly.size());
+			double areaIJ = area(zeta[j], zeta[i]);
+			double distSquareIJ = distSquare(zeta[i], zeta[j]);
+			if(abs(areaIJ) < 1E-10*distSquareIJ) {
+				if(crossOrigin(zeta[i], zeta[j]) == true) {
+					boundaryCoords(poly, p, coords, i, j);
+					return;
+				}else {
+					continue;
+				}
+			}
+			// Mean Value
+			Point2D upsilonIJ = rotateL(xi[j]-xi[i]);
+			double invAreaIJ = 1.00/areaIJ;
+			coords[i] += area(upsilonIJ, zeta[j])/areaIJ;
+			coords[j] -= area(upsilonIJ, zeta[i])/areaIJ;
+		}
+	}else {
+		Point2D tmpP = p-Point2D(c.cx, c.cy);
+		double C = inner(tmpP, tmpP)-1.00;
+		Point2D tau_kappa = tmpP/(C+1.00);
+		Point2D tau = tau_kappa+Point2D(c.cx, c.cy)-p;
+		for(int i = 0;  i < int(poly.size());  i++) {
+			double A = inner(zeta[i], zeta[i]);
+			double B = inner(tmpP, zeta[i]);
+			xi[i] = zeta[i]*((-B+sqrt(B*B-A*C))/A)-tau;
+		}
+		for(int i = 0;  i < int(poly.size());  i++) {
+			int j = (i+1)%int(poly.size());
+			double areaIJ = area(zeta[j], zeta[i]);
+			double distSquareIJ = distSquare(zeta[i], zeta[j]);
+			if(abs(areaIJ) < 1E-10*distSquareIJ) {
+				if(crossOrigin(zeta[i], zeta[j]) == true) {
+					boundaryCoords(poly, p, coords, i, j);
+					return;
+				}else {
+					continue;
+				}
+			}
+			// Poisson
+			Point2D logIJ = log(xi[i]/xi[j]);
+			Point2D upsilonIJ = rotateL(tau_kappa*logIJ);
+			coords[i] += area(upsilonIJ, zeta[j])/areaIJ;
+			coords[j] -= area(upsilonIJ, zeta[i])/areaIJ;
+		}
+	}
+	double sum = 0.00;
+	for(int i = 0;  i < int(poly.size());  i++) {
+		sum += coords[i];
+	}
+	if(sum != 0.00) {
+		double invSum = 1.00/sum;
+		for(int i = 0;  i < int(poly.size());  i++) {
+			coords[i] *= invSum;
+		}
+	}
+}
+
+void poissonMVCs(const vector<Point2D> &poly, const vector<int> &edge, const Point2D &p, vector<double> &coords, BaseCircle c) {
+/*	if(checkPolygon(poly) == false) {
+		return;
+	}
+	if(checkBaseCircle(p, c) == false) {
+		return;
+	}
+*/
+	if(c.r == 0) {	// infinite radius
+		c.cx += p.x;
+		c.cy += p.y;
+		c.r = 1.00;
+	}else {			// finite radius
+		c.cx = p.x+(c.cx-p.x)/c.r;
+		c.cy = p.y+(c.cy-p.y)/c.r;
+		c.r = 1.00;
+	}
+	zeta.resize(int(poly.size()));
+	xi.resize(int(poly.size()));
+	for(int i = 0;  i < int(poly.size());  i++) {
+		zeta[i] = poly[i]-p;
+	}
+	for(int i = 0;  i < int(poly.size());  i++) {
+		coords[i] = 0.00;
+	}
+	if(abs(c.cx-p.x) < 1E-10 && abs(c.cy-p.y) < 1E-10) {
+		for(int i = 0;  i < int(poly.size());  i++) {
+			xi[i] = zeta[i]/modulus(zeta[i]);
+		}
+		for(int k = 0;  k < int(edge.size())/2;  k++) {
+			int i = edge[2*k];
+			int j = edge[2*k+1];
+			double areaIJ = area(zeta[j], zeta[i]);
+			double distSquareIJ = distSquare(zeta[i], zeta[j]);
+			if(abs(areaIJ) < 1E-10*distSquareIJ) {
+				if(crossOrigin(zeta[i], zeta[j]) == true) {
+					boundaryCoords(poly, p, coords, i, j);
+					return;
+				}else {
+					continue;
+				}
+			}
+			// Mean Value
+			Point2D upsilonIJ = rotateL(xi[j]-xi[i]);
+			coords[i] += area(upsilonIJ, zeta[j])/areaIJ;
+			coords[j] -= area(upsilonIJ, zeta[i])/areaIJ;
+		}
+	}else {
+		Point2D tmpP = p-Point2D(c.cx, c.cy);
+		double C = inner(tmpP, tmpP)-1.00;
+		Point2D tau_kappa = tmpP/(C+1.00);
+		Point2D tau = tau_kappa+Point2D(c.cx, c.cy)-p;
+		for(int i = 0;  i < int(poly.size());  i++) {
+			double A = inner(zeta[i], zeta[i]);
+			double B = inner(tmpP, zeta[i]);
+			xi[i] = zeta[i]*((-B+sqrt(B*B-A*C))/A)-tau;
+		}
+		for(int k = 0;  k < int(edge.size())/2;  k++) {
+			int i = edge[2*k];
+			int j = edge[2*k+1];
+			double areaIJ = area(zeta[j], zeta[i]);
+			double distSquareIJ = distSquare(zeta[i], zeta[j]);
+			if(abs(areaIJ) < 1E-10*distSquareIJ) {
+				if(crossOrigin(zeta[i], zeta[j]) == true) {
+					boundaryCoords(poly, p, coords, i, j);
+					return;
+				}else {
+					continue;
+				}
+			}
+			// Poisson
+			Point2D logIJ = log(xi[i]/xi[j]);
+			Point2D upsilonIJ = rotateL(tau_kappa*logIJ);
+			coords[i] += area(upsilonIJ, zeta[j])/areaIJ;
+			coords[j] -= area(upsilonIJ, zeta[i])/areaIJ;
+		}
+	}
+	double sum = 0.00;
+	for(int i = 0;  i < int(poly.size());  i++) {
+		sum += coords[i];
+	}
+	if(sum != 0.00) {
+		double invSum = 1.00/sum;
+		for(int i = 0;  i < int(poly.size());  i++) {
+			coords[i] *= invSum;
+		}
+	}
+}
+
+inline void intersection(double a, double b, double c, double d, double e, double f, Point2D &ctr) {
+	ctr.x = (c*e-f*b)/(a*e-b*d);
+	ctr.y = (c*d-f*a)/(b*d-e*a);
+}
+void minCircle(const vector<Point2D> &poly, BaseCircle &c) {
+	Point2D ctr = poly[0];
+	c.r = 0.00;
+	for(int i = 1;  i < int(poly.size());  i++) {
+		if(dist(ctr, poly[i]) > c.r) {
+			ctr = poly[i];
+			c.r = 0.00;
+			for(int j = 1;  j <= i-1;  j++) {
+				if(dist(ctr, poly[j]) > c.r) {
+					ctr.x = (poly[i].x+poly[j].x)/2;
+					ctr.y = (poly[i].y+poly[j].y)/2;
+					c.r = dist(poly[i], poly[j])/2;
+					for(int k = 1;  k <= j-1;  k++) {
+						if(dist(ctr, poly[k]) > c.r) {
+							intersection(poly[j].x-poly[i].x, poly[j].y-poly[i].y, (poly[j].x*poly[j].x+poly[j].y*poly[j].y-
+								poly[i].x*poly[i].x-poly[i].y*poly[i].y)/2, poly[k].x-poly[i].x, poly[k].y-poly[i].y,
+								(poly[k].x*poly[k].x+poly[k].y*poly[k].y-poly[i].x*poly[i].x-poly[i].y*poly[i].y)/2, ctr);
+							c.r = dist(ctr, poly[k]);
+						}
+					}
+				}
+			}
+		}
+	}
+	c.cx = ctr.x;
+	c.cy = ctr.y;
+}
+
+void basicPoissonMVCs(const vector<Point2D> &poly, const Point2D &p, vector<double> &coords) {
+	if(checkPolygon(poly) == false) {
+		return;
+	}
+	BaseCircle c;
+	minCircle(poly, c);
+	poissonMVCs(poly, p, coords, c);
+}
+
 ]]
 
 -- Export the module.
