@@ -249,7 +249,34 @@ local function Middle (v, gn, gt, i, j, at)
 		local denom = (yi * ucj):Imag() * 2
 		local m, k, z = (uci / denom):Mul_I(), ((uci - ucj) / denom):Mul_I(), Z[i]
 		local M, K, iz, ik = m:Conjugate(), k:Conjugate(), 1 / z, 1 / k
-		local t = (m * z + M * iz) / (k * z + K * iz)
+
+--[[
+	AREA = (a, b) * (c, d) = bc - ad
+
+	uci = (a, -b)
+	ucj = (c, -d)
+	yi * ucj = (a, b) * (c, -d) = a * c + b * d, b * c + a * d
+	denom = IMAG(^^) * 2 = 2 * (bc + ad)
+* i = -b, a
+	m = (b, a) / [2*(bc + ad)], M = (b, -a) / [2*(bc + ad)]
+	k = (b - d, a - c) / [2*(bc + ad)], K = (b - d, c - a) / [2*(bc + ad)]
+
+	alphaI = (c, d) / (bc - ad)
+	kappaI = { (d, c) / [2*(bc - ad)], (d, -c) / [2*(bc - ad)] }
+	alphaJ = (a, b) / -(bc - ad)
+	kappaJ = { (b, a) / [-2*(bc - ad)], (b, -a) / [-2*(bc - ad)] }
+	kappa = { (d - b, c - a) / [2*(bc - ad)], (d - b, a - c) / [2*(bc - ad)] }
+
+	Point2D alphaI = y[j]/areaIJ;
+	Point2D kappaI[2] = {Point2D(alphaI.y/2, alphaI.x/2), Point2D(alphaI.y/2, -alphaI.x/2)};
+	Point2D alphaJ = y[i]/(-areaIJ);
+	Point2D kappaJ[2] = {Point2D(alphaJ.y/2, alphaJ.x/2), Point2D(alphaJ.y/2, -alphaJ.x/2)};
+	Point2D kappa[2] = {kappaI[0]+kappaJ[0], kappaI[1]+kappaJ[1]};
+
+-- ALMOST a match...
+
+	Point2D vecIJ = (y[j]-y[i])*invDistIJ; <- prospective tangent?
+]]
 
 --[[
 	Z(i;k,0,0) = C(3,0,k)
@@ -263,7 +290,11 @@ local function Middle (v, gn, gt, i, j, at)
 		--
 		local I0, I1 = (Z3[j] - Z3[i]) / 3, Z[j] - z
 		local I2 = -I1:Conjugate()
-
+--[[
+	Point2D intgIJ2 = (z[j]*z[j]*z[j]-z[i]*z[i]*z[i])/3;
+	Point2D intgIJ1 = z[j]-z[i];
+	Point2D intgIJ0 = conj(z[i])-conj(z[j]);
+]]
 		--
 		local kI0, mI0 = k * I0, m * I0
 		local kI1, mI1 = k * I1, m * I1
@@ -405,18 +436,6 @@ c(-;i,j) =	V(j)n(i-1;X)Z(i-1;1,m(j+1),n(j)) - V(j)n(i-1;Y)Z(i-1;1,m(j),n(j+1))
 ]]
 
 --[[
-	Point2D alphaI = y[j]/areaIJ;
-	Point2D kappaI[2] = {Point2D(alphaI.y/2, alphaI.x/2), Point2D(alphaI.y/2, -alphaI.x/2)};
-	Point2D alphaJ = y[i]/(-areaIJ);
-	Point2D kappaJ[2] = {Point2D(alphaJ.y/2, alphaJ.x/2), Point2D(alphaJ.y/2, -alphaJ.x/2)};
-	Point2D kappa[2] = {kappaI[0]+kappaJ[0], kappaI[1]+kappaJ[1]};
-
-	Point2D intgIJ2 = (z[j]*z[j]*z[j]-z[i]*z[i]*z[i])/3;
-	Point2D intgIJ1 = z[j]-z[i];
-	Point2D intgIJ0 = conj(z[i])-conj(z[j]);
-
-	Point2D vecIJ = (y[j]-y[i])*invDistIJ;
-
 	// cache intermediate variables to accelerate the computation
 	Point2D kappaSquare = kappa[0]*kappa[0];
 	Point2D kappaIntgIJ1 = kappa[0]*intgIJ1;
