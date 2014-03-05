@@ -88,9 +88,8 @@ local M = {}
 	 */
 --]]
 
---- DOCME
-function M.Save_Interleaved (name, colors, w, opts)
-	local str = _ToString_Interleaved_(colors, w, opts)
+--
+local function SaveStr (name, str)
 	local file = open(name, "wb")
 
 	if file then
@@ -102,23 +101,13 @@ function M.Save_Interleaved (name, colors, w, opts)
 end
 
 --- DOCME
-function M.Save_RGBA (name, r, g, b, a, w, opts)
-	local str = _ToString_RGBA_(r, g, b, a, w, opts)
-	local file = open(name, "w")
-
-	if file then
-		file:write(str)
-		file:close()
-	end
-
-	return file ~= nil
+function M.Save_Interleaved (name, colors, w, opts)
+	return SaveStr(name, _ToString_Interleaved_(colors, w, opts))
 end
 
---
-local function U32 (num)
-	local low1, low2, low3 = num % 2^8, num % 2^16, num % 2^24
-	
-	return char((num - low3) / 2^24, (low3 - low2) / 2^16, (low2 - low1) / 2^8, low1)
+--- DOCME
+function M.Save_RGBA (name, r, g, b, a, w, opts)
+	return SaveStr(name, _ToString_RGBA_(r, g, b, a, w, opts))
 end
 
 --
@@ -133,6 +122,13 @@ local function Adler (data)
 	end
 
 	return s2 * 2^16 + s1
+end
+
+--
+local function U32 (num)
+	local low1, low2, low3 = num % 2^8, num % 2^16, num % 2^24
+	
+	return char((num - low3) / 2^24, (low3 - low2) / 2^16, (low2 - low1) / 2^8, low1)
 end
 
 --
