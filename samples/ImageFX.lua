@@ -56,7 +56,10 @@ end
 Scene:addEventListener("createScene")
 
 -- --
-local Dir = "Background_Assets"
+local Base = system.DocumentsDirectory
+
+-- --
+local Dir = ""--"Background_Assets"
 
 -- --
 local CW, CH = display.contentWidth, display.contentHeight
@@ -78,8 +81,8 @@ end
 --
 function Scene:enterScene ()
 	--
-	local images, dir, busy = file.EnumerateFiles(Dir, { exts = "png" }), Dir .. "/"
-
+	local images, dir, busy = file.EnumerateFiles(Dir, { base = Base, exts = "png" }), ""--Dir .. "/"
+vdump(images)
 	self.images = common_ui.Listbox(self.view, 275, 20, {
 		height = 120,
 
@@ -96,13 +99,14 @@ function Scene:enterScene ()
 				Since = system.getTimer()
 
 				self.busy = timers.WrapEx(function()
-					local func = png.Load(system.pathForFile(dir .. images[index]), Watch)
+					local func = png.Load(system.pathForFile(dir .. images[index], Base), Watch)
 
 					if func then
 						local data = func("get_pixels")
 						local w, h = func("get_dims")
 						local i, y = 1, 155
 --local p = w * 4
+--local cc = {}
 						for Y = 1, h do
 							local x = 5
 
@@ -143,9 +147,17 @@ function Scene:enterScene ()
 	local ii = math.sqrt(hgrad + vgrad) / 255
 
 						pixel:setFillColor(ii)
+						for _ = 1, 4 do
+							cc[#cc + 1] = ii
+						end
 --]]
 								pixel:setFillColor(r / 255, g / 255, b / 255, a / 255)
-
+								--[[
+cc[#cc+1]=r
+cc[#cc+1]=g
+cc[#cc+1]=b
+cc[#cc+1]=a
+]]
 								x, i = x + 1, i + 4
 							end
 
@@ -153,6 +165,7 @@ function Scene:enterScene ()
 
 							y = y + 1
 						end
+					--	require("loader_ops.png_encode").Save_Interleaved(system.pathForFile("Out2.png", system.DocumentsDirectory), cc, w, { --[[from_01 = true, ]]yfunc = Watch })
 					end
 
 					--
@@ -168,7 +181,7 @@ function Scene:enterScene ()
 	local add_row = common_ui.ListboxRowAdder()
 
 	for _, name in ipairs(images) do
-		local path = system.pathForFile(dir .. name)
+		local path = system.pathForFile(dir .. name, Base)
 		local ok, w, h = png.GetInfo(path)
 
 		if ok and w <= CW - 10 and h <= CH - 150 then

@@ -24,16 +24,15 @@
 --
 
 -- Standard library imports --
-local byte = byte
+local byte = string.byte
 local ceil = math.ceil
 local char = string.char
 local concat = table.concat
 local floor = math.floor
 local gmatch = string.gmatch
 local ipairs = ipairs
-local open = io.open
-local max = math.max
 local min = math.min
+local open = io.open
 local unpack = unpack
 
 -- Modules --
@@ -92,7 +91,7 @@ local M = {}
 --- DOCME
 function M.Save_Interleaved (name, colors, w, opts)
 	local str = _ToString_Interleaved_(colors, w, opts)
-	local file = open(name, "w")
+	local file = open(name, "wb")
 
 	if file then
 		file:write(str)
@@ -138,35 +137,40 @@ end
 
 --
 local function WriteUncompressedBlock (stream, is_last, data, offset, len)
-	local nlen = bnot(len)
+	local nlen = band(bnot(len), 0xFFFF)
 	local lenFF, nlenFF = band(len, 0xFF), band(nlen, 0xFF)
 
 	stream[#stream + 1] = char(is_last and 1 or 0) -- Final flag, Compression type 0
 	stream[#stream + 1] = char(lenFF) -- Length LSB
-	stream[#stream + 1] = char(rshift(len - lenFF), 8)) -- Length MSB
+	stream[#stream + 1] = char(rshift(len - lenFF, 8)) -- Length MSB
 	stream[#stream + 1] = char(nlenFF) -- Length 1st complement LSB
-	stream[#stream + 1] = char(rshift(nlen - nlenFF), 8)) -- Length 1st complement MSB
-	stream[#stream + 1] = char(unpack(data, offset + 1, offset + len)) -- Data
+	stream[#stream + 1] = char(rshift(nlen - nlenFF, 8)) -- Length 1st complement MSB
+
+	for i = 1, len, 512 do
+		stream[#stream + 1] = char(unpack(data, offset + i, offset + min(i + 511, len))) -- Data
+	end
 end
 
 -- --
 local BlockSize = 32000
 
 -- --
-local Byte1 = char(8) -- CM = 8, CMINFO = 0
-local Byte2 = char((31 - (8 * 256) % 31) % 31) -- FCHECK (FDICT / FLEVEL = 0)
+local Bytes = char(8, (31 - (8 * 256) % 31) % 31) -- CM = 8, CMINFO = 0; FCHECK (FDICT / FLEVEL = 0)
 
 --
-local function UncompressedWrite (data)
-	local subs, pos, n = { Byte1, Byte2 }, 0, #data
+local function UncompressedWrite (data, yfunc)
+	local subs, pos, n = { Bytes }, 0, #data
 
-	while n - pos > BlockSize do
-		WriteUncompressedBlock(subs, false, data, pos, BlockSize)
+	repeat
+		yfunc()
+
+		local left = n - pos
+		local is_last = left <= BlockSize
+
+		WriteUncompressedBlock(subs, is_last, data, pos, is_last and left or BlockSize)
 
 		pos = pos + BlockSize
-	end
-
-	WriteUncompressedBlock(subs, true, data, pos, n - pos)
+	until is_last
 
 	subs[#subs + 1] = U32(Adler(data))
 
@@ -178,7 +182,7 @@ local CRC
 
 --
 local function CreateCRCTable ()
-	CRC = {}
+	local t = {}
 
 	for i = 0, 255 do
 		local c = i
@@ -186,15 +190,17 @@ local function CreateCRCTable ()
 		for _ = 1, 8 do
 			local bit = band(c, 0x1)
 
-			c = c - bit
+			c = (c - bit) / 2
 
 			if bit ~= 0 then
 				c = bxor(c, 0xEDB88320)
 			end
 		end
 
-		CRC[#CRC + 1] = c
-	end 
+		t[#t + 1] = c
+	end
+
+	return t
 end
 
 --
@@ -219,15 +225,15 @@ local function ToChunk (stream, id, bytes)
 	crc = UpdateCRC(crc, id)
 	crc = UpdateCRC(crc, bytes)
 
-	stream[#stream + 1] = bnot(crc)
+	stream[#stream + 1] = U32(bnot(crc))
 end
 
 --
 local function Write (colors, w, h, to_zlib, yfunc)
 	local stream = { "\137\080\078\071\013\010\026\010" }
 
-	ToChunk(stream, "IHDR", U32(w) .. U32(h) .. char(8, 6, 0, 0, 0) -- Bit depth, colortype (ARGB), compression, filter, interlace
-	ToChunk(stream, "IDAT", to_zlib(colors))
+	ToChunk(stream, "IHDR", U32(w) .. U32(h) .. char(8, 6, 0, 0, 0)) -- Bit depth, colortype (ARGB), compression, filter, interlace
+	ToChunk(stream, "IDAT", to_zlib(colors, yfunc))
 	ToChunk(stream, "IEND", "")
 
 	return concat(stream, "")
@@ -236,12 +242,32 @@ end
 --
 local function DefYieldFunc () end
 
+--
+local function Finish (data, extra, w, h, yfunc, opts)
+	local n = #data
+
+	--
+	if opts then
+		for i = 1, opts.from_01 and n or 0 do
+			data[i] = min(floor(data[i] * 255), 255)
+		end
+	end
+
+	--
+	for _ = 1, extra do
+		data[n], data[n + 1], data[n + 2], data[n + 3], n = 0, 0, 0, 0, n + 4
+	end
+
+	--
+	return Write(data, w, h, UncompressedWrite, yfunc)
+end
+
 --- DOCME
 function M.ToString_Interleaved (colors, w, opts)
 	local ncolors = floor(#colors / 4)
 	local h, data = ceil(ncolors / w), {}
 	local si, di, extra = 1, 1, w * h - ncolors
-	local yfunc = (opts and opts.yfunc) or DefYieldFunc()
+	local yfunc = (opts and opts.yfunc) or DefYieldFunc
 
 	-- Inject filters and do a standard write.
 	repeat
@@ -258,14 +284,7 @@ function M.ToString_Interleaved (colors, w, opts)
 		yfunc()
 	until ncolors == 0
 
-	for _ = 1, extra do
-		data[di], data[di + 1], data[di + 2], data[di + 3] = 0, 0, 0, 0
-		di = di + 4
-	end
-
-	yfunc()
-
-	return Write(colors, w, h, UncompressedWrite, opts and opts.yfunc)
+	return Finish(data, extra, w, h, yfunc, opts)
 end
 
 --- DOCME
@@ -273,7 +292,7 @@ function M.ToString_RGBA (r, g, b, a, w, opts)
 	local ncolors = min(#r, #g, #b, #a)
 	local h, data = ceil(ncolors / w), {}
 	local si, di, extra = 1, 1, w * h - ncolors
-	local yfunc = (opts and opts.yfunc) or DefYieldFunc()
+	local yfunc = (opts and opts.yfunc) or DefYieldFunc
 
 	-- Interleave color streams, inject filters, and do a standard write.
 	repeat
@@ -287,14 +306,7 @@ function M.ToString_RGBA (r, g, b, a, w, opts)
 		yfunc()
 	until ncolors == 0
 
-	for _ = 1, extra do
-		data[di], data[di + 1], data[di + 2], data[di + 3] = 0, 0, 0, 0
-		di = di + 4
-	end
-
-	yfunc()
-
-	return Write(data, w, h, UncompressedWrite, opts and opts.yfunc)
+	return Finish(data, extra, w, h, yfunc, opts)
 end
 
 -- Cache module members.
