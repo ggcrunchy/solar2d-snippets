@@ -43,30 +43,52 @@ local tuple = require("number_ops.tuple")
 -- Exports --
 local M = {}
 
---- DOCME
+--- Computes the absolute value (also called modulus) of _z_.
+-- @number a Real part of _z_...
+-- @number b ...and complex part.
+-- @treturn number Absolute value.
 function M.Abs (a, b)
 	return sqrt(a * a + b * b)
 end
 
---- DOCME
+--- Adds complex numbers _z1_ and _z2_.
+-- @number a Real part of _z1_...
+-- @number b ...and complex part.
+-- @number c Real part of _z2_...
+-- @number d ...and complex part.
+-- @treturn number Real part of sum...
+-- @treturn number ...and imaginary part.
 function M.Add (a, b, c, d)
 	return a + c, b + d
 end
 
---- DOCME
+--- Computes the area between _z1_ and _z2_, interpreted as vectors.
+-- TODO: Negative?
+-- @number a Real part of _z1_...
+-- @number b ...and complex part.
+-- @number c Real part of _z2_...
+-- @number d ...and complex part.
+-- @return number Signed area.
 function M.Area (a, b, c, d)
 	return b * c - a * d
 end
 
---- DOCME
+--- Computes the argument of _z_.
+-- @number a Real part of _z_...
+-- @number b ...and complex part.
+-- @treturn number Argument.
 function M.Arg (a, b)
 	return atan2(b, a)
 end
 
--- --
-local half_pi = pi / 2
+-- Cached angle --
+local HalfPi = pi / 2
 
---- DOCME
+--- Computes the arctangent of _z_.
+-- @number a Real part of _z_...
+-- @number b ...and complex part.
+-- @treturn number Real part of result...
+-- @treturn number ...and imaginary part (**n.b.** non-unique).
 function M.Atan (a, b)
 	local p, m, aa = 1 + b, 1 - b, a * a
 	local i, r = .25 * (log(p * p + aa) - log(m * m + aa))
@@ -74,92 +96,155 @@ function M.Atan (a, b)
 	if a ~= 0 then
 		local angle = atan((1 - aa - b * b) / (a + a))
 
-		r = (a > 0 and (half_pi - angle) or -(half_pi + angle)) / 2
+		r = (a > 0 and (HalfPi - angle) or -(HalfPi + angle)) / 2
 	elseif -1 < b and b < 1 then
 		r = 0
 	else
-		r = half_pi
+		r = HalfPi
 	end
 
 	return r, i
 end
 
---- DOCME
+--- Computes the conjugate of _z_.
+-- @number a Real part of _z_...
+-- @number b ...and complex part.
+-- @treturn number _a_.
+-- @treturn number -_b_.
 function M.Conjugate (a, b)
 	return a, -b
 end
 
---- DOCME
+--- Computes the Euclidean distance between _z1_ and _z2_, interpreted as points.
+-- @number a Real part of _z1_...
+-- @number b ...and complex part.
+-- @number c Real part of _z2_...
+-- @number d ...and complex part.
+-- @treturn number Distance.
 function M.Distance (a, b, c, d)
 	local dr, di = c - a, d - b
 
 	return sqrt(dr * dr + di * di)
 end
 
---- DOCME
+--- Divides _z1_ by _z2_.
+-- @number a Real part of _z1_...
+-- @number b ...and complex part.
+-- @number c Real part of _z2_...
+-- @number d ...and complex part.
+-- @treturn number Real part of quotient...
+-- @treturn number ...and imaginary part.
 function M.Div (a, b, c, d)
 	local denom = c * c + d * d
 
 	return (a * c + b * d) / denom, (b * c - a * d) / denom
 end
 
---- DOCME
+--- Computes e^_z_.
+-- @number a Real part of _z_...
+-- @number b ...and complex part.
+-- @treturn number Real part of result...
+-- @treturn number ...and imaginary part.
 function M.Exp (a, b)
 	local t = exp(a)
 
 	return t * cos(b), t * sin(b)
 end
 
---- DOCME
+--- Compues the inner product of _z1_ and _z2_.
+-- @number a Real part of _z1_...
+-- @number b ...and complex part.
+-- @number c Real part of _z2_...
+-- @number d ...and complex part.
+-- @treturn number Inner product.
 function M.Inner (a, b, c, d)
 	return a * c + b * d
 end
 
---- DOCME
+--- Computes multiplicative inverse of _z_, i.e. 1 / _z_.
+-- @number a Real part of _z_...
+-- @number b ...and complex part.
+-- @treturn number Real part of inverse...
+-- @treturn number ...and imaginary part.
 function M.Inverse (a, b)
 	local denom = a * a + b * b
 
 	return a / denom, -b / denom
 end
 
---- DOCME
+--- Computes the logarithm of _z_.
+-- @number a Real part of _z_...
+-- @number b ...and complex part.
+-- @treturn number Real part of result...
+-- @treturn number ...and imaginary part (**n.b.** non-unique).
 function M.Log (a, b)
 	return .5 * log(a * a + b * b), atan2(b, a)
 end
 
---- DOCME
+--- Multiplies _z1_ by _z2_.
+-- @number a Real part of _z1_...
+-- @number b ...and complex part.
+-- @number c Real part of _z2_...
+-- @number d ...and complex part.
+-- @treturn number Real part of product...
+-- @treturn number ...and imaginary part.
 function M.Mul (a, b, c, d)
 	return a * c - b * d, b * c + a * d
 end
 
---- DOCME
+--- Helper to multiply _z_ by _i_.
+-- @number a Real part of _z_...
+-- @number b ...and complex part.
+-- @treturn number -_b_.
+-- @treturn number _a_.
 function M.Mul_I (a, b)
 	return -b, a
 end
 
---- DOCME
+--- Helper to multiply _z_ by -_i_.
+-- @number a Real part of _z_...
+-- @number b ...and complex part.
+-- @treturn number _b_.
+-- @treturn number -_a_.
 function M.Mul_NegI (a, b)
 	return b, -a
 end
 
---- DOCME
+--- Helper to negate _z_.
+-- @number a Real part of _z_...
+-- @number b ...and complex part.
+-- @treturn number -_a_.
+-- @treturn number -_b_.
 function M.Negate (a, b)
 	return -a, -b
 end
 
---- DOCME
+--- Computes the (modulus-squared) norm of _z_.
+-- @number a Real part of _z_...
+-- @number b ...and complex part.
+-- @treturn number Norm.
 function M.Norm (a, b)
 	return a * a + b * b
 end
 
---- DOCME
+--- Computes _z_ scaled to have absolute value of 1.
+-- @number a Real part of _z_...
+-- @number b ...and complex part.
+-- @treturn number Real part of result...
+-- @treturn number ...and imaginary part.
 function M.Normalize (a, b)
 	local mag = sqrt(a * a + b * b)
 
 	return a / mag, b / mag
 end
 
---- DOCME
+--- Computes _z_^_n_.
+-- @number a Real part of _z_...
+-- @number b ...and complex part.
+-- @number n Real exponent.
+-- @treturn number Real part of result...
+-- @treturn number ...and imaginary part.
+-- @see Pow_Complex
 function M.Pow (a, b, n)
 	local r = exp(.5 * n * log(a * a + b * b))
 	local theta = n * atan2(b, a)
@@ -167,7 +252,14 @@ function M.Pow (a, b, n)
 	return r * cos(theta), r * sin(theta)
 end
 
---- DOCME
+--- Computes _z1_^_z2_.
+-- @number a Real part of _z1_...
+-- @number b ...and complex part.
+-- @number c Real part of _z2_...
+-- @number d ...and complex part.
+-- @treturn number Real part of result...
+-- @treturn number ...and imaginary part.
+-- @see Pow, RaiseReal
 function M.Pow_Complex (a, b, c, d)
 	a, b = .5 * log(a * a + b * b), atan2(b, a)
 	a, b = a * c - b * d, b * c + a * d
@@ -177,22 +269,38 @@ function M.Pow_Complex (a, b, c, d)
 	return t * cos(b), t * sin(b)
 end
 
---- DOCME
+--- Computes _n_^_z_.
+-- @number n Real base.
+-- @number a Real part of _z_...
+-- @number b ...and complex part.
+-- @treturn number Real part of result...
+-- @treturn number ...and imaginary part.
+-- @see Pow_Complex
 function M.RaiseReal (n, a, b)
 	local t, theta = n^a, b * log(n)
 
 	return t * cos(theta), t * sin(theta)
 end
 
---- DOCME
+--- Alias of @{Inverse}.
 M.Reciprocal = M.Inverse
 
---- DOCME
+--- Scales _z_ by _k_.
+-- @number a Real part of _z_...
+-- @number b ...and complex part.
+-- @treturn number _ka_.
+-- @treturn number _kb_.
 function M.Scale (a, b, k)
 	return k * a, k * b
 end
 
---- DOCME
+--- Subtracts _z2_ from _z1_.
+-- @number a Real part of _z1_...
+-- @number b ...and complex part.
+-- @number c Real part of _z2_...
+-- @number d ...and complex part.
+-- @treturn number Real part of difference...
+-- @treturn number ...and imaginary part.
 function M.Sub (a, b, c, d)
 	return a - c, b - d
 end
@@ -218,7 +326,9 @@ M.CacheFactory = cache.Factory(function(ComplexMT, new)
 	--- DOCME
 	ComplexMT.Atan = uf(M.Atan)
 
-	--- DOCME
+	--- Getter.
+	-- @treturn number Real part.
+	-- @treturn number Imaginary part.
 	function ComplexMT:Components ()
 		return self.m_r, self.m_i
 	end
@@ -240,15 +350,19 @@ M.CacheFactory = cache.Factory(function(ComplexMT, new)
 		return Complex(a, b, true)
 	end)
 
-	--- DOCME
-	function ComplexMT.__eq (c1, c2)
-		return c1.m_r == c2.m_r and c1.m_i == c2.m_i
+	--- Metamethod.
+	-- @tparam Complex z1 Complex number #1...
+	-- @tparam Complex z2 ...and #2.
+	-- @treturn boolean Real and imaginary parts of _z1_ and _z2_ both match?
+	function ComplexMT.__eq (z1, z2)
+		return z1.m_r == z2.m_r and z1.m_i == z2.m_i
 	end
 
 	--- DOCME
 	ComplexMT.Exp = uf(M.Exp)
 
-	--- DOCME
+	--- Getter.
+	-- @treturn number Imaginary part.
 	function ComplexMT:Imag ()
 		return self.m_i
 	end
@@ -259,7 +373,7 @@ M.CacheFactory = cache.Factory(function(ComplexMT, new)
 	--- DOCME
 	ComplexMT.Inverse = uf(M.Inverse)
 
-	--- DOCME ... not in 5.1, or needs newproxy()
+	--- Metamethod (unsupported in Lua 5.1), aliases @{Abs}.
 	ComplexMT.__len = ComplexMT.Abs
 
 	--- DOCME
@@ -283,7 +397,8 @@ M.CacheFactory = cache.Factory(function(ComplexMT, new)
 	--- DOCME
 	ComplexMT.__pow = bf(M.Pow_Complex)
 
-	--- DOCME
+	--- Getter.
+	-- @treturn number Real part.
 	function ComplexMT:Real ()
 		return self.m_r
 	end

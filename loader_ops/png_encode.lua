@@ -88,7 +88,7 @@ local M = {}
 	 */
 --]]
 
---
+-- Common save-to-file logic
 local function SaveStr (name, str)
 	local file = open(name, "wb")
 
@@ -100,17 +100,36 @@ local function SaveStr (name, str)
 	return file ~= nil
 end
 
---- DOCME
+--- Saves color data as a PNG.
+-- @string name Name of file to save.
+-- @array colors Color values, stored as { _red1_, _green1_, _blue1_, _alpha1_, _red2_, ... }
+-- @uint w Width of saved image. The height is computed automatically from this and #_colors_.
+-- @ptable? opts Optional save options. Fields:
+--
+-- * **from_01**: If true, color values are interpreted as being &isin; [0, 1], instead of
+-- [0, 255] (the default).
+-- * **yfunc**: Yield function, called periodically during the save (no arguments), e.g. to
+-- yield within a coroutine. If absent, a no-op.
+-- @treturn boolean Was the file written?
 function M.Save_Interleaved (name, colors, w, opts)
 	return SaveStr(name, _ToString_Interleaved_(colors, w, opts))
 end
 
---- DOCME
+--- Variant of @{Save_Interleaved}, with colors as separate channels.
+-- @string name Name of file to save.
+-- @array r Array of red values...
+-- @array g ...green values...
+-- @array b ...blue values...
+-- @array a ...and alpha values.
+-- @uint w Width of saved image. The height is computed automatically from this and the
+-- minimum of #_r_, #_g_, #_b_, #_a_ (typically, these will all be the same).
+-- @ptable? opts As per @{Save_Interleaved}.
+-- @treturn boolean Was the file written?
 function M.Save_RGBA (name, r, g, b, a, w, opts)
 	return SaveStr(name, _ToString_RGBA_(r, g, b, a, w, opts))
 end
 
---
+-- Computes the Adler checksum
 local function Adler (data)
 	local s1, s2 = 1, 0
 
@@ -124,14 +143,14 @@ local function Adler (data)
 	return s2 * 2^16 + s1
 end
 
---
+-- Serializes a 32-bit number to bytes
 local function U32 (num)
 	local low1, low2, low3 = num % 2^8, num % 2^16, num % 2^24
 	
 	return char((num - low3) / 2^24, (low3 - low2) / 2^16, (low2 - low1) / 2^8, low1)
 end
 
---
+-- Writes up to 32K of an uncompressed block
 local function WriteUncompressedBlock (stream, is_last, data, offset, len)
 	local nlen = band(bnot(len), 0xFFFF)
 	local lenFF, nlenFF = band(len, 0xFF), band(nlen, 0xFF)
@@ -142,18 +161,18 @@ local function WriteUncompressedBlock (stream, is_last, data, offset, len)
 	stream[#stream + 1] = char(nlenFF) -- Length 1st complement LSB
 	stream[#stream + 1] = char(rshift(nlen - nlenFF, 8)) -- Length 1st complement MSB
 
-	for i = 1, len, 512 do
+	for i = 1, len, 512 do -- Break up data into unpack-supported sizes
 		stream[#stream + 1] = char(unpack(data, offset + i, offset + min(i + 511, len))) -- Data
 	end
 end
 
--- --
+-- Maximum number of uncompressed bytes to write at once --
 local BlockSize = 32000
 
--- --
+-- Hard-coded first bytes in uncompressed block --
 local Bytes = char(8, (31 - (8 * 256) % 31) % 31) -- CM = 8, CMINFO = 0; FCHECK (FDICT / FLEVEL = 0)
 
---
+-- Built-in "zlib" for uncompressed blocks
 local function UncompressedWrite (data, yfunc)
 	local subs, pos, n = { Bytes }, 0, #data
 
@@ -173,10 +192,10 @@ local function UncompressedWrite (data, yfunc)
 	return concat(subs, "")
 end
 
--- --
+-- LUT for CRC --
 local CRC
 
---
+-- Generates CRC table
 local function CreateCRCTable ()
 	local t = {}
 
@@ -199,7 +218,7 @@ local function CreateCRCTable ()
 	return t
 end
 
---
+-- Update the CRC with new data
 local function UpdateCRC (crc, bytes)
 	CRC = CRC or CreateCRCTable()
 
@@ -210,7 +229,7 @@ local function UpdateCRC (crc, bytes)
 	return crc
 end
 
---
+-- Serialize data as a PNG chunk
 local function ToChunk (stream, id, bytes)
 	stream[#stream + 1] = U32(#bytes)
 	stream[#stream + 1] = id
@@ -224,41 +243,40 @@ local function ToChunk (stream, id, bytes)
 	stream[#stream + 1] = U32(bnot(crc))
 end
 
---
-local function Write (colors, w, h, to_zlib, yfunc)
-	local stream = { "\137\080\078\071\013\010\026\010" }
-
-	ToChunk(stream, "IHDR", U32(w) .. U32(h) .. char(8, 6, 0, 0, 0)) -- Bit depth, colortype (ARGB), compression, filter, interlace
-	ToChunk(stream, "IDAT", to_zlib(colors, yfunc))
-	ToChunk(stream, "IEND", "")
-
-	return concat(stream, "")
-end
-
---
+-- Default yield function: no-op
 local function DefYieldFunc () end
 
---
+-- Common string serialize behavior after canonicalizing data
 local function Finish (data, extra, w, h, yfunc, opts)
 	local n = #data
 
-	--
+	-- Do any [0, 1] to [0, 255] conversion.
 	if opts then
 		for i = 1, opts.from_01 and n or 0 do
 			data[i] = min(floor(data[i] * 255), 255)
 		end
 	end
 
-	--
+	-- Pad the last row with 0, if necessary.
 	for _ = 1, extra do
 		data[n], data[n + 1], data[n + 2], data[n + 3], n = 0, 0, 0, 0, n + 4
 	end
 
-	--
-	return Write(data, w, h, UncompressedWrite, yfunc)
+	-- Process the data, gather it into chunks, and emit the final byte stream.
+	local stream = { "\137\080\078\071\013\010\026\010" }
+
+	ToChunk(stream, "IHDR", U32(w) .. U32(h) .. char(8, 6, 0, 0, 0)) -- Bit depth, colortype (ARGB), compression, filter, interlace
+	ToChunk(stream, "IDAT", UncompressedWrite(data, yfunc))
+	ToChunk(stream, "IEND", "")
+
+	return concat(stream, "")
 end
 
---- DOCME
+--- Variant of @{Save_Interleaved} that emits a raw byte stream, instead of saving to file.
+-- @array colors As per @{Save_Interleaved}.
+-- @uint w As per @{Save_Interleaved}.
+-- @ptable? opts As per @{Save_Interleaved}.
+-- @treturn string Byte stream.
 function M.ToString_Interleaved (colors, w, opts)
 	local ncolors = floor(#colors / 4)
 	local h, data = ceil(ncolors / w), {}
@@ -283,7 +301,14 @@ function M.ToString_Interleaved (colors, w, opts)
 	return Finish(data, extra, w, h, yfunc, opts)
 end
 
---- DOCME
+--- Variant of @{Save_RGBA} that emits a raw byte stream, instead of saving to file.
+-- @array r Array of red values &isin; [0, 255]...
+-- @array g ...green values...
+-- @array b ...blue values...
+-- @array a ...and alpha values.
+-- @uint w As per @{Save_RGBA}.
+-- @ptable? opts As per @{Save_RGBA}.
+-- @treturn string Byte stream.
 function M.ToString_RGBA (r, g, b, a, w, opts)
 	local ncolors = min(#r, #g, #b, #a)
 	local h, data = ceil(ncolors / w), {}
