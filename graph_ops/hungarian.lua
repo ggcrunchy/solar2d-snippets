@@ -32,15 +32,18 @@ local min = math.min
 -- Exports --
 local M = {}
 
---
-local function FindZero (costs, ccover, rcover, ncols, n)
-	local row = 1
+-- --
+local ColCover, RowCover, Costs = {}, {}, {}
 
-	for ri = 0, n, ncols do
-		if not rcover[row] then
-			for i = 1, ncols do
-				if costs[ri + i] == 0 and not ccover[i] then
-					return row, i, ri
+--
+local function FindZero (ncols, n)
+	local row, dcols = 1, ncols - 1
+
+	for ri = 1, n, ncols do
+		if not RowCover[row] then
+			for i = 0, dcols do
+				if Costs[ri + i] == 0 and not ColCover[i + 1] then
+					return row, i + 1, ri - 1
 				end
 			end
 		end
@@ -55,21 +58,26 @@ local Star = 1
 -- --
 local Prime = 2
 
+-- --
+local Mark = {}
+
 --
-local function FindStarInCol (mark, ri, ncols, nrows)
-	local col = ri
+local function FindStarInCol (col, ncols, nrows)
+	local ri = col
 
 	for _ = 1, nrows do
-		if mark[ri] == Star then
+		if Mark[ri] == Star then
 			return ri - col
 		end
+
+		ri = ri + ncols
 	end
 end
 
 --
-local function FindStarInRow (mark, ri, ncols)
+local function FindStarInRow (ri, ncols)
 	for i = 1, ncols do
-		if mark[ri + i] == Star then
+		if Mark[ri + i] == Star then
 			return i
 		end
 	end
@@ -82,8 +90,7 @@ end
 function M.Run (costs, ncols)
 	--
 	local out, n, from = {}, #costs, costs
-	local nrows = ceil(n / ncols)
-	local mark, ccover, rcover = {}, {}, {}
+	local dcols, nrows = ncols - 1, ceil(n / ncols)
 
 	--
 	if ncols < nrows then
@@ -91,33 +98,33 @@ function M.Run (costs, ncols)
 
 		for i = 1, ncols do
 			for j = i, n, ncols do
-				out[index], index = costs[j], index + 1
+				Costs[index], index = costs[j], index + 1
 			end
 		end
 
-		ncols, nrows, from = nrows, ncols, out
+		ncols, nrows, from = nrows, ncols, Costs
 	end
 
 	-- Step #1: For each row of the cost matrix, find the smallest element and subtract it from
 	-- every element in its row.
-	for ri = 0, n, ncols do
-		local rmin = from[ri + 1]
+	for ri = 1, n, ncols do
+		local rmin = from[ri]
 
-		for i = 2, ncols do
+		for i = 1, dcols do
 			rmin = min(rmin, from[ri + i])
 		end
 
-		for i = ri + 1, ri + ncols do
-			out[i] = from[i] - rmin
+		for i = ri, ri + dcols do
+			Costs[i], Mark[i] = from[i] - rmin, 0
 		end
 	end
 
 	-- Step #2: Find a zero (Z) in the resulting matrix.  If there is no starred zero in its
 	-- row or column, star Z. Repeat for each element in the matrix.
-	for ri = 0, n, ncols do
-		for i = 1, ncols do
-			if out[ri + i] == 0 and ccover[i] == 0 then
-				mark[ri + i], ccover[i] = Star, true
+	for ri = 1, n, ncols do
+		for i = 0, dcols do
+			if Costs[ri + i] == 0 and not ColCover[i + 1] then
+				Mark[ri + i], ColCover[i + 1] = Star, true
 
 				break
 			end
@@ -125,7 +132,7 @@ function M.Run (costs, ncols)
 	end
 
 	for i = 1, ncols do
-		ccover[i] = false
+		ColCover[i] = false
 	end
 
 	--
@@ -137,18 +144,22 @@ function M.Run (costs, ncols)
 		if do3 then
 			do3 = false
 
-			for ri = 0, n, ncols do
-				for i = 1, ncols do
-					if mark[ri + i] == Star then
-						ccover[i] = true
+			local row = 1
+
+			for ri = 1, n, ncols do
+				for i = 0, dcols do
+					if Mark[ri + i] == Star then
+						ColCover[i + 1], out[row] = true, i + 1
 					end
 				end
+
+				row = row + 1
 			end
-		
+
 			local ncovered = 0
 
 			for i = 1, ncols do
-				if ccover[i] then
+				if ColCover[i] then
 					ncovered = ncovered + 1
 				end
 			end
@@ -165,15 +176,15 @@ function M.Run (costs, ncols)
 		local prow0, pcol0
 
 		repeat
-			local row, col, ri = FindZero(out, ccover, rcover, ncols, n)
+			local row, col, ri = FindZero(ncols, n)
 
 			if row then
-				mark[ri + col] = Prime
+				Mark[ri + col] = Prime
 
-				local scol = FindStarInRow(mark, ri, ncols)
+				local scol = FindStarInRow(ri, ncols)
 
 				if scol then
-					rcover[row], ccover[scol] = true, false
+					RowCover[row], ColCover[scol] = true, false
 				else
 					prow0, pcol0 = ri, col
                 end
@@ -183,7 +194,7 @@ function M.Run (costs, ncols)
 		-- Step #5: Construct a series of alternating primed and starred zeros as follows. Let
 		-- Z0 represent the uncovered primed zero found in Step #4. Let Z1 denote the starred
 		-- zero in the column of Z0 (if any). Let Z2 denote the primed zero in the row of Z1
-		-- (there will always be one).  Continue until the series terminates at a primed zero
+		-- (there will always be one). Continue until the series terminates at a primed zero
 		-- that has no starred zero in its column. Unstar each starred zero of the series, star
 		-- each primed zero of the series, erase all primes and uncover every line in the matrix.
 		-- Return to Step #3.
@@ -192,50 +203,48 @@ function M.Run (costs, ncols)
 
 			path[1], path[2] = prow0, pcol0
 
-			local n = 2
+			local count = 2
 
 			repeat
-				local ri = FindStarInCol(mark, path[n], ncols, nrows)
+				local ri = FindStarInCol(path[count], ncols, nrows)
 
 				if ri then
-					path[n + 1] = ri
-					path[n + 2] = path[n]
-					path[n + 3] = path[n + 1]
+					path[count + 1] = ri
+					path[count + 2] = path[count]
+					path[count + 3] = ri
 
 					for i = 1, ncols do
-						if mark[ri + i] == Prime then
-							path[n + 4] = i
+						if Mark[ri + i] == Prime then
+							path[count + 4] = i
 
 							break
 						end
 					end
 
-					n = n + 4
+					count = count + 4
 				end
 			until not ri
 
 			-- Augment path.
-			for i = 1, n, 2 do
+			for i = 1, count, 2 do
 				local ri, col = path[i], path[i + 1]
 
-				mark[ri + col] = mark[ri + col] ~= Star and Star or false
+				Mark[ri + col] = Mark[ri + col] ~= Star and Star
 			end
 
 			-- Clear covers.
 			for i = 1, nrows do
-				ccover[i], rcover[i] = false, false
+				ColCover[i], RowCover[i] = false, false
 			end
 
 			for i = nrows + 1, ncols do
-				ccover[i] = false
+				ColCover[i] = false
 			end
 
 			-- Erase primes.
-			for ri = 0, n, ncols do
-				for i = 1, ncols do
-					if mark[ri + i] == Prime then
-						mark[ri + i] = false
-					end
+			for i = 1, n do
+				if Mark[i] == Prime then
+					Mark[i] = false
 				end
 			end
 
@@ -247,11 +256,11 @@ function M.Run (costs, ncols)
 		else
 			local vmin, row = 1 / 0, 1
 
-			for ri = 0, n, ncols do
-				if not rcover[row] then
-					for i = 1, ncols do
-						if not ccover[i] then
-							vmin = min(vmin, out[ri + i])
+			for ri = 1, n, ncols do
+				if not RowCover[row] then
+					for i = 0, dcols do
+						if not ColCover[i + 1] then
+							vmin = min(vmin, Costs[ri + i])
 						end
 					end
 				end
@@ -261,16 +270,18 @@ function M.Run (costs, ncols)
 
 			row = 1
 
-			for ri = 0, n, ncols do
-				local radd = rcover[row] and vmin or 0
+			for ri = 1, n, ncols do
+				local radd = RowCover[row] and vmin or 0
 
-				for i = 1, ncols do
-					local add = radd + (ccover[i] and 0 or -vmin)
+				for i = 0, dcols do
+					local add = radd + (ColCover[i + 1] and 0 or -vmin)
 
 					if add ~= 0 then
-						out[ri + i] = out[ri + i] + add
+						Costs[ri + i] = Costs[ri + i] + add
 					end
 				end
+
+				row = row + 1
 			end
 		end
 	end
