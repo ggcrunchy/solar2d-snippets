@@ -288,6 +288,7 @@ M.Reciprocal = M.Inverse
 --- Scales _z_ by _k_.
 -- @number a Real part of _z_...
 -- @number b ...and complex part.
+-- @number k Scale factor.
 -- @treturn number _ka_.
 -- @treturn number _kb_.
 function M.Scale (a, b, k)
