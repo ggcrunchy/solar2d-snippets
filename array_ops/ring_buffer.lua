@@ -23,6 +23,9 @@
 -- [ MIT license: http://www.opensource.org/licenses/mit-license.php ]
 --
 
+-- Cached module references --
+local _Push_
+
 -- Exports --
 local M = {}
 
@@ -83,23 +86,40 @@ end
 -- @uint? head Index of ring buffer head. If absent (i.e. buffer not initialized), 1.
 -- @uint? tail Index of ring buffer tail. If absent (cf. _head_), 1.
 -- @uint? len Array length; if absent, #_arr_. Assumed to be &gt; 0.
--- @treturn boolean The push succeeded?
 -- @treturn uint Updated _head_.
 -- @treturn uint Updated _tail_.
 -- @see IsFull
 function M.Push (arr, elem, head, tail, len)
-	head, tail = head or 1, tail or 1
-
-	if head == Full then
-		return false, head, tail
-	else
+	if head ~= Full then
+		head, tail = head or 1, tail or 1
 		arr[head] = elem
 
 		local next = Next(arr, head, len)
 
-		return true, next ~= tail and next or Full, tail
+		head = next ~= tail and next or Full
 	end
+
+	return head, tail
 end
+
+--- Variant of @{Push} that reports whether the push was possible.
+-- @array Ring buffer.
+-- @param Non-**nil** element to push.
+-- @uint? head Index of ring buffer head. If absent (i.e. buffer not initialized), 1.
+-- @uint? tail Index of ring buffer tail. If absent (cf. _head_), 1.
+-- @uint? len Array length; if absent, #_arr_. Assumed to be &gt; 0.
+-- @treturn boolean The push succeeded?
+-- @treturn uint Updated _head_.
+-- @treturn uint Updated _tail_.
+-- @see IsFull, Push
+function M.Push_Guarded (arr, elem, head, tail, len)
+	local new_head, new_tail = _Push_(arr, elem, head, tail, len)
+
+	return head ~= new_head, new_head, new_tail
+end
+
+-- Cache module members.
+_Push_ = M.Push
 
 -- Export the module.
 return M
