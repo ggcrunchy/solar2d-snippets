@@ -157,5 +157,6 @@ local a, b = mf.MaxFlow_Labels ({
 print("Max flow = " .. tostring(a))
 vdump(b)
 ]]
+--require("number_ops.convolve")
 -- Kick off the app.
 scenes.GoToScene{ name = "scene.Intro" }
