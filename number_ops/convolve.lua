@@ -23,6 +23,9 @@
 -- [ MIT license: http://www.opensource.org/licenses/mit-license.php ]
 --
 
+-- Standard library imports --
+local max = math.max
+
 -- Modules --
 local fft = require("number_ops.fft")
 
@@ -33,6 +36,9 @@ local M = {}
 local Ring = {}
 
 --- DOCME
+-- @array signal
+-- @array kernel
+-- @treturn array C
 function M.CircularConvolve_1D (signal, kernel)
 	local sn, kn, csignal = #signal, #kernel, {}
 
@@ -72,6 +78,9 @@ function M.CircularConvolve_1D (signal, kernel)
 end
 
 --- DOCME
+-- @array signal
+-- @array kernel
+-- @treturn array C
 function M.Convolve_1D (signal, kernel)
 	local sn, kn, csignal = #signal, #kernel, {}
 
@@ -120,6 +129,13 @@ function M.Convolve_1D (signal, kernel)
 end
 
 --- DOCME
+-- @array signal
+-- @array kernel
+-- @uint scols
+-- @uint kcols
+-- @treturn array C
+-- @treturn uint X
+-- @treturn uint Y
 function M.Convolve_2D (signal, kernel, scols, kcols)
 	local sn, kn = #signal, #kernel
 
@@ -136,12 +152,68 @@ function M.Convolve_2D (signal, kernel, scols, kcols)
 	return csignal
 end
 
+-- Scratch buffers used to perform transforms --
+local A, B = {}, {}
+
 --- DOCME
+-- @array signal
+-- @array kernel
+-- @callable? ft
+-- @callable? it
+-- @treturn array C
 function M.Convolve_FFT1D (signal, kernel, ft, it)
 	ft, it = ft or fft.FFT, it or fft.IFFT
 
-	-- Load values, pad 0
-	-- return ifft(fft . fft)
+	-- Figure out how much padding is needed to have the sizes match and be a power of 2.
+	local sn, kn = #signal, #kernel
+	local clen, power = sn + kn - 1, 1
+
+	while power < clen do
+		power = power + power
+	end
+
+	-- Load the signal and kernel as pure real complex numbers, padding with zeroes.
+	local ai, bi = 1, 1
+
+	for i = 1, sn do
+		A[ai], A[ai + 1], ai = signal[i], 0, ai + 2
+	end
+
+	for _ = sn + 1, power do
+		A[ai], A[ai + 1], ai = 0, 0, ai + 2
+	end
+
+	for i = 1, kn do
+		B[bi], B[bi + 1], bi = kernel[i], 0, bi + 2
+	end
+
+	for _ = kn + 1, power do
+		B[bi], B[bi + 1], bi = 0, 0, bi + 2
+	end
+-- TODO: Look up the "two FFT's at once"...
+	-- Perform an FFT on each group...
+	ft(A, power)
+	ft(B, power)
+
+	-- ... multiply the (complex) results...
+	for i = 1, power + power, 2 do
+		local a, b = A[i], A[i + 1]
+		local c, d = B[i], B[i + 1]
+
+		A[i], A[i + 1] = a * c - b * d, b * c + a * d
+	end
+
+	-- ...transform back to the time domain.
+	it(A, power)
+-- ...and the "reals-only" IFFT?
+	-- ... and get the convolution by scaling the real parts of the result.
+	local csignal = {}
+
+	for i = 1, clen + clen, 2 do
+		csignal[#csignal + 1] = A[i] / power
+	end
+
+	return csignal
 end
 
 --- DOCME
@@ -155,11 +227,12 @@ function M.Convolve_FFT2D (signal, kernel, scols, kcols, ft, it)
 	--
 end
 --[[
---vdump(M.CircularConvolve_1D({7,2,5,9,3,8,6,4},{2,5,7,4,3}))
-print("Normal")
+print("Linear")
 vdump(M.Convolve_1D({1,2,1},{1,2,3}))
 print("Circular")
 vdump(M.CircularConvolve_1D({1,2,1},{1,2,3}))
-]]
+print("FFT")
+vdump(M.Convolve_FFT1D({1,2,1},{1,2,3}))
+--]]
 -- Export the module.
 return M

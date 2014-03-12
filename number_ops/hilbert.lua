@@ -50,7 +50,7 @@ else -- Otherwise, make equivalents for Hilbert curve purposes
 		return a + b + (c or 0)
 	end
 
-	lshift = operators.LShift
+	lshift = operators.lshift
 
 	local floor = math.floor
 	local lastn, power

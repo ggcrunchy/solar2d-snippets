@@ -33,7 +33,7 @@ local M = {}
 -- This module is largely adapted from LuaJIT's benchmark: http://luajit.org/download/scimark.lua (also MIT license)
 
 --
-local function fft_bitreverse (v, n)
+local function BitReverse (v, n)
 	local j = 0
 
 	for i = 0, 2 * n - 4, 2 do
@@ -52,12 +52,12 @@ local function fft_bitreverse (v, n)
 end
 
 --
-local function fft_transform (v, n, angle)
+local function Transform (v, n, angle)
 	if n <= 1 then
 		return
 	end
 
-	fft_bitreverse(v, n)
+	BitReverse(v, n)
 
 	local dual = 1
 
@@ -97,12 +97,12 @@ end
 
 --- DOCME
 function M.FFT (v, n)
-	fft_transform(v, n, pi)
+	Transform(v, n, pi)
 end
 
 --- DOCME
 function M.IFFT (v, n)
-	fft_transform(v, n, -pi)
+	Transform(v, n, -pi)
 end
 --[[
 
