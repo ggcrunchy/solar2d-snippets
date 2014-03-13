@@ -24,10 +24,14 @@
 --
 
 -- Standard library imports --
-local max = math.max
+local min = math.min
 
 -- Modules --
+local complex = require("number_ops.complex")
 local fft = require("number_ops.fft")
+
+-- Imports --
+local Mul = complex.Mul
 
 -- Exports --
 local M = {}
@@ -173,8 +177,21 @@ function M.Convolve_FFT1D (signal, kernel, ft, it)
 	end
 
 	-- Load the signal and kernel as pure real complex numbers, padding with zeroes.
-	local ai, bi = 1, 1
+	local ai, bi = 1, 2
 
+	for i = 2 * min(sn, kn) + 1, power + power, 2 do
+		B[i], B[i + 1] = 0, 0
+	end
+
+	for i = 1, sn do
+		B[ai], ai = signal[i], ai + 2
+	end
+
+	for i = 1, kn do
+		B[bi], bi = kernel[i], bi + 2
+	end
+	vdump(B)
+--[[
 	for i = 1, sn do
 		A[ai], A[ai + 1], ai = signal[i], 0, ai + 2
 	end
@@ -190,27 +207,37 @@ function M.Convolve_FFT1D (signal, kernel, ft, it)
 	for _ = kn + 1, power do
 		B[bi], B[bi + 1], bi = 0, 0, bi + 2
 	end
--- TODO: Look up the "two FFT's at once"...
-	-- Perform an FFT on each group...
-	ft(A, power)
+]]
+	-- Perform an FFT on each group... (WIP: two FFT's at once)
+--	ft(A, power)
 	ft(B, power)
-
+vdump(B)
 	-- ... multiply the (complex) results...
-	for i = 1, power + power, 2 do
-		local a, b = A[i], A[i + 1]
-		local c, d = B[i], B[i + 1]
+	local j = power + power - 1
+A[1] = B[1] * B[2]
+A[2] = 0
+	for i = 3--[[1]], power + 1, 2 do--power + power, 2 do
+		local yr, yi = B[i], B[i + 1]
+		local zr, zi = B[j], B[j + 1]
+		local a, b = yr + zr, yi + zi--yi - zi--A[i], A[i + 1]
+		local c, d = yr - zr, yi - zi--yi + zi, zr - yr --B[i], B[i + 1]
 
-		A[i], A[i + 1] = a * c - b * d, b * c + a * d
+--		A[i], A[i + 1], j = (a * c - b * d), (b * c + a * d), j - 2
+A[i], A[i + 1] = Mul(a, d, b, -c)--(a, d), (b, -c)
+A[j], A[j + 1] = Mul(a, -d, b, c)--(a, -d), (b, c)
+j = j - 2
 	end
+A[2] = A[power + power - 1]
 
+vdump(A)
 	-- ...transform back to the time domain.
-	it(A, power)
--- ...and the "reals-only" IFFT?
-	-- ... and get the convolution by scaling the real parts of the result.
-	local csignal = {}
+	it(A, power / 2) -- <- TODO: Real transform
 
+	-- ... and get the convolution by scaling the real parts of the result.
+	local csignal, div = {}, 4 * power
+vdump(A)
 	for i = 1, clen + clen, 2 do
-		csignal[#csignal + 1] = A[i] / power
+		csignal[#csignal + 1] = A[i] / div
 	end
 
 	return csignal
@@ -226,7 +253,7 @@ function M.Convolve_FFT2D (signal, kernel, scols, kcols, ft, it)
 
 	--
 end
---[[
+---[[
 print("Linear")
 vdump(M.Convolve_1D({1,2,1},{1,2,3}))
 print("Circular")

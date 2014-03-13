@@ -101,34 +101,19 @@ function M.FFT (v, n)
 end
 
 --- DOCME
+function M.FFT_Real (v, n)
+	-- stuff
+end
+
+--- DOCME
 function M.IFFT (v, n)
 	Transform(v, n, -pi)
 end
---[[
 
-
-
-
-function benchmarks.FFT(n)
-  local l2n = log(n)/log(2)
-  if l2n % 1 ~= 0 then
-    io.stderr:write("Error: FFT data length is not a power of 2\n")
-    os.exit(1)
-  end
-  local v = random_vector(n*2)
-  return function(cycles)
-    local norm = 1.0 / n
-    for p=1,cycles do
-      fft_transform(v, n, -1)
-      fft_transform(v, n, 1)
-      for i=1,n*2 do v[i] = v[i] * norm end
-    end
-    return ((5*n-2)*l2n + 2*(n+1)) * cycles
-  end
+--- DOCME
+function M.IFFT_Real (v, n)
+	-- stuff
 end
-
--- Compare http://paulbourke.net/miscellaneous/dft/ and Arndt's FXT
-]]
 
 -- Export the module.
 return M
