@@ -126,37 +126,6 @@ var_dump.SetDefaultOutf(printf)
 function vdump (var, name, limit)
 	var_dump.Print(var, name and { name = name, limit = limit })
 end
-local mf=require("graph_ops.flow")
--- A = { b = 3, d = 3 } -> 1 = 2, 4
--- B = { c = 4 } -> 2 = 3
--- C = { a = 3, d = 1, e = 2 } -> 3 = 1, 4, 5
--- D = { e = 2, f = 6 } -> 4 = 5, 6
--- E = { b = 1, g = 1 } -> 5 = 2, 7
--- F = { g = 9 } -> 6 = 7
--- G = "SINK"
--- Source = a, sink = g
---[[
-local a, b = mf.MaxFlow ({
-	1, 2, 3, 1, 4, 3,
-	2, 3, 4,
-	3, 1, 3, 3, 4, 1, 3, 5, 2,
-	4, 5, 2, 4, 6, 6,
-	5, 2, 1, 5, 7, 1,
-	6, 7, 9
-}, 1, 7)
-]]
---[[
-local a, b = mf.MaxFlow_Labels ({
-	a = { b = 3, d = 3 },
-	b = { c = 4 },
-	c = { a = 3, d = 1, e = 2 },
-	d = { e = 2, f = 6 },
-	e = { b = 1, g = 1 },
-	f = { g = 9 }
-}, "a", "g")
-print("Max flow = " .. tostring(a))
-vdump(b)
-]]
---require("number_ops.convolve")
+
 -- Kick off the app.
 scenes.GoToScene{ name = "scene.Intro" }

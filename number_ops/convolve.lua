@@ -23,15 +23,8 @@
 -- [ MIT license: http://www.opensource.org/licenses/mit-license.php ]
 --
 
--- Standard library imports --
-local min = math.min
-
 -- Modules --
-local complex = require("number_ops.complex")
 local fft = require("number_ops.fft")
-
--- Imports --
-local Mul = complex.Mul
 
 -- Exports --
 local M = {}
@@ -156,8 +149,8 @@ function M.Convolve_2D (signal, kernel, scols, kcols)
 	return csignal
 end
 
--- Scratch buffers used to perform transforms --
-local A, B = {}, {}
+-- Scratch buffer used to perform transforms --
+local B = {}
 
 --- DOCME
 -- @array signal
@@ -170,74 +163,28 @@ function M.Convolve_FFT1D (signal, kernel, ft, it)
 
 	-- Figure out how much padding is needed to have the sizes match and be a power of 2.
 	local sn, kn = #signal, #kernel
-	local clen, power = sn + kn - 1, 1
+	local clen, n = sn + kn - 1, 1
 
-	while power < clen do
-		power = power + power
+	while n < clen do
+		n = n + n
 	end
 
-	-- Load the signal and kernel as pure real complex numbers, padding with zeroes.
-	local ai, bi = 1, 2
+	-- Perform an FFT on signal and kernel (both at once)...
+	fft.PrepareTwoRealSets(B, n, signal, sn, kernel, kn)
 
-	for i = 2 * min(sn, kn) + 1, power + power, 2 do
-		B[i], B[i + 1] = 0, 0
-	end
+	ft(B, n)
 
-	for i = 1, sn do
-		B[ai], ai = signal[i], ai + 2
-	end
-
-	for i = 1, kn do
-		B[bi], bi = kernel[i], bi + 2
-	end
-	vdump(B)
---[[
-	for i = 1, sn do
-		A[ai], A[ai + 1], ai = signal[i], 0, ai + 2
-	end
-
-	for _ = sn + 1, power do
-		A[ai], A[ai + 1], ai = 0, 0, ai + 2
-	end
-
-	for i = 1, kn do
-		B[bi], B[bi + 1], bi = kernel[i], 0, bi + 2
-	end
-
-	for _ = kn + 1, power do
-		B[bi], B[bi + 1], bi = 0, 0, bi + 2
-	end
-]]
-	-- Perform an FFT on each group... (WIP: two FFT's at once)
---	ft(A, power)
-	ft(B, power)
-vdump(B)
 	-- ... multiply the (complex) results...
-	local j = power + power - 1
-A[1] = B[1] * B[2]
-A[2] = 0
-	for i = 3--[[1]], power + 1, 2 do--power + power, 2 do
-		local yr, yi = B[i], B[i + 1]
-		local zr, zi = B[j], B[j + 1]
-		local a, b = yr + zr, yi + zi--yi - zi--A[i], A[i + 1]
-		local c, d = yr - zr, yi - zi--yi + zi, zr - yr --B[i], B[i + 1]
+	fft.SeparateRealResults_Mul(B, n)
 
---		A[i], A[i + 1], j = (a * c - b * d), (b * c + a * d), j - 2
-A[i], A[i + 1] = Mul(a, d, b, -c)--(a, d), (b, -c)
-A[j], A[j + 1] = Mul(a, -d, b, c)--(a, -d), (b, c)
-j = j - 2
-	end
-A[2] = A[power + power - 1]
-
-vdump(A)
 	-- ...transform back to the time domain.
-	it(A, power / 2) -- <- TODO: Real transform
+	it(B, n) -- <- TODO: Real transform
 
 	-- ... and get the convolution by scaling the real parts of the result.
-	local csignal, div = {}, 4 * power
-vdump(A)
+	local csignal = {}
+
 	for i = 1, clen + clen, 2 do
-		csignal[#csignal + 1] = A[i] / div
+		csignal[#csignal + 1] = B[i] / n
 	end
 
 	return csignal
@@ -253,13 +200,6 @@ function M.Convolve_FFT2D (signal, kernel, scols, kcols, ft, it)
 
 	--
 end
----[[
-print("Linear")
-vdump(M.Convolve_1D({1,2,1},{1,2,3}))
-print("Circular")
-vdump(M.CircularConvolve_1D({1,2,1},{1,2,3}))
-print("FFT")
-vdump(M.Convolve_FFT1D({1,2,1},{1,2,3}))
---]]
+
 -- Export the module.
 return M
