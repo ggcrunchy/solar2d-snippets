@@ -100,11 +100,37 @@ function M.FFT (v, n)
 	Transform(v, n, pi)
 end
 
+--
+local function AuxRealXform (v, n, c1, c2, theta)
+	local s, s2 = sin(theta), 2 * sin(0.5 * theta)^2
+	local wr, wi, nf = 1.0 - s2, s, n + n + 2
+
+	for i = 3, n, 2 do
+		local j = nf - i
+		local a, b, c, d = v[i], v[i + 1], v[j], v[j + 1]
+		local r1, i1 = c1 * (a + c), c1 * (b - d)
+		local r2, i2 = -(b + d), a - c
+		local rr_ii = c2 * (wr * r2 - wi * i2)
+		local ri_ir = c2 * (wr * i2 + wi * r2)
+
+		v[i], v[i + 1] = r1 + rr_ii, ri_ir + i1
+		v[j], v[j + 1] = r1 - rr_ii, ri_ir - i1
+
+		wr, wi = wr - s * wi - s2 * wr, wi + s * wr - s2 * wi
+	end
+end
+
 --- DOCME
 -- @array v
 -- @uint n
 function M.FFT_Real (v, n)
-	-- stuff
+	Transform(v, n, pi)
+	AuxRealXform(v, n, 0.5, -0.5, pi / n)
+
+	local a, b = v[1], v[2]
+
+	v[1], v[2] = a + b, a - b
+-- ^^ TODO: Test!
 end
 
 -- TODO: Two FFT's? (SeparateRealResults does some of it...)
@@ -120,7 +146,40 @@ end
 -- @array v
 -- @uint n
 function M.IFFT_Real (v, n)
-	-- stuff
+	AuxRealXform(v, n, 0.5, 0.5, -pi / n)
+
+	local a, b = v[1], v[2]
+
+	v[1], v[2] = .5 * (a + b), .5 * (a - b)
+
+	Transform(v, n, -pi)
+end
+
+--- DOCME
+-- @array v
+-- @uint n
+-- @array out?
+function M.MulTwoFFTsResults (v, n, out)
+	out = out or v
+
+	local m = n + 1
+
+	out[1], out[2] = v[1] * v[2], 0
+	out[m], out[m + 1] = v[m] * v[m + 1], 0
+
+	local len = m + m
+
+	for i = 3, n, 2 do
+		local j = len - i
+		local r1, i1, r2, i2 = v[i], v[i + 1], v[j], v[j + 1]
+		local a, b = r1 + r2, i1 - i2 
+		local c, d = i1 + i2, r2 - r1
+		local real = .25 * (a * c - b * d)
+		local imag = .25 * (b * c + a * d)
+
+		out[i], out[i + 1] = real, imag
+		out[j], out[j + 1] = real, -imag
+	end
 end
 
 --- DOCME
@@ -130,7 +189,7 @@ end
 -- @uint m
 -- @array arr2
 -- @uint n
-function M.PrepareTwoRealSets (out, size, arr1, m, arr2, n)
+function M.PrepareTwoRealFFTs (out, size, arr1, m, arr2, n)
 	if m > n then
 		arr1, arr2, m, n = arr2, arr1, n, m
 	end
@@ -147,32 +206,6 @@ function M.PrepareTwoRealSets (out, size, arr1, m, arr2, n)
 
 	for i = j, size + size, 2 do
 		out[i], out[i + 1] = 0, 0
-	end
-end
-
---- DOCME
--- @array v
--- @uint n
--- @array out?
-function M.SeparateRealResults_Mul (v, n, out)
-	out = out or v
-
-	local m = n + 1
-
-	out[1], out[2] = v[1] * v[2], 0
-	out[m], out[m + 1] = v[m] * v[m + 1], 0
-
-	local len = m + m
-
-	for i = 3, n, 2 do
-		local j = len - i
-		local r1, i1, r2, i2 = v[i], v[i + 1], v[j], v[j + 1]
-		local a, b = r1 + r2, i1 - i2 
-		local c, d = i1 + i2, r2 - r1
-		local real, imag = .25 * (a * c - b * d), .25 * (b * c + a * d)
-
-		out[i], out[i + 1] = real, imag
-		out[j], out[j + 1] = real, -imag
 	end
 end
 

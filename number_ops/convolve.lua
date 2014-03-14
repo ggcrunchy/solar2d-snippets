@@ -77,6 +77,23 @@ end
 --- DOCME
 -- @array signal
 -- @array kernel
+-- @uint scols
+-- @uint kcols
+-- @treturn array C
+-- @treturn uint X
+-- @treturn uint Y
+function M.CircularConvolve_2D (signal, kernel, scols, kcols)
+	-- If the kernel is wider than the signal, swap roles (commutability of convolution).
+	if scols < kcols then
+		signal, kernel, scols, kcols = kernel, signal, kcols, scols
+	end
+
+	-- Convolve!
+end
+
+--- DOCME
+-- @array signal
+-- @array kernel
 -- @treturn array C
 function M.Convolve_1D (signal, kernel)
 	local sn, kn, csignal = #signal, #kernel, {}
@@ -134,17 +151,18 @@ end
 -- @treturn uint X
 -- @treturn uint Y
 function M.Convolve_2D (signal, kernel, scols, kcols)
-	local sn, kn = #signal, #kernel
-
-	if sn < kn then
-		signal, kernel, sn, kn, scols, kcols = kernel, signal, kn, sn, scols, kcols
+	-- If the kernel is wider than the signal, swap roles (commutability of convolution).
+	if scols < kcols then
+		signal, kernel, scols, kcols = kernel, signal, kcols, scols
 	end
 
+	local sn = #signal
+	local kn = #kernel
 	local srows = sn / scols
 	local krows = kn / kcols
 	local csignal = {}
 
-	-- STUFF
+	-- Convolve!
 
 	return csignal
 end
@@ -155,13 +173,9 @@ local B = {}
 --- DOCME
 -- @array signal
 -- @array kernel
--- @callable? ft
--- @callable? it
 -- @treturn array C
-function M.Convolve_FFT1D (signal, kernel, ft, it)
-	ft, it = ft or fft.FFT, it or fft.IFFT
-
-	-- Figure out how much padding is needed to have the sizes match and be a power of 2.
+function M.Convolve_FFT1D (signal, kernel)
+	-- Determine how much padding is needed to have the sizes match and be a power of 2.
 	local sn, kn = #signal, #kernel
 	local clen, n = sn + kn - 1, 1
 
@@ -169,31 +183,30 @@ function M.Convolve_FFT1D (signal, kernel, ft, it)
 		n = n + n
 	end
 
-	-- Perform an FFT on signal and kernel (both at once)...
-	fft.PrepareTwoRealSets(B, n, signal, sn, kernel, kn)
+	-- Perform an FFT on the signal and kernel (both at once)...
+	fft.PrepareTwoRealFFTs(B, n, signal, sn, kernel, kn)
+	fft.FFT(B, n)
 
-	ft(B, n)
+	-- ...multiply the (complex) results...
+	fft.MulTwoFFTsResults(B, n)
 
-	-- ... multiply the (complex) results...
-	fft.SeparateRealResults_Mul(B, n)
+	-- ...transform back to the time domain...
+	local nreal = .5 * n
 
-	-- ...transform back to the time domain.
-	it(B, n) -- <- TODO: Real transform
+	fft.IFFT_Real(B, nreal)
 
-	-- ... and get the convolution by scaling the real parts of the result.
+	-- ...and get the convolution by scaling the real parts of the result.
 	local csignal = {}
 
-	for i = 1, clen + clen, 2 do
-		csignal[#csignal + 1] = B[i] / n
+	for i = 1, clen do
+		csignal[#csignal + 1] = B[i] / nreal
 	end
 
 	return csignal
 end
 
 --- DOCME
-function M.Convolve_FFT2D (signal, kernel, scols, kcols, ft, it)
-	ft, it = ft or fft.FFT, it or fft.IFFT
-
+function M.Convolve_FFT2D (signal, kernel, scols, kcols)
 	local sn, kn = #signal, #kernel
 	local srows = sn / scols
 	local krows = kn / kcols
