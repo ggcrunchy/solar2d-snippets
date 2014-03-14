@@ -23,6 +23,11 @@
 -- [ MIT license: http://www.opensource.org/licenses/mit-license.php ]
 --
 
+-- Standard library imports --
+local floor = math.floor
+local max = math.max
+local min = math.min
+
 -- Modules --
 local fft = require("number_ops.fft")
 
@@ -115,8 +120,6 @@ function M.Convolve_1D (signal, kernel)
 	end
 
 	-- ...within signal...
-	local at = kn
-
 	for i = 0, sn - kn do
 		local sum, si = 0, i
 
@@ -142,29 +145,149 @@ function M.Convolve_1D (signal, kernel)
 	return csignal	
 end
 
+-- Convolution shapes --
+local AuxConvolve2D = {}
+
+--
+function AuxConvolve2D.full (signal, kernel, scols, kcols, srows, krows, sn, kn)
+	-- If the kernel is wider than the signal, swap roles (commutability of convolution).
+	if scols < kcols then
+		signal, kernel, scols, kcols, sn, kn = kernel, signal, kcols, scols, kn, sn
+	end
+	-- ^^ TODO: krows > srows?
+
+	--
+	local low_row, rfrom, rto = srows - krows + 1, 1, 1
+	local csignal, index, si = {}, 1, 0
+
+	for row = 1, srows + krows - 1 do
+		-- Kernel partially outside signal, to left...
+		for i = 1, kcols - 1 do
+			local sum, ki, sr = 0, 0, si + i
+
+			for _ = i, 1, -1 do
+				local sc = sr
+
+				for ri = rfrom, rto, kcols do
+					sum, sc = sum + signal[sc] * kernel[ri + ki], sc - scols
+				end
+
+				ki, sr = ki + 1, sr - 1
+			end
+
+			csignal[index], index = sum, index + 1
+		end
+
+		-- ...within signal...
+		for i = 0, scols - kcols do
+			local sum, ki, sr = 0, 0, si + kcols + i
+
+			for _ = kcols, 1, -1 do
+				local sc = sr
+
+				for ri = rfrom, rto, kcols do
+					sum, sc = sum + signal[sc] * kernel[ri + ki], sc - scols
+				end
+
+				ki, sr = ki + 1, sr - 1
+			end
+
+			csignal[index], index = sum, index + 1
+		end
+
+		-- ...partially outside signal, to right.
+		for i = 1, kcols - 1 do
+			local sum, ki, sr = 0, i, si + scols
+
+			for _ = i, kcols - 1 do
+				local sc = sr
+
+				for ri = rfrom, rto, kcols do
+					sum, sc = sum + signal[sc] * kernel[ri + ki], sc - scols
+				end
+
+				ki, sr = ki + 1, sr - 1
+			end
+
+			csignal[index], index = sum, index + 1
+		end
+
+		--
+		if row < kcols then
+			rto = rto + kcols
+		end
+
+		if row >= srows then
+			rfrom = rfrom + kcols
+		else
+			si = si + scols
+		end
+	end
+
+	return csignal, scols + kcols - 1
+end
+
+--
+function AuxConvolve2D.same (signal, kernel, scols, kcols, srows, krows, sn, kn)
+	local csignal, roff = {}, -floor(.5 * krows)
+	local ri0, cx = roff * scols, floor(.5 * kcols)
+
+	for i = 1, srows do
+		local coff = -cx
+
+		for j = 1, scols do
+			local sum, kr, ri = 0, kn, ri0
+
+			for ki = 1, krows do
+				local row = roff + ki
+
+				if row >= 1 and row <= srows then
+					local kc = kr
+
+					for kj = 1, kcols do
+						local col = coff + kj
+
+						if col >= 1 and col <= scols then
+							sum = sum + signal[ri + col] * kernel[kc]
+						end
+
+						kc = kc - 1
+					end
+				end
+
+				kr, ri = kr - kcols, ri + scols
+			end
+
+			csignal[#csignal + 1], coff = sum, coff + 1
+		end
+
+		roff, ri0 = roff + 1, ri0 + scols
+	end
+
+	return csignal, sn
+end
+
+--
+function AuxConvolve2D.valid (signal, kernel, scols, kcols, srows, krows, sn, kn)
+	-- ??
+end
+
+-- Default shape for linear convolution
+local DefConvolve2D = AuxConvolve2D.full
+
 --- DOCME
 -- @array signal
 -- @array kernel
 -- @uint scols
 -- @uint kcols
+-- @string? shape
 -- @treturn array C
--- @treturn uint X
--- @treturn uint Y
-function M.Convolve_2D (signal, kernel, scols, kcols)
-	-- If the kernel is wider than the signal, swap roles (commutability of convolution).
-	if scols < kcols then
-		signal, kernel, scols, kcols = kernel, signal, kcols, scols
-	end
-
+-- @treturn uint Number of columns in the convolution, given _shape_.
+function M.Convolve_2D (signal, kernel, scols, kcols, shape)
 	local sn = #signal
 	local kn = #kernel
-	local srows = sn / scols
-	local krows = kn / kcols
-	local csignal = {}
 
-	-- Convolve!
-
-	return csignal
+	return (AuxConvolve2D[shape] or DefConvolve2D)(signal, kernel, scols, kcols, sn / scols, kn / kcols, sn, kn)
 end
 
 -- Scratch buffer used to perform transforms --
