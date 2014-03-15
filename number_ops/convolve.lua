@@ -93,7 +93,7 @@ function M.CircularConvolve_2D (signal, kernel, scols, kcols)
 		signal, kernel, scols, kcols = kernel, signal, kcols, scols
 	end
 
-	-- Convolve!
+	-- Convolve! Only needs to handle same case?
 end
 
 --- DOCME
@@ -149,14 +149,15 @@ end
 local AuxConvolve2D = {}
 
 --
-function AuxConvolve2D.full (signal, kernel, scols, kcols, srows, krows, sn, kn)
+function AuxConvolve2D.full (signal, kernel, scols, kcols, sn, kn)
 	-- If the kernel is wider than the signal, swap roles (commutability of convolution).
 	if scols < kcols then
 		signal, kernel, scols, kcols, sn, kn = kernel, signal, kcols, scols, kn, sn
 	end
-	-- ^^ TODO: krows > srows?
+	-- ^^ TODO: krows > srows? MIGHT be working... not extensively tested, kinda got confused :P
 
 	--
+	local srows, krows = sn / scols, kn / kcols
 	local low_row, rfrom, rto = srows - krows + 1, 1, 1
 	local csignal, index, si = {}, 1, 0
 
@@ -213,7 +214,7 @@ function AuxConvolve2D.full (signal, kernel, scols, kcols, srows, krows, sn, kn)
 		end
 
 		--
-		if row < kcols then
+		if row < krows then
 			rto = rto + kcols
 		end
 
@@ -228,10 +229,11 @@ function AuxConvolve2D.full (signal, kernel, scols, kcols, srows, krows, sn, kn)
 end
 
 --
-function AuxConvolve2D.same (signal, kernel, scols, kcols, srows, krows, sn, kn)
+function AuxConvolve2D.same (signal, kernel, scols, kcols, sn, kn)
+	local srows, krows = sn / scols, kn / kcols
 	local csignal, roff = {}, -floor(.5 * krows)
 	local ri0, cx = roff * scols, floor(.5 * kcols)
-
+-- = max size? (some Python or MATLAB libs did...)
 	for i = 1, srows do
 		local coff = -cx
 
@@ -269,7 +271,7 @@ end
 
 --
 function AuxConvolve2D.valid (signal, kernel, scols, kcols, srows, krows, sn, kn)
-	-- ??
+	-- ?? (can do brute force style, i.e. extract from same... search for something better? How to deal with even-dimensioned signal?)
 end
 
 -- Default shape for linear convolution
@@ -287,7 +289,7 @@ function M.Convolve_2D (signal, kernel, scols, kcols, shape)
 	local sn = #signal
 	local kn = #kernel
 
-	return (AuxConvolve2D[shape] or DefConvolve2D)(signal, kernel, scols, kcols, sn / scols, kn / kcols, sn, kn)
+	return (AuxConvolve2D[shape] or DefConvolve2D)(signal, kernel, scols, kcols, sn, kn)
 end
 
 -- Scratch buffer used to perform transforms --
@@ -335,6 +337,9 @@ function M.Convolve_FFT2D (signal, kernel, scols, kcols)
 	local krows = kn / kcols
 
 	--
+	-- for i = 1, N do
+		-- row[i] = FFT() and mult?
+	-- FFT(row)
 end
 
 -- Export the module.
