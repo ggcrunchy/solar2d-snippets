@@ -37,10 +37,10 @@ local M = {}
 -- Scratch buffer used to wrap signals for circular convolution --
 local Ring = {}
 
---- DOCME
--- @array signal
--- @array kernel
--- @treturn array C
+--- One-dimensional circular convolution.
+-- @array signal Discrete signal...
+-- @array kernel ...and kernel.
+-- @treturn array Convolution, of size #_signal_.
 function M.CircularConvolve_1D (signal, kernel)
 	local sn, kn, csignal = #signal, #kernel, {}
 
@@ -60,10 +60,6 @@ function M.CircularConvolve_1D (signal, kernel)
 		Ring[pad + i] = signal[i]
 	end
 
-	for i = 1, pad do
-		Ring[sn + pad + i] = signal[i]
-	end
-
 	-- Perform convolution over the middle part of the signal. The previous extension secures
 	-- against out-of-bounds access.
 	for i = 1, sn do
@@ -79,27 +75,60 @@ function M.CircularConvolve_1D (signal, kernel)
 	return csignal
 end
 
---- DOCME
--- @array signal
--- @array kernel
--- @uint scols
--- @uint kcols
--- @treturn array C
--- @treturn uint X
--- @treturn uint Y
+--- Two-dimensional circular convolution.
+-- @array signal Discrete signal...
+-- @array kernel ...and kernel.
+-- @uint scols Number of columns in _signal_... 
+-- @uint kcols ... and in _kernel_.
+-- @treturn array Convolution, with dimensions and layout as per _signal_.
 function M.CircularConvolve_2D (signal, kernel, scols, kcols)
 	-- If the kernel is wider than the signal, swap roles (commutability of convolution).
 	if scols < kcols then
 		signal, kernel, scols, kcols = kernel, signal, kcols, scols
 	end
+	-- ^^ TODO: krows > srows? (need more tests)
 
-	-- Convolve! Only needs to handle same case?
+	local sn, kn = #signal, #kernel
+	local srows, krows = sn / scols, kn / kcols
+
+	-- Cache the indices at which each row begins, starting with enough of the tail end of
+	-- the signal to ovelap the off-signal part of the kernel on the first few iterations.
+	local rt, mid = sn - scols + 1, 1
+	local csignal, index, pad = {}, 1, krows - 1
+
+	for i = 1, pad do
+		Ring[i], rt = rt, rt - scols
+	end
+
+	for i = 1, srows do
+		Ring[pad + i], mid = mid, mid + scols
+	end
+
+	-- Perform the convolution. The previous step guards against out-of-bounds row access
+	for i = krows, srows + pad do
+		for col = 1, scols do
+			local sum = 0
+
+			for ki = 1, kcols do
+				local diff = col - ki
+				local ri, kj, sc = i, ki, diff >= 0 and col - ki or scols + diff
+
+				for _ = 1, krows do
+					sum, ri, kj = sum + signal[Ring[ri] + sc] * kernel[kj], ri - 1, kj + kcols
+				end
+			end
+
+			csignal[index], index = sum, index + 1
+		end
+	end
+
+	return csignal
 end
 
---- DOCME
--- @array signal
--- @array kernel
--- @treturn array C
+--- One-dimensional linear convolution.
+-- @array signal Discrete signal...
+-- @array kernel ...and kernel.
+-- @treturn array Convolution, of size #_signal_ + #_kernel_ - 1.
 function M.Convolve_1D (signal, kernel)
 	local sn, kn, csignal = #signal, #kernel, {}
 
@@ -148,15 +177,20 @@ end
 -- Convolution shapes --
 local AuxConvolve2D = {}
 
---
-function AuxConvolve2D.full (signal, kernel, scols, kcols, sn, kn)
+-- "compact" 2D convolution shape
+function AuxConvolve2D.compact (signal, kernel, scols, kcols, srows, krows)
+	-- ?? (can do brute force style, i.e. extract from "same"... something better? How to deal with even-dimensioned signal?)
+end
+
+-- "full" 2D convolution shape
+function AuxConvolve2D.full (signal, kernel, scols, kcols)
 	-- If the kernel is wider than the signal, swap roles (commutability of convolution).
 	if scols < kcols then
-		signal, kernel, scols, kcols, sn, kn = kernel, signal, kcols, scols, kn, sn
+		signal, kernel, scols, kcols = kernel, signal, kcols, scols
 	end
 	-- ^^ TODO: krows > srows? MIGHT be working... not extensively tested, kinda got confused :P
 
-	--
+	local sn, kn = #signal, #kernel
 	local srows, krows = sn / scols, kn / kcols
 	local low_row, rfrom, rto = srows - krows + 1, 1, 1
 	local csignal, index, si = {}, 1, 0
@@ -213,27 +247,29 @@ function AuxConvolve2D.full (signal, kernel, scols, kcols, sn, kn)
 			csignal[index], index = sum, index + 1
 		end
 
-		--
+		-- If the kernel is partially out-of-bounds, bring in one row.
 		if row < krows then
 			rto = rto + kcols
 		end
 
-		if row >= srows then
-			rfrom = rfrom + kcols
-		else
+		-- If this row is not the last in the signal, advance it. Otherwise, remove a kernel row.
+		if row < srows then
 			si = si + scols
+		else
+			rfrom = rfrom + kcols
 		end
 	end
 
 	return csignal, scols + kcols - 1
 end
 
---
-function AuxConvolve2D.same (signal, kernel, scols, kcols, sn, kn)
+-- "same" 2D convolution shape
+function AuxConvolve2D.same (signal, kernel, scols, kcols)
+	local sn, kn = #signal, #kernel
 	local srows, krows = sn / scols, kn / kcols
 	local csignal, roff = {}, -floor(.5 * krows)
 	local ri0, cx = roff * scols, floor(.5 * kcols)
--- = max size? (some Python or MATLAB libs did...)
+-- Use max(sn, kn)? (some Python or MATLAB lib does that...)
 	for i = 1, srows do
 		local coff = -cx
 
@@ -269,36 +305,33 @@ function AuxConvolve2D.same (signal, kernel, scols, kcols, sn, kn)
 	return csignal, sn
 end
 
---
-function AuxConvolve2D.valid (signal, kernel, scols, kcols, srows, krows, sn, kn)
-	-- ?? (can do brute force style, i.e. extract from same... search for something better? How to deal with even-dimensioned signal?)
-end
-
 -- Default shape for linear convolution
 local DefConvolve2D = AuxConvolve2D.full
 
---- DOCME
--- @array signal
--- @array kernel
--- @uint scols
--- @uint kcols
--- @string? shape
--- @treturn array C
--- @treturn uint Number of columns in the convolution, given _shape_.
+--- Two-dimensional linear convolution.
+-- @array signal Discrete signal...
+-- @array kernel ...and kernel.
+-- @uint scols Number of columns in _signal_... 
+-- @uint kcols ... and in _kernel_.
+-- @string? shape One of **"compact"**, **"full"**, or **"same"**, which determines how much
+-- of the convolution is returned (emanating from the center). If absent, **"full"**.
+-- @treturn array Convolution.
+-- @treturn uint Number of columns in the convolution, given _shape_:
+-- * For **"compact"**: _scols_ - _kcols_ + 1.
+-- * For **"full"**: _scols_ + _kcols_ - 1.
+-- * For **"same"**: _scols_.
 function M.Convolve_2D (signal, kernel, scols, kcols, shape)
-	local sn = #signal
-	local kn = #kernel
-
-	return (AuxConvolve2D[shape] or DefConvolve2D)(signal, kernel, scols, kcols, sn, kn)
+	return (AuxConvolve2D[shape] or DefConvolve2D)(signal, kernel, scols, kcols)
 end
 
 -- Scratch buffer used to perform transforms --
 local B = {}
 
---- DOCME
--- @array signal
--- @array kernel
--- @treturn array C
+--- One-dimensional linear convolution using fast Fourier transforms. For certain _signal_
+-- and _kernel_ combinations, this may be significantly faster than @{Convolve_1D}.
+-- @array signal Discrete signal...
+-- @array kernel ...and kernel.
+-- @treturn array Convolution.
 function M.Convolve_FFT1D (signal, kernel)
 	-- Determine how much padding is needed to have the sizes match and be a power of 2.
 	local sn, kn = #signal, #kernel
@@ -330,7 +363,13 @@ function M.Convolve_FFT1D (signal, kernel)
 	return csignal
 end
 
---- DOCME
+--- Two-dimensional linear convolution using fast Fourier transforms. For certain _signal_
+-- and _kernel_ combinations, this may be significantly faster than @{Convolve_2D}.
+-- @array signal Discrete signal...
+-- @array kernel ...and kernel.
+-- @treturn array Convolution.
+-- @treturn uint Number of columns in the convolution. Currently, only the **"full"** shape
+-- is supported, i.e. #_scols_ + #_kcols_ - 1.
 function M.Convolve_FFT2D (signal, kernel, scols, kcols)
 	local sn, kn = #signal, #kernel
 	local srows = sn / scols
