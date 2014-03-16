@@ -38,7 +38,7 @@ local M = {}
 local Ring = {}
 
 --- One-dimensional circular convolution.
--- @array signal Discrete signal...
+-- @array signal Real discrete signal...
 -- @array kernel ...and kernel.
 -- @treturn array Convolution, of size #_signal_.
 function M.CircularConvolve_1D (signal, kernel)
@@ -76,7 +76,7 @@ function M.CircularConvolve_1D (signal, kernel)
 end
 
 --- Two-dimensional circular convolution.
--- @array signal Discrete signal...
+-- @array signal Real discrete signal...
 -- @array kernel ...and kernel.
 -- @uint scols Number of columns in _signal_... 
 -- @uint kcols ... and in _kernel_.
@@ -126,7 +126,7 @@ function M.CircularConvolve_2D (signal, kernel, scols, kcols)
 end
 
 --- One-dimensional linear convolution.
--- @array signal Discrete signal...
+-- @array signal Real discrete signal...
 -- @array kernel ...and kernel.
 -- @treturn array Convolution, of size #_signal_ + #_kernel_ - 1.
 function M.Convolve_1D (signal, kernel)
@@ -309,7 +309,7 @@ end
 local DefConvolve2D = AuxConvolve2D.full
 
 --- Two-dimensional linear convolution.
--- @array signal Discrete signal...
+-- @array signal Real discrete signal...
 -- @array kernel ...and kernel.
 -- @uint scols Number of columns in _signal_... 
 -- @uint kcols ... and in _kernel_.
@@ -327,31 +327,35 @@ end
 -- Scratch buffer used to perform transforms --
 local B = {}
 
---- One-dimensional linear convolution using fast Fourier transforms. For certain _signal_
--- and _kernel_ combinations, this may be significantly faster than @{Convolve_1D}.
--- @array signal Discrete signal...
--- @array kernel ...and kernel.
--- @treturn array Convolution.
-function M.Convolve_FFT1D (signal, kernel)
-	-- Determine how much padding is needed to have the sizes match and be a power of 2.
-	local sn, kn = #signal, #kernel
-	local clen, n = sn + kn - 1, 1
+-- Helper to compute a dimension length and associated power-of-2
+local function LenPower (n1, n2)
+	local len, n = n1 + n2 - 1, 1
 
-	while n < clen do
+	while n < len do
 		n = n + n
 	end
 
-	-- Perform an FFT on the signal and kernel (both at once)...
-	fft.PrepareTwoRealFFTs(B, n, signal, sn, kernel, kn)
-	fft.FFT(B, n)
+	return len, n
+end
 
-	-- ...multiply the (complex) results...
-	fft.MulTwoFFTsResults(B, n)
+--- One-dimensional linear convolution using fast Fourier transforms. For certain _signal_
+-- and _kernel_ combinations, this may be significantly faster than @{Convolve_1D}.
+-- @array signal Real discrete signal...
+-- @array kernel ...and kernel.
+-- @treturn array Convolution.
+function M.Convolve_FFT1D (signal, kernel)
+	-- Determine how much padding is needed to have matching power-of-2 sizes.
+	local sn, kn = #signal, #kernel
+	local clen, n = LenPower(sn, kn)
+
+	-- Perform an FFT on the signal and kernel (both at once). Multiply the (complex) results...
+	fft.PrepareTwoFFTs_1D(B, n, signal, sn, kernel, kn)
+	fft.TwoFFTs_ThenMultiply1D(B, n)
 
 	-- ...transform back to the time domain...
 	local nreal = .5 * n
 
-	fft.IFFT_Real(B, nreal)
+	fft.IFFT_Real1D(B, nreal)
 
 	-- ...and get the convolution by scaling the real parts of the result.
 	local csignal = {}
@@ -365,21 +369,53 @@ end
 
 --- Two-dimensional linear convolution using fast Fourier transforms. For certain _signal_
 -- and _kernel_ combinations, this may be significantly faster than @{Convolve_2D}.
--- @array signal Discrete signal...
+-- @array signal Real discrete signal...
 -- @array kernel ...and kernel.
 -- @treturn array Convolution.
 -- @treturn uint Number of columns in the convolution. Currently, only the **"full"** shape
 -- is supported, i.e. #_scols_ + #_kcols_ - 1.
 function M.Convolve_FFT2D (signal, kernel, scols, kcols)
+	-- Determine how much padding each dimension needs, to have matching power-of-2 sizes.
 	local sn, kn = #signal, #kernel
 	local srows = sn / scols
 	local krows = kn / kcols
+	local w, m = LenPower(scols, kcols)
+	local h, n = LenPower(srows, krows)
+	local area = m * n
 
-	--
-	-- for i = 1, N do
-		-- row[i] = FFT() and mult?
-	-- FFT(row)
+	-- Perform an FFT on the signal and kernel (both at once). Multiply the (complex) results...
+	fft.PrepareTwoFFTs_2D(B, area, signal, scols, kernel, kcols, m, sn, kn)
+	fft.TwoFFTs_ThenMultiply2D(B, m, n)
+
+	-- ...transform back to the time domain...
+	local mreal = .5 * m
+
+	fft.IFFT_Real2D(B, mreal, .5 * n)
+
+	-- shift?
+
+	-- ...and get the convolution by scaling the real parts of the result.
+	local csignal, mn, offset = {}, .25 * area, 0
+
+	for _ = 1, h do
+		for j = 1, w do
+			csignal[#csignal + 1] = B[offset + j] / mn
+		end
+
+		offset = offset + mreal
+	end
+
+	return csignal
 end
-
+vdump(M.Convolve_2D({	17,24,1,8,15,
+						23,5,7,14,16,
+						4,6,13,20,22,
+						10,12,19,21,3,
+						11,18,25,2,9 }, {1,3,1,0,5,0,2,1,2}, 5, 3))
+vdump(M.Convolve_FFT2D({17,24,1,8,15,
+						23,5,7,14,16,
+						4,6,13,20,22,
+						10,12,19,21,3,
+						11,18,25,2,9 }, {1,3,1,0,5,0,2,1,2}, 5, 3))
 -- Export the module.
 return M
