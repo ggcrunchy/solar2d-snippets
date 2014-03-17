@@ -370,6 +370,9 @@ end
 -- --
 local C = {}
 
+-- --
+local D = {}
+
 --- Two-dimensional linear convolution using fast Fourier transforms. For certain _signal_
 -- and _kernel_ combinations, this may be significantly faster than @{Convolve_2D}.
 -- @array signal Real discrete signal...
@@ -385,11 +388,13 @@ function M.Convolve_FFT2D (signal, kernel, scols, kcols)
 	local w, m = LenPower(scols, kcols)
 	local h, n = LenPower(srows, krows)
 	local area = m * n
---[[
-	-- Perform an FFT on the signal and kernel (both at once). Multiply the (complex) results...
-	fft.PrepareTwoFFTs_2D(B, area, signal, scols, kernel, kcols, m, sn, kn)
-	fft.TwoFFTs_ThenMultiply2D(B, m, n)
 
+	-- Perform an FFT on the signal and kernel (both at once). Multiply the (complex) results...
+	fft.PrepareTwoFFTs_2D(D, area, signal, scols, kernel, kcols, m, sn, kn)
+	fft.TwoFFTs_ThenMultiply2D(D, m, n)
+print("2-in-1 mul")
+vdump(D)
+--[[
 	-- ...transform back to the time domain...
 	local mreal = .5 * m
 
@@ -417,7 +422,14 @@ function M.Convolve_FFT2D (signal, kernel, scols, kcols)
 
 	fft.FFT_2D(B, m, n)
 	fft.FFT_2D(C, m, n)
+--[[
+print("B")
+vdump(B)
+print("C")
+vdump(C)]]
 	fft.Multiply_2D(B, C, m, n)
+print("MUL B,C")
+vdump(B)
 	fft.IFFT_2D(B, m, n)
 
 	-- ...and get the convolution by scaling the real parts of the result.
@@ -439,19 +451,19 @@ local t1 = M.Convolve_2D({	17,24,1,8,15,
 						4,6,13,20,22,
 						10,12,19,21,3,
 						11,18,25,2,9 }, {1,3,1,0,5,0,2,1,2}, 5, 3)
-				vdump(t1)
+			--	vdump(t1)
 local t2 = M.Convolve_FFT2D({17,24,1,8,15,
 						23,5,7,14,16,
 						4,6,13,20,22,
 						10,12,19,21,3,
 						11,18,25,2,9 }, {1,3,1,0,5,0,2,1,2}, 5, 3)
-				vdump(t2)
+			--[[	vdump(t2)
 print("COMPARING")
 for i = 1, #t1 do
 	if math.abs(t1[i] - t2[i]) > 1e-6 then
 		print("Problem at: " .. i)
 	end
 end
-print("DONE")
+print("DONE")]]
 -- Export the module.
 return M

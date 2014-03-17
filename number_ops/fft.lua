@@ -108,6 +108,24 @@ end
 -- Temporary store, used to transpose columns --
 local Column = {}
 
+-- Helper to do column part of 2D transforms
+local function TransformColumns (m, w2, h, area, angle)
+	for i = 1, w2, 2 do
+		local n, ri = 1, i
+
+		repeat
+			Column[n], Column[n + 1], n, ri = m[ri], m[ri + 1], n + 2, ri + w2
+		until ri > area
+
+		Transform(Column, h, angle, 0)
+
+		repeat
+			n, ri = n - 2, ri - w2
+			m[ri], m[ri + 1] = Column[n], Column[n + 1]
+		until ri == i
+	end
+end
+
 --- DOCME
 -- @array m
 -- @uint w
@@ -120,21 +138,7 @@ function M.FFT_2D (m, w, h)
 		Transform(m, w, pi, i - 1)
 	end
 
-	for i = 1, w2, 2 do
-		local n, ri = 1, i
-
-		repeat
-			Column[n], Column[n + 1], n, ri = m[ri], m[ri + 1], n + 2, ri + w2
-		until ri > area
-
-		Transform(Column, h, pi, 0)
-		-- ^^^ TODO: make procedure?
-		repeat
-			n, ri = n - 2, ri - w2
-			m[ri], m[ri + 1] = Column[n], Column[n + 1]
-		until ri == i
-	end
-	-- TODO: TEST!
+	TransformColumns(m, w2, h, area, pi)
 end
 
 --
@@ -170,8 +174,6 @@ function M.FFT_Real1D (v, n)
 -- ^^ TODO: Test!
 end
 
--- TODO: Two FFT's? (SeparateRealResults does some of it...)
-
 --- DOCME
 -- @array v
 -- @uint n
@@ -187,28 +189,11 @@ function M.IFFT_2D (m, w, h)
 	local w2 = w + w
 	local area = w2 * h
 
-	for i = 1, w2, 2 do
-		local n, ri = 1, i
-
-		repeat
-			Column[n], Column[n + 1], n, ri = m[ri], m[ri + 1], n + 2, ri + w2
-		until ri > area
-
-		Transform(Column, h, -pi, 0)
-		-- ^^^ TODO: make procedure?
-		repeat
-			n, ri = n - 2, ri - w2
-			m[ri], m[ri + 1] = Column[n], Column[n + 1]
-		until ri == i
-	end
+	TransformColumns(m, w2, h, area, -pi)
 
 	for i = 1, area, w2 do
 		Transform(m, w, -pi, i - 1)
 	end
-
-
-	-- Transform columns
-	-- Transform rows
 end
 
 --- DOCME
@@ -232,23 +217,8 @@ function M.IFFT_Real2D (m, w, h)
 	local w2 = w + w
 	local area = w2 * h
 
-	--
-	for i = 1, w2, 2 do
-		local n, ri = 1, i
+	TransformColumns(m, w2, h, area, -pi)
 
-		repeat
-			Column[n], Column[n + 1], n, ri = m[ri], m[ri + 1], n + 2, ri + w2
-		until ri > area
-
-		Transform(Column, h, -pi, 0)
-
-		repeat
-			n, ri = n - 2, ri - w2
-			m[ri], m[ri + 1] = Column[n], Column[n + 1]
-		until ri == i
-	end
-
-	--
 	local angle = -pi / w
 
 	for j = 1, area, w2 do
@@ -371,6 +341,8 @@ function M.PrepareTwoFFTs_2D (out, size, arr1, cols1, arr2, cols2, ncols, na1, n
 	end
 end
 
+-- TODO: Two FFT's? (SeparateRealResults does some of it...)
+
 --- DOCME
 -- @array v
 -- @uint n
@@ -424,20 +396,7 @@ function M.TwoFFTs_ThenMultiply2D (m, w, h)
 	end
 
 	--
-	for i = 1, w2, 2 do
-		local n, ri = 1, i
-
-		repeat
-			Column[n], Column[n + 1], n, ri = m[ri], m[ri + 1], n + 2, ri + w2
-		until ri > area
-
-		Transform(Column, h, pi, 0)
-
-		repeat
-			n, ri = n - 2, ri - w2
-			m[ri], m[ri + 1] = Column[n], Column[n + 1]
-		until ri == i
-	end
+	TransformColumns(m, w2, h, area, pi)
 
 	--
 	local index = 1
@@ -452,6 +411,7 @@ function M.TwoFFTs_ThenMultiply2D (m, w, h)
 			m[index], m[index + 1], index = a * c - b * d, b * c + a * d, index + 2
 		end
 	end
+print("E", index)
 end
 
 -- Export the module.
