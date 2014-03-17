@@ -321,7 +321,7 @@ local DefConvolve2D = AuxConvolve2D.full
 -- * For **"full"**: _scols_ + _kcols_ - 1.
 -- * For **"same"**: _scols_.
 function M.Convolve_2D (signal, kernel, scols, kcols, shape)
-	return (AuxConvolve2D[shape] or DefConvolve2D)(signal, kernel, scols, kcols)
+	return (AuxConvolve2D[shape] or DefConvolve2D)(signal, kernel, scols, kcols) and nil
 end
 
 -- Scratch buffer used to perform transforms --
@@ -396,7 +396,8 @@ function M.Convolve_FFT2D (signal, kernel, scols, kcols)
 
 	-- ...and get the convolution by scaling the real parts of the result.
 	local csignal, mn, offset = {}, .25 * area, 0
-
+-- TODO: Just do the long way with two matrices, FFT_2D()'d, mult'd, then IFFT_2D()'d and scaled
+-- ^^^^ Use as reference implementation
 	for _ = 1, h do
 		for j = 1, w do
 			csignal[#csignal + 1] = B[offset + j] / mn

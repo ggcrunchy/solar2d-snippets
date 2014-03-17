@@ -61,8 +61,6 @@ local function Transform (v, n, theta, offset)
 		return
 	end
 
-	offset = offset or 0
-
 	BitReverse(v, n, offset)
 
 	local n2, dual, dual2, dual4 = n + n, 1, 2, 4
@@ -104,19 +102,44 @@ end
 -- @array v
 -- @uint n
 function M.FFT_1D (v, n)
-	Transform(v, n, pi)
+	Transform(v, n, pi, 0)
+end
+
+-- Temporary store, used to transpose columns --
+local Column = {}
+
+--- DOCME
+-- @array m
+-- @uint w
+-- @uint h
+function M.FFT_2D (m, w, h)
+	local w2 = w + w
+	local area = w2 * h
+
+	for i = 0, area, w2 do
+		Transform(m, w, pi, i)
+	end
+
+	for i = 1, w2, 2 do
+		local n, ri = 1, i
+
+		repeat
+			Column[n], Column[n + 1], n, ri = m[ri], m[ri + 1], n + 2, ri + w2
+		until ri > area
+
+		Transform(Column, h, pi, 0)
+		-- ^^^ TODO: make procedure?
+	end
+	-- TODO: TEST!
 end
 
 --
 local function AuxRealXform (v, n, c1, c2, theta, offset)
-	offset = offset or 0
-
 	local s, s2 = sin(theta), 2 * sin(0.5 * theta)^2
-	local wr, wi, nf = 1.0 - s2, s, n + n + 2
+	local wr, wi, nf = 1.0 - s2, s, offset + n + n + 2
 
 	for k = 3, n, 2 do
-		local i = offset + k
-		local j = nf - i
+		local i, j = offset + k, nf - k
 		local a, b, c, d = v[i], v[i + 1], v[j], v[j + 1]
 		local r1, i1 = c1 * (a + c), c1 * (b - d)
 		local r2, i2 = -(b + d), a - c
@@ -134,8 +157,8 @@ end
 -- @array v
 -- @uint n
 function M.FFT_Real1D (v, n)
-	Transform(v, n, pi)
-	AuxRealXform(v, n, 0.5, -0.5, pi / n)
+	Transform(v, n, pi, 0)
+	AuxRealXform(v, n, 0.5, -0.5, pi / n, 0)
 
 	local a, b = v[1], v[2]
 
@@ -149,31 +172,36 @@ end
 -- @array v
 -- @uint n
 function M.IFFT_1D (v, n)
-	Transform(v, n, -pi)
+	Transform(v, n, -pi, 0)
+end
+
+--- DOCME
+-- @array m
+-- @uint w
+-- @uint h
+function M.IFFT_2D (m, w, h)
+	-- Transform columns
+	-- Transform rows
 end
 
 --- DOCME
 -- @array v
 -- @uint n
 function M.IFFT_Real1D (v, n)
-	AuxRealXform(v, n, 0.5, 0.5, -pi / n)
+	AuxRealXform(v, n, 0.5, 0.5, -pi / n, 0)
 
 	local a, b = v[1], v[2]
 
 	v[1], v[2] = .5 * (a + b), .5 * (a - b)
 
-	Transform(v, n, -pi)
+	Transform(v, n, -pi, 0)
 end
-
--- --
-local Column = {}
 
 --- DOCME
 -- @array m
 -- @uint w
 -- @uint h
 function M.IFFT_Real2D (m, w, h)
-	--
 	local w2 = w + w
 	local area = w2 * h
 
@@ -185,7 +213,7 @@ function M.IFFT_Real2D (m, w, h)
 			Column[n], Column[n + 1], n, ri = m[ri], m[ri + 1], n + 2, ri + w2
 		until ri > area
 
-		Transform(Column, h, -pi)
+		Transform(Column, h, -pi, 0)
 
 		repeat
 			n, ri = n - 2, ri - w2
@@ -204,6 +232,28 @@ function M.IFFT_Real2D (m, w, h)
 		m[j], m[j + 1] = .5 * (a + b), .5 * (a - b)
 
 		Transform(m, w, -pi, j - 1)
+	end
+end
+
+--- DOCME
+function M.Multiply_1D (v1, v2, n, out)
+	out = out or v1
+
+	for i = 1, n + n, 2 do
+		local a, b, c, d = v1[i], v1[i + 1], v2[i], v2[i + 1]
+
+		out[i], out[i + 1] = a * c - b * d, b * c + a * d
+	end
+end
+
+--- DOCME
+function M.Multiply_2D (m1, m2, w, h, out)
+	out = out or m1
+
+	for i = 1, (w + w) * h, 2 do
+		local a, b, c, d = m1[i], m1[i + 1], m2[i], m2[i + 1]
+
+		out[i], out[i + 1] = a * c - b * d, b * c + a * d
 	end
 end
 
@@ -298,7 +348,7 @@ end
 -- @array v
 -- @uint n
 function M.TwoFFTs_ThenMultiply1D (v, n)
-	Transform(v, n, pi)
+	Transform(v, n, pi, 0)
 
 	local m = n + 1
 
@@ -322,23 +372,23 @@ end
 
 --- DOCME
 function M.TwoFFTs_ThenMultiply2D (m, w, h)
-	--
 	local w2 = w + w
 	local area, len = w2 * h, w2 + 2
 
+	--
 	for offset = 1, area, w2 do
 		local center, om1 = offset + w, offset - 1
 
 		Transform(m, w, pi, om1)
 
-		m[offset], m[offset + 1] = m[offset] * m[offset + 1], 0
-		m[center], m[center + 1] = m[center] * m[center + 1], 0
+		m[center], m[offset + 1], m[center + 1] = m[offset + 1], 0, 0
+--		m[offset], m[offset + 1] = m[offset] * m[offset + 1], 0 -- err, shouldn't be multiplied? (how to do this????)
+--		m[center], m[center + 1] = m[center] * m[center + 1], 0
 -- ^^^ Multiply by 4 and can remove the .5's below?
 
 		for i = 3, w, 2 do
 			local j = len - i
 			local io, jo = om1 + i, om1 + j
---print("I?", offset, i)
 			local r1, i1, r2, i2 = m[io], m[io + 1], m[jo], m[jo + 1]
 
 			m[io], m[io + 1] = .5 * (r1 + r2), .5 * (i1 - i2)
@@ -354,7 +404,7 @@ function M.TwoFFTs_ThenMultiply2D (m, w, h)
 			Column[n], Column[n + 1], n, ri = m[ri], m[ri + 1], n + 2, ri + w2
 		until ri > area
 
-		Transform(Column, h, pi)
+		Transform(Column, h, pi, 0)
 
 		repeat
 			n, ri = n - 2, ri - w2
