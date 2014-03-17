@@ -116,8 +116,8 @@ function M.FFT_2D (m, w, h)
 	local w2 = w + w
 	local area = w2 * h
 
-	for i = 0, area, w2 do
-		Transform(m, w, pi, i)
+	for i = 1, area, w2 do
+		Transform(m, w, pi, i - 1)
 	end
 
 	for i = 1, w2, 2 do
@@ -129,6 +129,10 @@ function M.FFT_2D (m, w, h)
 
 		Transform(Column, h, pi, 0)
 		-- ^^^ TODO: make procedure?
+		repeat
+			n, ri = n - 2, ri - w2
+			m[ri], m[ri + 1] = Column[n], Column[n + 1]
+		until ri == i
 	end
 	-- TODO: TEST!
 end
@@ -180,6 +184,29 @@ end
 -- @uint w
 -- @uint h
 function M.IFFT_2D (m, w, h)
+	local w2 = w + w
+	local area = w2 * h
+
+	for i = 1, w2, 2 do
+		local n, ri = 1, i
+
+		repeat
+			Column[n], Column[n + 1], n, ri = m[ri], m[ri + 1], n + 2, ri + w2
+		until ri > area
+
+		Transform(Column, h, -pi, 0)
+		-- ^^^ TODO: make procedure?
+		repeat
+			n, ri = n - 2, ri - w2
+			m[ri], m[ri + 1] = Column[n], Column[n + 1]
+		until ri == i
+	end
+
+	for i = 1, area, w2 do
+		Transform(m, w, -pi, i - 1)
+	end
+
+
 	-- Transform columns
 	-- Transform rows
 end

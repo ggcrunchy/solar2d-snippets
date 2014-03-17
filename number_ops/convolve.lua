@@ -321,7 +321,7 @@ local DefConvolve2D = AuxConvolve2D.full
 -- * For **"full"**: _scols_ + _kcols_ - 1.
 -- * For **"same"**: _scols_.
 function M.Convolve_2D (signal, kernel, scols, kcols, shape)
-	return (AuxConvolve2D[shape] or DefConvolve2D)(signal, kernel, scols, kcols) and nil
+	return (AuxConvolve2D[shape] or DefConvolve2D)(signal, kernel, scols, kcols)-- and nil
 end
 
 -- Scratch buffer used to perform transforms --
@@ -367,6 +367,9 @@ function M.Convolve_FFT1D (signal, kernel)
 	return csignal
 end
 
+-- --
+local C = {}
+
 --- Two-dimensional linear convolution using fast Fourier transforms. For certain _signal_
 -- and _kernel_ combinations, this may be significantly faster than @{Convolve_2D}.
 -- @array signal Real discrete signal...
@@ -382,7 +385,7 @@ function M.Convolve_FFT2D (signal, kernel, scols, kcols)
 	local w, m = LenPower(scols, kcols)
 	local h, n = LenPower(srows, krows)
 	local area = m * n
-
+--[[
 	-- Perform an FFT on the signal and kernel (both at once). Multiply the (complex) results...
 	fft.PrepareTwoFFTs_2D(B, area, signal, scols, kernel, kcols, m, sn, kn)
 	fft.TwoFFTs_ThenMultiply2D(B, m, n)
@@ -393,30 +396,62 @@ function M.Convolve_FFT2D (signal, kernel, scols, kcols)
 	fft.IFFT_Real2D(B, mreal, .5 * n)
 
 	-- shift?
+]]
+	local j, si, ki = 1, 1, 1
+
+	for row = 1, n do
+		local bc, cc = j, j
+
+		for _ = 1, m + m, 2 do
+			B[j], B[j + 1], C[j], C[j + 1], j = 0, 0, 0, 0, j + 2
+		end
+
+		for _ = 1, si <= sn and scols or 0 do
+			B[bc], si, bc = signal[si], si + 1, bc + 2
+		end
+
+		for _ = 1, ki <= kn and kcols or 0 do
+			C[cc], ki, cc = kernel[ki], ki + 1, cc + 2
+		end
+	end
+
+	fft.FFT_2D(B, m, n)
+	fft.FFT_2D(C, m, n)
+	fft.Multiply_2D(B, C, m, n)
+	fft.IFFT_2D(B, m, n)
 
 	-- ...and get the convolution by scaling the real parts of the result.
-	local csignal, mn, offset = {}, .25 * area, 0
+	local csignal, mn, offset = {}, area, 0--.25 * area, 0
 -- TODO: Just do the long way with two matrices, FFT_2D()'d, mult'd, then IFFT_2D()'d and scaled
 -- ^^^^ Use as reference implementation
 	for _ = 1, h do
-		for j = 1, w do
+		for j = 1, w + w, 2 do
 			csignal[#csignal + 1] = B[offset + j] / mn
 		end
 
-		offset = offset + mreal
+		offset = offset + m + m--mreal
 	end
 
 	return csignal
 end
-vdump(M.Convolve_2D({	17,24,1,8,15,
+local t1 = M.Convolve_2D({	17,24,1,8,15,
 						23,5,7,14,16,
 						4,6,13,20,22,
 						10,12,19,21,3,
-						11,18,25,2,9 }, {1,3,1,0,5,0,2,1,2}, 5, 3))
-vdump(M.Convolve_FFT2D({17,24,1,8,15,
+						11,18,25,2,9 }, {1,3,1,0,5,0,2,1,2}, 5, 3)
+				vdump(t1)
+local t2 = M.Convolve_FFT2D({17,24,1,8,15,
 						23,5,7,14,16,
 						4,6,13,20,22,
 						10,12,19,21,3,
-						11,18,25,2,9 }, {1,3,1,0,5,0,2,1,2}, 5, 3))
+						11,18,25,2,9 }, {1,3,1,0,5,0,2,1,2}, 5, 3)
+				vdump(t2)
+print("COMPARING")
+for i = 1, #t1 do
+	if math.abs(t1[i] - t2[i]) > 1e-6 then
+		print("Problem at: " .. i)
+	end
+end
+print("DONE")
 -- Export the module.
 return M
