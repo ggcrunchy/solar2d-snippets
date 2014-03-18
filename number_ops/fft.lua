@@ -379,8 +379,7 @@ function M.TwoFFTs_ThenMultiply2D (m, w, h)
 		local center, om1 = offset + w, offset - 1
 
 		Transform(m, w, pi, om1)
-
-		m[center], m[offset + 1], m[center + 1] = m[offset + 1], 0, 0
+--[[
 --		m[offset], m[offset + 1] = m[offset] * m[offset + 1], 0 -- err, shouldn't be multiplied? (how to do this????)
 --		m[center], m[center + 1] = m[center] * m[center + 1], 0
 -- ^^^ Multiply by 4 and can remove the .5's below?
@@ -392,12 +391,38 @@ function M.TwoFFTs_ThenMultiply2D (m, w, h)
 
 			m[io], m[io + 1] = .5 * (r1 + r2), .5 * (i1 - i2)
 			m[jo], m[jo + 1] = .5 * (i1 + i2), .5 * (r2 - r1)
-		end
+		end]]
 	end
 
 	--
 	TransformColumns(m, w2, h, area, pi)
 
+	--
+	for offset = 1, area, w2 do
+		local center, om1 = offset + w, offset - 1
+
+		m[offset], m[offset + 1] = m[offset] * m[offset + 1], 0
+		m[center], m[center + 1] = m[center] * m[center + 1], 0
+--		m[center], m[offset + 1], m[center + 1] = m[offset + 1], 0, 0
+--		m[offset], m[offset + 1] = m[offset] * m[offset + 1], 0 -- err, shouldn't be multiplied? (how to do this????)
+--		m[center], m[center + 1] = m[center] * m[center + 1], 0
+-- ^^^ Multiply by 4 and can remove the .5's below?
+
+		for i = 3, w, 2 do
+			local j = len - i
+			local io, jo = om1 + i, om1 + j
+			local r1, i1, r2, i2 = m[io], m[io + 1], m[jo], m[jo + 1]
+			local a, b = r1 + r2, i1 - i2 
+			local c, d = i1 + i2, r2 - r1
+			local real = .25 * (a * c - b * d)
+			local imag = .25 * (b * c + a * d)
+
+			m[io], m[io + 1] = real, imag
+			m[jo], m[jo + 1] = real, -imag
+		end
+	end
+
+--[[
 	--
 	local index = 1
 
@@ -410,7 +435,7 @@ function M.TwoFFTs_ThenMultiply2D (m, w, h)
 
 			m[index], m[index + 1], index = a * c - b * d, b * c + a * d, index + 2
 		end
-	end
+	end]]
 print("E", index)
 end
 
