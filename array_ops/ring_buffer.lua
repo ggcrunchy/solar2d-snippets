@@ -81,8 +81,8 @@ function M.Pop (arr, head, tail, len)
 end
 
 --- Pushes an element, if the ring buffer is not full.
--- @array Ring buffer.
--- @param Non-**nil** element to push.
+-- @array arr Ring buffer.
+-- @param elem Non-**nil** element to push.
 -- @uint? head Index of ring buffer head. If absent (i.e. buffer not initialized), 1.
 -- @uint? tail Index of ring buffer tail. If absent (cf. _head_), 1.
 -- @uint? len Array length; if absent, #_arr_. Assumed to be &gt; 0.
@@ -103,8 +103,8 @@ function M.Push (arr, elem, head, tail, len)
 end
 
 --- Variant of @{Push} that reports whether the push was possible.
--- @array Ring buffer.
--- @param Non-**nil** element to push.
+-- @array arr Ring buffer.
+-- @param elem Non-**nil** element to push.
 -- @uint? head Index of ring buffer head. If absent (i.e. buffer not initialized), 1.
 -- @uint? tail Index of ring buffer tail. If absent (cf. _head_), 1.
 -- @uint? len Array length; if absent, #_arr_. Assumed to be &gt; 0.

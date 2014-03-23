@@ -377,6 +377,8 @@ local D = {}
 -- and _kernel_ combinations, this may be significantly faster than @{Convolve_2D}.
 -- @array signal Real discrete signal...
 -- @array kernel ...and kernel.
+-- @uint scols Number of columns in _signal_... 
+-- @uint kcols ... and in _kernel_.
 -- @treturn array Convolution.
 -- @treturn uint Number of columns in the convolution. Currently, only the **"full"** shape
 -- is supported, i.e. #_scols_ + #_kcols_ - 1.
