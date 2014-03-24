@@ -529,19 +529,19 @@ function M.TwoGoertzels_ThenMultiply2D (v1, v2, n, out)
 	local k, wr, wi, omega, da = 2, 1, 0, 0, 2 * pi / n
 
 	for i = 1, n + n, 2 do
-		local sp, sp2 = 0, 0
-		local tp, tp2 = 0, 0
+		local sp1, sp2 = 0, 0
+		local tp1, tp2 = 0, 0
 
 		for j = 1, n do
-			local s = (v1[j] or 0) + k * sp - sp2
-			local t = (v2[j] or 0) + k * tp - tp2
+			local s = v1[j] + k * sp1 - sp2
+			local t = v2[j] + k * tp1 - tp2
 
-			sp2, sp = sp, s
-			tp2, tp = tp, t
+			sp2, sp1 = sp1, s
+			tp2, tp1 = tp1, t
 		end
 
-		local a, b = sp * wr - sp2, sp * wi
-		local c, d = tp * wr - tp2, tp * wi
+		local a, b = sp1 * wr - sp2, sp1 * wi
+		local c, d = tp1 * wr - tp2, tp1 * wi
 
 		out[i], out[i + 1] = a * c - b * d, -(b * c + a * d)
 -- ^^ ???: imag seem to need to be negative...

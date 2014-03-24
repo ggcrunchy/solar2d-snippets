@@ -353,15 +353,22 @@ end
 -- and _kernel_ combinations, this may be significantly faster than @{Convolve_1D}.
 -- @array signal Real discrete signal...
 -- @array kernel ...and kernel.
--- @string? how
+-- @ptable? opts Optional convolve options. Fields:
+--
+-- * **method**: If this is **"goertzel"**, the transforms are done using the [Goertzel algorithm](http://en.wikipedia.org/wiki/Goertzel_algorithm),
+-- which may offer better performance in some cases. Otherwise, the two real FFT's are
+-- computed as one stock complex FFT.
+-- is used to perform the 
 -- @treturn array Convolution.
-function M.Convolve_FFT1D (signal, kernel, how)
+function M.Convolve_FFT1D (signal, kernel, opts)
+	local method = opts and opts.method
+
 	-- Determine how much padding is needed to have matching power-of-2 sizes.
 	local sn, kn = #signal, #kernel
 	local clen, n = LenPower(sn, kn)
 
 	-- Perform an FFT on the signal and kernel (both at once). Multiply the (complex) results...
-	if how == "goertzel" then
+	if method == "goertzel" then
 		CopyThenPad(signal, B, sn, n)
 		CopyThenPad(kernel, C, kn, n)
 
@@ -395,11 +402,13 @@ local D = {}
 -- @array kernel ...and kernel.
 -- @uint scols Number of columns in _signal_... 
 -- @uint kcols ... and in _kernel_.
--- @string? how
+-- @ptable? opts Optional convolve options. Fields:
+--
+-- * **method**: TODO - goetzel? reals, long_way (below)
 -- @treturn array Convolution.
 -- @treturn uint Number of columns in the convolution. Currently, only the **"full"** shape
 -- is supported, i.e. #_scols_ + #_kcols_ - 1.
-function M.Convolve_FFT2D (signal, kernel, scols, kcols, how)
+function M.Convolve_FFT2D (signal, kernel, scols, kcols, opts)
 	-- Determine how much padding each dimension needs, to have matching power-of-2 sizes.
 	local sn, kn = #signal, #kernel
 	local srows = sn / scols
