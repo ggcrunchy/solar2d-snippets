@@ -324,8 +324,19 @@ function M.Convolve_2D (signal, kernel, scols, kcols, shape)
 	return (AuxConvolve2D[shape] or DefConvolve2D)(signal, kernel, scols, kcols)-- and nil
 end
 
--- Scratch buffer used to perform transforms --
-local B = {}
+-- Scratch buffers used to perform transforms --
+local B, C = {}, {}
+
+-- Helper to copy array into scratch buffer
+local function CopyThenPad (from, to, nfrom, n)
+	for i = 1, nfrom do
+		to[i] = from[i]
+	end
+
+	for i = nfrom + 1, n do
+		to[i] = 0
+	end
+end
 
 -- Helper to compute a dimension length and associated power-of-2
 local function LenPower (n1, n2)
@@ -342,15 +353,23 @@ end
 -- and _kernel_ combinations, this may be significantly faster than @{Convolve_1D}.
 -- @array signal Real discrete signal...
 -- @array kernel ...and kernel.
+-- @string? how
 -- @treturn array Convolution.
-function M.Convolve_FFT1D (signal, kernel)
+function M.Convolve_FFT1D (signal, kernel, how)
 	-- Determine how much padding is needed to have matching power-of-2 sizes.
 	local sn, kn = #signal, #kernel
 	local clen, n = LenPower(sn, kn)
 
 	-- Perform an FFT on the signal and kernel (both at once). Multiply the (complex) results...
-	fft.PrepareTwoFFTs_1D(B, n, signal, sn, kernel, kn)
-	fft.TwoFFTs_ThenMultiply1D(B, n)
+	if how == "goertzel" then
+		CopyThenPad(signal, B, sn, n)
+		CopyThenPad(kernel, C, kn, n)
+
+		fft.TwoGoertzels_ThenMultiply2D(B, C, n)
+	else
+		fft.PrepareTwoFFTs_1D(B, n, signal, sn, kernel, kn)
+		fft.TwoFFTs_ThenMultiply1D(B, n)
+	end
 
 	-- ...transform back to the time domain...
 	local nreal = .5 * n
@@ -368,9 +387,6 @@ function M.Convolve_FFT1D (signal, kernel)
 end
 
 -- --
-local C = {}
-
--- --
 local D = {}
 
 --- Two-dimensional linear convolution using fast Fourier transforms. For certain _signal_
@@ -379,10 +395,11 @@ local D = {}
 -- @array kernel ...and kernel.
 -- @uint scols Number of columns in _signal_... 
 -- @uint kcols ... and in _kernel_.
+-- @string? how
 -- @treturn array Convolution.
 -- @treturn uint Number of columns in the convolution. Currently, only the **"full"** shape
 -- is supported, i.e. #_scols_ + #_kcols_ - 1.
-function M.Convolve_FFT2D (signal, kernel, scols, kcols)
+function M.Convolve_FFT2D (signal, kernel, scols, kcols, how)
 	-- Determine how much padding each dimension needs, to have matching power-of-2 sizes.
 	local sn, kn = #signal, #kernel
 	local srows = sn / scols
@@ -394,8 +411,9 @@ function M.Convolve_FFT2D (signal, kernel, scols, kcols)
 	-- Perform an FFT on the signal and kernel (both at once). Multiply the (complex) results...
 	fft.PrepareTwoFFTs_2D(D, area, signal, scols, kernel, kcols, m, sn, kn)
 	fft.TwoFFTs_ThenMultiply2D(D, m, n)
+	--[[
 print("2-in-1 mul")
-vdump(D)
+vdump(D)]]
 --[[
 	-- ...transform back to the time domain...
 	local mreal = .5 * m
@@ -430,8 +448,9 @@ vdump(B)
 print("C")
 vdump(C)]]
 	fft.Multiply_2D(B, C, m, n)
+	--[[
 print("MUL B,C")
-vdump(B)
+vdump(B)]]
 	fft.IFFT_2D(B, m, n)
 
 	-- ...and get the convolution by scaling the real parts of the result.
@@ -448,6 +467,7 @@ vdump(B)
 
 	return csignal
 end
+--[[
 local t1 = M.Convolve_2D({	17,24,1,8,15,
 						23,5,7,14,16,
 						4,6,13,20,22,
@@ -458,7 +478,7 @@ local t2 = M.Convolve_FFT2D({17,24,1,8,15,
 						23,5,7,14,16,
 						4,6,13,20,22,
 						10,12,19,21,3,
-						11,18,25,2,9 }, {1,3,1,0,5,0,2,1,2}, 5, 3)
+						11,18,25,2,9 }, {1,3,1,0,5,0,2,1,2}, 5, 3)]]
 			--[[	vdump(t2)
 print("COMPARING")
 for i = 1, #t1 do
@@ -467,5 +487,6 @@ for i = 1, #t1 do
 	end
 end
 print("DONE")]]
+
 -- Export the module.
 return M

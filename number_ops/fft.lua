@@ -24,6 +24,7 @@
 --
 
 -- Standard library imports --
+local cos = math.cos
 local max = math.max
 local pi = math.pi
 local sin = math.sin
@@ -342,7 +343,14 @@ function M.PrepareTwoFFTs_2D (out, size, arr1, cols1, arr2, cols2, ncols, na1, n
 end
 
 -- TODO: Two FFT's? (SeparateRealResults does some of it...)
+local fs = "%.4f"
+local function D (t)
+	for i = 1, #t, 4 do
+		local a, b, c, d = fs:format(t[i]), fs:format(t[i+1]), fs:format(t[i+2]), fs:format(t[i+3])
 
+		print(a .. ", " .. b .. ", " .. c .. ", " .. d)
+	end
+end
 --- DOCME
 -- @array v
 -- @uint n
@@ -377,8 +385,83 @@ function M.TwoFFTs_ThenMultiply2D (m, w, h)
 	--
 	for offset = 1, area, w2 do
 		local center, om1 = offset + w, offset - 1
-
+local aa,bb,mm,nn
+if offset==1 then
+	aa,bb,mm={},{},{}
+	local j=1
+	for i = 1, 128,2 do
+		aa[j],bb[j],j=m[i],m[i+1],j+1
+	end
+end
 		Transform(m, w, pi, om1)
+if offset==1 then
+	print("!1", len)
+	mm,nn={},{}
+		local center, om1 = offset + w, offset - 1
+
+		mm[1]=m[1]
+	--	nn[1], mm[2], nn[2] = m[2], 0, 0
+		mm[center], mm[2], mm[center+1] = m[2],0,0
+--		m[offset], m[offset + 1] = m[offset] * m[offset + 1], 0 -- err, shouldn't be multiplied? (how to do this????)
+--		m[center], m[center + 1] = m[center] * m[center + 1], 0
+-- ^^^ Multiply by 4 and can remove the .5's below?
+
+		for i = 3, w, 2 do
+			local j = len - i
+			local io, jo = om1 + i, om1 + j
+			local r1, i1, r2, i2 = m[io], m[io + 1], m[jo], m[jo + 1]
+			mm[i], mm[i+1] = .5*(r1 + r2), .5*(i1 - i2)
+			mm[j], mm[j+1] = .5*(i1 + i2), .5*(r2 - r1)
+		end
+
+--	vdump(m)
+print("MM")
+D(mm)
+print("NN")
+--D(nn)
+	local A,B={},{}
+	for _, t in ipairs{{aa,A}, {bb,B}} do
+		local t1,t2=t[1],t[2]
+		for i = 1, w do
+			local omega = 2 * pi * (i - 1) / w
+			local wr = math.cos(omega)
+			local wi = sin(omega)
+			local coeff = 2 * wr
+			local sp, sp2 = 0, 0
+			for j = 1, w do
+				local s = t1[j] + coeff * sp - sp2
+				sp2, sp = sp, s
+			end
+			t2[#t2+1] = sp * wr - sp2
+			t2[#t2+1] = sp * wi
+		end
+	end
+	--[[
+Nterms defined here
+Kterm selected here
+ω = 2 * π * Kterm / Nterms;
+ωr = cos(ω);
+ωi = sin(ω);
+coeff = 2 * ωr;
+
+sprev = 0;
+sprev2 = 0;
+for each index n in range 0 to Nterms-1
+  s = x[n] + coeff * sprev - sprev2;
+  sprev2 = sprev;
+  sprev = s;
+end
+
+power = sprev2*sprev2 + sprev*sprev - coeff*sprev*sprev2 ;
+
+XKreal = sprev * ωr - sprev2;
+XKimag = sprev * ωi;
+]]
+print("A")
+D(A)--vdump(A)
+print("B")
+D(B)--vdump(B)
+end
 --[[
 --		m[offset], m[offset + 1] = m[offset] * m[offset + 1], 0 -- err, shouldn't be multiplied? (how to do this????)
 --		m[center], m[center + 1] = m[center] * m[center + 1], 0
@@ -437,6 +520,35 @@ function M.TwoFFTs_ThenMultiply2D (m, w, h)
 		end
 	end]]
 --print("E", index)
+end
+
+--- DOCME
+function M.TwoGoertzels_ThenMultiply2D (v1, v2, n, out)
+	out = out or v1
+
+	local k, wr, wi, omega, da = 2, 1, 0, 0, 2 * pi / n
+
+	for i = 1, n + n, 2 do
+		local sp, sp2 = 0, 0
+		local tp, tp2 = 0, 0
+
+		for j = 1, n do
+			local s = (v1[j] or 0) + k * sp - sp2
+			local t = (v2[j] or 0) + k * tp - tp2
+
+			sp2, sp = sp, s
+			tp2, tp = tp, t
+		end
+
+		local a, b = sp * wr - sp2, sp * wi
+		local c, d = tp * wr - tp2, tp * wi
+
+		out[i], out[i + 1] = a * c - b * d, -(b * c + a * d)
+-- ^^ ???: imag seem to need to be negative...
+		omega = omega + da
+		wr, wi = cos(omega), sin(omega)
+		k = 2 * wr
+	end
 end
 
 -- Export the module.
