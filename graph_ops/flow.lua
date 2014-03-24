@@ -35,9 +35,6 @@ local remove = table.remove
 -- Modules --
 local ring_buffer = require("array_ops.ring_buffer")
 
--- Cached module references --
-local _MaxFlow_
-
 -- Exports --
 local M = {}
 
@@ -106,27 +103,39 @@ local function AddEdge (u, v, cap, size)
 	return size + 2
 end
 
--- Access to state, for label version --
--- ^^ TODO: Ugly, break up into helpers instead
-local RN, RI
+-- Clean up the edges, building up the flow matrix
+local function BuildMatrix (rn, opts)
+	local ri, emin = 0, (opts and opts.include_zero) and -1 or 0
 
---- Computes the maximum flow along a network.
--- @array edges_cap Edges and capacities, stored as { ..., _vertex1_, _vertex2_, _capacity_,
--- ... }, where each _vertex?_ is an index &isin; [1, _n_] and _capacity_ is an integer &gt; 0.
---
--- Each _vertex1_, _vertex2_ pair is assumed to be unique, with no _vertex2_, _vertex1_ pairs.
--- @uint s Index of flow source, &isin; [1, _n_].
--- @uint t Index of flow sink, &isin; [1, _n_], &ne; _s_.
--- @string? method Solver method. If absent, **"edmonds_karp"** (the only option, at present).
--- @treturn uint Maximum flow.
--- @treturn array Network with given flow, stored as { ..., _vertex1_, _vertex2_, _flow_,
--- ... }, where the _vertex?_ are as above, and _flow_ is the used capacity along the
--- corresponding edge.
-function M.MaxFlow (edges_cap, s, t, method)
+	for u = #Edges, 1, -1 do
+		local edge = Edges[u]
+
+		if edge then
+			for v, offset in pairs(edge) do
+				local eflow = Residues[offset]
+
+				if eflow > emin then
+					rn[ri + 1], rn[ri + 2], rn[ri + 3], ri = u, v, eflow, ri + 3
+				end
+
+				edge[v] = nil
+			end
+
+			Cache[#Cache + 1] = edge
+		end
+
+		Edges[u] = nil
+	end
+
+	return rn, ri
+end
+
+-- Helper to do edge setup and drive flow
+local function DriveFlow (edges_cap, n, s, t)
 	-- Put the edges and capacity into an easy-to-iterate form.
 	local flow, umax, size = 0, -1, 0
 
-	for i = 1, RN and RI or #edges_cap, 3 do
+	for i = 1, n, 3 do
 		local u, v, cap = edges_cap[i], edges_cap[i + 1], edges_cap[i + 2]
 
 		size = AddEdge(u, v, cap, size)
@@ -165,33 +174,27 @@ function M.MaxFlow (edges_cap, s, t, method)
 		end
 	end
 
-	-- Clean up the edges, building up the flow matrix.
-	local rn, ri = RN or {}, 0
+	return flow
+end
 
-	for u = #Edges, 1, -1 do
-		local edge = Edges[u]
+--- Computes the maximum flow along a network.
+-- @array edges_cap Edges and capacities, stored as { ..., _vertex1_, _vertex2_, _capacity_,
+-- ... }, where each _vertex?_ is an index &isin; [1, _n_] and _capacity_ is an integer &gt; 0.
+--
+-- Each _vertex1_, _vertex2_ pair is assumed to be unique, with no _vertex2_, _vertex1_ pairs.
+-- @uint s Index of flow source, &isin; [1, _n_].
+-- @uint t Index of flow sink, &isin; [1, _n_], &ne; _s_.
+-- @ptable? opts Optional flow options. Fields:
+--
+-- * **include_zero**: If true, edge flows of 0 are included in the network.
+-- @treturn uint Maximum flow.
+-- @treturn array Network with given flow, stored as { ..., _vertex1_, _vertex2_, _flow_,
+-- ... }, where the _vertex?_ are as above, and _flow_ is the used capacity along the
+-- corresponding edge.
+function M.MaxFlow (edges_cap, s, t, opts)
+	local flow = DriveFlow(edges_cap, #edges_cap, s, t)
 
-		if edge then
-			for v, offset in pairs(edge) do
-				local eflow = Residues[offset]
-
-				if eflow > 0 then
-					-- ^^ TODO: add option for eflow == 0?
-					rn[ri + 1], rn[ri + 2], rn[ri + 3], ri = u, v, eflow, ri + 3
-				end
-
-				edge[v] = nil
-			end
-
-			Cache[#Cache + 1] = edge
-		end
-
-		Edges[u] = nil
-	end
-
-	RI = ri
-
-	return flow, rn
+	return flow, BuildMatrix({}, opts)
 end
 
 -- Current label state --
@@ -211,15 +214,26 @@ local function GetIndex (what)
 	return index
 end
 
--- Scratch buffer for labels --
-local Scratch = {}
+-- Scratch buffer --
+local Buf = {}
 
---- DOCME
-function M.MaxFlow_Labels (graph, ks, kt, method)
-	RI = 0
-
-	--
-	local s, t
+--- Labeled variant of @{MaxFlow}.
+-- @ptable graph Edges and capacities, stored as { ..., _label1_ = { _label2_ = _capacity_,
+-- ... }, ... }, where capacity_ is an integer &gt; 0.
+--
+-- Each _label1_, _label2_ pair is assumed to be unique, with no _label2_, _label1_ pairs.
+-- One edge must have _ks_ in the _label1_ position, and _kt_ must be found at least once in
+-- some _label2_ position; the reverse is not permitted, i.e. _ks_ or _kt_ cannot occur in
+-- the _label2_ or _label1_ positions, respectively.
+-- @param ks Label belonging to source...
+-- @param kt ...and sink.
+-- @ptable? opts As per @{MaxFlow}.
+-- @treturn table Network with given flow, stored as { ..., _label1_ = { _label2_ = _flow_,
+-- ... }, ... }, where the _label?_ are as above, and _flow_ is the used capacity along the
+-- corresponding edge.
+function M.MaxFlow_Labels (graph, ks, kt, opts)
+	-- Convert the graph into a form amenable to the flow-driving algorithm.
+	local n, s, t = 0
 
 	for k, to in pairs(graph) do
 		local ui = GetIndex(k)
@@ -233,7 +247,7 @@ function M.MaxFlow_Labels (graph, ks, kt, method)
 		for v, cap in pairs(to) do
 			local vi = GetIndex(v)
 
-			Scratch[RI + 1], Scratch[RI + 2], Scratch[RI + 3], RI = ui, vi, cap, RI + 3
+			Buf[n + 1], Buf[n + 2], Buf[n + 3], n = ui, vi, cap, n + 3
 
 			if v == kt then
 				t = vi
@@ -244,32 +258,26 @@ function M.MaxFlow_Labels (graph, ks, kt, method)
 	assert(s, "Missing source")
 	assert(t, "Missing sink")
 
-	--
-	RN = Scratch
+	-- Compute the flow and build the flow network, then restore labels.
+	local rn, flow = {}, DriveFlow(Buf, n, s, t)
+	local _, count = BuildMatrix(Buf, opts)
 
-	local rn, flow = {}, _MaxFlow_(Scratch, s, t, method)
-
-	for i = 1, RI, 3 do
-		local u, v, eflow = IndexToLabel[RN[i]], IndexToLabel[RN[i + 1]], RN[i + 2]
+	for i = 1, count, 3 do
+		local u, v, eflow = IndexToLabel[Buf[i]], IndexToLabel[Buf[i + 1]], Buf[i + 2]
 		local to = rn[u] or {}
 
 		rn[u], to[v] = to, eflow
 	end
 
-	--
+	-- Clean up the label state.
 	for i = #IndexToLabel, 1, -1 do
 		local what = IndexToLabel[i]
 
 		LabelToIndex[what], IndexToLabel[i] = nil
 	end
 
-	RN = nil
-
 	return flow, rn
 end
-
--- Cache module members.
-_MaxFlow_ = M.MaxFlow
 
 -- Export the module.
 return M

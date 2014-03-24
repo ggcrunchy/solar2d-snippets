@@ -436,7 +436,7 @@ function M.TwoFFTs_ThenMultiply2D (m, w, h)
 			m[index], m[index + 1], index = a * c - b * d, b * c + a * d, index + 2
 		end
 	end]]
-print("E", index)
+--print("E", index)
 end
 
 -- Export the module.

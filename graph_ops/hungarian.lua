@@ -163,7 +163,7 @@ local function FindStarInCol (col, ncols, nrows)
 end
 
 --
-local function BuildPath (prow0, pcol0, path, ncols, nrows)
+local function BuildPath (prow0, pcol0, path, n, ncols, nrows)
 	-- Construct a series of alternating primed and starred zeros as follows, given uncovered
 	-- primed zero Z0 produced in the previous step. Let Z1 denote the starred zero in the
 	-- column of Z0 (if any), Z2 the primed zero in the row of Z1 (there will always be one).
@@ -288,6 +288,10 @@ function M.Run (costs, ncols)
 			local ncovered = CountCoverage(out, n, ncols, dcols)
 
 			if ncovered >= ncols or ncovered >= nrows then
+				if from == Costs then
+					-- Inverted, do something...
+				end
+
 				return out
 			else
 				check_solution = false
@@ -302,7 +306,7 @@ function M.Run (costs, ncols)
 		if prow0 then
 			path, check_solution = path or {}, true
 
-			BuildPath(prow0, pcol0, path, ncols, nrows)
+			BuildPath(prow0, pcol0, path, n, ncols, nrows)
 
 		-- Otherwise, no uncovered zeroes remain. Update the matrix and do another pass, without
         -- altering any stars, primes, or covered lines.
