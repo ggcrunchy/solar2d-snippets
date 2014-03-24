@@ -29,6 +29,9 @@
 local ceil = math.ceil
 local min = math.min
 
+-- Modules --
+local labels = require("graph_ops.labels")
+
 -- Exports --
 local M = {}
 
@@ -319,7 +322,7 @@ end
 --- DOCME
 -- @ptable t
 -- @treturn array out
-function M.Run_Assoc (t)
+function M.Run_Labels (t)
 	-- Set up the and do Run()
 end
 

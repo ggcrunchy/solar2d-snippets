@@ -33,6 +33,7 @@ local pairs = pairs
 local remove = table.remove
 
 -- Modules --
+local labels = require("graph_ops.labels")
 local ring_buffer = require("array_ops.ring_buffer")
 
 -- Exports --
@@ -198,21 +199,7 @@ function M.MaxFlow (edges_cap, s, t, opts)
 end
 
 -- Current label state --
-local LabelToIndex, IndexToLabel = {}, {}
-
--- Gets the index of a label
-local function GetIndex (what)
-	local index = LabelToIndex[what]
-
-	if not index then
-		index = #IndexToLabel + 1
-
-		LabelToIndex[what] = index
-		IndexToLabel[index] = what
-	end
-
-	return index
-end
+local LabelToIndex, IndexToLabel, CleanUp = labels.NewLabelGroup()
 
 -- Scratch buffer --
 local Buf = {}
@@ -236,16 +223,17 @@ function M.MaxFlow_Labels (graph, ks, kt, opts)
 	local n, s, t = 0
 
 	for k, to in pairs(graph) do
-		local ui = GetIndex(k)
+		local ui = LabelToIndex[k]
 
 		assert(k ~= kt, "Outflow from sink")
 
 		if k == ks then
+			print(k, ks, s, ui)
 			s = ui
 		end
 
 		for v, cap in pairs(to) do
-			local vi = GetIndex(v)
+			local vi = LabelToIndex[v]
 
 			Buf[n + 1], Buf[n + 2], Buf[n + 3], n = ui, vi, cap, n + 3
 
@@ -269,12 +257,7 @@ function M.MaxFlow_Labels (graph, ks, kt, opts)
 		rn[u], to[v] = to, eflow
 	end
 
-	-- Clean up the label state.
-	for i = #IndexToLabel, 1, -1 do
-		local what = IndexToLabel[i]
-
-		LabelToIndex[what], IndexToLabel[i] = nil
-	end
+	CleanUp()
 
 	return flow, rn
 end
