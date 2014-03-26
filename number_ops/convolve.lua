@@ -372,7 +372,7 @@ function M.Convolve_FFT1D (signal, kernel, opts)
 		CopyThenPad(signal, B, sn, n)
 		CopyThenPad(kernel, C, kn, n)
 
-		fft.TwoGoertzels_ThenMultiply2D(B, C, n)
+		fft.TwoGoertzels_ThenMultiply1D(B, C, n)
 	else
 		fft.PrepareTwoFFTs_1D(B, n, signal, sn, kernel, kn)
 		fft.TwoFFTs_ThenMultiply1D(B, n)
@@ -448,15 +448,16 @@ vdump(D)]]
 			C[cc], ki, cc = kernel[ki], ki + 1, cc + 2
 		end
 	end
-
+print("B?")
 	fft.FFT_2D(B, m, n)
+print("C?")
 	fft.FFT_2D(C, m, n)
---[[
-print("B")
-vdump(B)
-print("C")
-vdump(C)]]
+---[[
+--mdump("B", B)
+--mdump("C", C)
+--]]
 	fft.Multiply_2D(B, C, m, n)
+mdump("B", B)
 	--[[
 print("MUL B,C")
 vdump(B)]]
@@ -473,7 +474,31 @@ vdump(B)]]
 
 		offset = offset + m + m--mreal
 	end
+do
+	local j, si, ki = 1, 1, 1
 
+	for row = 1, n do
+		local bc, cc = j, j
+
+		for _ = 1, m do--m + m, 2 do
+			B[j], C[j], j = 0, 0, j + 1
+--			B[j], B[j + 1], C[j], C[j + 1], j = 0, 0, 0, 0, j + 2
+		end
+
+		for _ = 1, si <= sn and scols or 0 do
+		--	B[bc], si, bc = signal[si], si + 1, bc + 2
+			B[bc], si, bc = signal[si], si + 1, bc + 1
+		end
+
+		for _ = 1, ki <= kn and kcols or 0 do
+--			C[cc], ki, cc = kernel[ki], ki + 1, cc + 2
+			C[cc], ki, cc = kernel[ki], ki + 1, cc + 1
+		end
+	end
+local tt={}
+	fft.TwoGoertzels_ThenMultiply2D(B, C, m, n,tt)
+	mdump("TRY", tt)--B)
+end
 	return csignal
 end
 --[[
@@ -482,12 +507,12 @@ local t1 = M.Convolve_2D({	17,24,1,8,15,
 						4,6,13,20,22,
 						10,12,19,21,3,
 						11,18,25,2,9 }, {1,3,1,0,5,0,2,1,2}, 5, 3)
-			--	vdump(t1)
+			--	vdump(t1)]]
 local t2 = M.Convolve_FFT2D({17,24,1,8,15,
 						23,5,7,14,16,
 						4,6,13,20,22,
 						10,12,19,21,3,
-						11,18,25,2,9 }, {1,3,1,0,5,0,2,1,2}, 5, 3)]]
+						11,18,25,2,9 }, {1,3,1,0,5,0,2,1,2}, 5, 3)
 			--[[	vdump(t2)
 print("COMPARING")
 for i = 1, #t1 do

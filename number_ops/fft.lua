@@ -134,9 +134,17 @@ end
 function M.FFT_2D (m, w, h)
 	local w2 = w + w
 	local area = w2 * h
-
+local aaa
 	for i = 1, area, w2 do
 		Transform(m, w, pi, i - 1)
+if not aaa then
+	aaa=true
+	local ttt={}
+	for i = 1, w + w do
+		ttt[i]=m[i]
+	end
+	mdump("First line", ttt)
+end
 	end
 
 	TransformColumns(m, w2, h, area, pi)
@@ -173,6 +181,31 @@ function M.FFT_Real1D (v, n)
 
 	v[1], v[2] = a + b, a - b
 -- ^^ TODO: Test!
+end
+
+--
+local function AuxGoertzel (v, n, k, wr, wi, offset)
+	local sp1, sp2 = 0, 0
+
+	for i = 1, n do
+		sp2, sp1 = sp1, v[offset + i] + k * sp1 - sp2
+	end
+
+	return sp1 * wr - sp2, -sp1 * wi
+end
+
+--- DOCME
+-- @array v
+-- @uint index
+-- @uint n
+-- @uint? offset
+-- @treturn number R
+-- @treturn number I
+function M.Goertzel (v, index, n, offset)
+	local omega = 2 * (index - 1) * pi / n
+	local wr, wi = cos(omega), sin(omega)
+
+	return AuxGoertzel(v, n, 2 * wr, wr, wi, offset or 0)
 end
 
 --- DOCME
@@ -344,9 +377,10 @@ end
 
 -- TODO: Two FFT's? (SeparateRealResults does some of it...)
 local fs = "%.4f"
-local function D (t)
+function mdump (message, t)
+	print(message, #t)
 	for i = 1, #t, 4 do
-		local a, b, c, d = fs:format(t[i]), fs:format(t[i+1]), fs:format(t[i+2]), fs:format(t[i+3])
+		local a, b, c, d = fs:format(t[i] or 0), fs:format(t[i+1] or 0), fs:format(t[i+2] or 0), fs:format(t[i+3] or 0)
 
 		print(a .. ", " .. b .. ", " .. c .. ", " .. d)
 	end
@@ -389,19 +423,29 @@ local aa,bb,mm,nn
 if offset==1 then
 	aa,bb,mm={},{},{}
 	local j=1
-	for i = 1, 128,2 do
+	for i = 1, w + w, 2 do--128,2 do
 		aa[j],bb[j],j=m[i],m[i+1],j+1
 	end
+	vdump(aa)
 end
 		Transform(m, w, pi, om1)
 if offset==1 then
-	print("!1", len)
+local cc={}
+for i = 1, w + w do
+	cc[i]=m[i]
+end
+vdump(cc)
+	print("!1", len, w)
 	mm,nn={},{}
 		local center, om1 = offset + w, offset - 1
 
 		mm[1]=m[1]
 	--	nn[1], mm[2], nn[2] = m[2], 0, 0
-		mm[center], mm[2], mm[center+1] = m[2],0,0
+	--	mm[center], mm[2], mm[center+1] = m[2],0,0
+	nn[1],mm[2],nn[2]=m[2],0,0
+mm[center]=m[center]
+nn[center]=m[center+1]
+mm[center+1],nn[center+1]=0,0
 --		m[offset], m[offset + 1] = m[offset] * m[offset + 1], 0 -- err, shouldn't be multiplied? (how to do this????)
 --		m[center], m[center + 1] = m[center] * m[center + 1], 0
 -- ^^^ Multiply by 4 and can remove the .5's below?
@@ -410,57 +454,18 @@ if offset==1 then
 			local j = len - i
 			local io, jo = om1 + i, om1 + j
 			local r1, i1, r2, i2 = m[io], m[io + 1], m[jo], m[jo + 1]
-			mm[i], mm[i+1] = .5*(r1 + r2), .5*(i1 - i2)
-			mm[j], mm[j+1] = .5*(i1 + i2), .5*(r2 - r1)
+			local a, b = .5*(r1 + r2), .5*(i1 - i2)
+			local c, d = .5*(i1 + i2), .5*(r2 - r1)
+			mm[i], mm[i+1] = a, b
+			mm[j], mm[j+1] = a,-b
+--			mm[j], mm[j+1]
+			nn[i], nn[i+1] = c,d
+			nn[j], nn[j+1]= c,-d
 		end
 
 --	vdump(m)
-print("MM")
-D(mm)
-print("NN")
---D(nn)
-	local A,B={},{}
-	for _, t in ipairs{{aa,A}, {bb,B}} do
-		local t1,t2=t[1],t[2]
-		for i = 1, w do
-			local omega = 2 * pi * (i - 1) / w
-			local wr = math.cos(omega)
-			local wi = sin(omega)
-			local coeff = 2 * wr
-			local sp, sp2 = 0, 0
-			for j = 1, w do
-				local s = t1[j] + coeff * sp - sp2
-				sp2, sp = sp, s
-			end
-			t2[#t2+1] = sp * wr - sp2
-			t2[#t2+1] = sp * wi
-		end
-	end
-	--[[
-Nterms defined here
-Kterm selected here
-ω = 2 * π * Kterm / Nterms;
-ωr = cos(ω);
-ωi = sin(ω);
-coeff = 2 * ωr;
-
-sprev = 0;
-sprev2 = 0;
-for each index n in range 0 to Nterms-1
-  s = x[n] + coeff * sprev - sprev2;
-  sprev2 = sprev;
-  sprev = s;
-end
-
-power = sprev2*sprev2 + sprev*sprev - coeff*sprev*sprev2 ;
-
-XKreal = sprev * ωr - sprev2;
-XKimag = sprev * ωi;
-]]
-print("A")
-D(A)--vdump(A)
-print("B")
-D(B)--vdump(B)
+mdump("MM", mm)
+mdump("NN", nn)
 end
 --[[
 --		m[offset], m[offset + 1] = m[offset] * m[offset + 1], 0 -- err, shouldn't be multiplied? (how to do this????)
@@ -522,26 +527,34 @@ end
 --print("E", index)
 end
 
+--
+local function AuxTwoGoertzels (m1, m2, n, k, wr, wi, offset)
+	local sp1, sp2, tp1, tp2 = 0, 0, 0, 0
+
+	for _ = 1, n do
+		offset = offset + 1
+		sp2, sp1 = sp1, m1[offset] + k * sp1 - sp2
+		tp2, tp1 = tp1, m2[offset] + k * tp1 - tp2
+	end
+
+	local a, b = sp1 * wr - sp2, sp1 * wi
+	local c, d = tp1 * wr - tp2, tp1 * wi
+
+	return a, b, c, d
+end
+
 --- DOCME
-function M.TwoGoertzels_ThenMultiply2D (v1, v2, n, out)
+-- @array v1
+-- @array v2
+-- @uint n
+-- @array? out
+function M.TwoGoertzels_ThenMultiply1D (v1, v2, n, out)
 	out = out or v1
 
 	local k, wr, wi, omega, da = 2, 1, 0, 0, 2 * pi / n
 
 	for i = 1, n + n, 2 do
-		local sp1, sp2 = 0, 0
-		local tp1, tp2 = 0, 0
-
-		for j = 1, n do
-			local s = v1[j] + k * sp1 - sp2
-			local t = v2[j] + k * tp1 - tp2
-
-			sp2, sp1 = sp1, s
-			tp2, tp1 = tp1, t
-		end
-
-		local a, b = sp1 * wr - sp2, sp1 * wi
-		local c, d = tp1 * wr - tp2, tp1 * wi
+		local a, b, c, d = AuxTwoGoertzels(v1, v2, n, k, wr, wi, 0)
 
 		out[i], out[i + 1] = a * c - b * d, -(b * c + a * d)
 -- ^^ ???: imag seem to need to be negative...
@@ -549,6 +562,51 @@ function M.TwoGoertzels_ThenMultiply2D (v1, v2, n, out)
 		wr, wi = cos(omega), sin(omega)
 		k = 2 * wr
 	end
+-- ^^ In-place friendly?
+end
+
+--- DOCME
+-- @array m1
+-- @array m2
+-- @uint w
+-- @uint h
+-- @array? out
+function M.TwoGoertzels_ThenMultiply2D (m1, m2, w, h, out)
+	out = out or m1
+
+	local coeff, wr, wi, omega, da = 2, 1, 0, 0, 2 * pi / w
+	local offset, w2, h2 = 0, w + w, h + h
+
+	for col = 1, w2, 2 do
+		local offset = 0
+
+		for i = 1, h2, 2 do
+			local j, a, b, c, d = i + h2, AuxTwoGoertzels(m1, m2, w, coeff, wr, wi, offset)
+
+			Column[i], Column[i + 1] = a, b
+			Column[j], Column[j + 1] = c, d
+
+			offset = offset + w
+		end
+-- ^^ Not in-place friendly...
+		Transform(Column, h, pi, 0)
+		Transform(Column, h, pi, h2)
+
+		local ci = col
+
+		for i = 1, h2, 2 do
+			local j = i + h2
+			local a, b = Column[i], Column[i + 1]
+			local c, d = Column[j], Column[j + 1]
+
+			out[ci], out[ci + 1], ci = a * c - b * d, -(b * c + a * d), ci + w2
+		end
+
+		omega = omega + da
+		wr, wi = cos(omega), sin(omega)
+		coeff = 2 * wr
+	end
+	-- Rows #1, n/2 okay... :/
 end
 
 -- Export the module.
