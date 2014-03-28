@@ -457,7 +457,11 @@ print("C?")
 --mdump("C", C)
 --]]
 	fft.Multiply_2D(B, C, m, n)
+UUU={}
 mdump("B", B)
+for i = 1, #B do
+	UUU[#UUU+1]=B[i]
+end
 	--[[
 print("MUL B,C")
 vdump(B)]]
@@ -497,8 +501,46 @@ do
 	end
 local tt={}
 	fft.TwoGoertzels_ThenMultiply2D(B, C, m, n,tt)
+TTT={}
+for i = 1, #tt do
+	TTT[#TTT+1]=tt[i]
+end
 	mdump("TRY", tt)--B)
 end
+local int, inu=true,true
+local abs=math.abs
+MT,MU={},{}
+for i = 1, #TTT, 2 do
+	local found, tt, ttt = false, TTT[i], TTT[i+1]
+	for j = 1, #UUU, 2 do
+		if not MU[j] and abs(UUU[j] - tt) < 1e-3 and abs(UUU[j+1] - ttt) < 1e-3 then
+			MU[j],MU[j+1]=i,i+1
+			found = true
+			break
+		end
+	end
+	if not found then
+		inu = false
+		break
+	end
+end
+for i = 1, #UUU, 2 do
+	local found, uu, uuu = false, UUU[i], UUU[i+1]
+	for j = 1, #TTT, 2 do
+		if not MT[j] and abs(TTT[j] - uu) < 1e-3 and abs(TTT[j+1] - uuu) < 1e-3 then
+			MT[j],MT[j+1]=i,i+1
+			found = true
+			break
+		end
+	end
+	if not found then
+		int = false
+		break
+	end
+end
+vdump(MT)
+vdump(MU)
+print("FOUND?", inu, int)
 	return csignal
 end
 --[[
