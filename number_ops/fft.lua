@@ -134,17 +134,9 @@ end
 function M.FFT_2D (m, w, h)
 	local w2 = w + w
 	local area = w2 * h
-local aaa
+
 	for i = 1, area, w2 do
 		Transform(m, w, pi, i - 1)
-if not aaa then
-	aaa=true
-	local ttt={}
-	for i = 1, w + w do
-		ttt[i]=m[i]
-	end
-	mdump("First line", ttt)
-end
 	end
 
 	TransformColumns(m, w2, h, area, pi)
@@ -289,103 +281,6 @@ function M.Multiply_2D (m1, m2, w, h, out)
 end
 
 --- DOCME
--- @array out
--- @uint size
--- @array arr1
--- @uint m
--- @array arr2
--- @uint n
-function M.PrepareTwoFFTs_1D (out, size, arr1, m, arr2, n)
-	if m > n then
-		arr1, arr2, m, n = arr2, arr1, n, m
-	end
-
-	local j = 1
-
-	for i = 1, m do
-		out[j], out[j + 1], j = arr1[i], arr2[i], j + 2
-	end
-
-	for i = m + 1, n do
-		out[j], out[j + 1], j = 0, arr2[i], j + 2
-	end
-
-	for i = j, size + size, 2 do
-		out[i], out[i + 1] = 0, 0
-	end
-end
-
---- DOCME
--- @array out
--- @uint size
--- @array arr1
--- @uint cols1
--- @array arr2
--- @uint cols2
--- @uint ncols
--- @uint? na1
--- @uint? na2
-function M.PrepareTwoFFTs_2D (out, size, arr1, cols1, arr2, cols2, ncols, na1, na2)
-	na1, na2 = na1 or #arr1, na2 or #arr2
-
-	if cols1 > cols2 then
-		arr1, arr2, cols1, cols2, na1, na2 = arr2, arr1, cols2, cols1, na2, na1
-	end
-
-	--
-	local i1, i2, j = 1, 1, 1
-
-	repeat
-		for _ = 1, cols1 do
-			out[j], out[j + 1], i1, i2, j = arr1[i1], arr2[i2], i1 + 1, i2 + 1, j + 2
-		end
-
-		for _ = cols1 + 1, cols2 do
-			out[j], out[j + 1], i2, j = 0, arr2[i2], i2 + 1, j + 2
-		end
-
-		for _ = cols2 + 1, ncols do
-			out[j], out[j + 1], j = 0, 0, j + 2
-		end
-	until i1 > na1 or i2 > na2
-
-	--
-	local zero = 0
-
-	if i1 < na1 then
-		arr2, cols2, na2, i2, zero = arr1, cols1, na1, i1, 1
-	end
-
-	local one = 1 - zero
-
-	--
-	while i2 <= na2 do
-		for _ = 1, cols2 do
-			out[j + one], out[j + zero], i2, j = arr2[i2], 0, i2 + 1, j + 2
-		end
-
-		for _ = cols2 + 1, ncols do
-			out[j], out[j + 1], j = 0, 0, j + 2
-		end
-	end
-
-	--
-	for i = j, size + size, 2 do
-		out[i], out[i + 1] = 0, 0
-	end
-end
-
--- TODO: Two FFT's? (SeparateRealResults does some of it...)
-local fs = "%.4f"
-function mdump (message, t)
-	print(message, #t)
-	for i = 1, #t, 4 do
-		local a, b, c, d = fs:format(t[i] or 0), fs:format(t[i+1] or 0), fs:format(t[i+2] or 0), fs:format(t[i+3] or 0)
-
-		print(a .. ", " .. b .. ", " .. c .. ", " .. d)
-	end
-end
---- DOCME
 -- @array v
 -- @uint n
 function M.TwoFFTs_ThenMultiply1D (v, n)
@@ -411,7 +306,13 @@ function M.TwoFFTs_ThenMultiply1D (v, n)
 	end
 end
 
+-- Second matrix, for decomposing the FFT'd real matrix --
+local N = {}
+
 --- DOCME
+-- @array m
+-- @uint w
+-- @uint h
 function M.TwoFFTs_ThenMultiply2D (m, w, h)
 	local w2 = w + w
 	local area, len = w2 * h, w2 + 2
@@ -419,112 +320,44 @@ function M.TwoFFTs_ThenMultiply2D (m, w, h)
 	--
 	for offset = 1, area, w2 do
 		local center, om1 = offset + w, offset - 1
-local aa,bb,mm,nn
-if offset==1 then
-	aa,bb,mm={},{},{}
-	local j=1
-	for i = 1, w + w, 2 do--128,2 do
-		aa[j],bb[j],j=m[i],m[i+1],j+1
-	end
-	vdump(aa)
-end
+
 		Transform(m, w, pi, om1)
-if offset==1 then
-local cc={}
-for i = 1, w + w do
-	cc[i]=m[i]
-end
-vdump(cc)
-	print("!1", len, w)
-	mm,nn={},{}
-		local center, om1 = offset + w, offset - 1
 
-		mm[1]=m[1]
-	--	nn[1], mm[2], nn[2] = m[2], 0, 0
-	--	mm[center], mm[2], mm[center+1] = m[2],0,0
-	nn[1],mm[2],nn[2]=m[2],0,0
-mm[center]=m[center]
-nn[center]=m[center+1]
-mm[center+1],nn[center+1]=0,0
---		m[offset], m[offset + 1] = m[offset] * m[offset + 1], 0 -- err, shouldn't be multiplied? (how to do this????)
---		m[center], m[center + 1] = m[center] * m[center + 1], 0
--- ^^^ Multiply by 4 and can remove the .5's below?
+		N[offset], N[center] = m[offset + 1], m[center + 1]
+		m[offset + 1], m[center + 1] = 0, 0
+		N[offset + 1], N[center + 1] = 0, 0
 
 		for i = 3, w, 2 do
 			local j = len - i
 			local io, jo = om1 + i, om1 + j
 			local r1, i1, r2, i2 = m[io], m[io + 1], m[jo], m[jo + 1]
-			local a, b = .5*(r1 + r2), .5*(i1 - i2)
-			local c, d = .5*(i1 + i2), .5*(r2 - r1)
-			mm[i], mm[i+1] = a, b
-			mm[j], mm[j+1] = a,-b
---			mm[j], mm[j+1]
-			nn[i], nn[i+1] = c,d
-			nn[j], nn[j+1]= c,-d
+			local a, b = .5 * (r1 + r2), .5 * (i1 - i2)
+			local c, d = .5 * (i1 + i2), .5 * (r2 - r1)
+
+			m[io], m[io + 1] = a, b
+			m[jo], m[jo + 1] = a, -b
+			N[io], N[io + 1] = c, d
+			N[jo], N[jo + 1] = c, -d
 		end
-
---	vdump(m)
-mdump("MM", mm)
-mdump("NN", nn)
-end
---[[
---		m[offset], m[offset + 1] = m[offset] * m[offset + 1], 0 -- err, shouldn't be multiplied? (how to do this????)
---		m[center], m[center + 1] = m[center] * m[center + 1], 0
--- ^^^ Multiply by 4 and can remove the .5's below?
-
-		for i = 3, w, 2 do
-			local j = len - i
-			local io, jo = om1 + i, om1 + j
-			local r1, i1, r2, i2 = m[io], m[io + 1], m[jo], m[jo + 1]
-
-			m[io], m[io + 1] = .5 * (r1 + r2), .5 * (i1 - i2)
-			m[jo], m[jo + 1] = .5 * (i1 + i2), .5 * (r2 - r1)
-		end]]
 	end
 
 	--
 	TransformColumns(m, w2, h, area, pi)
+	TransformColumns(N, w2, h, area, pi)
 
-	--
-	for offset = 1, area, w2 do
-		local center, om1 = offset + w, offset - 1
-
-		m[offset], m[offset + 1] = m[offset] * m[offset + 1], 0
-		m[center], m[center + 1] = m[center] * m[center + 1], 0
---		m[center], m[offset + 1], m[center + 1] = m[offset + 1], 0, 0
---		m[offset], m[offset + 1] = m[offset] * m[offset + 1], 0 -- err, shouldn't be multiplied? (how to do this????)
---		m[center], m[center + 1] = m[center] * m[center + 1], 0
--- ^^^ Multiply by 4 and can remove the .5's below?
-
-		for i = 3, w, 2 do
-			local j = len - i
-			local io, jo = om1 + i, om1 + j
-			local r1, i1, r2, i2 = m[io], m[io + 1], m[jo], m[jo + 1]
-			local a, b = r1 + r2, i1 - i2 
-			local c, d = i1 + i2, r2 - r1
-			local real = .25 * (a * c - b * d)
-			local imag = .25 * (b * c + a * d)
-
-			m[io], m[io + 1] = real, imag
-			m[jo], m[jo + 1] = real, -imag
-		end
-	end
-
---[[
 	--
 	local index = 1
 
 	for offset = 1, area, w2 do
 		local center = offset + w
 
-		for i = 0, w - 1, 2 do
+		for i = 0, w2 - 1, 2 do
 			local i1, i2 = offset + i, center + i
-			local a, b, c, d = m[i1], m[i1 + 1], m[i2], m[i2 + 1]
+			local a, b, c, d = m[i1], m[i1 + 1], N[i1], N[i1 + 1]
 
 			m[index], m[index + 1], index = a * c - b * d, b * c + a * d, index + 2
 		end
-	end]]
---print("E", index)
+	end
 end
 
 --
@@ -565,6 +398,29 @@ function M.TwoGoertzels_ThenMultiply1D (v1, v2, n, out)
 -- ^^ In-place friendly?
 end
 
+-- --
+local Transpose = {}
+
+--
+local function InPlaceResolve (out, w2, h2, last_row)
+	local col, h4 = 0, h2 + h2
+
+	for i = 1, w2, 2 do
+		local ci, coff = i, last_row + i
+
+		for j = 1, h2, 2 do
+			local k = j + h2
+			local cj, ck = col + j, col + k
+			local a, b = Transpose[cj], Transpose[cj + 1]
+			local c, d = Transpose[ck], Transpose[ck + 1]
+
+			out[ci], out[ci + 1], ci, coff = a * c - b * d, -(b * c + a * d), coff, coff - w2
+		end
+
+		col = col + h4
+	end
+end
+
 --- DOCME
 -- @array m1
 -- @array m2
@@ -572,40 +428,61 @@ end
 -- @uint h
 -- @array? out
 function M.TwoGoertzels_ThenMultiply2D (m1, m2, w, h, out)
-	out = out or m1
-
 	local coeff, wr, wi, omega, da = 2, 1, 0, 0, 2 * pi / w
-	local offset, w2, h2 = 0, w + w, h + h
+	local offset, col, w2, h2 = 0, 1, w + w, h + h
 	local last_row = w2 * (h - 1)
 
-	for col = 1, w2, 2 do
-		local offset = 0
+	--
+	local out_of_place, arr, delta = out and out ~= m1
+
+	if out_of_place then
+		arr, delta = Column, 0
+	else
+		arr, delta = Transpose, h2 + h2
+	end
+
+	for _ = 1, w do
+		--
+		local ri = 0
 
 		for i = 1, h2, 2 do
-			local j, a, b, c, d = i + h2, AuxTwoGoertzels(m1, m2, w, coeff, wr, wi, offset)
+			local j, a, b, c, d = i + h2, AuxTwoGoertzels(m1, m2, w, coeff, wr, wi, ri)
+			local ci, cj = offset + i, offset + j
 
-			Column[i], Column[i + 1] = a, b
-			Column[j], Column[j + 1] = c, d
+			arr[ci], arr[ci + 1] = a, b
+			arr[cj], arr[cj + 1] = c, d
 
-			offset = offset + w
-		end
--- ^^ Not in-place friendly...
-		Transform(Column, h, pi, 0)
-		Transform(Column, h, pi, h2)
-
-		local ci, coff = col, last_row + col
-
-		for i = 1, h2, 2 do
-			local j = i + h2
-			local a, b = Column[i], Column[i + 1]
-			local c, d = Column[j], Column[j + 1]
-
-			out[ci], out[ci + 1], ci, coff = a * c - b * d, -(b * c + a * d), coff, coff - w2
+			ri = ri + w
 		end
 
-		omega = omega + da
+		--
+		Transform(arr, h, pi, offset)
+		Transform(arr, h, pi, offset + h2)
+
+		--
+		if out_of_place then
+			local ci, coff = col, last_row + col
+
+			for i = 1, h2, 2 do
+				local j = i + h2
+				local a, b = Column[i], Column[i + 1]
+				local c, d = Column[j], Column[j + 1]
+
+				out[ci], out[ci + 1], ci, coff = a * c - b * d, -(b * c + a * d), coff, coff - w2
+			end
+
+			col = col + 2
+		end
+
+		--
+		omega, offset = omega + da, offset + delta
 		wr, wi = cos(omega), sin(omega)
 		coeff = 2 * wr
+	end
+
+	--
+	if not out_of_place then
+		InPlaceResolve(m1, w2, h2, last_row)
 	end
 end
 

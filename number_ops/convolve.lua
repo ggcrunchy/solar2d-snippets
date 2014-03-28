@@ -30,6 +30,7 @@ local min = math.min
 
 -- Modules --
 local fft = require("number_ops.fft")
+local fft_utils = require("number_ops.fft_utils")
 
 -- Exports --
 local M = {}
@@ -374,7 +375,7 @@ function M.Convolve_FFT1D (signal, kernel, opts)
 
 		fft.TwoGoertzels_ThenMultiply1D(B, C, n)
 	else
-		fft.PrepareTwoFFTs_1D(B, n, signal, sn, kernel, kn)
+		fft_utils.PrepareTwoFFTs_1D(B, n, signal, sn, kernel, kn)
 		fft.TwoFFTs_ThenMultiply1D(B, n)
 	end
 
@@ -393,9 +394,6 @@ function M.Convolve_FFT1D (signal, kernel, opts)
 	return csignal
 end
 
--- --
-local D = {}
-
 --- Two-dimensional linear convolution using fast Fourier transforms. For certain _signal_
 -- and _kernel_ combinations, this may be significantly faster than @{Convolve_2D}.
 -- @array signal Real discrete signal...
@@ -404,11 +402,15 @@ local D = {}
 -- @uint kcols ... and in _kernel_.
 -- @ptable? opts Optional convolve options. Fields:
 --
--- * **method**: TODO - goetzel? reals, long_way (below)
+-- * **method**: If this is **"goertzel"**, the transforms are done using the [Goertzel algorithm](http://en.wikipedia.org/wiki/Goertzel_algorithm),
+-- which may offer better performance in some cases. If it is **"two_ffts"**, the two real
+-- FFT's are computed as one stock complex FFT. Otherwise, two FFT's are computed separately.
 -- @treturn array Convolution.
 -- @treturn uint Number of columns in the convolution. Currently, only the **"full"** shape
 -- is supported, i.e. #_scols_ + #_kcols_ - 1.
 function M.Convolve_FFT2D (signal, kernel, scols, kcols, opts)
+	local method = opts and opts.method
+
 	-- Determine how much padding each dimension needs, to have matching power-of-2 sizes.
 	local sn, kn = #signal, #kernel
 	local srows = sn / scols
@@ -418,151 +420,42 @@ function M.Convolve_FFT2D (signal, kernel, scols, kcols, opts)
 	local area = m * n
 
 	-- Perform an FFT on the signal and kernel (both at once). Multiply the (complex) results...
-	fft.PrepareTwoFFTs_2D(D, area, signal, scols, kernel, kcols, m, sn, kn)
-	fft.TwoFFTs_ThenMultiply2D(D, m, n)
-	--[[
-print("2-in-1 mul")
-vdump(D)]]
---[[
+	if method == "goertzel" then
+		fft_utils.PrepareTwoGoetzels_2D(B, C, m, n, signal, scols, kernel, kcols, sn, kn)
+		fft.TwoGoertzels_ThenMultiply2D(B, C, m, n)
+	elseif method == "two_ffts" then
+		fft_utils.PrepareTwoFFTs_2D(B, area, signal, scols, kernel, kcols, m, sn, kn)
+		fft.TwoFFTs_ThenMultiply2D(B, m, n)
+	else
+		fft_utils.PrepareSeparateFFTs_2D(B, C, m, n, signal, scols, kernel, kcols, sn, kn)
+		fft.FFT_2D(B, m, n)
+		fft.FFT_2D(C, m, n)
+		fft.Multiply_2D(B, C, m, n)
+	end
+
 	-- ...transform back to the time domain...
+--[[
 	local mreal = .5 * m
 
 	fft.IFFT_Real2D(B, mreal, .5 * n)
 
 	-- shift?
-]]
-	local j, si, ki = 1, 1, 1
-
-	for row = 1, n do
-		local bc, cc = j, j
-
-		for _ = 1, m + m, 2 do
-			B[j], B[j + 1], C[j], C[j + 1], j = 0, 0, 0, 0, j + 2
-		end
-
-		for _ = 1, si <= sn and scols or 0 do
-			B[bc], si, bc = signal[si], si + 1, bc + 2
-		end
-
-		for _ = 1, ki <= kn and kcols or 0 do
-			C[cc], ki, cc = kernel[ki], ki + 1, cc + 2
-		end
-	end
-print("B?")
-	fft.FFT_2D(B, m, n)
-print("C?")
-	fft.FFT_2D(C, m, n)
----[[
---mdump("B", B)
---mdump("C", C)
 --]]
-	fft.Multiply_2D(B, C, m, n)
-UUU={}
-mdump("B", B)
-for i = 1, #B do
-	UUU[#UUU+1]=B[i]
-end
-	--[[
-print("MUL B,C")
-vdump(B)]]
 	fft.IFFT_2D(B, m, n)
 
 	-- ...and get the convolution by scaling the real parts of the result.
-	local csignal, mn, offset = {}, area, 0--.25 * area, 0
--- TODO: Just do the long way with two matrices, FFT_2D()'d, mult'd, then IFFT_2D()'d and scaled
--- ^^^^ Use as reference implementation
+	local csignal, offset, delta = {}, 0, m + m
+
 	for _ = 1, h do
 		for j = 1, w + w, 2 do
-			csignal[#csignal + 1] = B[offset + j] / mn
+			csignal[#csignal + 1] = B[offset + j] / area
 		end
 
-		offset = offset + m + m--mreal
+		offset = offset + delta
 	end
-do
-	local j, si, ki = 1, 1, 1
 
-	for row = 1, n do
-		local bc, cc = j, j
-
-		for _ = 1, m do--m + m, 2 do
-			B[j], C[j], j = 0, 0, j + 1
---			B[j], B[j + 1], C[j], C[j + 1], j = 0, 0, 0, 0, j + 2
-		end
-
-		for _ = 1, si <= sn and scols or 0 do
-		--	B[bc], si, bc = signal[si], si + 1, bc + 2
-			B[bc], si, bc = signal[si], si + 1, bc + 1
-		end
-
-		for _ = 1, ki <= kn and kcols or 0 do
---			C[cc], ki, cc = kernel[ki], ki + 1, cc + 2
-			C[cc], ki, cc = kernel[ki], ki + 1, cc + 1
-		end
-	end
-local tt={}
-	fft.TwoGoertzels_ThenMultiply2D(B, C, m, n,tt)
-TTT={}
-for i = 1, #tt do
-	TTT[#TTT+1]=tt[i]
-end
-	mdump("TRY", tt)--B)
-end
-local int, inu=true,true
-local abs=math.abs
-MT,MU={},{}
-for i = 1, #TTT, 2 do
-	local found, tt, ttt = false, TTT[i], TTT[i+1]
-	for j = 1, #UUU, 2 do
-		if not MU[j] and abs(UUU[j] - tt) < 1e-3 and abs(UUU[j+1] - ttt) < 1e-3 then
-			MU[j],MU[j+1]=i,i+1
-			found = true
-			break
-		end
-	end
-	if not found then
-		inu = false
-		break
-	end
-end
-for i = 1, #UUU, 2 do
-	local found, uu, uuu = false, UUU[i], UUU[i+1]
-	for j = 1, #TTT, 2 do
-		if not MT[j] and abs(TTT[j] - uu) < 1e-3 and abs(TTT[j+1] - uuu) < 1e-3 then
-			MT[j],MT[j+1]=i,i+1
-			found = true
-			break
-		end
-	end
-	if not found then
-		int = false
-		break
-	end
-end
-vdump(MT)
-vdump(MU)
-print("FOUND?", inu, int)
 	return csignal
 end
---[[
-local t1 = M.Convolve_2D({	17,24,1,8,15,
-						23,5,7,14,16,
-						4,6,13,20,22,
-						10,12,19,21,3,
-						11,18,25,2,9 }, {1,3,1,0,5,0,2,1,2}, 5, 3)
-			--	vdump(t1)]]
-local t2 = M.Convolve_FFT2D({17,24,1,8,15,
-						23,5,7,14,16,
-						4,6,13,20,22,
-						10,12,19,21,3,
-						11,18,25,2,9 }, {1,3,1,0,5,0,2,1,2}, 5, 3)
-			--[[	vdump(t2)
-print("COMPARING")
-for i = 1, #t1 do
-	if math.abs(t1[i] - t2[i]) > 1e-6 then
-		print("Problem at: " .. i)
-	end
-end
-print("DONE")]]
 
 -- Export the module.
 return M
