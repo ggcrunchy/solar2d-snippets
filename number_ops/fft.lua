@@ -576,6 +576,7 @@ function M.TwoGoertzels_ThenMultiply2D (m1, m2, w, h, out)
 
 	local coeff, wr, wi, omega, da = 2, 1, 0, 0, 2 * pi / w
 	local offset, w2, h2 = 0, w + w, h + h
+	local last_row = w2 * (h - 1)
 
 	for col = 1, w2, 2 do
 		local offset = 0
@@ -592,21 +593,20 @@ function M.TwoGoertzels_ThenMultiply2D (m1, m2, w, h, out)
 		Transform(Column, h, pi, 0)
 		Transform(Column, h, pi, h2)
 
-		local ci = col
+		local ci, coff = col, last_row + col
 
 		for i = 1, h2, 2 do
 			local j = i + h2
 			local a, b = Column[i], Column[i + 1]
 			local c, d = Column[j], Column[j + 1]
 
-			out[ci], out[ci + 1], ci = a * c - b * d, -(b * c + a * d), ci + w2
+			out[ci], out[ci + 1], ci, coff = a * c - b * d, -(b * c + a * d), coff, coff - w2
 		end
 
 		omega = omega + da
 		wr, wi = cos(omega), sin(omega)
 		coeff = 2 * wr
 	end
-	-- Rows #1, n/2 okay... :/
 end
 
 -- Export the module.
