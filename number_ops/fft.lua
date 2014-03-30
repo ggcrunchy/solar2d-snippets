@@ -35,7 +35,7 @@ local M = {}
 -- BitReverse and Transform are largely adapted from LuaJIT's FFT benchmark:
 -- http://luajit.org/download/scimark.lua (also MIT license)
 
---
+-- Scrambles input vector by swapping elements: v[abc...z] <-> v[z...cba] (abc...z is some lg(n)-bit pattern of the respective indices)
 local function BitReverse (v, n, offset)
 	local j = 0
 
@@ -56,7 +56,7 @@ local function BitReverse (v, n, offset)
 	end
 end
 
---
+-- Butterflies: setup and divide-and-conquer (two-point transforms)
 local function Transform (v, n, theta, offset)
 	if n <= 1 then
 		return
@@ -142,7 +142,7 @@ function M.FFT_2D (m, w, h)
 	TransformColumns(m, w2, h, area, pi)
 end
 
---
+-- Helper for common part of real transforms
 local function AuxRealXform (v, n, c1, c2, theta, offset)
 	local s, s2 = sin(theta), 2 * sin(0.5 * theta)^2
 	local wr, wi, nf = 1.0 - s2, s, offset + n + n + 2
@@ -175,17 +175,6 @@ function M.FFT_Real1D (v, n)
 -- ^^ TODO: Test!
 end
 
---
-local function AuxGoertzel (v, n, k, wr, wi, offset)
-	local sp1, sp2 = 0, 0
-
-	for i = 1, n do
-		sp2, sp1 = sp1, v[offset + i] + k * sp1 - sp2
-	end
-
-	return sp1 * wr - sp2, -sp1 * wi
-end
-
 --- DOCME
 -- @array v
 -- @uint index
@@ -194,10 +183,17 @@ end
 -- @treturn number R
 -- @treturn number I
 function M.Goertzel (v, index, n, offset)
+	offset = offset or 0
+
 	local omega = 2 * (index - 1) * pi / n
 	local wr, wi = cos(omega), sin(omega)
+	local k, sp1, sp2 = 2 * wr, 0, 0
 
-	return AuxGoertzel(v, n, 2 * wr, wr, wi, offset or 0)
+	for i = 1, n do
+		sp2, sp1 = sp1, v[offset + i] + k * sp1 - sp2
+	end
+
+	return sp1 * wr - sp2, -sp1 * wi
 end
 
 --- DOCME
@@ -256,6 +252,7 @@ function M.IFFT_Real2D (m, w, h)
 
 		Transform(m, w, -pi, j - 1)
 	end
+-- TODO: Still not right?
 end
 
 --- DOCME

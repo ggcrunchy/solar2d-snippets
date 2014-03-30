@@ -421,7 +421,7 @@ function M.Convolve_FFT2D (signal, kernel, scols, kcols, opts)
 
 	-- Perform an FFT on the signal and kernel (both at once). Multiply the (complex) results...
 	if method == "goertzel" then
-		fft_utils.PrepareTwoGoetzels_2D(B, C, m, n, signal, scols, kernel, kcols, sn, kn)
+		fft_utils.PrepareTwoGoertzels_2D(B, C, m, n, signal, scols, kernel, kcols, sn, kn)
 		fft.TwoGoertzels_ThenMultiply2D(B, C, m, n)
 	elseif method == "two_ffts" then
 		fft_utils.PrepareTwoFFTs_2D(B, area, signal, scols, kernel, kcols, m, sn, kn)

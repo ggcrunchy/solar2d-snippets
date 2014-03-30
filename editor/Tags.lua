@@ -216,7 +216,7 @@ end
 do
 	--
 	local function AddInterface (sub, what)
-		adaptive.AddToMap(sub, "m_interfaces", what)
+		adaptive.AddToSet(sub, "m_interfaces", what)
 	end
 
 	--
@@ -226,7 +226,7 @@ do
 
 	--
 	local function Implements (sub, what)
-		return adaptive.InMap(sub.m_interfaces, what)
+		return adaptive.InSet(sub.m_interfaces, what)
 	end
 
 	--
@@ -246,7 +246,7 @@ do
 
 	--- DOCME
 	function M.ImpliesInterface (name, what)
-		adaptive.AddToMap(Implies, name, what)
+		adaptive.AddToSet(Implies, name, what)
 	end
 
 	-- --
@@ -259,13 +259,13 @@ do
 
 	--
 	local function AddImplementor (name, what)
-		for impl_by in adaptive.IterMap(ImplementedBy[what]) do
+		for impl_by in adaptive.IterSet(ImplementedBy[what]) do
 			if M.Is(name, impl_by) then
 				return
 			end
 		end
 
-		adaptive.AddToMap(ImplementedBy, what, name)
+		adaptive.AddToSet(ImplementedBy, what, name)
 	end
 
 	--- DOCME
@@ -321,7 +321,7 @@ do
 						obj.m_can_link, obj.m_link_to = CanLinkTo, link_to
 
 						--
-						for interface in adaptive.IterMap(Implies[link_to]) do
+						for interface in adaptive.IterSet(Implies[link_to]) do
 							AddInterface(obj, interface)
 						end
 
@@ -343,7 +343,7 @@ do
 
 			--
 			for _, sub in common.PairsIf(new) do
-				for what in adaptive.IterMap(sub.m_interfaces) do
+				for what in adaptive.IterSet(sub.m_interfaces) do
 					AddImplementor(name, what)
 				end
 			end
@@ -401,7 +401,7 @@ local IterStrList = iterator_utils.InstancedAutocacher(function()
 		local count = 0
 
 		if as_set then
-			for base in adaptive.IterMap(name_) do
+			for base in adaptive.IterSet(name_) do
 				count = enum(str_list, base, count)
 			end
 		else

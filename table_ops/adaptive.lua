@@ -1,4 +1,13 @@
---- Functionality for members that may either be tables or singletons.
+--- Functionality for table members which may adapt among three forms:
+--
+-- * **nil**. (0 elements)
+-- * A non-table value. (1 element)
+-- * A table of non-table elements. (0 or more elements)
+--
+-- Members are assumed to be either an array or set (potential or actual), but not both.
+--
+-- The operations in the module are intended to smooth away these details, allowing callers
+-- to pretend the member in question is in table form.
 
 --
 -- Permission is hereby granted, free of charge, to any person obtaining
@@ -33,12 +42,14 @@ local type = type
 -- Exports --
 local M = {}
 
---- DOCME
--- @ptable t
--- @param k
--- @param v
-function M.AddToMap (t, k, v)
-	--
+--- Adds an element to _t_[ _k_ ] (treated as a set).
+-- @ptable t Target table.
+-- @param k Member key.
+-- @param v Non-**nil** element to add.
+function M.AddToSet (t, k, v)
+	-- If the member already exists, add the new element to the set at its key. The member may
+	-- be a non-table, i.e. in singleton form, in which case the set / table must be created
+	-- (and the singleton also added) and put in its place.
 	local cur = t[k]
 
 	if cur ~= nil then
@@ -50,18 +61,20 @@ function M.AddToMap (t, k, v)
 
 		cur[v] = true
 
-	--
+	-- First element added: assign it as a singleton.
 	else
 		t[k] = v
 	end
 end
 
---- DOCME
--- @ptable t
--- @param k
--- @param v
+--- Appends an element to _t_[ _k_ ] (treated as an array).
+-- @ptable t Target table.
+-- @param k Member key.
+-- @param v Non-**nil** element to add.
 function M.Append (t, k, v)
-	--
+	-- If the member already exists, append the new element to the array at its key. The member
+	-- may be a non-table, i.e. in singleton form, in which case the array / table must be
+	-- created (with the singleton as first element) and put in its place.
 	local cur = t[k]
 
 	if cur ~= nil then
@@ -73,21 +86,22 @@ function M.Append (t, k, v)
 
 		cur[#cur + 1] = v
 
-	--
+	-- First element added: assign it as a singleton.
 	else
 		t[k] = v
 	end
 end
 
---- DOCME
--- @param map X
--- @param v V
--- @treturn boolean B
-function M.InMap (map, v)
-	if type(map) == "table" then
-		return map[v] ~= nil
+--- Predicate.
+-- @param set Set-mode table member, i.e. _t_[ _k_ ] after some combination of @{AddToSet}
+-- and @{RemoveFromSet}.
+-- @param v Value to find.
+-- @treturn boolean _v_ is in _set_?
+function M.InSet (set, v)
+	if type(set) == "table" then
+		return set[v] ~= nil
 	else
-		return v ~= nil and map == v
+		return v ~= nil and set == v
 	end
 end
 
@@ -98,9 +112,11 @@ local function Single_Array (arr, i)
 	end
 end
 
---- DOCME
--- @param arr X
--- @treturn iterator I
+--- Iterates over the (0 or more) elements in the array.
+-- @param arr Array-mode table member, i.e. _t_[ _k_ ] after some combination of @{Append}
+-- and @{RemoveFromArray} operations.
+-- @treturn iterator Supplies index, value. If the value is a singleton, **true** is also
+-- supplied as a third result.
 function M.IterArray (arr)
 	if type(arr) == "table" then
 		return ipairs(arr)
@@ -109,21 +125,23 @@ function M.IterArray (arr)
 	end
 end
 
--- Iterates nil or singleton posing as map
-local function Single_Map (map, guard)
-	if map ~= guard then
-		return map, false
+-- Iterates nil or singleton posing as set
+local function Single_Set (set, guard)
+	if set ~= guard then
+		return set, false
 	end
 end
 
---- DOCME
--- @param map X
--- @treturn iterator I
-function M.IterMap (map)
-	if type(map) == "table" then
-		return pairs(map)
+--- Iterates over the (0 or more) elements in the set.
+-- @param set Set-mode table member, i.e. _t_[ _k_ ] after some combination of @{AddToSet}
+-- and @{RemoveFromSet} operations.
+-- @treturn iterator Supplies value, boolean (if **true**, the set is in table form;
+-- otherwise, the value is a singleton).
+function M.IterSet (set)
+	if type(set) == "table" then
+		return pairs(set)
 	else
-		return Single_Map, map
+		return Single_Set, set
 	end
 end
 
@@ -155,21 +173,31 @@ local function ArrayRemove (arr, v)
 	return arr[1]
 end
 
---- DOCME
+--- Removes an element from _t_[ _k_ ] (treated as an array).
+--
+-- If either the element or array does not exist, this is a no-op.
+-- @ptable t Source table.
+-- @param k Member key.
+-- @param v Non-**nil** value to remove.
 function M.RemoveFromArray (t, k, v)
 	t[k] = AuxRemove(ArrayRemove, t[k], v)
 end
 
--- Tries to remove a value from a map-type adaptive container
-local function MapRemove (map, v)
-	map[v] = nil
+-- Tries to remove a value from a set-type adaptive container
+local function SetRemove (set, v)
+	set[v] = nil
 
-	return next(map)
+	return next(set)
 end
 
---- DOCME
-function M.RemoveFromMap (t, k, v)
-	t[k] = AuxRemove(MapRemove, t[k], v)
+--- Removes an element from _t_[ _k_ ] (treated as a set).
+--
+-- If either the element or set does not exist, this is a no-op.
+-- @ptable t Source table.
+-- @param k Member key.
+-- @param v Non-**nil** value to remove.
+function M.RemoveFromSet (t, k, v)
+	t[k] = AuxRemove(SetRemove, t[k], v)
 end
 
 -- Export the module.
