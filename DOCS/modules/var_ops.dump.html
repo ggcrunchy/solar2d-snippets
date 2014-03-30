@@ -44,6 +44,7 @@
   <li><a href="../modules/array_ops.id_occupied.html">id_occupied</a></li>
   <li><a href="../modules/array_ops.index.html">index</a></li>
   <li><a href="../modules/array_ops.predicates.html">predicates</a></li>
+  <li><a href="../modules/array_ops.ring_buffer.html">ring_buffer</a></li>
   <li><a href="../modules/array_ops.wipe.html">wipe</a></li>
   <li><a href="../modules/bitwise_ops.log2.html">log2</a></li>
   <li><a href="../modules/bitwise_ops.operators.html">operators</a></li>
@@ -127,9 +128,13 @@
   <li><a href="../modules/game.TileMaps.html">TileMaps</a></li>
   <li><a href="../modules/game.Timers.html">Timers</a></li>
   <li><a href="../modules/game.Transitions.html">Transitions</a></li>
+  <li><a href="../modules/geom2d_ops.cmv.html">cmv</a></li>
   <li><a href="../modules/geom2d_ops.predicates.html">predicates</a></li>
   <li><a href="../modules/geom2d_ops.quantize.html">quantize</a></li>
   <li><a href="../modules/geom2d_ops.vector.html">vector</a></li>
+  <li><a href="../modules/graph_ops.flow.html">flow</a></li>
+  <li><a href="../modules/graph_ops.hungarian.html">hungarian</a></li>
+  <li><a href="../modules/graph_ops.labels.html">labels</a></li>
   <li><a href="../modules/hash_ops.html">hash_ops</a></li>
   <li><a href="../modules/hud.Action.html">Action</a></li>
   <li><a href="../modules/hud.Move.html">Move</a></li>
@@ -138,9 +143,17 @@
   <li><a href="../modules/iterator_ops.grid.html">grid</a></li>
   <li><a href="../modules/iterator_ops.ipairs.html">ipairs</a></li>
   <li><a href="../modules/iterator_ops.utils.html">utils</a></li>
+  <li><a href="../modules/loader_ops.png.html">png</a></li>
+  <li><a href="../modules/loader_ops.png_encode.html">png_encode</a></li>
+  <li><a href="../modules/loader_ops.zlib.html">zlib</a></li>
+  <li><a href="../modules/loader_ops.zlib_lut.html">zlib_lut</a></li>
   <li><a href="../modules/main.html">main</a></li>
   <li><a href="../modules/mask.MarchingSquares.html">MarchingSquares</a></li>
   <li><a href="../modules/mesh_ops.html">mesh_ops</a></li>
+  <li><a href="../modules/number_ops.complex.html">complex</a></li>
+  <li><a href="../modules/number_ops.convolve.html">convolve</a></li>
+  <li><a href="../modules/number_ops.fft.html">fft</a></li>
+  <li><a href="../modules/number_ops.fft_utils.html">fft_utils</a></li>
   <li><a href="../modules/number_ops.funcs.html">funcs</a></li>
   <li><a href="../modules/number_ops.gray.html">gray</a></li>
   <li><a href="../modules/number_ops.hilbert.html">hilbert</a></li>
@@ -149,7 +162,9 @@
   <li><a href="../modules/number_ops.mwc_rng.html">mwc_rng</a></li>
   <li><a href="../modules/number_ops.range.html">range</a></li>
   <li><a href="../modules/number_ops.simplex_noise.html">simplex_noise</a></li>
+  <li><a href="../modules/number_ops.summed_area.html">summed_area</a></li>
   <li><a href="../modules/number_ops.to_string.html">to_string</a></li>
+  <li><a href="../modules/number_ops.tuple.html">tuple</a></li>
   <li><a href="../modules/overlay.Help.html">Help</a></li>
   <li><a href="../modules/overlay.Link.html">Link</a></li>
   <li><a href="../modules/quaternion_ops.html">quaternion_ops</a></li>
@@ -158,6 +173,7 @@
   <li><a href="../modules/samples.Hilbert.html">Hilbert</a></li>
   <li><a href="../modules/samples.HilbertMixer.html">HilbertMixer</a></li>
   <li><a href="../modules/samples.Hop.html">Hop</a></li>
+  <li><a href="../modules/samples.ImageFX.html">ImageFX</a></li>
   <li><a href="../modules/samples.Nodes.html">Nodes</a></li>
   <li><a href="../modules/samples.OrbitsAndLattices.html">OrbitsAndLattices</a></li>
   <li><a href="../modules/samples.Pixels.html">Pixels</a></li>
@@ -165,6 +181,8 @@
   <li><a href="../modules/samples.SlowMo.html">SlowMo</a></li>
   <li><a href="../modules/samples.Snowfall.html">Snowfall</a></li>
   <li><a href="../modules/samples.Superformulae.html">Superformulae</a></li>
+  <li><a href="../modules/samples.Swarm.html">Swarm</a></li>
+  <li><a href="../modules/samples.TESTING.html">TESTING</a></li>
   <li><a href="../modules/samples.Thoughts.html">Thoughts</a></li>
   <li><a href="../modules/samples.Ticker.html">Ticker</a></li>
   <li><a href="../modules/samples.Tiling.html">Tiling</a></li>
@@ -239,7 +257,7 @@
 <h2><a href="#Functions">Functions</a></h2>
 <table class="function_list">
 	<tr>
-	<td class="name" nowrap><a href="#Print">Print (var, outf, indent)</a></td>
+	<td class="name" nowrap><a href="#Print">Print (var, opts)</a></td>
 	<td class="summary">Pretty prints a variable.</td>
 	</tr>
 	<tr>
@@ -256,7 +274,7 @@
     <dl class="function">
     <dt>
     <a name = "Print"></a>
-    <strong>Print (var, outf, indent)</strong>
+    <strong>Print (var, opts)</strong>
     </dt>
     <dd>
     Pretty prints a variable. </p>
@@ -270,16 +288,25 @@
         <li><span class="parameter">var</span>
          Variable to print.
         </li>
-        <li><span class="parameter">outf</span>
-            <span class="types"><span class="type">callable</span></span>
-         Formatted output routine, i.e. with an interface like <a href="http://www.lua.org/manual/5.1/manual.html#pdf-string.format">string.format</a>;
- if absent, the default output function is used.
-        </li>
-        <li><span class="parameter">indent</span>
-            <span class="types"><a class="type" href="http://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
-         Initial indent string; if absent, the empty string.</p>
+        <li><span class="parameter">opts</span>
+            <span class="types"><a class="type" href="http://www.lua.org/manual/5.1/manual.html#5.5">table</a></span>
+         Optional print options. Fields:</p>
+
+<ul>
+    <li><strong>indent</strong>: Initial indent string; if absent, the empty string.</li>
+</ul>
 
 <p> If <em>var</em> is a table, this is prepended to each line of the printout.
+ * <strong>outf</strong>: Formatted output routine, i.e. with an interface like <a href="http://www.lua.org/manual/5.1/manual.html#pdf-string.format">string.format</a>;
+ if absent, the default output function is used.
+ * <strong>table_func</strong>: Table function. When a new table <em>t</em> is encountered during the print,
+ the call <code>table<em>func(t, "new</em>table")</code> is performed; if the same table is found again
+ later, each such time the call <code>table_func(t, "cycle")</code> is made.
+ * <strong>name</strong> When provided, an early-out check will see if a printout has been performed
+ with <em>name</em>; if so, and if <em>limit</em> has been reached, the printout is a no-op.
+ * <strong>limit</strong> Maximum number of times to allow a printout with <em>name</em>; if absent, 1.</p>
+
+<p> Ignored if <em>name</em> is absent.
         </li>
     </ul>
 

@@ -44,6 +44,7 @@
   <li><a href="../modules/array_ops.id_occupied.html">id_occupied</a></li>
   <li><a href="../modules/array_ops.index.html">index</a></li>
   <li><a href="../modules/array_ops.predicates.html">predicates</a></li>
+  <li><a href="../modules/array_ops.ring_buffer.html">ring_buffer</a></li>
   <li><a href="../modules/array_ops.wipe.html">wipe</a></li>
   <li><a href="../modules/bitwise_ops.log2.html">log2</a></li>
   <li><a href="../modules/bitwise_ops.operators.html">operators</a></li>
@@ -127,9 +128,13 @@
   <li><a href="../modules/game.TileMaps.html">TileMaps</a></li>
   <li><a href="../modules/game.Timers.html">Timers</a></li>
   <li><a href="../modules/game.Transitions.html">Transitions</a></li>
+  <li><a href="../modules/geom2d_ops.cmv.html">cmv</a></li>
   <li><a href="../modules/geom2d_ops.predicates.html">predicates</a></li>
   <li><a href="../modules/geom2d_ops.quantize.html">quantize</a></li>
   <li><a href="../modules/geom2d_ops.vector.html">vector</a></li>
+  <li><a href="../modules/graph_ops.flow.html">flow</a></li>
+  <li><a href="../modules/graph_ops.hungarian.html">hungarian</a></li>
+  <li><a href="../modules/graph_ops.labels.html">labels</a></li>
   <li><a href="../modules/hash_ops.html">hash_ops</a></li>
   <li><a href="../modules/hud.Action.html">Action</a></li>
   <li><a href="../modules/hud.Move.html">Move</a></li>
@@ -138,9 +143,17 @@
   <li><a href="../modules/iterator_ops.grid.html">grid</a></li>
   <li><a href="../modules/iterator_ops.ipairs.html">ipairs</a></li>
   <li><a href="../modules/iterator_ops.utils.html">utils</a></li>
+  <li><a href="../modules/loader_ops.png.html">png</a></li>
+  <li><a href="../modules/loader_ops.png_encode.html">png_encode</a></li>
+  <li><a href="../modules/loader_ops.zlib.html">zlib</a></li>
+  <li><a href="../modules/loader_ops.zlib_lut.html">zlib_lut</a></li>
   <li><a href="../modules/main.html">main</a></li>
   <li><a href="../modules/mask.MarchingSquares.html">MarchingSquares</a></li>
   <li><a href="../modules/mesh_ops.html">mesh_ops</a></li>
+  <li><a href="../modules/number_ops.complex.html">complex</a></li>
+  <li><a href="../modules/number_ops.convolve.html">convolve</a></li>
+  <li><a href="../modules/number_ops.fft.html">fft</a></li>
+  <li><a href="../modules/number_ops.fft_utils.html">fft_utils</a></li>
   <li><a href="../modules/number_ops.funcs.html">funcs</a></li>
   <li><a href="../modules/number_ops.gray.html">gray</a></li>
   <li><a href="../modules/number_ops.hilbert.html">hilbert</a></li>
@@ -149,7 +162,9 @@
   <li><a href="../modules/number_ops.mwc_rng.html">mwc_rng</a></li>
   <li><a href="../modules/number_ops.range.html">range</a></li>
   <li><a href="../modules/number_ops.simplex_noise.html">simplex_noise</a></li>
+  <li><a href="../modules/number_ops.summed_area.html">summed_area</a></li>
   <li><a href="../modules/number_ops.to_string.html">to_string</a></li>
+  <li><a href="../modules/number_ops.tuple.html">tuple</a></li>
   <li><a href="../modules/overlay.Help.html">Help</a></li>
   <li><a href="../modules/overlay.Link.html">Link</a></li>
   <li><a href="../modules/quaternion_ops.html">quaternion_ops</a></li>
@@ -158,6 +173,7 @@
   <li><a href="../modules/samples.Hilbert.html">Hilbert</a></li>
   <li><a href="../modules/samples.HilbertMixer.html">HilbertMixer</a></li>
   <li><a href="../modules/samples.Hop.html">Hop</a></li>
+  <li><a href="../modules/samples.ImageFX.html">ImageFX</a></li>
   <li><a href="../modules/samples.Nodes.html">Nodes</a></li>
   <li><a href="../modules/samples.OrbitsAndLattices.html">OrbitsAndLattices</a></li>
   <li><a href="../modules/samples.Pixels.html">Pixels</a></li>
@@ -165,6 +181,8 @@
   <li><a href="../modules/samples.SlowMo.html">SlowMo</a></li>
   <li><a href="../modules/samples.Snowfall.html">Snowfall</a></li>
   <li><a href="../modules/samples.Superformulae.html">Superformulae</a></li>
+  <li><a href="../modules/samples.Swarm.html">Swarm</a></li>
+  <li><a href="../modules/samples.TESTING.html">TESTING</a></li>
   <li><a href="../modules/samples.Thoughts.html">Thoughts</a></li>
   <li><a href="../modules/samples.Ticker.html">Ticker</a></li>
   <li><a href="../modules/samples.Tiling.html">Tiling</a></li>
@@ -229,41 +247,52 @@
 <div id="content">
 
 <h1>Module <code>table_ops.adaptive</code></h1>
-<p>Functionality for members that may either be tables or singletons.</p>
 <p>
+<p>Functionality for table members which may adapt among three forms:</p>
 
+<ul>
+    <li><strong>nil</strong>.</li>
+</ul>
 </p>
+<p> (0 elements)
+ * A non-table value. (1 element)
+ * A table of non-table elements. (0 or more elements)</p>
+
+<p> Members are assumed to be either an array or set (potential or actual), but not both.</p>
+
+<p> The operations in the module are intended to smooth away these details, allowing callers
+ to pretend the member in question is in table form.</p>
 
 
 <h2><a href="#Functions">Functions</a></h2>
 <table class="function_list">
 	<tr>
 	<td class="name" nowrap><a href="#AddToSet">AddToSet (t, k, v)</a></td>
-	<td class="summary">DOCME</td>
+	<td class="summary">Adds an element to <em>t</em>[ <em>k</em> ] (treated as a set).</td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#Append">Append (t, k, v)</a></td>
-	<td class="summary">DOCME</td>
+	<td class="summary">Appends an element to <em>t</em>[ <em>k</em> ] (treated as an array).</td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#InSet">InSet (set, v)</a></td>
-	<td class="summary">DOCME</td>
+	<td class="summary">Predicate.</td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#IterArray">IterArray (arr)</a></td>
-	<td class="summary">DOCME</td>
+	<td class="summary">Iterates over the (0 or more) elements in the array.</td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#IterSet">IterSet (set)</a></td>
-	<td class="summary">DOCME</td>
+	<td class="summary">Iterates over the (0 or more) elements in the set.</td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#RemoveFromArray">RemoveFromArray (t, k, v)</a></td>
-	<td class="summary">DOCME</td>
+	<td class="summary">Removes an element from <em>t</em>[ <em>k</em> ] (treated as an array).</td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#RemoveFromSet">RemoveFromSet (t, k, v)</a></td>
-	<td class="summary">DOCME</td>
+	<td class="summary">Removes an element from <em>t</em>[ <em>k</em> ] (treated as a set).</td>
 	</tr>
 </table>
 
@@ -278,25 +307,19 @@
     <strong>AddToSet (t, k, v)</strong>
     </dt>
     <dd>
-    DOCME
+    Adds an element to <em>t</em>[ <em>k</em> ] (treated as a set).
 
     <h3>Parameters:</h3>
     <ul>
         <li><span class="parameter">t</span>
             <span class="types"><a class="type" href="http://www.lua.org/manual/5.1/manual.html#5.5">table</a></span>
-
-
-
+         Target table.
         </li>
         <li><span class="parameter">k</span>
-
-
-
+         Member key.
         </li>
         <li><span class="parameter">v</span>
-
-
-
+         Non-<strong>nil</strong> element to add.
         </li>
     </ul>
 
@@ -310,25 +333,19 @@
     <strong>Append (t, k, v)</strong>
     </dt>
     <dd>
-    DOCME
+    Appends an element to <em>t</em>[ <em>k</em> ] (treated as an array).
 
     <h3>Parameters:</h3>
     <ul>
         <li><span class="parameter">t</span>
             <span class="types"><a class="type" href="http://www.lua.org/manual/5.1/manual.html#5.5">table</a></span>
-
-
-
+         Target table.
         </li>
         <li><span class="parameter">k</span>
-
-
-
+         Member key.
         </li>
         <li><span class="parameter">v</span>
-
-
-
+         Non-<strong>nil</strong> element to add.
         </li>
     </ul>
 
@@ -342,15 +359,16 @@
     <strong>InSet (set, v)</strong>
     </dt>
     <dd>
-    DOCME
+    Predicate.
 
     <h3>Parameters:</h3>
     <ul>
         <li><span class="parameter">set</span>
-         X
+         Set-mode table member, i.e. <em>t</em>[ <em>k</em> ] after some combination of <a href="../modules/table_ops.adaptive.html#AddToSet">AddToSet</a>
+ and <a href="../modules/table_ops.adaptive.html#RemoveFromSet">RemoveFromSet</a>.
         </li>
         <li><span class="parameter">v</span>
-         V
+         Value to find.
         </li>
     </ul>
 
@@ -358,7 +376,7 @@
     <ol>
 
            <span class="types"><span class="type">boolean</span></span>
-        B
+        <em>v</em> is in <em>set</em>?
     </ol>
 
 
@@ -370,12 +388,13 @@
     <strong>IterArray (arr)</strong>
     </dt>
     <dd>
-    DOCME
+    Iterates over the (0 or more) elements in the array.
 
     <h3>Parameters:</h3>
     <ul>
         <li><span class="parameter">arr</span>
-         X
+         Array-mode table member, i.e. <em>t</em>[ <em>k</em> ] after some combination of <a href="../modules/table_ops.adaptive.html#Append">Append</a>
+ and <a href="../modules/table_ops.adaptive.html#RemoveFromArray">RemoveFromArray</a> operations.
         </li>
     </ul>
 
@@ -383,7 +402,8 @@
     <ol>
 
            <span class="types"><span class="type">iterator</span></span>
-        I
+        Supplies index, value. If the value is a singleton, <strong>true</strong> is also
+ supplied as a third result.
     </ol>
 
 
@@ -395,12 +415,13 @@
     <strong>IterSet (set)</strong>
     </dt>
     <dd>
-    DOCME
+    Iterates over the (0 or more) elements in the set.
 
     <h3>Parameters:</h3>
     <ul>
         <li><span class="parameter">set</span>
-         X
+         Set-mode table member, i.e. <em>t</em>[ <em>k</em> ] after some combination of <a href="../modules/table_ops.adaptive.html#AddToSet">AddToSet</a>
+ and <a href="../modules/table_ops.adaptive.html#RemoveFromSet">RemoveFromSet</a> operations.
         </li>
     </ul>
 
@@ -408,7 +429,8 @@
     <ol>
 
            <span class="types"><span class="type">iterator</span></span>
-        I
+        Supplies value, boolean (if <strong>true</strong>, the set is in table form;
+ otherwise, the value is a singleton).
     </ol>
 
 
@@ -420,24 +442,21 @@
     <strong>RemoveFromArray (t, k, v)</strong>
     </dt>
     <dd>
-    DOCME
+    Removes an element from <em>t</em>[ <em>k</em> ] (treated as an array). </p>
+
+<p> If either the element or array does not exist, this is a no-op.
 
     <h3>Parameters:</h3>
     <ul>
         <li><span class="parameter">t</span>
-
-
-
+            <span class="types"><a class="type" href="http://www.lua.org/manual/5.1/manual.html#5.5">table</a></span>
+         Source table.
         </li>
         <li><span class="parameter">k</span>
-
-
-
+         Member key.
         </li>
         <li><span class="parameter">v</span>
-
-
-
+         Non-<strong>nil</strong> value to remove.
         </li>
     </ul>
 
@@ -451,24 +470,21 @@
     <strong>RemoveFromSet (t, k, v)</strong>
     </dt>
     <dd>
-    DOCME
+    Removes an element from <em>t</em>[ <em>k</em> ] (treated as a set). </p>
+
+<p> If either the element or set does not exist, this is a no-op.
 
     <h3>Parameters:</h3>
     <ul>
         <li><span class="parameter">t</span>
-
-
-
+            <span class="types"><a class="type" href="http://www.lua.org/manual/5.1/manual.html#5.5">table</a></span>
+         Source table.
         </li>
         <li><span class="parameter">k</span>
-
-
-
+         Member key.
         </li>
         <li><span class="parameter">v</span>
-
-
-
+         Non-<strong>nil</strong> value to remove.
         </li>
     </ul>
 

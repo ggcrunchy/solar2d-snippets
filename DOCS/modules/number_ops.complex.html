@@ -1,0 +1,1770 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+<head>
+    <title>Snippets documentation</title>
+    <link rel="stylesheet" href="../ldoc.css" type="text/css" />
+</head>
+<body>
+
+<div id="container">
+
+<div id="product">
+	<div id="product_logo"></div>
+	<div id="product_name"><big><b></b></big></div>
+	<div id="product_description"></div>
+</div> <!-- id="product" -->
+
+
+<div id="main">
+
+
+<!-- Menu -->
+
+<div id="navigation">
+<br/>
+<h1>Corona SDK snippets</h1>
+
+<ul>
+  <li><a href="../api.html">Index</a></li>
+</ul>
+
+<h2>Contents</h2>
+<ul>
+<li><a href="#Functions">Functions</a></li>
+<li><a href="#Fields">Fields</a></li>
+</ul>
+
+
+<h2>Modules</h2>
+<ul class="$(kind=='Topics' and '' or 'nowrap'">
+  <li><a href="../modules/array_ops.collect.html">collect</a></li>
+  <li><a href="../modules/array_ops.embedded_free_list.html">embedded_free_list</a></li>
+  <li><a href="../modules/array_ops.funcs.html">funcs</a></li>
+  <li><a href="../modules/array_ops.id_occupied.html">id_occupied</a></li>
+  <li><a href="../modules/array_ops.index.html">index</a></li>
+  <li><a href="../modules/array_ops.predicates.html">predicates</a></li>
+  <li><a href="../modules/array_ops.ring_buffer.html">ring_buffer</a></li>
+  <li><a href="../modules/array_ops.wipe.html">wipe</a></li>
+  <li><a href="../modules/bitwise_ops.log2.html">log2</a></li>
+  <li><a href="../modules/bitwise_ops.operators.html">operators</a></li>
+  <li><a href="../modules/bitwise_ops.powers_of_2.html">powers_of_2</a></li>
+  <li><a href="../modules/SparseArray.html">SparseArray</a></li>
+  <li><a href="../modules/Interpolator.html">Interpolator</a></li>
+  <li><a href="../modules/SectionGroup.html">SectionGroup</a></li>
+  <li><a href="../modules/TaskQueue.html">TaskQueue</a></li>
+  <li><a href="../modules/Timeline.html">Timeline</a></li>
+  <li><a href="../modules/Timer.html">Timer</a></li>
+  <li><a href="../modules/VarFamily.html">VarFamily</a></li>
+  <li><a href="../modules/class.VarFamilyEx.Annex.html">VarFamilyEx.Annex</a></li>
+  <li><a href="../modules/BoolVars.html">BoolVars</a></li>
+  <li><a href="../modules/NumVars.html">NumVars</a></li>
+  <li><a href="../modules/RawVars.html">RawVars</a></li>
+  <li><a href="../modules/TimerVars.html">TimerVars</a></li>
+  <li><a href="../modules/config.Dots.html">Dots</a></li>
+  <li><a href="../modules/config.EditorViews.html">EditorViews</a></li>
+  <li><a href="../modules/config.EventBlocks.html">EventBlocks</a></li>
+  <li><a href="../modules/config.GlobalEvents.html">GlobalEvents</a></li>
+  <li><a href="../modules/coroutine_ops.flow.html">flow</a></li>
+  <li><a href="../modules/coroutine_ops.flow_bodies.html">flow_bodies</a></li>
+  <li><a href="../modules/coroutine_ops.per_coroutine.html">per_coroutine</a></li>
+  <li><a href="../modules/coroutine_ops.wrapper.html">wrapper</a></li>
+  <li><a href="../modules/DEBUG.html">DEBUG</a></li>
+  <li><a href="../modules/dot.Switch.html">Switch</a></li>
+  <li><a href="../modules/dot.Warp.html">Warp</a></li>
+  <li><a href="../modules/editor.Common.html">Common</a></li>
+  <li><a href="../modules/editor.CommonUI.html">CommonUI</a></li>
+  <li><a href="../modules/editor.Dialog.Data.html">Dialog.Data</a></li>
+  <li><a href="../modules/editor.Dialog.Items.html">Dialog.Items</a></li>
+  <li><a href="../modules/editor.Dialog.Layout.html">Dialog.Layout</a></li>
+  <li><a href="../modules/editor.Dialog.Methods.html">Dialog.Methods</a></li>
+  <li><a href="../modules/editor.Dialog.Utils.html">Dialog.Utils</a></li>
+  <li><a href="../modules/editor.Dialog.html">Dialog</a></li>
+  <li><a href="../modules/editor.Events.html">Events</a></li>
+  <li><a href="../modules/editor.Grid.html">Grid</a></li>
+  <li><a href="../modules/editor.GridFuncs.html">GridFuncs</a></li>
+  <li><a href="../modules/editor.Links.html">Links</a></li>
+  <li><a href="../modules/editor.Ops.html">Ops</a></li>
+  <li><a href="../modules/editor.Tags.html">Tags</a></li>
+  <li><a href="../modules/editor.views.Audio.html">views.Audio</a></li>
+  <li><a href="../modules/editor.views.Background.html">views.Background</a></li>
+  <li><a href="../modules/editor.views.Dots.html">views.Dots</a></li>
+  <li><a href="../modules/editor.views.EventBlocks.html">views.EventBlocks</a></li>
+  <li><a href="../modules/editor.views.GlobalEvents.html">views.GlobalEvents</a></li>
+  <li><a href="../modules/editor.views.Player.html">views.Player</a></li>
+  <li><a href="../modules/editor.views.Positions.html">views.Positions</a></li>
+  <li><a href="../modules/editor.views.Settings.html">views.Settings</a></li>
+  <li><a href="../modules/editor.views.Tiles.html">views.Tiles</a></li>
+  <li><a href="../modules/editor.views.Triggers.html">views.Triggers</a></li>
+  <li><a href="../modules/effect.Balloons.html">Balloons</a></li>
+  <li><a href="../modules/effect.Fillers.html">Fillers</a></li>
+  <li><a href="../modules/effect.Glow.html">Glow</a></li>
+  <li><a href="../modules/effect.Markers.html">Markers</a></li>
+  <li><a href="../modules/effect.Shadows.html">Shadows</a></li>
+  <li><a href="../modules/effect.Snowfall.html">Snowfall</a></li>
+  <li><a href="../modules/effect.Stars.html">Stars</a></li>
+  <li><a href="../modules/effect.Stash.html">Stash</a></li>
+  <li><a href="../modules/event_block.Maze.html">Maze</a></li>
+  <li><a href="../modules/fill.CellularAutomata.html">CellularAutomata</a></li>
+  <li><a href="../modules/fill.Circle.html">Circle</a></li>
+  <li><a href="../modules/FIXES.html">FIXES</a></li>
+  <li><a href="../modules/game.AI.html">AI</a></li>
+  <li><a href="../modules/game.Collision.html">Collision</a></li>
+  <li><a href="../modules/game.Controls.html">Controls</a></li>
+  <li><a href="../modules/game.DispatchList.html">DispatchList</a></li>
+  <li><a href="../modules/game.Dots.html">Dots</a></li>
+  <li><a href="../modules/game.EventBlocks.html">EventBlocks</a></li>
+  <li><a href="../modules/game.FX.html">FX</a></li>
+  <li><a href="../modules/game.GlobalEvents.html">GlobalEvents</a></li>
+  <li><a href="../modules/game.LevelMap.html">LevelMap</a></li>
+  <li><a href="../modules/game.LevelsList.html">LevelsList</a></li>
+  <li><a href="../modules/game.Movement.html">Movement</a></li>
+  <li><a href="../modules/game.Pathing.html">Pathing</a></li>
+  <li><a href="../modules/game.PathUtils.html">PathUtils</a></li>
+  <li><a href="../modules/game.Persistence.html">Persistence</a></li>
+  <li><a href="../modules/game.Player.html">Player</a></li>
+  <li><a href="../modules/game.Scrolling.html">Scrolling</a></li>
+  <li><a href="../modules/game.TileFlags.html">TileFlags</a></li>
+  <li><a href="../modules/game.TileMaps.html">TileMaps</a></li>
+  <li><a href="../modules/game.Timers.html">Timers</a></li>
+  <li><a href="../modules/game.Transitions.html">Transitions</a></li>
+  <li><a href="../modules/geom2d_ops.cmv.html">cmv</a></li>
+  <li><a href="../modules/geom2d_ops.predicates.html">predicates</a></li>
+  <li><a href="../modules/geom2d_ops.quantize.html">quantize</a></li>
+  <li><a href="../modules/geom2d_ops.vector.html">vector</a></li>
+  <li><a href="../modules/graph_ops.flow.html">flow</a></li>
+  <li><a href="../modules/graph_ops.hungarian.html">hungarian</a></li>
+  <li><a href="../modules/graph_ops.labels.html">labels</a></li>
+  <li><a href="../modules/hash_ops.html">hash_ops</a></li>
+  <li><a href="../modules/hud.Action.html">Action</a></li>
+  <li><a href="../modules/hud.Move.html">Move</a></li>
+  <li><a href="../modules/iterator_ops.args.html">args</a></li>
+  <li><a href="../modules/iterator_ops.coroutine.html">coroutine</a></li>
+  <li><a href="../modules/iterator_ops.grid.html">grid</a></li>
+  <li><a href="../modules/iterator_ops.ipairs.html">ipairs</a></li>
+  <li><a href="../modules/iterator_ops.utils.html">utils</a></li>
+  <li><a href="../modules/loader_ops.png.html">png</a></li>
+  <li><a href="../modules/loader_ops.png_encode.html">png_encode</a></li>
+  <li><a href="../modules/loader_ops.zlib.html">zlib</a></li>
+  <li><a href="../modules/loader_ops.zlib_lut.html">zlib_lut</a></li>
+  <li><a href="../modules/main.html">main</a></li>
+  <li><a href="../modules/mask.MarchingSquares.html">MarchingSquares</a></li>
+  <li><a href="../modules/mesh_ops.html">mesh_ops</a></li>
+  <li><strong>complex</strong></li>
+  <li><a href="../modules/number_ops.convolve.html">convolve</a></li>
+  <li><a href="../modules/number_ops.fft.html">fft</a></li>
+  <li><a href="../modules/number_ops.fft_utils.html">fft_utils</a></li>
+  <li><a href="../modules/number_ops.funcs.html">funcs</a></li>
+  <li><a href="../modules/number_ops.gray.html">gray</a></li>
+  <li><a href="../modules/number_ops.hilbert.html">hilbert</a></li>
+  <li><a href="../modules/number_ops.integrators.html">integrators</a></li>
+  <li><a href="../modules/number_ops.morton.html">morton</a></li>
+  <li><a href="../modules/number_ops.mwc_rng.html">mwc_rng</a></li>
+  <li><a href="../modules/number_ops.range.html">range</a></li>
+  <li><a href="../modules/number_ops.simplex_noise.html">simplex_noise</a></li>
+  <li><a href="../modules/number_ops.summed_area.html">summed_area</a></li>
+  <li><a href="../modules/number_ops.to_string.html">to_string</a></li>
+  <li><a href="../modules/number_ops.tuple.html">tuple</a></li>
+  <li><a href="../modules/overlay.Help.html">Help</a></li>
+  <li><a href="../modules/overlay.Link.html">Link</a></li>
+  <li><a href="../modules/quaternion_ops.html">quaternion_ops</a></li>
+  <li><a href="../modules/samples.Delaunay.html">Delaunay</a></li>
+  <li><a href="../modules/samples.Fire.html">Fire</a></li>
+  <li><a href="../modules/samples.Hilbert.html">Hilbert</a></li>
+  <li><a href="../modules/samples.HilbertMixer.html">HilbertMixer</a></li>
+  <li><a href="../modules/samples.Hop.html">Hop</a></li>
+  <li><a href="../modules/samples.ImageFX.html">ImageFX</a></li>
+  <li><a href="../modules/samples.Nodes.html">Nodes</a></li>
+  <li><a href="../modules/samples.OrbitsAndLattices.html">OrbitsAndLattices</a></li>
+  <li><a href="../modules/samples.Pixels.html">Pixels</a></li>
+  <li><a href="../modules/samples.Plasma.html">Plasma</a></li>
+  <li><a href="../modules/samples.SlowMo.html">SlowMo</a></li>
+  <li><a href="../modules/samples.Snowfall.html">Snowfall</a></li>
+  <li><a href="../modules/samples.Superformulae.html">Superformulae</a></li>
+  <li><a href="../modules/samples.Swarm.html">Swarm</a></li>
+  <li><a href="../modules/samples.TESTING.html">TESTING</a></li>
+  <li><a href="../modules/samples.Thoughts.html">Thoughts</a></li>
+  <li><a href="../modules/samples.Ticker.html">Ticker</a></li>
+  <li><a href="../modules/samples.Tiling.html">Tiling</a></li>
+  <li><a href="../modules/samples.Timers.html">Timers</a></li>
+  <li><a href="../modules/scene.Choices.html">Choices</a></li>
+  <li><a href="../modules/scene.EditorSetup.html">EditorSetup</a></li>
+  <li><a href="../modules/scene.Intro.html">Intro</a></li>
+  <li><a href="../modules/scene.Level.html">Level</a></li>
+  <li><a href="../modules/scene.MapEditor.html">MapEditor</a></li>
+  <li><a href="../modules/scene.Options.html">Options</a></li>
+  <li><a href="../modules/spline_ops.arc_length.html">arc_length</a></li>
+  <li><a href="../modules/spline_ops.bezier.html">bezier</a></li>
+  <li><a href="../modules/spline_ops.cubic.html">cubic</a></li>
+  <li><a href="../modules/table_ops.adaptive.html">adaptive</a></li>
+  <li><a href="../modules/table_ops.funcs.html">funcs</a></li>
+  <li><a href="../modules/table_ops.lazy.html">lazy</a></li>
+  <li><a href="../modules/table_ops.predicates.html">predicates</a></li>
+  <li><a href="../modules/table_ops.proxy.html">proxy</a></li>
+  <li><a href="../modules/tektite.class.html">class</a></li>
+  <li><a href="../modules/tektite.errors.html">errors</a></li>
+  <li><a href="../modules/tektite.exception.html">exception</a></li>
+  <li><a href="../modules/tektite.func_ops.html">func_ops</a></li>
+  <li><a href="../modules/tektite.require_ex.html">require_ex</a></li>
+  <li><a href="../modules/tests.LinksAndTags.html">LinksAndTags</a></li>
+  <li><a href="../modules/tiles.TreeBG.html">TreeBG</a></li>
+  <li><a href="../modules/ui.Button.html">Button</a></li>
+  <li><a href="../modules/ui.Checkbox.html">Checkbox</a></li>
+  <li><a href="../modules/ui.Color.html">Color</a></li>
+  <li><a href="../modules/ui.ColorPicker.html">ColorPicker</a></li>
+  <li><a href="../modules/ui.Grid1D.html">Grid1D</a></li>
+  <li><a href="../modules/ui.Grid2D.html">Grid2D</a></li>
+  <li><a href="../modules/ui.HSV.html">HSV</a></li>
+  <li><a href="../modules/ui.Keyboard.html">Keyboard</a></li>
+  <li><a href="../modules/ui.Layout.html">Layout</a></li>
+  <li><a href="../modules/ui.LineEx.html">LineEx</a></li>
+  <li><a href="../modules/ui.Lines.html">Lines</a></li>
+  <li><a href="../modules/ui.LinkGroup.html">LinkGroup</a></li>
+  <li><a href="../modules/ui.Sheet.html">Sheet</a></li>
+  <li><a href="../modules/ui.Skin.html">Skin</a></li>
+  <li><a href="../modules/ui.Touch.html">Touch</a></li>
+  <li><a href="../modules/ui.Utils.html">Utils</a></li>
+  <li><a href="../modules/utils.Audio.html">Audio</a></li>
+  <li><a href="../modules/utils.Bind.html">Bind</a></li>
+  <li><a href="../modules/utils.Curves.html">Curves</a></li>
+  <li><a href="../modules/utils.Device.html">Device</a></li>
+  <li><a href="../modules/utils.File.html">File</a></li>
+  <li><a href="../modules/utils.Flag.html">Flag</a></li>
+  <li><a href="../modules/utils.Frames.html">Frames</a></li>
+  <li><a href="../modules/utils.Mask.html">Mask</a></li>
+  <li><a href="../modules/utils.ObjectHelper.html">ObjectHelper</a></li>
+  <li><a href="../modules/utils.Resource.html">Resource</a></li>
+  <li><a href="../modules/utils.Scenes.html">Scenes</a></li>
+  <li><a href="../modules/utils.String.html">String</a></li>
+  <li><a href="../modules/var_ops.bound_args.html">bound_args</a></li>
+  <li><a href="../modules/var_ops.cache.html">cache</a></li>
+  <li><a href="../modules/var_ops.dump.html">dump</a></li>
+  <li><a href="../modules/var_ops.predicates.html">predicates</a></li>
+</ul>
+
+</div>
+
+<div id="content">
+
+<h1>Module <code>number_ops.complex</code></h1>
+<p>Some operations on complex numbers.</p>
+<p>
+
+</p>
+
+
+<h2><a href="#Functions">Functions</a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#Abs">Abs (a, b)</a></td>
+	<td class="summary">Computes the absolute value (also called modulus) of <em>z</em>.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Add">Add (a, b, c, d)</a></td>
+	<td class="summary">Adds complex numbers <em>z1</em> and <em>z2</em>.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Area">Area (a, b, c, d)</a></td>
+	<td class="summary">Computes the area between <em>z1</em> and <em>z2</em>, interpreted as vectors.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Arg">Arg (a, b)</a></td>
+	<td class="summary">Computes the argument of <em>z</em>.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Atan">Atan (a, b)</a></td>
+	<td class="summary">Computes the arctangent of <em>z</em>.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Conjugate">Conjugate (a, b)</a></td>
+	<td class="summary">Computes the conjugate of <em>z</em>.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Distance">Distance (a, b, c, d)</a></td>
+	<td class="summary">Computes the Euclidean distance between <em>z1</em> and <em>z2</em>, interpreted as points.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Div">Div (a, b, c, d)</a></td>
+	<td class="summary">Divides <em>z1</em> by <em>z2</em>.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Exp">Exp (a, b)</a></td>
+	<td class="summary">Computes e^<em>z</em>.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Inner">Inner (a, b, c, d)</a></td>
+	<td class="summary">Compues the inner product of <em>z1</em> and <em>z2</em>.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Inverse">Inverse (a, b)</a></td>
+	<td class="summary">Computes multiplicative inverse of <em>z</em>, i.e.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Log">Log (a, b)</a></td>
+	<td class="summary">Computes the logarithm of <em>z</em>.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Mul">Mul (a, b, c, d)</a></td>
+	<td class="summary">Multiplies <em>z1</em> by <em>z2</em>.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Mul_I">Mul_I (a, b)</a></td>
+	<td class="summary">Helper to multiply <em>z</em> by <em>i</em>.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Mul_NegI">Mul_NegI (a, b)</a></td>
+	<td class="summary">Helper to multiply <em>z</em> by -<em>i</em>.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Negate">Negate (a, b)</a></td>
+	<td class="summary">Helper to negate <em>z</em>.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Norm">Norm (a, b)</a></td>
+	<td class="summary">Computes the (modulus-squared) norm of <em>z</em>.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Normalize">Normalize (a, b)</a></td>
+	<td class="summary">Computes <em>z</em> scaled to have absolute value of 1.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Pow">Pow (a, b, n)</a></td>
+	<td class="summary">Computes <em>z</em>^<em>n</em>.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Pow_Complex">Pow_Complex (a, b, c, d)</a></td>
+	<td class="summary">Computes _z1<em>^</em>z2_.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#RaiseReal">RaiseReal (n, a, b)</a></td>
+	<td class="summary">Computes <em>n</em>^<em>z</em>.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Scale">Scale (a, b, k)</a></td>
+	<td class="summary">Scales <em>z</em> by <em>k</em>.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Sub">Sub (a, b, c, d)</a></td>
+	<td class="summary">Subtracts <em>z2</em> from <em>z1</em>.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#ComplexMT:Components">ComplexMT:Components ()</a></td>
+	<td class="summary">Getter.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#ComplexMT.__eq">ComplexMT.__eq (z1, z2)</a></td>
+	<td class="summary">Metamethod.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#ComplexMT:Imag">ComplexMT:Imag ()</a></td>
+	<td class="summary">Getter.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#ComplexMT:Real">ComplexMT:Real ()</a></td>
+	<td class="summary">Getter.</td>
+	</tr>
+</table>
+<h2><a href="#Fields">Fields</a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#Reciprocal">Reciprocal</a></td>
+	<td class="summary">Alias of <a href="../modules/number_ops.complex.html#Inverse">Inverse</a>.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#CacheFactory">CacheFactory</a></td>
+	<td class="summary">DOCME</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#ComplexMT.Abs">ComplexMT.Abs</a></td>
+	<td class="summary">DOCME</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#ComplexMT.__add">ComplexMT.__add</a></td>
+	<td class="summary">DOCME</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#ComplexMT.Area">ComplexMT.Area</a></td>
+	<td class="summary">DOCME</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#ComplexMT.Arg">ComplexMT.Arg</a></td>
+	<td class="summary">DOCME</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#ComplexMT.Atan">ComplexMT.Atan</a></td>
+	<td class="summary">DOCME</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#ComplexMT.Conjugate">ComplexMT.Conjugate</a></td>
+	<td class="summary">DOCME</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#ComplexMT.Distance">ComplexMT.Distance</a></td>
+	<td class="summary">DOCME</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#ComplexMT.__div">ComplexMT.__div</a></td>
+	<td class="summary">DOCME</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#ComplexMT.Dup">ComplexMT.Dup</a></td>
+	<td class="summary">DOCME</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#ComplexMT.Dup_Raw">ComplexMT.Dup_Raw</a></td>
+	<td class="summary">DOCME</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#ComplexMT.Exp">ComplexMT.Exp</a></td>
+	<td class="summary">DOCME</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#ComplexMT.Inner">ComplexMT.Inner</a></td>
+	<td class="summary">DOCME</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#ComplexMT.Inverse">ComplexMT.Inverse</a></td>
+	<td class="summary">DOCME</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#ComplexMT.__len">ComplexMT.__len</a></td>
+	<td class="summary">Metamethod (unsupported in Lua 5.1), aliases <a href="../modules/number_ops.complex.html#Abs">Abs</a>.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#ComplexMT.Log">ComplexMT.Log</a></td>
+	<td class="summary">DOCME</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#ComplexMT.__mul">ComplexMT.__mul</a></td>
+	<td class="summary">DOCME</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#ComplexMT.Mul_I">ComplexMT.Mul_I</a></td>
+	<td class="summary">DOCME</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#ComplexMT.Mul_NegI">ComplexMT.Mul_NegI</a></td>
+	<td class="summary">DOCME</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#ComplexMT.Norm">ComplexMT.Norm</a></td>
+	<td class="summary">DOCME</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#ComplexMT.Normalize">ComplexMT.Normalize</a></td>
+	<td class="summary">DOCME</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#ComplexMT.__pow">ComplexMT.__pow</a></td>
+	<td class="summary">DOCME</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#ComplexMT.Reciprocal">ComplexMT.Reciprocal</a></td>
+	<td class="summary">DOCME</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#ComplexMT.__sub">ComplexMT.__sub</a></td>
+	<td class="summary">DOCME</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#ComplexMT.__unm">ComplexMT.__unm</a></td>
+	<td class="summary">DOCME</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#New">New</a></td>
+	<td class="summary">DOCME</td>
+	</tr>
+</table>
+
+<br/>
+<br/>
+
+
+    <h2><a name="Functions"></a>Functions</h2>
+    <dl class="function">
+    <dt>
+    <a name = "Abs"></a>
+    <strong>Abs (a, b)</strong>
+    </dt>
+    <dd>
+    Computes the absolute value (also called modulus) of <em>z</em>.
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">a</span>
+            <span class="types"><span class="type">number</span></span>
+         Real part of <em>z</em>...
+        </li>
+        <li><span class="parameter">b</span>
+            <span class="types"><span class="type">number</span></span>
+         ...and complex part.
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">number</span></span>
+        Absolute value.
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Add"></a>
+    <strong>Add (a, b, c, d)</strong>
+    </dt>
+    <dd>
+    Adds complex numbers <em>z1</em> and <em>z2</em>.
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">a</span>
+            <span class="types"><span class="type">number</span></span>
+         Real part of <em>z1</em>...
+        </li>
+        <li><span class="parameter">b</span>
+            <span class="types"><span class="type">number</span></span>
+         ...and complex part.
+        </li>
+        <li><span class="parameter">c</span>
+            <span class="types"><span class="type">number</span></span>
+         Real part of <em>z2</em>...
+        </li>
+        <li><span class="parameter">d</span>
+            <span class="types"><span class="type">number</span></span>
+         ...and complex part.
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+        <li>
+           <span class="types"><span class="type">number</span></span>
+        Real part of sum...</li>
+        <li>
+           <span class="types"><span class="type">number</span></span>
+        ...and imaginary part.</li>
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Area"></a>
+    <strong>Area (a, b, c, d)</strong>
+    </dt>
+    <dd>
+    Computes the area between <em>z1</em> and <em>z2</em>, interpreted as vectors.
+ TODO: Negative?
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">a</span>
+            <span class="types"><span class="type">number</span></span>
+         Real part of <em>z1</em>...
+        </li>
+        <li><span class="parameter">b</span>
+            <span class="types"><span class="type">number</span></span>
+         ...and complex part.
+        </li>
+        <li><span class="parameter">c</span>
+            <span class="types"><span class="type">number</span></span>
+         Real part of <em>z2</em>...
+        </li>
+        <li><span class="parameter">d</span>
+            <span class="types"><span class="type">number</span></span>
+         ...and complex part.
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        number Signed area.
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Arg"></a>
+    <strong>Arg (a, b)</strong>
+    </dt>
+    <dd>
+    Computes the argument of <em>z</em>.
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">a</span>
+            <span class="types"><span class="type">number</span></span>
+         Real part of <em>z</em>...
+        </li>
+        <li><span class="parameter">b</span>
+            <span class="types"><span class="type">number</span></span>
+         ...and complex part.
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">number</span></span>
+        Argument.
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Atan"></a>
+    <strong>Atan (a, b)</strong>
+    </dt>
+    <dd>
+    Computes the arctangent of <em>z</em>.
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">a</span>
+            <span class="types"><span class="type">number</span></span>
+         Real part of <em>z</em>...
+        </li>
+        <li><span class="parameter">b</span>
+            <span class="types"><span class="type">number</span></span>
+         ...and complex part.
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+        <li>
+           <span class="types"><span class="type">number</span></span>
+        Real part of result...</li>
+        <li>
+           <span class="types"><span class="type">number</span></span>
+        ...and imaginary part (<strong>n.b.</strong> non-unique).</li>
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Conjugate"></a>
+    <strong>Conjugate (a, b)</strong>
+    </dt>
+    <dd>
+    Computes the conjugate of <em>z</em>.
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">a</span>
+            <span class="types"><span class="type">number</span></span>
+         Real part of <em>z</em>...
+        </li>
+        <li><span class="parameter">b</span>
+            <span class="types"><span class="type">number</span></span>
+         ...and complex part.
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+        <li>
+           <span class="types"><span class="type">number</span></span>
+        <em>a</em>.</li>
+        <li>
+           <span class="types"><span class="type">number</span></span>
+        -<em>b</em>.</li>
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Distance"></a>
+    <strong>Distance (a, b, c, d)</strong>
+    </dt>
+    <dd>
+    Computes the Euclidean distance between <em>z1</em> and <em>z2</em>, interpreted as points.
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">a</span>
+            <span class="types"><span class="type">number</span></span>
+         Real part of <em>z1</em>...
+        </li>
+        <li><span class="parameter">b</span>
+            <span class="types"><span class="type">number</span></span>
+         ...and complex part.
+        </li>
+        <li><span class="parameter">c</span>
+            <span class="types"><span class="type">number</span></span>
+         Real part of <em>z2</em>...
+        </li>
+        <li><span class="parameter">d</span>
+            <span class="types"><span class="type">number</span></span>
+         ...and complex part.
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">number</span></span>
+        Distance.
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Div"></a>
+    <strong>Div (a, b, c, d)</strong>
+    </dt>
+    <dd>
+    Divides <em>z1</em> by <em>z2</em>.
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">a</span>
+            <span class="types"><span class="type">number</span></span>
+         Real part of <em>z1</em>...
+        </li>
+        <li><span class="parameter">b</span>
+            <span class="types"><span class="type">number</span></span>
+         ...and complex part.
+        </li>
+        <li><span class="parameter">c</span>
+            <span class="types"><span class="type">number</span></span>
+         Real part of <em>z2</em>...
+        </li>
+        <li><span class="parameter">d</span>
+            <span class="types"><span class="type">number</span></span>
+         ...and complex part.
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+        <li>
+           <span class="types"><span class="type">number</span></span>
+        Real part of quotient...</li>
+        <li>
+           <span class="types"><span class="type">number</span></span>
+        ...and imaginary part.</li>
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Exp"></a>
+    <strong>Exp (a, b)</strong>
+    </dt>
+    <dd>
+    Computes e^<em>z</em>.
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">a</span>
+            <span class="types"><span class="type">number</span></span>
+         Real part of <em>z</em>...
+        </li>
+        <li><span class="parameter">b</span>
+            <span class="types"><span class="type">number</span></span>
+         ...and complex part.
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+        <li>
+           <span class="types"><span class="type">number</span></span>
+        Real part of result...</li>
+        <li>
+           <span class="types"><span class="type">number</span></span>
+        ...and imaginary part.</li>
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Inner"></a>
+    <strong>Inner (a, b, c, d)</strong>
+    </dt>
+    <dd>
+    Compues the inner product of <em>z1</em> and <em>z2</em>.
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">a</span>
+            <span class="types"><span class="type">number</span></span>
+         Real part of <em>z1</em>...
+        </li>
+        <li><span class="parameter">b</span>
+            <span class="types"><span class="type">number</span></span>
+         ...and complex part.
+        </li>
+        <li><span class="parameter">c</span>
+            <span class="types"><span class="type">number</span></span>
+         Real part of <em>z2</em>...
+        </li>
+        <li><span class="parameter">d</span>
+            <span class="types"><span class="type">number</span></span>
+         ...and complex part.
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">number</span></span>
+        Inner product.
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Inverse"></a>
+    <strong>Inverse (a, b)</strong>
+    </dt>
+    <dd>
+    Computes multiplicative inverse of <em>z</em>, i.e.  1 / <em>z</em>.
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">a</span>
+            <span class="types"><span class="type">number</span></span>
+         Real part of <em>z</em>...
+        </li>
+        <li><span class="parameter">b</span>
+            <span class="types"><span class="type">number</span></span>
+         ...and complex part.
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+        <li>
+           <span class="types"><span class="type">number</span></span>
+        Real part of inverse...</li>
+        <li>
+           <span class="types"><span class="type">number</span></span>
+        ...and imaginary part.</li>
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Log"></a>
+    <strong>Log (a, b)</strong>
+    </dt>
+    <dd>
+    Computes the logarithm of <em>z</em>.
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">a</span>
+            <span class="types"><span class="type">number</span></span>
+         Real part of <em>z</em>...
+        </li>
+        <li><span class="parameter">b</span>
+            <span class="types"><span class="type">number</span></span>
+         ...and complex part.
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+        <li>
+           <span class="types"><span class="type">number</span></span>
+        Real part of result...</li>
+        <li>
+           <span class="types"><span class="type">number</span></span>
+        ...and imaginary part (<strong>n.b.</strong> non-unique).</li>
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Mul"></a>
+    <strong>Mul (a, b, c, d)</strong>
+    </dt>
+    <dd>
+    Multiplies <em>z1</em> by <em>z2</em>.
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">a</span>
+            <span class="types"><span class="type">number</span></span>
+         Real part of <em>z1</em>...
+        </li>
+        <li><span class="parameter">b</span>
+            <span class="types"><span class="type">number</span></span>
+         ...and complex part.
+        </li>
+        <li><span class="parameter">c</span>
+            <span class="types"><span class="type">number</span></span>
+         Real part of <em>z2</em>...
+        </li>
+        <li><span class="parameter">d</span>
+            <span class="types"><span class="type">number</span></span>
+         ...and complex part.
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+        <li>
+           <span class="types"><span class="type">number</span></span>
+        Real part of product...</li>
+        <li>
+           <span class="types"><span class="type">number</span></span>
+        ...and imaginary part.</li>
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Mul_I"></a>
+    <strong>Mul_I (a, b)</strong>
+    </dt>
+    <dd>
+    Helper to multiply <em>z</em> by <em>i</em>.
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">a</span>
+            <span class="types"><span class="type">number</span></span>
+         Real part of <em>z</em>...
+        </li>
+        <li><span class="parameter">b</span>
+            <span class="types"><span class="type">number</span></span>
+         ...and complex part.
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+        <li>
+           <span class="types"><span class="type">number</span></span>
+        -<em>b</em>.</li>
+        <li>
+           <span class="types"><span class="type">number</span></span>
+        <em>a</em>.</li>
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Mul_NegI"></a>
+    <strong>Mul_NegI (a, b)</strong>
+    </dt>
+    <dd>
+    Helper to multiply <em>z</em> by -<em>i</em>.
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">a</span>
+            <span class="types"><span class="type">number</span></span>
+         Real part of <em>z</em>...
+        </li>
+        <li><span class="parameter">b</span>
+            <span class="types"><span class="type">number</span></span>
+         ...and complex part.
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+        <li>
+           <span class="types"><span class="type">number</span></span>
+        <em>b</em>.</li>
+        <li>
+           <span class="types"><span class="type">number</span></span>
+        -<em>a</em>.</li>
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Negate"></a>
+    <strong>Negate (a, b)</strong>
+    </dt>
+    <dd>
+    Helper to negate <em>z</em>.
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">a</span>
+            <span class="types"><span class="type">number</span></span>
+         Real part of <em>z</em>...
+        </li>
+        <li><span class="parameter">b</span>
+            <span class="types"><span class="type">number</span></span>
+         ...and complex part.
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+        <li>
+           <span class="types"><span class="type">number</span></span>
+        -<em>a</em>.</li>
+        <li>
+           <span class="types"><span class="type">number</span></span>
+        -<em>b</em>.</li>
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Norm"></a>
+    <strong>Norm (a, b)</strong>
+    </dt>
+    <dd>
+    Computes the (modulus-squared) norm of <em>z</em>.
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">a</span>
+            <span class="types"><span class="type">number</span></span>
+         Real part of <em>z</em>...
+        </li>
+        <li><span class="parameter">b</span>
+            <span class="types"><span class="type">number</span></span>
+         ...and complex part.
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">number</span></span>
+        Norm.
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Normalize"></a>
+    <strong>Normalize (a, b)</strong>
+    </dt>
+    <dd>
+    Computes <em>z</em> scaled to have absolute value of 1.
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">a</span>
+            <span class="types"><span class="type">number</span></span>
+         Real part of <em>z</em>...
+        </li>
+        <li><span class="parameter">b</span>
+            <span class="types"><span class="type">number</span></span>
+         ...and complex part.
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+        <li>
+           <span class="types"><span class="type">number</span></span>
+        Real part of result...</li>
+        <li>
+           <span class="types"><span class="type">number</span></span>
+        ...and imaginary part.</li>
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Pow"></a>
+    <strong>Pow (a, b, n)</strong>
+    </dt>
+    <dd>
+    Computes <em>z</em>^<em>n</em>.
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">a</span>
+            <span class="types"><span class="type">number</span></span>
+         Real part of <em>z</em>...
+        </li>
+        <li><span class="parameter">b</span>
+            <span class="types"><span class="type">number</span></span>
+         ...and complex part.
+        </li>
+        <li><span class="parameter">n</span>
+            <span class="types"><span class="type">number</span></span>
+         Real exponent.
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+        <li>
+           <span class="types"><span class="type">number</span></span>
+        Real part of result...</li>
+        <li>
+           <span class="types"><span class="type">number</span></span>
+        ...and imaginary part.</li>
+    </ol>
+
+
+    <h3>See also:</h3>
+    <ul>
+         <a href="../modules/number_ops.complex.html#Pow_Complex">Pow_Complex</a>
+    </ul>
+
+
+</dd>
+    <dt>
+    <a name = "Pow_Complex"></a>
+    <strong>Pow_Complex (a, b, c, d)</strong>
+    </dt>
+    <dd>
+    Computes _z1<em>^</em>z2_.
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">a</span>
+            <span class="types"><span class="type">number</span></span>
+         Real part of <em>z1</em>...
+        </li>
+        <li><span class="parameter">b</span>
+            <span class="types"><span class="type">number</span></span>
+         ...and complex part.
+        </li>
+        <li><span class="parameter">c</span>
+            <span class="types"><span class="type">number</span></span>
+         Real part of <em>z2</em>...
+        </li>
+        <li><span class="parameter">d</span>
+            <span class="types"><span class="type">number</span></span>
+         ...and complex part.
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+        <li>
+           <span class="types"><span class="type">number</span></span>
+        Real part of result...</li>
+        <li>
+           <span class="types"><span class="type">number</span></span>
+        ...and imaginary part.</li>
+    </ol>
+
+
+    <h3>See also:</h3>
+    <ul>
+         <li><a href="../modules/number_ops.complex.html#Pow">Pow</a></li>
+         <li><a href="../modules/number_ops.complex.html#RaiseReal">RaiseReal</a></li>
+    </ul>
+
+
+</dd>
+    <dt>
+    <a name = "RaiseReal"></a>
+    <strong>RaiseReal (n, a, b)</strong>
+    </dt>
+    <dd>
+    Computes <em>n</em>^<em>z</em>.
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">n</span>
+            <span class="types"><span class="type">number</span></span>
+         Real base.
+        </li>
+        <li><span class="parameter">a</span>
+            <span class="types"><span class="type">number</span></span>
+         Real part of <em>z</em>...
+        </li>
+        <li><span class="parameter">b</span>
+            <span class="types"><span class="type">number</span></span>
+         ...and complex part.
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+        <li>
+           <span class="types"><span class="type">number</span></span>
+        Real part of result...</li>
+        <li>
+           <span class="types"><span class="type">number</span></span>
+        ...and imaginary part.</li>
+    </ol>
+
+
+    <h3>See also:</h3>
+    <ul>
+         <a href="../modules/number_ops.complex.html#Pow_Complex">Pow_Complex</a>
+    </ul>
+
+
+</dd>
+    <dt>
+    <a name = "Scale"></a>
+    <strong>Scale (a, b, k)</strong>
+    </dt>
+    <dd>
+    Scales <em>z</em> by <em>k</em>.
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">a</span>
+            <span class="types"><span class="type">number</span></span>
+         Real part of <em>z</em>...
+        </li>
+        <li><span class="parameter">b</span>
+            <span class="types"><span class="type">number</span></span>
+         ...and complex part.
+        </li>
+        <li><span class="parameter">k</span>
+            <span class="types"><span class="type">number</span></span>
+         Scale factor.
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+        <li>
+           <span class="types"><span class="type">number</span></span>
+        <em>ka</em>.</li>
+        <li>
+           <span class="types"><span class="type">number</span></span>
+        <em>kb</em>.</li>
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Sub"></a>
+    <strong>Sub (a, b, c, d)</strong>
+    </dt>
+    <dd>
+    Subtracts <em>z2</em> from <em>z1</em>.
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">a</span>
+            <span class="types"><span class="type">number</span></span>
+         Real part of <em>z1</em>...
+        </li>
+        <li><span class="parameter">b</span>
+            <span class="types"><span class="type">number</span></span>
+         ...and complex part.
+        </li>
+        <li><span class="parameter">c</span>
+            <span class="types"><span class="type">number</span></span>
+         Real part of <em>z2</em>...
+        </li>
+        <li><span class="parameter">d</span>
+            <span class="types"><span class="type">number</span></span>
+         ...and complex part.
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+        <li>
+           <span class="types"><span class="type">number</span></span>
+        Real part of difference...</li>
+        <li>
+           <span class="types"><span class="type">number</span></span>
+        ...and imaginary part.</li>
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "ComplexMT:Components"></a>
+    <strong>ComplexMT:Components ()</strong>
+    </dt>
+    <dd>
+    Getter.
+
+
+    <h3>Returns:</h3>
+    <ol>
+        <li>
+           <span class="types"><span class="type">number</span></span>
+        Real part.</li>
+        <li>
+           <span class="types"><span class="type">number</span></span>
+        Imaginary part.</li>
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "ComplexMT.__eq"></a>
+    <strong>ComplexMT.__eq (z1, z2)</strong>
+    </dt>
+    <dd>
+    Metamethod.
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">z1</span>
+            <span class="types"><span class="type">Complex</span></span>
+         Complex number #1...
+        </li>
+        <li><span class="parameter">z2</span>
+            <span class="types"><span class="type">Complex</span></span>
+         ...and #2.
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">boolean</span></span>
+        Real and imaginary parts of <em>z1</em> and <em>z2</em> both match?
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "ComplexMT:Imag"></a>
+    <strong>ComplexMT:Imag ()</strong>
+    </dt>
+    <dd>
+    Getter.
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">number</span></span>
+        Imaginary part.
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "ComplexMT:Real"></a>
+    <strong>ComplexMT:Real ()</strong>
+    </dt>
+    <dd>
+    Getter.
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">number</span></span>
+        Real part.
+    </ol>
+
+
+
+
+</dd>
+</dl>
+    <h2><a name="Fields"></a>Fields</h2>
+    <dl class="function">
+    <dt>
+    <a name = "Reciprocal"></a>
+    <strong>Reciprocal</strong>
+    </dt>
+    <dd>
+    Alias of <a href="../modules/number_ops.complex.html#Inverse">Inverse</a>.
+
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "CacheFactory"></a>
+    <strong>CacheFactory</strong>
+    </dt>
+    <dd>
+    DOCME
+
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "ComplexMT.Abs"></a>
+    <strong>ComplexMT.Abs</strong>
+    </dt>
+    <dd>
+    DOCME
+
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "ComplexMT.__add"></a>
+    <strong>ComplexMT.__add</strong>
+    </dt>
+    <dd>
+    DOCME
+
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "ComplexMT.Area"></a>
+    <strong>ComplexMT.Area</strong>
+    </dt>
+    <dd>
+    DOCME
+
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "ComplexMT.Arg"></a>
+    <strong>ComplexMT.Arg</strong>
+    </dt>
+    <dd>
+    DOCME
+
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "ComplexMT.Atan"></a>
+    <strong>ComplexMT.Atan</strong>
+    </dt>
+    <dd>
+    DOCME
+
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "ComplexMT.Conjugate"></a>
+    <strong>ComplexMT.Conjugate</strong>
+    </dt>
+    <dd>
+    DOCME
+
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "ComplexMT.Distance"></a>
+    <strong>ComplexMT.Distance</strong>
+    </dt>
+    <dd>
+    DOCME
+
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "ComplexMT.__div"></a>
+    <strong>ComplexMT.__div</strong>
+    </dt>
+    <dd>
+    DOCME
+
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "ComplexMT.Dup"></a>
+    <strong>ComplexMT.Dup</strong>
+    </dt>
+    <dd>
+    DOCME
+
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "ComplexMT.Dup_Raw"></a>
+    <strong>ComplexMT.Dup_Raw</strong>
+    </dt>
+    <dd>
+    DOCME
+
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "ComplexMT.Exp"></a>
+    <strong>ComplexMT.Exp</strong>
+    </dt>
+    <dd>
+    DOCME
+
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "ComplexMT.Inner"></a>
+    <strong>ComplexMT.Inner</strong>
+    </dt>
+    <dd>
+    DOCME
+
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "ComplexMT.Inverse"></a>
+    <strong>ComplexMT.Inverse</strong>
+    </dt>
+    <dd>
+    DOCME
+
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "ComplexMT.__len"></a>
+    <strong>ComplexMT.__len</strong>
+    </dt>
+    <dd>
+    Metamethod (unsupported in Lua 5.1), aliases <a href="../modules/number_ops.complex.html#Abs">Abs</a>.
+
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "ComplexMT.Log"></a>
+    <strong>ComplexMT.Log</strong>
+    </dt>
+    <dd>
+    DOCME
+
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "ComplexMT.__mul"></a>
+    <strong>ComplexMT.__mul</strong>
+    </dt>
+    <dd>
+    DOCME
+
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "ComplexMT.Mul_I"></a>
+    <strong>ComplexMT.Mul_I</strong>
+    </dt>
+    <dd>
+    DOCME
+
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "ComplexMT.Mul_NegI"></a>
+    <strong>ComplexMT.Mul_NegI</strong>
+    </dt>
+    <dd>
+    DOCME
+
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "ComplexMT.Norm"></a>
+    <strong>ComplexMT.Norm</strong>
+    </dt>
+    <dd>
+    DOCME
+
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "ComplexMT.Normalize"></a>
+    <strong>ComplexMT.Normalize</strong>
+    </dt>
+    <dd>
+    DOCME
+
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "ComplexMT.__pow"></a>
+    <strong>ComplexMT.__pow</strong>
+    </dt>
+    <dd>
+    DOCME
+
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "ComplexMT.Reciprocal"></a>
+    <strong>ComplexMT.Reciprocal</strong>
+    </dt>
+    <dd>
+    DOCME
+
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "ComplexMT.__sub"></a>
+    <strong>ComplexMT.__sub</strong>
+    </dt>
+    <dd>
+    DOCME
+
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "ComplexMT.__unm"></a>
+    <strong>ComplexMT.__unm</strong>
+    </dt>
+    <dd>
+    DOCME
+
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "New"></a>
+    <strong>New</strong>
+    </dt>
+    <dd>
+    DOCME
+
+
+
+
+
+
+</dd>
+</dl>
+
+
+</div> <!-- id="content" -->
+</div> <!-- id="main" -->
+<div id="about">
+<i>generated by <a href="http://github.com/stevedonovan/LDoc">LDoc 1.4.0</a></i>
+</div> <!-- id="about" -->
+</div> <!-- id="container" -->
+</body>
+</html>

@@ -33,7 +33,6 @@
 <h2>Contents</h2>
 <ul>
 <li><a href="#Functions">Functions</a></li>
-<li><a href="#Fields">Fields</a></li>
 </ul>
 
 
@@ -45,6 +44,7 @@
   <li><a href="../modules/array_ops.id_occupied.html">id_occupied</a></li>
   <li><a href="../modules/array_ops.index.html">index</a></li>
   <li><a href="../modules/array_ops.predicates.html">predicates</a></li>
+  <li><a href="../modules/array_ops.ring_buffer.html">ring_buffer</a></li>
   <li><a href="../modules/array_ops.wipe.html">wipe</a></li>
   <li><a href="../modules/bitwise_ops.log2.html">log2</a></li>
   <li><strong>operators</strong></li>
@@ -128,9 +128,13 @@
   <li><a href="../modules/game.TileMaps.html">TileMaps</a></li>
   <li><a href="../modules/game.Timers.html">Timers</a></li>
   <li><a href="../modules/game.Transitions.html">Transitions</a></li>
+  <li><a href="../modules/geom2d_ops.cmv.html">cmv</a></li>
   <li><a href="../modules/geom2d_ops.predicates.html">predicates</a></li>
   <li><a href="../modules/geom2d_ops.quantize.html">quantize</a></li>
   <li><a href="../modules/geom2d_ops.vector.html">vector</a></li>
+  <li><a href="../modules/graph_ops.flow.html">flow</a></li>
+  <li><a href="../modules/graph_ops.hungarian.html">hungarian</a></li>
+  <li><a href="../modules/graph_ops.labels.html">labels</a></li>
   <li><a href="../modules/hash_ops.html">hash_ops</a></li>
   <li><a href="../modules/hud.Action.html">Action</a></li>
   <li><a href="../modules/hud.Move.html">Move</a></li>
@@ -139,9 +143,17 @@
   <li><a href="../modules/iterator_ops.grid.html">grid</a></li>
   <li><a href="../modules/iterator_ops.ipairs.html">ipairs</a></li>
   <li><a href="../modules/iterator_ops.utils.html">utils</a></li>
+  <li><a href="../modules/loader_ops.png.html">png</a></li>
+  <li><a href="../modules/loader_ops.png_encode.html">png_encode</a></li>
+  <li><a href="../modules/loader_ops.zlib.html">zlib</a></li>
+  <li><a href="../modules/loader_ops.zlib_lut.html">zlib_lut</a></li>
   <li><a href="../modules/main.html">main</a></li>
   <li><a href="../modules/mask.MarchingSquares.html">MarchingSquares</a></li>
   <li><a href="../modules/mesh_ops.html">mesh_ops</a></li>
+  <li><a href="../modules/number_ops.complex.html">complex</a></li>
+  <li><a href="../modules/number_ops.convolve.html">convolve</a></li>
+  <li><a href="../modules/number_ops.fft.html">fft</a></li>
+  <li><a href="../modules/number_ops.fft_utils.html">fft_utils</a></li>
   <li><a href="../modules/number_ops.funcs.html">funcs</a></li>
   <li><a href="../modules/number_ops.gray.html">gray</a></li>
   <li><a href="../modules/number_ops.hilbert.html">hilbert</a></li>
@@ -150,7 +162,9 @@
   <li><a href="../modules/number_ops.mwc_rng.html">mwc_rng</a></li>
   <li><a href="../modules/number_ops.range.html">range</a></li>
   <li><a href="../modules/number_ops.simplex_noise.html">simplex_noise</a></li>
+  <li><a href="../modules/number_ops.summed_area.html">summed_area</a></li>
   <li><a href="../modules/number_ops.to_string.html">to_string</a></li>
+  <li><a href="../modules/number_ops.tuple.html">tuple</a></li>
   <li><a href="../modules/overlay.Help.html">Help</a></li>
   <li><a href="../modules/overlay.Link.html">Link</a></li>
   <li><a href="../modules/quaternion_ops.html">quaternion_ops</a></li>
@@ -159,6 +173,7 @@
   <li><a href="../modules/samples.Hilbert.html">Hilbert</a></li>
   <li><a href="../modules/samples.HilbertMixer.html">HilbertMixer</a></li>
   <li><a href="../modules/samples.Hop.html">Hop</a></li>
+  <li><a href="../modules/samples.ImageFX.html">ImageFX</a></li>
   <li><a href="../modules/samples.Nodes.html">Nodes</a></li>
   <li><a href="../modules/samples.OrbitsAndLattices.html">OrbitsAndLattices</a></li>
   <li><a href="../modules/samples.Pixels.html">Pixels</a></li>
@@ -166,6 +181,8 @@
   <li><a href="../modules/samples.SlowMo.html">SlowMo</a></li>
   <li><a href="../modules/samples.Snowfall.html">Snowfall</a></li>
   <li><a href="../modules/samples.Superformulae.html">Superformulae</a></li>
+  <li><a href="../modules/samples.Swarm.html">Swarm</a></li>
+  <li><a href="../modules/samples.TESTING.html">TESTING</a></li>
   <li><a href="../modules/samples.Thoughts.html">Thoughts</a></li>
   <li><a href="../modules/samples.Ticker.html">Ticker</a></li>
   <li><a href="../modules/samples.Tiling.html">Tiling</a></li>
@@ -239,36 +256,40 @@
 <h2><a href="#Functions">Functions</a></h2>
 <table class="function_list">
 	<tr>
+	<td class="name" nowrap><a href="#SignBit">SignBit (n)</a></td>
+	<td class="summary">DOCME</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#SignBit_At">SignBit_At (n, x)</a></td>
+	<td class="summary">DOCME</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#band">band (a, b)</a></td>
+	<td class="summary">DOCME</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#bnot">bnot (x)</a></td>
+	<td class="summary">DOCME</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#bor">bor (a, b)</a></td>
+	<td class="summary">DOCME</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#bxor">bxor (a, b)</a></td>
+	<td class="summary">DOCME</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#lshift">lshift (x, n)</a></td>
+	<td class="summary">DOCME</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#rshift">rshift (x, n)</a></td>
+	<td class="summary">DOCME</td>
+	</tr>
+	<tr>
 	<td class="name" nowrap><a href="#HasBitLib">HasBitLib ()</a></td>
 	<td class="summary">Predicate.</td>
-	</tr>
-</table>
-<h2><a href="#Fields">Fields</a></h2>
-<table class="function_list">
-	<tr>
-	<td class="name" nowrap><a href="#And">And</a></td>
-	<td class="summary">DOCME
- N.B.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#BNot">BNot</a></td>
-	<td class="summary">DOCME</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#LShift">LShift</a></td>
-	<td class="summary">DOCME</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#Or">Or</a></td>
-	<td class="summary">DOCME</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#RShift">RShift</a></td>
-	<td class="summary">DOCME</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#Xor">Xor</a></td>
-	<td class="summary">DOCME</td>
 	</tr>
 </table>
 
@@ -278,6 +299,204 @@
 
     <h2><a name="Functions"></a>Functions</h2>
     <dl class="function">
+    <dt>
+    <a name = "SignBit"></a>
+    <strong>SignBit (n)</strong>
+    </dt>
+    <dd>
+    DOCME
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">n</span>
+
+
+
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "SignBit_At"></a>
+    <strong>SignBit_At (n, x)</strong>
+    </dt>
+    <dd>
+    DOCME
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">n</span>
+
+
+
+        </li>
+        <li><span class="parameter">x</span>
+
+
+
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "band"></a>
+    <strong>band (a, b)</strong>
+    </dt>
+    <dd>
+    DOCME
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">a</span>
+
+
+
+        </li>
+        <li><span class="parameter">b</span>
+
+
+
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "bnot"></a>
+    <strong>bnot (x)</strong>
+    </dt>
+    <dd>
+    DOCME
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">x</span>
+
+
+
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "bor"></a>
+    <strong>bor (a, b)</strong>
+    </dt>
+    <dd>
+    DOCME
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">a</span>
+
+
+
+        </li>
+        <li><span class="parameter">b</span>
+
+
+
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "bxor"></a>
+    <strong>bxor (a, b)</strong>
+    </dt>
+    <dd>
+    DOCME
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">a</span>
+
+
+
+        </li>
+        <li><span class="parameter">b</span>
+
+
+
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "lshift"></a>
+    <strong>lshift (x, n)</strong>
+    </dt>
+    <dd>
+    DOCME
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">x</span>
+
+
+
+        </li>
+        <li><span class="parameter">n</span>
+
+
+
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "rshift"></a>
+    <strong>rshift (x, n)</strong>
+    </dt>
+    <dd>
+    DOCME
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">x</span>
+
+
+
+        </li>
+        <li><span class="parameter">n</span>
+
+
+
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
     <dt>
     <a name = "HasBitLib"></a>
     <strong>HasBitLib ()</strong>
@@ -292,88 +511,6 @@
            <span class="types"><span class="type">boolean</span></span>
         Bit library exists?
     </ol>
-
-
-
-
-</dd>
-</dl>
-    <h2><a name="Fields"></a>Fields</h2>
-    <dl class="function">
-    <dt>
-    <a name = "And"></a>
-    <strong>And</strong>
-    </dt>
-    <dd>
-    DOCME
- N.B.  This, and other operators defined herein, do not (YET?) correct for negative arguments
-
-
-
-
-
-
-</dd>
-    <dt>
-    <a name = "BNot"></a>
-    <strong>BNot</strong>
-    </dt>
-    <dd>
-    DOCME
-
-
-
-
-
-
-</dd>
-    <dt>
-    <a name = "LShift"></a>
-    <strong>LShift</strong>
-    </dt>
-    <dd>
-    DOCME
-
-
-
-
-
-
-</dd>
-    <dt>
-    <a name = "Or"></a>
-    <strong>Or</strong>
-    </dt>
-    <dd>
-    DOCME
-
-
-
-
-
-
-</dd>
-    <dt>
-    <a name = "RShift"></a>
-    <strong>RShift</strong>
-    </dt>
-    <dd>
-    DOCME
-
-
-
-
-
-
-</dd>
-    <dt>
-    <a name = "Xor"></a>
-    <strong>Xor</strong>
-    </dt>
-    <dd>
-    DOCME
-
-
 
 
 

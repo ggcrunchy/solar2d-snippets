@@ -44,6 +44,7 @@
   <li><a href="../modules/array_ops.id_occupied.html">id_occupied</a></li>
   <li><a href="../modules/array_ops.index.html">index</a></li>
   <li><a href="../modules/array_ops.predicates.html">predicates</a></li>
+  <li><a href="../modules/array_ops.ring_buffer.html">ring_buffer</a></li>
   <li><a href="../modules/array_ops.wipe.html">wipe</a></li>
   <li><a href="../modules/bitwise_ops.log2.html">log2</a></li>
   <li><a href="../modules/bitwise_ops.operators.html">operators</a></li>
@@ -127,9 +128,13 @@
   <li><a href="../modules/game.TileMaps.html">TileMaps</a></li>
   <li><a href="../modules/game.Timers.html">Timers</a></li>
   <li><a href="../modules/game.Transitions.html">Transitions</a></li>
+  <li><a href="../modules/geom2d_ops.cmv.html">cmv</a></li>
   <li><a href="../modules/geom2d_ops.predicates.html">predicates</a></li>
   <li><a href="../modules/geom2d_ops.quantize.html">quantize</a></li>
   <li><a href="../modules/geom2d_ops.vector.html">vector</a></li>
+  <li><a href="../modules/graph_ops.flow.html">flow</a></li>
+  <li><a href="../modules/graph_ops.hungarian.html">hungarian</a></li>
+  <li><a href="../modules/graph_ops.labels.html">labels</a></li>
   <li><a href="../modules/hash_ops.html">hash_ops</a></li>
   <li><a href="../modules/hud.Action.html">Action</a></li>
   <li><a href="../modules/hud.Move.html">Move</a></li>
@@ -138,9 +143,17 @@
   <li><a href="../modules/iterator_ops.grid.html">grid</a></li>
   <li><a href="../modules/iterator_ops.ipairs.html">ipairs</a></li>
   <li><a href="../modules/iterator_ops.utils.html">utils</a></li>
+  <li><a href="../modules/loader_ops.png.html">png</a></li>
+  <li><a href="../modules/loader_ops.png_encode.html">png_encode</a></li>
+  <li><a href="../modules/loader_ops.zlib.html">zlib</a></li>
+  <li><a href="../modules/loader_ops.zlib_lut.html">zlib_lut</a></li>
   <li><a href="../modules/main.html">main</a></li>
   <li><a href="../modules/mask.MarchingSquares.html">MarchingSquares</a></li>
   <li><a href="../modules/mesh_ops.html">mesh_ops</a></li>
+  <li><a href="../modules/number_ops.complex.html">complex</a></li>
+  <li><a href="../modules/number_ops.convolve.html">convolve</a></li>
+  <li><a href="../modules/number_ops.fft.html">fft</a></li>
+  <li><a href="../modules/number_ops.fft_utils.html">fft_utils</a></li>
   <li><a href="../modules/number_ops.funcs.html">funcs</a></li>
   <li><a href="../modules/number_ops.gray.html">gray</a></li>
   <li><a href="../modules/number_ops.hilbert.html">hilbert</a></li>
@@ -149,7 +162,9 @@
   <li><a href="../modules/number_ops.mwc_rng.html">mwc_rng</a></li>
   <li><a href="../modules/number_ops.range.html">range</a></li>
   <li><a href="../modules/number_ops.simplex_noise.html">simplex_noise</a></li>
+  <li><a href="../modules/number_ops.summed_area.html">summed_area</a></li>
   <li><a href="../modules/number_ops.to_string.html">to_string</a></li>
+  <li><a href="../modules/number_ops.tuple.html">tuple</a></li>
   <li><a href="../modules/overlay.Help.html">Help</a></li>
   <li><a href="../modules/overlay.Link.html">Link</a></li>
   <li><a href="../modules/quaternion_ops.html">quaternion_ops</a></li>
@@ -158,6 +173,7 @@
   <li><a href="../modules/samples.Hilbert.html">Hilbert</a></li>
   <li><a href="../modules/samples.HilbertMixer.html">HilbertMixer</a></li>
   <li><a href="../modules/samples.Hop.html">Hop</a></li>
+  <li><a href="../modules/samples.ImageFX.html">ImageFX</a></li>
   <li><a href="../modules/samples.Nodes.html">Nodes</a></li>
   <li><a href="../modules/samples.OrbitsAndLattices.html">OrbitsAndLattices</a></li>
   <li><a href="../modules/samples.Pixels.html">Pixels</a></li>
@@ -165,6 +181,8 @@
   <li><a href="../modules/samples.SlowMo.html">SlowMo</a></li>
   <li><a href="../modules/samples.Snowfall.html">Snowfall</a></li>
   <li><a href="../modules/samples.Superformulae.html">Superformulae</a></li>
+  <li><a href="../modules/samples.Swarm.html">Swarm</a></li>
+  <li><a href="../modules/samples.TESTING.html">TESTING</a></li>
   <li><a href="../modules/samples.Thoughts.html">Thoughts</a></li>
   <li><a href="../modules/samples.Ticker.html">Ticker</a></li>
   <li><a href="../modules/samples.Tiling.html">Tiling</a></li>
@@ -241,20 +259,12 @@
 <h2><a href="#Functions">Functions</a></h2>
 <table class="function_list">
 	<tr>
-	<td class="name" nowrap><a href="#RHS.bezier">RHS.bezier (coeffs, a, b, c, d)</a></td>
-	<td class="summary">Right-hand side B&eacute;zier evaluator</td>
-	</tr>
-	<tr>
 	<td class="name" nowrap><a href="#BezierToHermite">BezierToHermite (src1, src2, src3, src4, dst1, dst2, dst3, dst4)</a></td>
 	<td class="summary">Converts coefficients from B&eacute;zier (P1, Q1, Q2, P2) to Hermite (P1, P2, T1, T2) form.</td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#CatmullRomToHermite">CatmullRomToHermite (src1, src2, src3, src4, dst1, dst2, dst3, dst4)</a></td>
 	<td class="summary">Converts coefficients from Catmull-Rom (P1, P2, P3, P4) to Hermite (P2, P3, T1, T2) form.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#RHS.catmull_rom">RHS.catmull_rom (coeffs, a, b, c, d)</a></td>
-	<td class="summary">Right-hand side Catmull-Rom evaluator</td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#EvaluateCoeffs">EvaluateCoeffs (stype, pos, tan, t)</a></td>
@@ -283,10 +293,6 @@
 	<tr>
 	<td class="name" nowrap><a href="#GetTangent_Array">GetTangent_Array (stype, tan, t)</a></td>
 	<td class="summary">Array variant of <a href="../modules/spline_ops.cubic.html#GetTangent">GetTangent</a>.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#RHS.hermite">RHS.hermite (coeffs, a, b, c, d)</a></td>
-	<td class="summary">Right-hand side Hermite evaluator</td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#HermiteToBezier">HermiteToBezier (src1, src2, src3, src4, dst1, dst2, dst3, dst4)</a></td>
@@ -323,47 +329,6 @@
 
     <h2><a name="Functions"></a>Functions</h2>
     <dl class="function">
-    <dt>
-    <a name = "RHS.bezier"></a>
-    <strong>RHS.bezier (coeffs, a, b, c, d)</strong>
-    </dt>
-    <dd>
-    Right-hand side B&eacute;zier evaluator
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">coeffs</span>
-
-
-
-        </li>
-        <li><span class="parameter">a</span>
-
-
-
-        </li>
-        <li><span class="parameter">b</span>
-
-
-
-        </li>
-        <li><span class="parameter">c</span>
-
-
-
-        </li>
-        <li><span class="parameter">d</span>
-
-
-
-        </li>
-    </ul>
-
-
-
-
-
-</dd>
     <dt>
     <a name = "BezierToHermite"></a>
     <strong>BezierToHermite (src1, src2, src3, src4, dst1, dst2, dst3, dst4)</strong>
@@ -455,47 +420,6 @@
         <li><span class="parameter">dst4</span>
             <span class="types">optional <span class="type">Vector</span></span>
          ...and #4 (T2), or <em>src4</em>.
-        </li>
-    </ul>
-
-
-
-
-
-</dd>
-    <dt>
-    <a name = "RHS.catmull_rom"></a>
-    <strong>RHS.catmull_rom (coeffs, a, b, c, d)</strong>
-    </dt>
-    <dd>
-    Right-hand side Catmull-Rom evaluator
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">coeffs</span>
-
-
-
-        </li>
-        <li><span class="parameter">a</span>
-
-
-
-        </li>
-        <li><span class="parameter">b</span>
-
-
-
-        </li>
-        <li><span class="parameter">c</span>
-
-
-
-        </li>
-        <li><span class="parameter">d</span>
-
-
-
         </li>
     </ul>
 
@@ -807,47 +731,6 @@
            <span class="types"><span class="type">number</span></span>
         ...and y-component.</li>
     </ol>
-
-
-
-
-</dd>
-    <dt>
-    <a name = "RHS.hermite"></a>
-    <strong>RHS.hermite (coeffs, a, b, c, d)</strong>
-    </dt>
-    <dd>
-    Right-hand side Hermite evaluator
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">coeffs</span>
-
-
-
-        </li>
-        <li><span class="parameter">a</span>
-
-
-
-        </li>
-        <li><span class="parameter">b</span>
-
-
-
-        </li>
-        <li><span class="parameter">c</span>
-
-
-
-        </li>
-        <li><span class="parameter">d</span>
-
-
-
-        </li>
-    </ul>
-
 
 
 

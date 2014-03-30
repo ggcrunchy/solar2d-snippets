@@ -37,6 +37,7 @@
   <li><a href="modules/array_ops.id_occupied.html">id_occupied</a></li>
   <li><a href="modules/array_ops.index.html">index</a></li>
   <li><a href="modules/array_ops.predicates.html">predicates</a></li>
+  <li><a href="modules/array_ops.ring_buffer.html">ring_buffer</a></li>
   <li><a href="modules/array_ops.wipe.html">wipe</a></li>
   <li><a href="modules/bitwise_ops.log2.html">log2</a></li>
   <li><a href="modules/bitwise_ops.operators.html">operators</a></li>
@@ -120,9 +121,13 @@
   <li><a href="modules/game.TileMaps.html">TileMaps</a></li>
   <li><a href="modules/game.Timers.html">Timers</a></li>
   <li><a href="modules/game.Transitions.html">Transitions</a></li>
+  <li><a href="modules/geom2d_ops.cmv.html">cmv</a></li>
   <li><a href="modules/geom2d_ops.predicates.html">predicates</a></li>
   <li><a href="modules/geom2d_ops.quantize.html">quantize</a></li>
   <li><a href="modules/geom2d_ops.vector.html">vector</a></li>
+  <li><a href="modules/graph_ops.flow.html">flow</a></li>
+  <li><a href="modules/graph_ops.hungarian.html">hungarian</a></li>
+  <li><a href="modules/graph_ops.labels.html">labels</a></li>
   <li><a href="modules/hash_ops.html">hash_ops</a></li>
   <li><a href="modules/hud.Action.html">Action</a></li>
   <li><a href="modules/hud.Move.html">Move</a></li>
@@ -131,9 +136,17 @@
   <li><a href="modules/iterator_ops.grid.html">grid</a></li>
   <li><a href="modules/iterator_ops.ipairs.html">ipairs</a></li>
   <li><a href="modules/iterator_ops.utils.html">utils</a></li>
+  <li><a href="modules/loader_ops.png.html">png</a></li>
+  <li><a href="modules/loader_ops.png_encode.html">png_encode</a></li>
+  <li><a href="modules/loader_ops.zlib.html">zlib</a></li>
+  <li><a href="modules/loader_ops.zlib_lut.html">zlib_lut</a></li>
   <li><a href="modules/main.html">main</a></li>
   <li><a href="modules/mask.MarchingSquares.html">MarchingSquares</a></li>
   <li><a href="modules/mesh_ops.html">mesh_ops</a></li>
+  <li><a href="modules/number_ops.complex.html">complex</a></li>
+  <li><a href="modules/number_ops.convolve.html">convolve</a></li>
+  <li><a href="modules/number_ops.fft.html">fft</a></li>
+  <li><a href="modules/number_ops.fft_utils.html">fft_utils</a></li>
   <li><a href="modules/number_ops.funcs.html">funcs</a></li>
   <li><a href="modules/number_ops.gray.html">gray</a></li>
   <li><a href="modules/number_ops.hilbert.html">hilbert</a></li>
@@ -142,7 +155,9 @@
   <li><a href="modules/number_ops.mwc_rng.html">mwc_rng</a></li>
   <li><a href="modules/number_ops.range.html">range</a></li>
   <li><a href="modules/number_ops.simplex_noise.html">simplex_noise</a></li>
+  <li><a href="modules/number_ops.summed_area.html">summed_area</a></li>
   <li><a href="modules/number_ops.to_string.html">to_string</a></li>
+  <li><a href="modules/number_ops.tuple.html">tuple</a></li>
   <li><a href="modules/overlay.Help.html">Help</a></li>
   <li><a href="modules/overlay.Link.html">Link</a></li>
   <li><a href="modules/quaternion_ops.html">quaternion_ops</a></li>
@@ -151,6 +166,7 @@
   <li><a href="modules/samples.Hilbert.html">Hilbert</a></li>
   <li><a href="modules/samples.HilbertMixer.html">HilbertMixer</a></li>
   <li><a href="modules/samples.Hop.html">Hop</a></li>
+  <li><a href="modules/samples.ImageFX.html">ImageFX</a></li>
   <li><a href="modules/samples.Nodes.html">Nodes</a></li>
   <li><a href="modules/samples.OrbitsAndLattices.html">OrbitsAndLattices</a></li>
   <li><a href="modules/samples.Pixels.html">Pixels</a></li>
@@ -158,6 +174,8 @@
   <li><a href="modules/samples.SlowMo.html">SlowMo</a></li>
   <li><a href="modules/samples.Snowfall.html">Snowfall</a></li>
   <li><a href="modules/samples.Superformulae.html">Superformulae</a></li>
+  <li><a href="modules/samples.Swarm.html">Swarm</a></li>
+  <li><a href="modules/samples.TESTING.html">TESTING</a></li>
   <li><a href="modules/samples.Thoughts.html">Thoughts</a></li>
   <li><a href="modules/samples.Ticker.html">Ticker</a></li>
   <li><a href="modules/samples.Tiling.html">Tiling</a></li>
@@ -249,6 +267,10 @@
 	<tr>
 		<td class="name"  nowrap><a href="modules/array_ops.predicates.html">array_ops.predicates</a></td>
 		<td class="summary">Predicates that operate on arrays.</td>
+	</tr>
+	<tr>
+		<td class="name"  nowrap><a href="modules/array_ops.ring_buffer.html">array_ops.ring_buffer</a></td>
+		<td class="summary">Implements ring buffer operations over an array.</td>
 	</tr>
 	<tr>
 		<td class="name"  nowrap><a href="modules/array_ops.wipe.html">array_ops.wipe</a></td>
@@ -591,6 +613,10 @@
 		<td class="summary">Some useful transition utilities.</td>
 	</tr>
 	<tr>
+		<td class="name"  nowrap><a href="modules/geom2d_ops.cmv.html">geom2d_ops.cmv</a></td>
+		<td class="summary">Operations on <a href="http://cg.cs.tsinghua.edu.cn/people/~xianying/Papers/CubicMVCs/index.html">cubic mean value coordinates</a>.</td>
+	</tr>
+	<tr>
 		<td class="name"  nowrap><a href="modules/geom2d_ops.predicates.html">geom2d_ops.predicates</a></td>
 		<td class="summary">Predicates that operate on 2D geometry.</td>
 	</tr>
@@ -601,6 +627,18 @@
 	<tr>
 		<td class="name"  nowrap><a href="modules/geom2d_ops.vector.html">geom2d_ops.vector</a></td>
 		<td class="summary">Some utilities for 2D vectors.</td>
+	</tr>
+	<tr>
+		<td class="name"  nowrap><a href="modules/graph_ops.flow.html">graph_ops.flow</a></td>
+		<td class="summary">Operations on network flow.</td>
+	</tr>
+	<tr>
+		<td class="name"  nowrap><a href="modules/graph_ops.hungarian.html">graph_ops.hungarian</a></td>
+		<td class="summary">An implementation of the <a href=".http://en.wikipedia.org/wiki/Hungarian_algorithm">Hungarian algorithm</a>.</td>
+	</tr>
+	<tr>
+		<td class="name"  nowrap><a href="modules/graph_ops.labels.html">graph_ops.labels</a></td>
+		<td class="summary">Utilities for labeling graph elements.</td>
 	</tr>
 	<tr>
 		<td class="name"  nowrap><a href="modules/hash_ops.html">hash_ops</a></td>
@@ -635,6 +673,22 @@
 		<td class="summary">Iterator-building utilities.</td>
 	</tr>
 	<tr>
+		<td class="name"  nowrap><a href="modules/loader_ops.png.html">loader_ops.png</a></td>
+		<td class="summary">A PNG loader and associated functionality.</td>
+	</tr>
+	<tr>
+		<td class="name"  nowrap><a href="modules/loader_ops.png_encode.html">loader_ops.png_encode</a></td>
+		<td class="summary">A PNG encoder.</td>
+	</tr>
+	<tr>
+		<td class="name"  nowrap><a href="modules/loader_ops.zlib.html">loader_ops.zlib</a></td>
+		<td class="summary">An implementation of zlib, mostly adapted from <a href="https://github.com/devongovett/png.js/blob/master/zlib.js">here</a>.</td>
+	</tr>
+	<tr>
+		<td class="name"  nowrap><a href="modules/loader_ops.zlib_lut.html">loader_ops.zlib_lut</a></td>
+		<td class="summary">Lookup tables for zlib.</td>
+	</tr>
+	<tr>
 		<td class="name"  nowrap><a href="modules/main.html">main</a></td>
 		<td class="summary">Driver code and main functions.</td>
 	</tr>
@@ -645,6 +699,22 @@
 	<tr>
 		<td class="name"  nowrap><a href="modules/mesh_ops.html">mesh_ops</a></td>
 		<td class="summary">Mesh utilities.</td>
+	</tr>
+	<tr>
+		<td class="name"  nowrap><a href="modules/number_ops.complex.html">number_ops.complex</a></td>
+		<td class="summary">Some operations on complex numbers.</td>
+	</tr>
+	<tr>
+		<td class="name"  nowrap><a href="modules/number_ops.convolve.html">number_ops.convolve</a></td>
+		<td class="summary">Convolution operations.</td>
+	</tr>
+	<tr>
+		<td class="name"  nowrap><a href="modules/number_ops.fft.html">number_ops.fft</a></td>
+		<td class="summary">An implementation of the Fast Fourier Transform.</td>
+	</tr>
+	<tr>
+		<td class="name"  nowrap><a href="modules/number_ops.fft_utils.html">number_ops.fft_utils</a></td>
+		<td class="summary">Supplementary utilities for the Fast Fourier Transform module.</td>
 	</tr>
 	<tr>
 		<td class="name"  nowrap><a href="modules/number_ops.funcs.html">number_ops.funcs</a></td>
@@ -679,8 +749,16 @@
 		<td class="summary">An implementation of Ken Perlin's simplex noise.</td>
 	</tr>
 	<tr>
+		<td class="name"  nowrap><a href="modules/number_ops.summed_area.html">number_ops.summed_area</a></td>
+		<td class="summary">An implementation of summed area tables.</td>
+	</tr>
+	<tr>
 		<td class="name"  nowrap><a href="modules/number_ops.to_string.html">number_ops.to_string</a></td>
 		<td class="summary">Some number -> string conversion utilities.</td>
+	</tr>
+	<tr>
+		<td class="name"  nowrap><a href="modules/number_ops.tuple.html">number_ops.tuple</a></td>
+		<td class="summary">Operations on tuples of numbers.</td>
 	</tr>
 	<tr>
 		<td class="name"  nowrap><a href="modules/overlay.Help.html">overlay.Help</a></td>
@@ -715,6 +793,10 @@
 		<td class="summary">Hop demo.</td>
 	</tr>
 	<tr>
+		<td class="name"  nowrap><a href="modules/samples.ImageFX.html">samples.ImageFX</a></td>
+		<td class="summary">Image effect demo.</td>
+	</tr>
+	<tr>
 		<td class="name"  nowrap><a href="modules/samples.Nodes.html">samples.Nodes</a></td>
 		<td class="summary">Lines demo.</td>
 	</tr>
@@ -741,6 +823,14 @@
 	<tr>
 		<td class="name"  nowrap><a href="modules/samples.Superformulae.html">samples.Superformulae</a></td>
 		<td class="summary">Superformulae demo.</td>
+	</tr>
+	<tr>
+		<td class="name"  nowrap><a href="modules/samples.Swarm.html">samples.Swarm</a></td>
+		<td class="summary">Swarm demo.</td>
+	</tr>
+	<tr>
+		<td class="name"  nowrap><a href="modules/samples.TESTING.html">samples.TESTING</a></td>
+		<td class="summary">Staging area.</td>
 	</tr>
 	<tr>
 		<td class="name"  nowrap><a href="modules/samples.Thoughts.html">samples.Thoughts</a></td>
@@ -796,7 +886,13 @@
 	</tr>
 	<tr>
 		<td class="name"  nowrap><a href="modules/table_ops.adaptive.html">table_ops.adaptive</a></td>
-		<td class="summary">Functionality for members that may either be tables or singletons.</td>
+		<td class="summary">
+<p>Functionality for table members which may adapt among three forms:</p>
+
+<ul>
+    <li><strong>nil</strong>.</li>
+</ul>
+</td>
 	</tr>
 	<tr>
 		<td class="name"  nowrap><a href="modules/table_ops.funcs.html">table_ops.funcs</a></td>
