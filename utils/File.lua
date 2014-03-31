@@ -41,11 +41,24 @@ local lfs = require("lfs")
 -- Exports --
 local M = {}
 
+-- Helper to deal with paths on simulator
+local PathForFile = system.pathForFile
+
+if system.getInfo("environment") == "simulator" then
+	function PathForFile (name, base)
+		if not base or base == system.ResourceDirectory then
+			return system.pathForFile("") .. name
+		else
+			return system.pathForFile(name, base)
+		end
+	end
+end
+
 --- DOCME
 function M.AddDirectory (name, base)
 	local path = system.pathForFile("", base)
 
-	if lfs.attributes(path .. "/" .. name, "mode") ~= "directory" then
+	if lfs.attributes(path .. "/" .. name, "mode") ~= "directory" then -- <- slash needed? (should make consistent?)
 		lfs.chdir(path)
 		lfs.mkdir(name)
 	end
@@ -54,12 +67,12 @@ end
 --- DOCME
 -- TODO: Still doesn't seem to work...
 function M.CopyFile (src_name, src_base, dst_name, dst_base)
-	local src_path = system.pathForFile(src_name, src_base)
+	local src_path = PathForFile(src_name, src_base)
 	local source = src_path and open(src_path, "rb")
 
 	if source then
 		local data = source:read("*a")
-		local dst_path = data and system.pathForFile(dst_name, dst_base or system.DocumentsDirectory)
+		local dst_path = data and PathForFile(dst_name, dst_base or system.DocumentsDirectory)
 		local target = dst_path and open(dst_path, "wb")
 
 		if target then
@@ -122,9 +135,9 @@ function M.EnumerateFiles (path, options, into)
 	end
 
 	into = into or {}
-	path = system.pathForFile(path, base)
+	path = PathForFile(path, base)
 
-	if path then
+	if path and lfs.attributes(path, "mode") == "directory" then
 		(EnumFiles[type(exts)] or EnumAll)(into, path, exts)
 	end
 
@@ -137,7 +150,7 @@ end
 -- @treturn boolean Does the file exist?
 -- ^^ TODO: Works for directories?
 function M.Exists (name, base)
-	local path = system.pathForFile(name, base)
+	local path = PathForFile(name, base)
 	local file = path and open(path)
 
 	if file then
@@ -149,23 +162,41 @@ end
 
 --- Launches a timer to watch a file or directory for modifications.
 -- @string path File or directory path.
--- @callable func On modification, this is called as `func(path)`.
+-- @callable func On modification, this is called as `func(path, how)`, where _how_ is one of:
+--
+-- * **"created"**: File was created (or re-created) once watching was begun.
+-- * **"deleted"**: File was deleted once watching was begun.
+-- * **"modified"**: File was modified while being watched.
 -- @param base Directory base. If absent, **system.ResourceDirectory**.
 -- @treturn TimerHandle A timer, which may be cancelled.
 function M.WatchForFileModification (path, func, base)
 	local respath, modtime
 
 	return timer.performWithDelay(50, function()
-		respath = respath or system.pathForFile(path, base)
+		respath = respath or PathForFile(path, base)
 
-		if respath then
-			local now = lfs.attributes(respath, "modification") -- TODO: Directory itself could be deleted, no?
+		local now = respath and lfs.attributes(respath, "modification")
 
+		-- Able to find the file: if the modification time has changed since the last query,
+		-- alert the watcher (this is skipped on the first iteration). If the file is suddenly
+		-- found after being missing, tell the watcher the file was created.
+		if now then
 			if modtime and now ~= modtime then
-				func(path)
+				func(path, "modified")
+			elseif modtime == false then
+				func(path, "created")
 			end
 
 			modtime = now
+
+		-- Otherwise, put the file into a missing state. If the file just went missing, tell
+		-- the watcher it was deleted.
+		else
+			if modtime then
+				func(path, "deleted")
+			end
+
+			modtime = false
 		end
 	end, 0)
 end

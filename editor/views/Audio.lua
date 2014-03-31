@@ -248,7 +248,7 @@ function M.Load (view)
 	end
 
 	--
-	WatchMusicFolder = file_utils.WatchForFileModification("Music", function()
+	WatchMusicFolder = file_utils.WatchForFileModification("Music", function(how)
 		if Group.isVisible then
 			Reload()
 		else
