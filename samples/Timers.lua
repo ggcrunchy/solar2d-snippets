@@ -29,17 +29,17 @@ local scenes = require("utils.Scenes")
 local timers = require("game.Timers")
 
 -- Corona modules --
-local storyboard = require("storyboard")
+local composer = require("composer")
 
 -- Timers demo scene --
-local Scene = storyboard.newScene()
+local Scene = composer.newScene()
 
 --
-function Scene:createScene ()
+function Scene:create ()
 	buttons.Button(self.view, nil, 120, 75, 200, 50, scenes.Opener{ name = "scene.Choices" }, "Go Back")
 end
 
-Scene:addEventListener("createScene")
+Scene:addEventListener("create")
 
 -- Forward declarations --
 local A, B, C, D, E
@@ -167,32 +167,36 @@ function E ()
 end
 
 --
-function Scene:enterScene ()
-	self.timers = {}
+function Scene:show (event)
+	if event.phase == "did" then
+		self.timers = {}
 
-	-- Do first example, but deferred... printout will go first
-	self.timers[#self.timers + 1] = timers.Defer(function()
-		print("FIRST?")
+		-- Do first example, but deferred... printout will go first
+		self.timers[#self.timers + 1] = timers.Defer(function()
+			print("FIRST?")
 
-		A()
-	end)
-	 
-	print("NOPE, ME FIRST!")
+			A()
+		end)
+		 
+		print("NOPE, ME FIRST!")
+	end
 end
 
-Scene:addEventListener("enterScene")
+Scene:addEventListener("show")
 
 --
-function Scene:exitScene ()
-	for _, ttimer in ipairs(self.timers) do
-		timer.cancel(ttimer)
-	end
+function Scene:hide (event)
+	if event.phase == "did" then
+		for _, ttimer in ipairs(self.timers) do
+			timer.cancel(ttimer)
+		end
 
-	for i = self.view.numChildren, 2, -1 do
-		self.view[i]:removeSelf()
+		for i = self.view.numChildren, 2, -1 do
+			self.view[i]:removeSelf()
+		end
 	end
 end
 
-Scene:addEventListener("exitScene")
+Scene:addEventListener("hide")
 
 return Scene

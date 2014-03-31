@@ -32,33 +32,35 @@ local display = display
 local native = native
 
 -- Corona modules --
-local storyboard = require("storyboard")
+local composer = require("composer")
 
 -- Intro scene --
-local Scene = storyboard.newScene()
+local Scene = composer.newScene()
 
 --
-function Scene:enterScene ()
-	timers.WrapEx(function()
-		local x = 25
+function Scene:show (event)
+	if event.phase == "did" then
+		timers.WrapEx(function()
+			local x = 25
 
-		for _, item in ipairs{ "Welcome", "To", "The", "Demos!" } do
-			local text = display.newText(self.view, item, 0, 20, native.systemFont, 24)
+			for _, item in ipairs{ "Welcome", "To", "The", "Demos!" } do
+				local text = display.newText(self.view, item, 0, 20, native.systemFont, 24)
 
-			text.anchorX = 0
-			text.x = x
+				text.anchorX = 0
+				text.x = x
 
-			flow.Wait(.2)
+				flow.Wait(.2)
 
-			x = x + text.width + 10
-		end
+				x = x + text.width + 10
+			end
 
-		flow.Wait(.15)
+			flow.Wait(.15)
 
-		storyboard.gotoScene("scene.Choices", "zoomInOutFadeRotate")
-	end)
+			composer.gotoScene("scene.Choices", "zoomInOutFadeRotate")
+		end)
+	end
 end
 
-Scene:addEventListener("enterScene")
+Scene:addEventListener("show")
 
 return Scene

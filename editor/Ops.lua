@@ -45,7 +45,7 @@ local native = native
 local system = system
 
 -- Corona modules --
-local storyboard = require("storyboard")
+local composer = require("composer")
 
 -- Is the level being saved or built temporary? --
 local IsTemp
@@ -200,7 +200,7 @@ end
 
 --- Quits the editor.
 function M.Quit ()
-	storyboard.gotoScene("scene.EditorSetup")
+	composer.gotoScene("scene.EditorSetup")
 end
 
 --- Sets the current working name, which is used by @{Build} and @{Save} to assign levels

@@ -23,4 +23,8 @@
 -- [ MIT license: http://www.opensource.org/licenses/mit-license.php ]
 --
 
-return { "Player", "Dots", "EventBlocks", "Tiles", "Triggers", "Audio", "Background", "GlobalEvents", "Positions", "Settings" }
+return {
+	_prefix = "editor.views",
+
+	"Player", "Dots", "EventBlocks", "Tiles", "Triggers", "Audio", "Background", "GlobalEvents", "Positions", "Settings"
+}

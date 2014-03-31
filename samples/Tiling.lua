@@ -50,13 +50,13 @@ local timer = timer
 local transition = transition
 
 -- Corona modules --
-local storyboard = require("storyboard")
+local composer = require("composer")
 
 -- Tiling demo scene --
-local Scene = storyboard.newScene()
+local Scene = composer.newScene()
 
 --
-function Scene:createScene ()
+function Scene:create ()
 	buttons.Button(self.view, nil, 120, 75, 200, 50, scenes.Opener{ name = "scene.Choices" }, "Go Back")
 
 	self.action = display.newText(self.view, "", 250, 35, native.systemFontBold, 24)
@@ -66,7 +66,7 @@ function Scene:createScene ()
 	self.effect.anchorX = 0
 end
 
-Scene:addEventListener("createScene")
+Scene:addEventListener("create")
 
 -- "Logical" grid dimensions (i.e. before being broken down into subgrids)... --
 local NCols_Log, NRows_Log = 15, 10
@@ -359,87 +359,89 @@ local FadeInParams = {
 }
 
 --
-function Scene:enterScene ()
-	local images = sheet.TileImage("Background_Assets/Background.png", NCols, NRows, 120, 80, 330, 200)
+function Scene:show (event)
+	if event.phase == "did" then
+		local images = sheet.TileImage("Background_Assets/Background.png", NCols, NRows, 120, 80, 330, 200)
 
-	self.tiles = display.newGroup()
+		self.tiles = display.newGroup()
 
-	self.view:insert(self.tiles)
+		self.view:insert(self.tiles)
 
-	NumLeft = NCols * NRows
+		NumLeft = NCols * NRows
 
-	local index, row, col = 1, 0, 0
+		local index, row, col = 1, 0, 0
 
-	self.action.text = "Action: filling tiles"
+		self.action.text = "Action: filling tiles"
 
-	self.timer = timer.performWithDelay(40, function()
-		local x = X + col * LogicalDim
-		local y = Y + row * LogicalDim
-		local di, delay = 0, 0
+		self.timer = timer.performWithDelay(40, function()
+			local x = X + col * LogicalDim
+			local y = Y + row * LogicalDim
+			local di, delay = 0, 0
 
-		for dr = 0, 3 do
-			for dc = 0, 3 do
-				local tile = display.newImage(self.tiles, images, index + di + dc)
+			for dr = 0, 3 do
+				for dc = 0, 3 do
+					local tile = display.newImageRect(self.tiles, images, index + di + dc, TileDim, TileDim)
 
-				tile.xScale = TileDim / tile.width
-				tile.yScale = TileDim / tile.height
-				tile.anchorX, tile.x = 0, x + dc * TileDim
-				tile.anchorY, tile.y = 0, y + dr * TileDim
-				tile.alpha = .2
+					tile.anchorX, tile.x = 0, x + dc * TileDim
+					tile.anchorY, tile.y = 0, y + dr * TileDim
+					tile.alpha = .2
 
-				FadeInParams.delay = delay
+					FadeInParams.delay = delay
 
-				transition.to(tile, FadeInParams)
+					transition.to(tile, FadeInParams)
 
-				delay = delay + random(120, 250)
+					delay = delay + random(120, 250)
+				end
+
+				di = di + Pitch
 			end
 
-			di = di + Pitch
-		end
+			col, index = col + 1, index + 4
 
-		col, index = col + 1, index + 4
+			if col == NCols_Log then
+				col, row = 0, row + 1
+				index = index + Pitch * 3
 
-		if col == NCols_Log then
-			col, row = 0, row + 1
-			index = index + Pitch * 3
+				if row == NRows_Log then
+					self.effects = timers.Wrap(function()
+						while NumLeft > 0 do
+							yield()
+						end
 
-			if row == NRows_Log then
-				self.effects = timers.Wrap(function()
-					while NumLeft > 0 do
-						yield()
-					end
+						Commit = DefCommit
 
-					Commit = DefCommit
-
-					return A(self.tiles, 0)
-				end, 60)
+						return A(self.tiles, 0)
+					end, 60)
+				end
 			end
-		end
-	end, NCols_Log * NRows_Log)
+		end, NCols_Log * NRows_Log)
+	end
 end
 
-Scene:addEventListener("enterScene")
+Scene:addEventListener("show")
 
 --
-function Scene:exitScene ()
-	timer.cancel(self.timer)
+function Scene:hide (event)
+	if event.phase == "did" then
+		timer.cancel(self.timer)
 
-	if self.effects then
-		timer.cancel(self.effects)
+		if self.effects then
+			timer.cancel(self.effects)
+		end
+
+		self.tiles:removeSelf()
+
+		self.effects = nil
+		self.tiles = nil
+		self.timer = nil
+
+		self.action.text = ""
+		self.effect.text = ""
+
+		Commit, CA, MS, CommitMS = nil
 	end
-
-	self.tiles:removeSelf()
-
-	self.effects = nil
-	self.tiles = nil
-	self.timer = nil
-
-	self.action.text = ""
-	self.effect.text = ""
-
-	Commit, CA, MS, CommitMS = nil
 end
 
-Scene:addEventListener("exitScene")
+Scene:addEventListener("hide")
 
 return Scene

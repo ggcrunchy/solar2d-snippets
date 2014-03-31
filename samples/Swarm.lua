@@ -50,14 +50,14 @@ local timer = timer
 local transition = transition
 
 -- Corona modules --
-local storyboard = require("storyboard")
+local composer = require("composer")
 local widget = require("widget")
 
 -- Timers demo scene --
-local Scene = storyboard.newScene()
+local Scene = composer.newScene()
 
 --
-function Scene:createScene ()
+function Scene:create ()
 	buttons.Button(self.view, nil, 120, 75, 200, 50, scenes.Opener{ name = "scene.Choices" }, "Go Back")
 
 	self.panel = display.newGroup()
@@ -120,7 +120,7 @@ end
 	back.strokeWidth = 4
 end
 
-Scene:addEventListener("createScene")
+Scene:addEventListener("create")
 
 -- --
 local NCols, NRows = 10, 10
@@ -394,146 +394,150 @@ end
 local DragObject = touch.DragTouch()
 
 --
-function Scene:enterScene ()
-	self.swarm = display.newGroup()
+function Scene:show (event)
+	if event.phase == "did" then
+		self.swarm = display.newGroup()
 
-	self.view:insert(self.swarm)
-
-	--
-	self.center = display.newCircle(self.view, display.contentCenterX, display.contentCenterY, 20)
-
-	self.center:addEventListener("touch", DragObject)
-	self.center:setFillColor(.2, .4)
-	self.center:setStrokeColor(0, 0, 1)
-
-	self.center.strokeWidth = 3
-
-	--
-	for _, slider in pairs(self.sliders) do
-		slider:setValue(slider.m_def)
-	end
-
-	-- Dart throwing! (space out the boids)
-	local angle, da, grid = 0, 2 * pi / NBoids, {}
-
-	for _ = 1, NBoids do
-		local ca, sa = cos(angle), sin(angle)
-		local x = self.center.x + FlockRadius * ca + random(-25, 25) * sa
-		local y = self.center.y + FlockRadius * sa + random(-25, 25) * ca
-		local boid = display.newCircle(self.swarm, x, y, BoidRadius)
+		self.view:insert(self.swarm)
 
 		--
-		boid.m_neighbors = {}
+		self.center = display.newCircle(self.view, display.contentCenterX, display.contentCenterY, 20)
+
+		self.center:addEventListener("touch", DragObject)
+		self.center:setFillColor(.2, .4)
+		self.center:setStrokeColor(0, 0, 1)
+
+		self.center.strokeWidth = 3
 
 		--
-		boid.m_sat = .2 + random() * .7
-		boid.m_value = 1 - random() * .35
-
-		SetHue(boid, true)
-
-		--
-		boid.m_vx = -1 + 2 * random()
-		boid.m_vy = -1 + 2 * random()
-
-		boid.m_hx = boid.m_vx
-		boid.m_hy = boid.m_vy
-
-		angle = angle + da
-
-		UpdateGrid(grid, boid, Neighborhood, AddToCell)
-	end
-
--- wall = raycast, if hit, propel other way by overshoot
--- wander = random walk (jitter + circle proj, simplex noise, etc.)
--- weighted trunc. sum w/prio
--- Modes:
-	-- Drag and follow
-		-- Swirl around and stuff
-	-- Wander
-		-- Random, maybe walls at the edges
-
-
-	--
-	local now = system.getTimer()
-
-	self.update = timer.performWithDelay(35, function(event)
-		local swarm, sliders = self.swarm, self.sliders
-		local dt = (event.time - now) / 1000
-
-		now = event.time
-
-		--
-		TargetX, TargetY = self.center.x, self.center.y
-
-		--
-		MaxSpeed = sliders.max_speed.value
-		AvoidWallsW = sliders.avoid_walls.value / 20
-		CohesionW = sliders.cohesion.value / 5
-		SeekW = sliders.seek.value / 20
-		SeparationW = sliders.separation.value / 100
-		WallDist = sliders.wall_dist.value / 30
-		WanderRadius = 1 + sliders.wander_radius.value / 20
-		WanderW = sliders.wander.value / 20
-
-		--
-		for i = 1, swarm.numChildren do
-			local boid = swarm[i]
-
-			-- Prep boid? (velocity, cum. force, etc.)
-
-			UpdateGrid(grid, boid, Neighborhood, EnumNeighbors)
-			ComputeSteeringForce(boid, dt)
+		for _, slider in pairs(self.sliders) do
+			slider:setValue(slider.m_def)
 		end
 
-		--
-		for i = 1, swarm.numChildren do
-			local boid = swarm[i]
+		-- Dart throwing! (space out the boids)
+		local angle, da, grid = 0, 2 * pi / NBoids, {}
+
+		for _ = 1, NBoids do
+			local ca, sa = cos(angle), sin(angle)
+			local x = self.center.x + FlockRadius * ca + random(-25, 25) * sa
+			local y = self.center.y + FlockRadius * sa + random(-25, 25) * ca
+			local boid = display.newCircle(self.swarm, x, y, BoidRadius)
 
 			--
-			UpdateGrid(grid, boid, Neighborhood, RemoveFromCell)
-
-			-- TODO: Compare with RK4
-			local vx, vy = boid.m_vx, boid.m_vy
-
-			boid.x = boid.x + vx * dt
-			boid.y = boid.y + vy * dt
-
-			vx = vx + boid.m_fx * dt
-			vy = vy + boid.m_fy * dt
-
-			boid.m_vx = vx
-			boid.m_vy = vy
-
-			local mag = sqrt(vx^2 + vy^2)
-
-			if mag > 1e-9 then
-				boid.m_hx = vx / mag
-				boid.m_hy = vy / mag
-			end
-
-			-- Vary the boid's color a little.
-			SetHue(boid)
+			boid.m_neighbors = {}
 
 			--
+			boid.m_sat = .2 + random() * .7
+			boid.m_value = 1 - random() * .35
+
+			SetHue(boid, true)
+
+			--
+			boid.m_vx = -1 + 2 * random()
+			boid.m_vy = -1 + 2 * random()
+
+			boid.m_hx = boid.m_vx
+			boid.m_hy = boid.m_vy
+
+			angle = angle + da
+
 			UpdateGrid(grid, boid, Neighborhood, AddToCell)
 		end
-	end, 0)
+
+	-- wall = raycast, if hit, propel other way by overshoot
+	-- wander = random walk (jitter + circle proj, simplex noise, etc.)
+	-- weighted trunc. sum w/prio
+	-- Modes:
+		-- Drag and follow
+			-- Swirl around and stuff
+		-- Wander
+			-- Random, maybe walls at the edges
+
+
+		--
+		local now = system.getTimer()
+
+		self.update = timer.performWithDelay(35, function(event)
+			local swarm, sliders = self.swarm, self.sliders
+			local dt = (event.time - now) / 1000
+
+			now = event.time
+
+			--
+			TargetX, TargetY = self.center.x, self.center.y
+
+			--
+			MaxSpeed = sliders.max_speed.value
+			AvoidWallsW = sliders.avoid_walls.value / 20
+			CohesionW = sliders.cohesion.value / 5
+			SeekW = sliders.seek.value / 20
+			SeparationW = sliders.separation.value / 100
+			WallDist = sliders.wall_dist.value / 30
+			WanderRadius = 1 + sliders.wander_radius.value / 20
+			WanderW = sliders.wander.value / 20
+
+			--
+			for i = 1, swarm.numChildren do
+				local boid = swarm[i]
+
+				-- Prep boid? (velocity, cum. force, etc.)
+
+				UpdateGrid(grid, boid, Neighborhood, EnumNeighbors)
+				ComputeSteeringForce(boid, dt)
+			end
+
+			--
+			for i = 1, swarm.numChildren do
+				local boid = swarm[i]
+
+				--
+				UpdateGrid(grid, boid, Neighborhood, RemoveFromCell)
+
+				-- TODO: Compare with RK4
+				local vx, vy = boid.m_vx, boid.m_vy
+
+				boid.x = boid.x + vx * dt
+				boid.y = boid.y + vy * dt
+
+				vx = vx + boid.m_fx * dt
+				vy = vy + boid.m_fy * dt
+
+				boid.m_vx = vx
+				boid.m_vy = vy
+
+				local mag = sqrt(vx^2 + vy^2)
+
+				if mag > 1e-9 then
+					boid.m_hx = vx / mag
+					boid.m_hy = vy / mag
+				end
+
+				-- Vary the boid's color a little.
+				SetHue(boid)
+
+				--
+				UpdateGrid(grid, boid, Neighborhood, AddToCell)
+			end
+		end, 0)
+	end
 end
 
-Scene:addEventListener("enterScene")
+Scene:addEventListener("show")
 
 --
-function Scene:exitScene ()
-	timer.cancel(self.update)
+function Scene:hide (event)
+	if event.phase == "did" then
+		timer.cancel(self.update)
 
-	for i = 1, self.swarm.numChildren do
-		self.swarm[i].m_neighbors = nil
+		for i = 1, self.swarm.numChildren do
+			self.swarm[i].m_neighbors = nil
+		end
+
+		self.center:removeSelf()
+		self.swarm:removeSelf()
 	end
-
-	self.center:removeSelf()
-	self.swarm:removeSelf()
 end
 
-Scene:addEventListener("exitScene")
+Scene:addEventListener("hide")
 
 return Scene

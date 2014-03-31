@@ -36,17 +36,17 @@ local touch = require("ui.Touch")
 local transition = transition
  
  -- Corona modules --
-local storyboard = require("storyboard")
+local composer = require("composer")
 
 -- Lines demo scene --
-local Scene = storyboard.newScene()
+local Scene = composer.newScene()
 
 --
-function Scene:createScene ()
+function Scene:create ()
 	buttons.Button(self.view, nil, 120, 75, 200, 50, scenes.Opener{ name = "scene.Choices" }, "Go Back")
 end
 
-Scene:addEventListener("createScene")
+Scene:addEventListener("create")
 
 -- State items --
 local Items
@@ -247,49 +247,53 @@ local function NewState (group, text)
 end
  
 --
-function Scene:enterScene ()
-	Items = display.newGroup()
+function Scene:show (event)
+	if event.phase == "did" then
+		Items = display.newGroup()
+		 
+		-- Add lines to their own group.
+		local lgroup = display.newGroup()
+		 
+		LineOpts.into = lgroup
+		LineOptsMaybe.into = lgroup
+		 
+		-- Set up some states, each with some links. Assign each state an ID.
+		for id, pos in ipairs{
+			{ 60, 250, "JOE" }, { 120, 400, "SUE"  }, { 400, 35, "DAN" }, { 200, 200, "TOO" }
+		} do
+			local item = display.newGroup()
 	 
-	-- Add lines to their own group.
-	local lgroup = display.newGroup()
+			NewState(item, pos[3])
 	 
-	LineOpts.into = lgroup
-	LineOptsMaybe.into = lgroup
+			for j = 1, math.random(1, 4) do
+				NewLink(item, "recv", -30, j)
+			end
 	 
-	-- Set up some states, each with some links. Assign each state an ID.
-	for id, pos in ipairs{
-		{ 60, 250, "JOE" }, { 120, 400, "SUE"  }, { 400, 35, "DAN" }, { 200, 200, "TOO" }
-	} do
-		local item = display.newGroup()
- 
-		NewState(item, pos[3])
- 
-		for j = 1, math.random(1, 4) do
-			NewLink(item, "recv", -30, j)
+			for j = 1, math.random(1, 4) do
+				NewLink(item, "send", 130, j)
+			end
+	 
+			item.x, item.y = pos[1], pos[2]
+	 
+			item.m_id = id
+	 
+			Items:insert(item)
 		end
- 
-		for j = 1, math.random(1, 4) do
-			NewLink(item, "send", 130, j)
-		end
- 
-		item.x, item.y = pos[1], pos[2]
- 
-		item.m_id = id
- 
-		Items:insert(item)
+		 
+		-- Put the lines above the states.
+		Items:insert(lgroup)
 	end
-	 
-	-- Put the lines above the states.
-	Items:insert(lgroup)
 end
 
-Scene:addEventListener("enterScene")
+Scene:addEventListener("show")
 
 --
-function Scene:exitScene ()
-	Items:removeSelf()
+function Scene:hide (event)
+	if event.phase == "did" then
+		Items:removeSelf()
+	end
 end
 
-Scene:addEventListener("exitScene")
+Scene:addEventListener("hide")
 
 return Scene

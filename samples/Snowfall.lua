@@ -29,30 +29,34 @@ local scenes = require("utils.Scenes")
 local snowfall = require("effect.Snowfall")
 
 -- Corona modules --
-local storyboard = require("storyboard")
+local composer = require("composer")
 
 -- Snowfall demo scene --
-local Scene = storyboard.newScene()
+local Scene = composer.newScene()
 
 --
-function Scene:createScene ()
+function Scene:create ()
 	buttons.Button(self.view, nil, 120, 75, 200, 50, scenes.Opener{ name = "scene.Choices" }, "Go Back")
 end
 
-Scene:addEventListener("createScene")
+Scene:addEventListener("create")
 
 --
-function Scene:enterScene ()
-	Scene.snowfall = snowfall.Snowfall(self.view, {}, 28)
+function Scene:show (event)
+	if event.phase == "did" then
+		Scene.snowfall = snowfall.Snowfall(self.view, {}, 28)
+	end
 end
 
-Scene:addEventListener("enterScene")
+Scene:addEventListener("show")
 
 --
-function Scene:exitScene ()
-	Scene.snowfall:removeSelf()
+function Scene:hide (event)
+	if event.phase == "did" then
+		Scene.snowfall:removeSelf()
+	end
 end
 
-Scene:addEventListener("exitScene")
+Scene:addEventListener("hide")
 
 return Scene

@@ -37,17 +37,17 @@ local display = display
 local timer = timer
 
 -- Corona modules --
-local storyboard = require("storyboard")
+local composer = require("composer")
 
 -- Slow-mo demo scene --
-local Scene = storyboard.newScene()
+local Scene = composer.newScene()
 
 --
-function Scene:createScene ()
+function Scene:create ()
 	buttons.Button(self.view, nil, 120, 75, 200, 50, scenes.Opener{ name = "scene.Choices" }, "Go Back")
 end
 
-Scene:addEventListener("createScene")
+Scene:addEventListener("create")
 
 -- --
 local CenterX, CenterY = display.contentCenterX, display.contentCenterY
@@ -58,79 +58,83 @@ local function PutCircle (circ)
 end
 
 --
-function Scene:enterScene ()
-	self.group = display.newGroup()
+function Scene:show (event)
+	if event.phase == "did" then
+		self.group = display.newGroup()
 
-	self.view:insert(self.group)
+		self.view:insert(self.group)
 
-	self.group:toBack()
+		self.group:toBack()
 
-	--
-	local circles = {}
+		--
+		local circles = {}
 
-	for _ = 1, 5 do
-		local circ = display.newCircle(self.group, 0, 0, 25)
+		for _ = 1, 5 do
+			local circ = display.newCircle(self.group, 0, 0, 25)
 
-		circ:setFillColor(random(.25, 1), random(.25, 1), random(.25, 1))
+			circ:setFillColor(random(.25, 1), random(.25, 1), random(.25, 1))
 
-		PutCircle(circ)
-
-		circles[#circles + 1] = circ
-	end
-
-	--
-    local object1 = display.newRect(self.group, 200, 200, 50, 50)
-    local object2 = display.newRect(self.group, 350, 200, 30, 60)
-
-	object1:setFillColor(0, 0, 1)
-	object2:setFillColor(.5, 0, .375)
-	object2:setStrokeColor(0, 1, 0)
-
-	object2.strokeWidth = 3
-
-	--
-	self.accumulate = timer.performWithDelay(50, function()
-		local new = display.captureBounds(self.group.contentBounds)
-
-		display.remove(self.ghost)
-
-		self.ghost = new
-
-		self.group:insert(new)
-		new:toBack()
-
-		new.anchorX, new.anchorY = 0, 0
-		new.alpha = .9
-	end, 0)
-
-	--
-	self.update_objects = timer.performWithDelay(50, function(event)
-		object1.rotation = object1.rotation + 1.05
-		object1.x = CenterX + sin(event.time / 900) * display.contentWidth / 3
-		object1.y = CenterY + sin(event.time / 1400) * display.contentHeight / 3
-
-		object2.rotation = object2.rotation + 3.05
-		object2.y = CenterY + sin(event.time / 300) * display.contentHeight / 3
-
-		for _, circ in ipairs(circles) do
 			PutCircle(circ)
+
+			circles[#circles + 1] = circ
 		end
-	end, 0)
+
+		--
+		local object1 = display.newRect(self.group, 200, 200, 50, 50)
+		local object2 = display.newRect(self.group, 350, 200, 30, 60)
+
+		object1:setFillColor(0, 0, 1)
+		object2:setFillColor(.5, 0, .375)
+		object2:setStrokeColor(0, 1, 0)
+
+		object2.strokeWidth = 3
+
+		--
+		self.accumulate = timer.performWithDelay(50, function()
+			local new = display.captureBounds(self.group.contentBounds)
+
+			display.remove(self.ghost)
+
+			self.ghost = new
+
+			self.group:insert(new)
+			new:toBack()
+
+			new.anchorX, new.anchorY = 0, 0
+			new.alpha = .9
+		end, 0)
+
+		--
+		self.update_objects = timer.performWithDelay(50, function(event)
+			object1.rotation = object1.rotation + 1.05
+			object1.x = CenterX + sin(event.time / 900) * display.contentWidth / 3
+			object1.y = CenterY + sin(event.time / 1400) * display.contentHeight / 3
+
+			object2.rotation = object2.rotation + 3.05
+			object2.y = CenterY + sin(event.time / 300) * display.contentHeight / 3
+
+			for _, circ in ipairs(circles) do
+				PutCircle(circ)
+			end
+		end, 0)
+	end
 end
 
-Scene:addEventListener("enterScene")
+Scene:addEventListener("show")
 
 --
-function Scene:exitScene ()
-	timer.cancel(self.accumulate)
-	timer.cancel(self.update_objects)
+function Scene:hide (event)
+	if event.phase == "did" then
+		timer.cancel(self.accumulate)
+		timer.cancel(self.update_objects)
 
-	self.group:removeSelf()
+		self.group:removeSelf()
 
-	self.ghost = nil
-	self.group = nil
+		self.ghost = nil
+		self.group = nil
+	end
 end
 
-Scene:addEventListener("exitScene")
+Scene:addEventListener("hide")
 
 return Scene

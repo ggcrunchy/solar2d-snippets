@@ -24,10 +24,10 @@
 --
 
 -- Corona modules --
-local storyboard = require("storyboard")
+local composer = require("composer")
 
 -- --
-local Scene = storyboard.newScene()
+local Scene = composer.newScene()
 
 local M
 
@@ -275,17 +275,17 @@ skins.AddToDefaultSkin("grid2d", {
 end
 
 --
-function Scene:createScene ()
+function Scene:create ()
 	self.gg = M.Grid2D(self.view, nil, 20, 20, 400, 400, 10, 10, function() end)
 end
 
-Scene:addEventListener("createScene")
+Scene:addEventListener("create")
 
 --
-function Scene:enterScene ()
+function Scene:show ()
 
 end
 
-Scene:addEventListener("enterScene")
+Scene:addEventListener("show")
 
 return Scene

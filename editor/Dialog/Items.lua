@@ -87,12 +87,7 @@ function M:AddImage (options)
 	local image
 
 	if options and options.file then
-		image = display.newImage(self:ItemGroup(), options.file, 0, 0)
-	end
-
-	if image then
-		image.xScale = 64 / image.width
-		image.yScale = 64 / image.height
+		image = display.newImageRect(self:ItemGroup(), options.file, 64, 64)
 	else
 		image = display.newRoundedRect(self:ItemGroup(), 0, 0, 64, 64, 12)
 	end

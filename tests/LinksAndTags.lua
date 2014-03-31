@@ -28,21 +28,23 @@ local button = require("ui.Button")
 local scenes = require("utils.Scenes")
 
 -- Corona modules --
-local storyboard = require("storyboard")
+local composer = require("composer")
 
--- Map editor scene --
-local Scene = storyboard.newScene()
+-- Test scene --
+local Scene = composer.newScene()
 
 --
-function Scene:createScene ()
+function Scene:create ()
 	button.Button(self.view, nil, 20, 20, 200, 50, scenes.Opener{ name = "scene.Title" }, "Go Back")
 end
 
-Scene:addEventListener("createScene")
+Scene:addEventListener("create")
 
 --
-function Scene:enterScene ()
-
+function Scene:show (event)
+if event.phase == "will" then
+	return
+end
 local links = require("editor.Links")
 local tags = require("editor.Tags")
 
@@ -329,13 +331,13 @@ end
 
 end
 
-Scene:addEventListener("enterScene")
+Scene:addEventListener("show")
 
 --
-function Scene:exitScene ()
+function Scene:hide ()
 	-- ??
 end
 
-Scene:addEventListener("exitScene")
+Scene:addEventListener("hide")
 
 return Scene

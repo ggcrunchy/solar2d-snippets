@@ -24,6 +24,7 @@
 --
 
 -- Standard library imports --
+local ipairs = ipairs
 local pairs = pairs
 local require = require
 local setmetatable = setmetatable
@@ -45,6 +46,33 @@ function M.DoList (name)
 	end
 
 	return list
+end
+
+--- DOCME
+function M.DoList_Names (names, prefix)
+	prefix = prefix or ""
+
+	local list = {}
+
+	for _, name in ipairs(names) do
+		list[name] = require(prefix .. name)
+	end
+
+	return list
+end
+
+--- DOCME
+function M.GetNames (name)
+	local from = require(name)
+	local prefix, list = from._prefix, {}
+
+	for k, v in pairs(from) do
+		if k ~= "_prefix" then
+			list[k] = v
+		end
+	end
+
+	return list, prefix and prefix .. "." or ""
 end
 
 --- Helper to deal with circular module require situations. Provided module access is not

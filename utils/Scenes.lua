@@ -27,7 +27,7 @@
 local random = math.random
 
 -- Corona modules --
-local storyboard = require("storyboard")
+local composer = require("composer")
 
 -- Exports --
 local M = {}
@@ -38,22 +38,22 @@ local Aliases = {}
 --- Utility.
 -- @string alias Alias to associate with the current scene, cf. @{ComingFrom}.
 function M.Alias (alias)
-	Aliases[storyboard.getCurrentSceneName()] = alias
+	Aliases[composer.getSceneName("current")] = alias
 end
 
 --- Getter.
 -- @treturn string Name of previous scene; if an alias exists, cf. @{Alias}, it is used.
 function M.ComingFrom ()
-	local prev = storyboard.getPrevious()
+	local prev = composer.getSceneName("previous")
 
 	return Aliases[prev] or prev
 end
 
--- Arguments to storyboard.gotoScene --
+-- Arguments to composer.gotoScene --
 local Args = {}
 
---- Utility that augments `storyboard.gotoScene`.
--- @ptable args Arguments to forward to `storyboard.gotoScene`.
+--- Utility that augments `composer.gotoScene`.
+-- @ptable args Arguments to forward to `composer.gotoScene`.
 --
 -- The **name** field contains the scene name.
 --
@@ -61,7 +61,7 @@ local Args = {}
 -- array part of _args_ may be populated with transition names; if so, one is randomly chosen
 -- as the effect. If neither of those is the case, the **effect** key is used.
 --
--- The **params** and **time** keys are the same as for `storyboard.gotoScene`.
+-- The **params** and **time** keys are the same as for `composer.gotoScene`.
 function M.GoToScene (args)
 	Args.params = args.params
 
@@ -75,7 +75,7 @@ function M.GoToScene (args)
 		Args.time = args.time
 	end
 
-	storyboard.gotoScene(args.name, Args)
+	composer.gotoScene(args.name, Args)
 
 	Args.effect, Args.params, Args.time = nil
 end
@@ -115,16 +115,16 @@ do
 
 	local function GoBack (what)
 		if what == "message:wants_to_go_back" then
-			storyboard.gotoScene(Name, Effect)
+			composer.gotoScene(Name, Effect)
 		end
 	end
 
 	--- Variant of @{SetListenFunc} for the common case of only handling "go back to the
 	-- previous scene" behavior.
-	-- @string name Name of return scene; if absent, uses `storyboard.getPrevious`.
+	-- @string name Name of return scene; if absent, uses `composer.getSceneName("previous")`.
 	-- @string effect Effect to play on going back; if absent, uses **"fade"**.
 	function M.SetListenFunc_GoBack (name, effect)
-		Name = name or storyboard:getPrevious()
+		Name = name or composer.getSceneName("previous")
 		Effect = effect or "fade"
 
 		M.SetListenFunc(GoBack)

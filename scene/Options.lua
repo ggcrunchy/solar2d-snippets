@@ -30,13 +30,13 @@ local persistence = require("game.Persistence")
 local scenes = require("utils.Scenes")
 
 -- Corona modules --
-local storyboard = require("storyboard")
+local composer = require("composer")
 
 -- Options scene --
-local Scene = storyboard.newScene()
+local Scene = composer.newScene()
 
 -- Create Scene --
-function Scene:createScene ()
+function Scene:create ()
 	button.Button(self.view, nil, 120, 70, 200, 50, scenes.WantsToGoBack, "Go Back")
 	button.Button(self.view, nil, 120, 140, 200, 50, persistence.Wipe, "Wipe data")
 
@@ -46,20 +46,24 @@ function Scene:createScene ()
 	end
 end
 
-Scene:addEventListener("createScene")
+Scene:addEventListener("create")
 
--- Enter Scene --
-function Scene:enterScene ()
-	scenes.SetListenFunc_GoBack()
+-- Show Scene --
+function Scene:show (event)
+	if event.phase == "did" then
+		scenes.SetListenFunc_GoBack()
+	end
 end
 
-Scene:addEventListener("enterScene")
+Scene:addEventListener("show")
 
--- Exit Scene --
-function Scene:exitScene ()
-	scenes.SetListenFunc(nil)
+-- Hide Scene --
+function Scene:hide (event)
+	if event.phase == "did" then
+		scenes.SetListenFunc(nil)
+	end
 end
 
-Scene:addEventListener("exitScene")
+Scene:addEventListener("hide")
 
 return Scene

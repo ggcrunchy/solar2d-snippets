@@ -65,17 +65,17 @@ local native = native
 local transition = transition
 
 -- Corona modules --
-local storyboard = require("storyboard")
+local composer = require("composer")
 
 -- Map editor scene --
-local Scene = storyboard.newScene()
+local Scene = composer.newScene()
 
 -- Create Scene --
-function Scene:createScene (event)
+function Scene:create (event)
 	scenes.Alias("Editor")
 end
 
-Scene:addEventListener("createScene")
+Scene:addEventListener("create")
 
 -- Current editor view --
 local Current
@@ -94,10 +94,10 @@ local function SetCurrent (view)
 end
 
 -- List of editor views --
-local EditorView = {}
+local EditorView-- = {}
 
 -- Names of editor views --
-local Names = require("config.EditorViews")
+local Names, Prefix = require_ex.GetNames("config.EditorViews")
 
 -- Tab buttons to choose views... --
 local TabButtons = {}
@@ -181,237 +181,239 @@ if #TabButtons > TabsMax then
 	TabOptions = { left = TabW(1), width = TabW(#TabButtons) }
 end
 
--- Enter Scene --
-function Scene:enterScene (event)
-	scenes.SetListenFunc(Listen)
+-- Show Scene --
+function Scene:show (event)
+	if event.phase == "did" then
+		scenes.SetListenFunc(Listen)
 
-	--
-	if not CommonTagsLoaded then
-		for k, v in pairs{
-			event_source = "event_target",
-			event_target = "event_source"
-		} do
-			tags.ImpliesInterface(k, v)
+		--
+		if not CommonTagsLoaded then
+			for k, v in pairs{
+				event_source = "event_target",
+				event_target = "event_source"
+			} do
+				tags.ImpliesInterface(k, v)
+			end
+
+			CommonTagsLoaded = true
 		end
 
-		CommonTagsLoaded = true
-	end
+		-- We may enter the scene one of two ways: from the editor setup menu, in which case
+		-- we use the provided scene parameters; or returning from a test, in which case we
+		-- must reconstruct the editor state from various information we left behind.
+		local params
 
-	-- We may enter the scene one of two ways: from the editor setup menu, in which case
-	-- we use the provided scene parameters; or returning from a test, in which case we
-	-- must reconstruct the editor state from various information we left behind.
-	local params
+		if scenes.ComingFrom() == "Level" then
+			dispatch_list.CallList("enter_menus")
 
-	if scenes.ComingFrom() == "Level" then
-		dispatch_list.CallList("enter_menus")
+			local exists, data = persistence.LevelExists(TestLevelName, true)
 
-		local exists, data = persistence.LevelExists(TestLevelName, true)
+			-- TODO: Doesn't exist? (Database failure?)
 
-		-- TODO: Doesn't exist? (Database failure?)
+			params = persistence.Decode(data)
 
-		params = persistence.Decode(data)
+			params.is_loading = RestoreState.level_name
+		else
+			params = event.params
+		end
 
-		params.is_loading = RestoreState.level_name
-	else
-		params = event.params
-	end
+		-- Load sidebar buttons for editor operations.
+		local sidebar = {}
 
-	-- Load sidebar buttons for editor operations.
-	local sidebar = {}
+		for i, func, text in args.ArgsByN(2,
+			scenes.WantsToGoBack, "Back",
 
-	for i, func, text in args.ArgsByN(2,
-		scenes.WantsToGoBack, "Back",
+			-- Test the level --
+			function()
+				local restore = { was_dirty = common.IsDirty(), common.GetDims() }
 
-		-- Test the level --
-		function()
-			local restore = { was_dirty = common.IsDirty(), common.GetDims() }
+				ops.Verify()
 
-			ops.Verify()
+				if common.IsVerified() then
+					restore.level_name = ops.GetLevelName()
 
-			if common.IsVerified() then
-				restore.level_name = ops.GetLevelName()
+					-- The user may not want to save the changes being tested, so we introduce
+					-- an intermediate test level instead. The working version of the level may
+					-- already be saved, however, in which case the upcoming save will be a no-
+					-- op unless we manually dirty the level.
+					common.Dirty()
 
-				-- The user may not want to save the changes being tested, so we introduce
-				-- an intermediate test level instead. The working version of the level may
-				-- already be saved, however, in which case the upcoming save will be a no-
-				-- op unless we manually dirty the level.
-				common.Dirty()
+					-- We save the test level: as a WIP, so we can restore up to our most recent
+					-- changes; and as a build, which will be what we test. Both are loaded into
+					-- the database, in order to take advantage of the loading machinery, under
+					-- a reserved name (this will overwrite any existing entries). The levels are
+					-- marked as temporary so they don't show up in enumerations.
+					ops.SetTemp(true)
+					ops.SetLevelName(TestLevelName)
+					ops.Save()
+					ops.Build()
+					ops.SetTemp(false)
 
-				-- We save the test level: as a WIP, so we can restore up to our most recent
-				-- changes; and as a build, which will be what we test. Both are loaded into
-				-- the database, in order to take advantage of the loading machinery, under
-				-- a reserved name (this will overwrite any existing entries). The levels are
-				-- marked as temporary so they don't show up in enumerations.
-				ops.SetTemp(true)
-				ops.SetLevelName(TestLevelName)
-				ops.Save()
-				ops.Build()
-				ops.SetTemp(false)
+					timers.Defer(function()
+						local exists, data = persistence.LevelExists(TestLevelName)
 
-				timers.Defer(function()
-					local exists, data = persistence.LevelExists(TestLevelName)
+						if exists then
+							RestoreState = restore
 
-					if exists then
-						RestoreState = restore
+							scenes.GoToScene{ name = "scene.Level", params = data, no_effect = true }
+						else
+							native.showAlert("Error!", "Failed to launch test level")
 
-						scenes.GoToScene{ name = "scene.Level", params = data, no_effect = true }
-					else
-						native.showAlert("Error!", "Failed to launch test level")
+							-- Fix any inconsistent editor state.
+							if restore.was_dirty then
+								common.Dirty()
+							end
 
-						-- Fix any inconsistent editor state.
-						if restore.was_dirty then
-							common.Dirty()
+							ops.SetLevelName(restore.level_name)
 						end
+					end)
+				end
+			end, "Test",
 
-						ops.SetLevelName(restore.level_name)
-					end
-				end)
+			-- Build a game-ready version of the level --
+			ops.Build, "Build",
+
+			-- Verify the game-ready integrity of the level --
+			ops.Verify, "Verify",
+
+			-- Save the working version of the level --
+			ops.Save, "Save",
+
+			-- Bring up a help overlay --
+			function()
+				composer.showOverlay("overlay.Help", HelpOpts)
+			end, "Help"
+		) do
+			local button = button.Button(self.view, nil, 10, display.contentHeight - i * 65 - 5, 100, 50, func, text)
+
+			button:translate(button.width / 2, button.height / 2)
+
+			if text ~= "Help" and text ~= "Back" then
+				sidebar[text] = button
 			end
-		end, "Test",
 
-		-- Build a game-ready version of the level --
-		ops.Build, "Build",
-
-		-- Verify the game-ready integrity of the level --
-		ops.Verify, "Verify",
-
-		-- Save the working version of the level --
-		ops.Save, "Save",
-
-		-- Bring up a help overlay --
-		function()
-			storyboard.showOverlay("overlay.Help", HelpOpts)
-		end, "Help"
-	) do
-		local button = button.Button(self.view, nil, 10, display.contentHeight - i * 65 - 5, 100, 50, func, text)
-
-		button:translate(button.width / 2, button.height / 2)
-
-		if text ~= "Help" and text ~= "Back" then
-			sidebar[text] = button
+			-- Add some buttons to a list for e.g. graying out.
+			if text == "Save" or text == "Verify" then
+				common.AddButton(text, button)
+			end
 		end
 
-		-- Add some buttons to a list for e.g. graying out.
-		if text == "Save" or text == "Verify" then
-			common.AddButton(text, button)
+		-- Load the view-switching tabs.
+		Tabs = common_ui.TabBar(self.view, TabButtons, TabOptions)
+
+		-- If there were enough tab options, add clipping and scroll buttons.
+		if TabOptions then
+			local shown = TabsMax - 2
+			local cont, n = display.newContainer(TabW(shown), Tabs.height), #TabButtons - shown
+
+			self.view:insert(cont)
+			cont:translate(display.contentCenterX, Tabs.height / 2)
+			cont:insert(Tabs, true)
+
+			Tabs.x = TabW(.5 * n)
+
+			local x, w = 0, TabW(1)
+
+			-- TODO: Hack!
+			common_ui.TabsHack(self.view, Tabs, shown, function() return TabW(x + 1), x end, 0, TabW(shown))
+			-- /TODO
+
+			local lscroll = common_ui.ScrollButton(self.view, "lscroll", 0, 0, function()
+				if x > 0 and not Tabs.m_going then
+					x = x - 1
+
+					TabRotate(w)
+				end
+			end)
+			local rscroll = common_ui.ScrollButton(self.view, "rscroll", 0, 0, function()
+				if x < n and not Tabs.m_going then
+					x = x + 1
+
+					TabRotate(-w)
+				end
+			end)
+
+			lscroll.x, rscroll.x = w / 4, display.contentWidth - TabW(1) + w / 4
+
+			lscroll:translate(lscroll.width / 2, lscroll.height / 2)
+			rscroll:translate(rscroll.width / 2, rscroll.height / 2)
 		end
+
+		-- Initialize systems.
+		common.Init(params.main[1], params.main[2])
+		grid.Init(self.view)
+		ops.Init(self.view)
+
+		--
+		common.AddHelp("Common", {
+			Test = "Builds the level. If successful, launches the level in the game.",
+			Build = "Verifies the scene. If is passes, builds it in game-loadable form.",
+			Verify = "Checks the scene for errors that would prevent a build.",
+			Save = "Saves the current work-in-progress scene."
+		})
+		common.AddHelp("Common", sidebar)
+
+		-- Install the views.
+		for _, view in pairs(EditorView) do
+			view.Load(self.view)
+		end
+
+		-- If we are loading a level, set the working name and dispatch a load event. If we
+		-- tested a new level, it may not have a name yet, but in that case a restore state
+		-- tells us our pre-test WIP is available to reload. Usually the editor state should
+		-- not be dirty after a load.
+		if params.is_loading or RestoreState then
+			ops.SetLevelName(params.is_loading)
+			dispatch_list.CallList("load_level_wip", params)
+			events.ResolveLinks_Load(params)
+			common.Undirty()
+		end
+
+		-- Trigger the default view.
+		Tabs:setSelected(1, true)
+
+		-- If the state was dirty before a test, then re-dirty it.
+		if RestoreState and RestoreState.was_dirty then
+			common.Dirty()
+		end
+
+		-- Remove evidence of any test and alert listeners that the WIP is opened.
+		RestoreState = nil
+
+		dispatch_list.CallList("level_wip_opened")
 	end
-
-	-- Load the view-switching tabs.
-	Tabs = common_ui.TabBar(self.view, TabButtons, TabOptions)
-
-	-- If there were enough tab options, add clipping and scroll buttons.
-	if TabOptions then
-		local shown = TabsMax - 2
-		local cont, n = display.newContainer(TabW(shown), Tabs.height), #TabButtons - shown
-
-		self.view:insert(cont)
-		cont:translate(display.contentCenterX, Tabs.height / 2)
-		cont:insert(Tabs, true)
-
-		Tabs.x = TabW(.5 * n)
-
-		local x, w = 0, TabW(1)
-
-		-- TODO: Hack!
-		common_ui.TabsHack(self.view, Tabs, shown, function() return TabW(x + 1), x end, 0, TabW(shown))
-		-- /TODO
-
-		local lscroll = common_ui.ScrollButton(self.view, "lscroll", 0, 0, function()
-			if x > 0 and not Tabs.m_going then
-				x = x - 1
-
-				TabRotate(w)
-			end
-		end)
-		local rscroll = common_ui.ScrollButton(self.view, "rscroll", 0, 0, function()
-			if x < n and not Tabs.m_going then
-				x = x + 1
-
-				TabRotate(-w)
-			end
-		end)
-
-		lscroll.x, rscroll.x = w / 4, display.contentWidth - TabW(1) + w / 4
-
-		lscroll:translate(lscroll.width / 2, lscroll.height / 2)
-		rscroll:translate(rscroll.width / 2, rscroll.height / 2)
-	end
-
-	-- Initialize systems.
-	common.Init(params.main[1], params.main[2])
-	grid.Init(self.view)
-	ops.Init(self.view)
-
-	--
-	common.AddHelp("Common", {
-		Test = "Builds the level. If successful, launches the level in the game.",
-		Build = "Verifies the scene. If is passes, builds it in game-loadable form.",
-		Verify = "Checks the scene for errors that would prevent a build.",
-		Save = "Saves the current work-in-progress scene."
-	})
-	common.AddHelp("Common", sidebar)
-
-	-- Install the views.
-	for _, view in pairs(EditorView) do
-		view.Load(self.view)
-	end
-
-	-- If we are loading a level, set the working name and dispatch a load event. If we
-	-- tested a new level, it may not have a name yet, but in that case a restore state
-	-- tells us our pre-test WIP is available to reload. Usually the editor state should
-	-- not be dirty after a load.
-	if params.is_loading or RestoreState then
-		ops.SetLevelName(params.is_loading)
-		dispatch_list.CallList("load_level_wip", params)
-		events.ResolveLinks_Load(params)
-		common.Undirty()
-	end
-
-	-- Trigger the default view.
-	Tabs:setSelected(1, true)
-
-	-- If the state was dirty before a test, then re-dirty it.
-	if RestoreState and RestoreState.was_dirty then
-		common.Dirty()
-	end
-
-	-- Remove evidence of any test and alert listeners that the WIP is opened.
-	RestoreState = nil
-
-	dispatch_list.CallList("level_wip_opened")
 end
 
-Scene:addEventListener("enterScene")
+Scene:addEventListener("show")
 
--- Exit Scene --
-function Scene:exitScene ()
-	scenes.SetListenFunc(nil)
+-- Hide Scene --
+function Scene:hide (event)
+	if event.phase == "did" then
+		scenes.SetListenFunc(nil)
 
-	SetCurrent(nil)
+		SetCurrent(nil)
 
-	for _, view in pairs(EditorView) do
-		view.Unload()
+		for _, view in pairs(EditorView) do
+			view.Unload()
+		end
+
+		ops.CleanUp()
+		grid.CleanUp()
+		common.CleanUp()
+
+		Tabs:removeSelf()
+
+		for i = self.view.numChildren, 1, -1 do
+			self.view:remove(i)
+		end
+
+		dispatch_list.CallList("level_wip_closed")
 	end
-
-	ops.CleanUp()
-	grid.CleanUp()
-	common.CleanUp()
-
-	Tabs:removeSelf()
-
-	for i = self.view.numChildren, 1, -1 do
-		self.view:remove(i)
-	end
-
-	dispatch_list.CallList("level_wip_closed")
 end
 
-Scene:addEventListener("exitScene")
+Scene:addEventListener("hide")
 
 -- Finally, install the editor views.
-for _, name in ipairs(Names) do
-	EditorView[name] = require("editor.views." .. name)
-end
+EditorView = require_ex.DoList_Names(Names, Prefix)
 
 return Scene

@@ -43,10 +43,10 @@ local native = native
 local transition = transition
 
 -- Corona modules --
-local storyboard = require("storyboard")
+local composer = require("composer")
 
 -- Link overlay --
-local Overlay = storyboard.newScene()
+local Overlay = composer.newScene()
 
 -- --
 local Box, Links
@@ -79,7 +79,7 @@ function FadeShadeParams.onComplete (object)
 			dialog.alpha, object.m_dialog = 1
 		end
 
-		storyboard.hideOverlay(true)
+		composer.hideOverlay(true)
 	end
 end
 
@@ -126,7 +126,7 @@ local List, Node
 local SetCurrent
 
 --
-function Overlay:createScene ()
+function Overlay:create ()
 	--
 	self.m_shade = display.newRect(self.view, 0, 0, display.contentWidth, display.contentHeight)
 
@@ -170,7 +170,7 @@ function Overlay:createScene ()
 	end, "X")
 end
 
-Overlay:addEventListener("createScene")
+Overlay:addEventListener("create")
 
 -- --
 local Outline
@@ -505,96 +505,100 @@ local function SetAboutText (about, has_links)
 end
 
 --
-function Overlay:enterScene (event)
-	--
-	self.m_cgroup.x = display.contentWidth - self.m_cgroup.width
-	self.m_cgroup.y = display.contentHeight - self.m_cgroup.height
+function Overlay:show (event)
+	if event.phase == "did" then
+		--
+		self.m_cgroup.x = display.contentWidth - self.m_cgroup.width
+		self.m_cgroup.y = display.contentHeight - self.m_cgroup.height
 
-	--
-	self.m_shade.alpha = 0
+		--
+		self.m_shade.alpha = 0
 
-	FadeShade(.6)
+		FadeShade(.6)
 
-	--
-	local params = event.params
+		--
+		local params = event.params
 
-	Rep, Sub = params.rep, params.sub
--- TODO: make this optional...
-	--
-	local dialog = params.dialog
-	
-	if dialog then
-		dialog.alpha = .35
-	end
+		Rep, Sub = params.rep, params.sub
+	-- TODO: make this optional...
+		--
+		local dialog = params.dialog
+		
+		if dialog then
+			dialog.alpha = .35
+		end
 
-	self.m_shade.m_dialog = dialog
+		self.m_shade.m_dialog = dialog
 
-	--
-	self.m_choices:deleteAllRows()
+		--
+		self.m_choices:deleteAllRows()
 
-	List = {}
--- TODO: (optionally) add icon from one (both?) link objects into dialogs?
--- For that matter, link images...
-	--
-	local iter, set = tags.TagAndChildren, params.tags
+		List = {}
+	-- TODO: (optionally) add icon from one (both?) link objects into dialogs?
+	-- For that matter, link images...
+		--
+		local iter, set = tags.TagAndChildren, params.tags
 
-	if params.interfaces then
-		iter, set = tags.Implementors, params.interfaces
-	end
+		if params.interfaces then
+			iter, set = tags.Implementors, params.interfaces
+		end
 
-	for _, name in iter(set) do
-		for object in links.Tagged(name) do
-			if object ~= Rep and MayLink(object, name) then
-				local name = ValuesName(object)
+		for _, name in iter(set) do
+			for object in links.Tagged(name) do
+				if object ~= Rep and MayLink(object, name) then
+					local name = ValuesName(object)
 
-				List[#List + 1] = {
-					text = ("%s%s"):format(links.GetTag(object), name and " (" .. name .. ")" or ""),
-					object = object
-				}
+					List[#List + 1] = {
+						text = ("%s%s"):format(links.GetTag(object), name and " (" .. name .. ")" or ""),
+						object = object
+					}
+				end
 			end
 		end
-	end
 
-	--
-	Node = display.newCircle(self.view, params.x, params.y, 15)
+		--
+		Node = display.newCircle(self.view, params.x, params.y, 15)
 
-	Node:setFillColor(.125, 1, .125)
-	Node:setStrokeColor(1, 0, 0)
+		Node:setFillColor(.125, 1, .125)
+		Node:setStrokeColor(1, 0, 0)
 
-	Node.strokeWidth = 3
+		Node.strokeWidth = 3
 
-	--
-	local has_links = #List > 0
+		--
+		local has_links = #List > 0
 
-	if has_links then
-		-- Make a note of whichever objects already link to the representative.
-		for link in links.Links(Rep, Sub) do
-			AddObject(link:GetOtherObject(Rep))
+		if has_links then
+			-- Make a note of whichever objects already link to the representative.
+			for link in links.Links(Rep, Sub) do
+				AddObject(link:GetOtherObject(Rep))
+			end
+
+			local add_row = common_ui.ListboxRowAdder()
+
+			for _ = 1, #List do
+				self.m_choices:insertRow(add_row)
+			end
+
+			self.m_choices.isVisible = true
 		end
 
-		local add_row = common_ui.ListboxRowAdder()
-
-		for _ = 1, #List do
-			self.m_choices:insertRow(add_row)
-		end
-
-		self.m_choices.isVisible = true
+		SetAboutText(self.m_about, has_links)
 	end
-
-	SetAboutText(self.m_about, has_links)
 end
 
-Overlay:addEventListener("enterScene")
+Overlay:addEventListener("show")
 
 --
-function Overlay:exitScene (event)
-	SetCurrent(nil)
+function Overlay:hide (event)
+	if event.phase == "did" then
+		SetCurrent(nil)
 
-	self.m_choices.isVisible = false
+		self.m_choices.isVisible = false
 
-	List, Node, Rep, Sub = nil
+		List, Node, Rep, Sub = nil
+	end
 end
 
-Overlay:addEventListener("exitScene")
+Overlay:addEventListener("hide")
 
 return Overlay

@@ -47,17 +47,17 @@ local timer = timer
 local transition = transition
 
 -- Corona modules --
-local storyboard = require("storyboard")
+local composer = require("composer")
 
 -- Delaunay demo scene --
-local Scene = storyboard.newScene()
+local Scene = composer.newScene()
 
 --
-function Scene:createScene ()
+function Scene:create ()
 	buttons.Button(self.view, nil, 120, 75, 200, 50, scenes.Opener{ name = "scene.Choices" }, "Go Back")
 end
 
-Scene:addEventListener("createScene")
+Scene:addEventListener("create")
 
 -- --
 local Width, Height = display.contentWidth, display.contentHeight
@@ -222,185 +222,188 @@ local function BuildMesh (points, super_tri, show_text)
 end
 
 --
-function Scene:enterScene ()
-
-	--
-	self.point_cloud = display.newGroup()
-
-	self.view:insert(self.point_cloud)
-
-	--
-	self.text = display.newText(self.view, "", 0, Height - 70, native.systemFontBold, 20)
-
-	local text_body
-
-	local function ShowText (text)
-		text_body = text
-
-		self.text.isVisible = text ~= nil
-	end
-
-	--
-	self.show_text = timers.Repeat(function(event)
-		if text_body then
-			local ndots = floor((event.time % 1000) / 250)
-
-			self.text.text = ("%s%s"):format(text_body, ("."):rep(ndots))
-
-			self.text.anchorX = 0
-			self.text.x = 50
-		end
-	end, 50)
-
-	-- Some idea with point clouds, linear walks
-	self.update = timers.WrapEx(function()
+function Scene:show (event)
+	if event.phase == "did" then
 		--
-		ShowText("Adding points")
+		self.point_cloud = display.newGroup()
 
-		local x1, y1 = floor(.3 * Width), floor(.2 * Height)
-		local x2, y2 = floor(.7 * Width), floor(.9 * Height)
-		local indices, points = {}, {}
-
-		LeftToFade = 50
-
-		for i = 1, LeftToFade do
-			local point = display.newCircle(self.point_cloud, random(x1, x2), random(y1, y2), 7)
-
-			point:setFillColor(GetColor())
-
-			FadeInParams.delay = random(0, 2200)
-
-			Fade(point, 500, 1400)
-
-			indices[i], points[i] = i, point
-		end
-
-		repeat yield() until LeftToFade == 0
+		self.view:insert(self.point_cloud)
 
 		--
-		ShowText("Calculating bounding box")
+		self.text = display.newText(self.view, "", 0, Height - 70, native.systemFontBold, 20)
 
-		self.highlights = display.newGroup()
+		local text_body
 
-		self.view:insert(self.highlights)
+		local function ShowText (text)
+			text_body = text
 
-		for _ = 1, 6 do
-			local highlight = display.newCircle(self.highlights, 0, 0, 9)
-
-			Hollow(highlight)
-
-			highlight.isVisible = false
-
-			highlight.m_done = true
+			self.text.isVisible = text ~= nil
 		end
 
-		FadeInParams.delay = nil
+		--
+		self.show_text = timers.Repeat(function(event)
+			if text_body then
+				local ndots = floor((event.time % 1000) / 250)
 
-		local minx, miny, maxx, maxy = huge, huge, -huge, -huge
-		local nindices = #indices
+				self.text.text = ("%s%s"):format(text_body, ("."):rep(ndots))
 
-		repeat
-			for i = 1, self.highlights.numChildren do
-				local highlight = self.highlights[i]
+				self.text.anchorX = 0
+				self.text.x = 50
+			end
+		end, 50)
 
-				if nindices == 0 then
-					highlight.isVisible = false
-				elseif highlight.m_done then
-					local slot = random(nindices)
-					local point = points[indices[slot]]
+		-- Some idea with point clouds, linear walks
+		self.update = timers.WrapEx(function()
+			--
+			ShowText("Adding points")
 
-					indices[slot] = indices[nindices]
+			local x1, y1 = floor(.3 * Width), floor(.2 * Height)
+			local x2, y2 = floor(.7 * Width), floor(.9 * Height)
+			local indices, points = {}, {}
 
-					highlight:setStrokeColor(GetColor())
+			LeftToFade = 50
 
-					highlight.isVisible = true
-					highlight.x, highlight.y = point.x, point.y
+			for i = 1, LeftToFade do
+				local point = display.newCircle(self.point_cloud, random(x1, x2), random(y1, y2), 7)
 
-					minx, miny = min(minx, point.x), min(miny, point.y)
-					maxx, maxy = max(maxx, point.x), max(maxy, point.y)
+				point:setFillColor(GetColor())
 
-					highlight.m_done = false
+				FadeInParams.delay = random(0, 2200)
 
-					Fade(highlight, 300, 700)
+				Fade(point, 500, 1400)
 
-					nindices = nindices - 1
-				end
+				indices[i], points[i] = i, point
 			end
 
-			yield()
-		until nindices == 0
+			repeat yield() until LeftToFade == 0
 
-		self.highlights:removeSelf()
+			--
+			ShowText("Calculating bounding box")
 
-		--
-		ShowText("Adding bounding rectangle")
+			self.highlights = display.newGroup()
 
-		self.rectangle = display.newRect(self.view, 0, 0, maxx - minx, maxy - miny)
+			self.view:insert(self.highlights)
 
-		self.rectangle.anchorX, self.rectangle.x = 0, minx
-		self.rectangle.anchorY, self.rectangle.y = 0, miny
+			for _ = 1, 6 do
+				local highlight = display.newCircle(self.highlights, 0, 0, 9)
 
-		Hollow(self.rectangle, 255, 0, 0)
-		FadeAndWait(self.rectangle, 400, 600)
+				Hollow(highlight)
 
-		--
-		ShowText("Adding diagonal")
+				highlight.isVisible = false
 
-		local cx, cy, dummy = .5 * (minx + maxx), .5 * (miny + maxy), {}
+				highlight.m_done = true
+			end
 
-		Polyline("diagonal", cx, cy, { cx, cy, maxx, maxy }, 0, 255, 0, 300, 700)
+			FadeInParams.delay = nil
 
-		--
-		ShowText("Adding circumcircle")
+			local minx, miny, maxx, maxy = huge, huge, -huge, -huge
+			local nindices = #indices
 
-		local dx, dy = maxx - cx, maxy - cy
-		local radius = floor(sqrt(dx^2 + dy^2 + .5))
+			repeat
+				for i = 1, self.highlights.numChildren do
+					local highlight = self.highlights[i]
 
-		self.circumcircle = display.newCircle(self.view, cx, cy, radius)
+					if nindices == 0 then
+						highlight.isVisible = false
+					elseif highlight.m_done then
+						local slot = random(nindices)
+						local point = points[indices[slot]]
 
-		Hollow(self.circumcircle, 0, 0, 255)
-		FadeAndWait(self.circumcircle, 500, 800)
+						indices[slot] = indices[nindices]
 
-		--
-		ShowText("Adding supertriangle")
+						highlight:setStrokeColor(GetColor())
 
-		local yb = dy + dx * (dx / dy) -- Solve t, then Y for (x, y) + (-y, x) * t = (0, Y)
-		local xr = dx + dy * (radius + dy) / dx -- Solve t, then X for (x, y) + (-y, x) * t = (X, -r)
-		local super_tri = {
-			cx, cy + yb,
-			cx + xr, cy - radius,
-			cx - xr, cy - radius
-		}
+						highlight.isVisible = true
+						highlight.x, highlight.y = point.x, point.y
 
-		Polyline("supertriangle", cx, cy, super_tri, 128, 0, 128, 700, 900, true)
+						minx, miny = min(minx, point.x), min(miny, point.y)
+						maxx, maxy = max(maxx, point.x), max(maxy, point.y)
 
-		-- Uff...
-	--	BuildMesh(points, super_tri, ShowText)
+						highlight.m_done = false
 
-		--
-		ShowText(nil)
-	end, 20)
+						Fade(highlight, 300, 700)
+
+						nindices = nindices - 1
+					end
+				end
+
+				yield()
+			until nindices == 0
+
+			self.highlights:removeSelf()
+
+			--
+			ShowText("Adding bounding rectangle")
+
+			self.rectangle = display.newRect(self.view, 0, 0, maxx - minx, maxy - miny)
+
+			self.rectangle.anchorX, self.rectangle.x = 0, minx
+			self.rectangle.anchorY, self.rectangle.y = 0, miny
+
+			Hollow(self.rectangle, 255, 0, 0)
+			FadeAndWait(self.rectangle, 400, 600)
+
+			--
+			ShowText("Adding diagonal")
+
+			local cx, cy, dummy = .5 * (minx + maxx), .5 * (miny + maxy), {}
+
+			Polyline("diagonal", cx, cy, { cx, cy, maxx, maxy }, 0, 255, 0, 300, 700)
+
+			--
+			ShowText("Adding circumcircle")
+
+			local dx, dy = maxx - cx, maxy - cy
+			local radius = floor(sqrt(dx^2 + dy^2 + .5))
+
+			self.circumcircle = display.newCircle(self.view, cx, cy, radius)
+
+			Hollow(self.circumcircle, 0, 0, 255)
+			FadeAndWait(self.circumcircle, 500, 800)
+
+			--
+			ShowText("Adding supertriangle")
+
+			local yb = dy + dx * (dx / dy) -- Solve t, then Y for (x, y) + (-y, x) * t = (0, Y)
+			local xr = dx + dy * (radius + dy) / dx -- Solve t, then X for (x, y) + (-y, x) * t = (X, -r)
+			local super_tri = {
+				cx, cy + yb,
+				cx + xr, cy - radius,
+				cx - xr, cy - radius
+			}
+
+			Polyline("supertriangle", cx, cy, super_tri, 128, 0, 128, 700, 900, true)
+
+			-- Uff...
+		--	BuildMesh(points, super_tri, ShowText)
+
+			--
+			ShowText(nil)
+		end, 20)
+	end
 end
 
-Scene:addEventListener("enterScene")
+Scene:addEventListener("show")
 
 --
-function Scene:exitScene ()
-	timer.cancel(self.show_text)
-	timer.cancel(self.update)
+function Scene:hide (event)
+	if event.phase == "did" then
+		timer.cancel(self.show_text)
+		timer.cancel(self.update)
 
-	self.point_cloud:removeSelf()
-	self.text:removeSelf()
+		self.point_cloud:removeSelf()
+		self.text:removeSelf()
 
-	display.remove(self.circumcircle)
-	display.remove(self.diagonal)
-	display.remove(self.highlights)
-	display.remove(self.rectangle)
-	display.remove(self.supertriangle)
+		display.remove(self.circumcircle)
+		display.remove(self.diagonal)
+		display.remove(self.highlights)
+		display.remove(self.rectangle)
+		display.remove(self.supertriangle)
 
-	self.circumcircle, self.diagonal, self.highlights, self.rectangle, self.supertriangle = nil
+		self.circumcircle, self.diagonal, self.highlights, self.rectangle, self.supertriangle = nil
+	end
 end
 
-Scene:addEventListener("exitScene")
+Scene:addEventListener("hide")
 
 return Scene

@@ -39,10 +39,10 @@ local timers = require("game.Timers")
 local native = native
 
 -- Corona modules --
-local storyboard = require("storyboard")
+local composer = require("composer")
 
 -- Level scene --
-local Scene = storyboard.newScene()
+local Scene = composer.newScene()
 
 -- Alert handler, to cancel dialog if level ends first --
 local Alert
@@ -65,6 +65,14 @@ local function Listen (what, arg1, arg2, arg3)
 			end
 		end)
 
+	-- Message: Hide Overlay
+	elseif what == "message:hide_overlay" and OnDone then
+		timers.Defer(function()
+			OnDone(Arg)
+
+			OnDone, Arg = nil
+		end)
+
 	-- Message: Show Overlay
 	-- arg1: Overlay name
 	-- arg2: On-done logic
@@ -72,56 +80,47 @@ local function Listen (what, arg1, arg2, arg3)
 	elseif what == "message:show_overlay" then
 		OnDone, Arg = arg2, arg3
 
-		storyboard.showOverlay(arg1, Args)
+		composer.showOverlay(arg1, Args)
 	end
 end
 
 -- Create Scene --
-function Scene:createScene (event)
+function Scene:create ()
 	scenes.Alias("Level")
 end
 
-Scene:addEventListener("createScene")
+Scene:addEventListener("create")
 
--- Enter Scene --
-function Scene:enterScene (event)
-	--
-	dispatch_list.CallList("leave_menus") -- OKAY??? (TODO: seems to have worked fine, but look into that other event)
+-- Show Scene --
+function Scene:show (event)
+	if event.phase == "did" then
+		--
+		dispatch_list.CallList("leave_menus") -- OKAY??? (TODO: seems to have worked fine, but look into "will")
 
-	level_map.LoadLevel(self.view, event.params)
-end
-
-Scene:addEventListener("enterScene")
-
--- Exit Scene --
-function Scene:exitScene ()
-	if Alert then -- TODO: Test this!
-		native.cancelAlert(Alert)
-
-		Alert = nil
-	end
-
-	display.remove(self.m_exit)
-
-	self.m_exit = nil
-
-	scenes.SetListenFunc(nil)
-end
-
-Scene:addEventListener("exitScene")
-
--- Overlay Ended --
-function Scene:overlayEnded ()
-	if OnDone then
-		timers.Defer(function()
-			OnDone(Arg)
-
-			OnDone, Arg = nil
-		end)
+		level_map.LoadLevel(self.view, event.params)
 	end
 end
 
-Scene:addEventListener("overlayEnded")
+Scene:addEventListener("show")
+
+-- Hide Scene --
+function Scene:hide (event)
+	if event.phase == "did" then
+		if Alert then -- TODO: Test this!
+			native.cancelAlert(Alert)
+
+			Alert = nil
+		end
+
+		display.remove(self.m_exit)
+
+		self.m_exit = nil
+
+		scenes.SetListenFunc(nil)
+	end
+end
+
+Scene:addEventListener("hide")
 
 -- Listen to events.
 dispatch_list.AddToMultipleLists{

@@ -48,10 +48,10 @@ local native = native
 local system = system
 
 -- Corona modules --
-local storyboard = require("storyboard")
+local composer = require("composer")
 
 -- Editor setup scene --
-local Scene = storyboard.newScene()
+local Scene = composer.newScene()
 
 -- Is this running on a device? --
 local OnDevice = system.getInfo("environment") == "device"
@@ -75,7 +75,7 @@ local ColText = "Number of columns:"
 local RowText = "Number of rows:"
 
 -- Create Scene --
-function Scene:createScene ()
+function Scene:create ()
 	button.Button(self.view, nil, 120, 70, 200, 50, scenes.WantsToGoBack, "Go Back")
 	button.Button(self.view, nil, display.contentWidth - (150 + 20), display.contentHeight - (20 + 50), 200, 50, function()
 		local cols = tonumber(self.m_cols.text)
@@ -103,7 +103,7 @@ function Scene:createScene ()
 	end
 end
 
-Scene:addEventListener("createScene")
+Scene:addEventListener("create")
 
 -- Updates levels listbox and related elements according to current choice
 local function UpdateCurrent (scene, levels, index)
@@ -121,130 +121,134 @@ local function CleanupLoadElements ()
 	end
 end
 
--- Enter Scene --
-function Scene:enterScene ()
-	scenes.SetListenFunc_GoBack("scene.Choices")
+-- Show Scene --
+function Scene:show (event)
+	if event.phase == "did" then
+		scenes.SetListenFunc_GoBack("scene.Choices")
 
-	-- Line up the text input (if on device, we use native keyboards) a little to the right
-	-- of the columns or rows text (whichever was wider).
-	local textx = self.m_cols_text.x + max(self.m_cols_text.width, self.m_rows_text.width) + 10
+		-- Line up the text input (if on device, we use native keyboards) a little to the right
+		-- of the columns or rows text (whichever was wider).
+		local textx = self.m_cols_text.x + max(self.m_cols_text.width, self.m_rows_text.width) + 10
 
- -- TODO: use object_helper...
-	if OnDevice then
-		self.m_cols = native.newTextField(textx, colsy, 300, 65, function(event)
-			if event.phase == "submitted" then
-				native.setKeyboardFocus(self.m_rows)
+	 -- TODO: use object_helper...
+		if OnDevice then
+			self.m_cols = native.newTextField(textx, colsy, 300, 65, function(event)
+				if event.phase == "submitted" then
+					native.setKeyboardFocus(self.m_rows)
+				end
+			end)
+
+			self.m_rows = native.newTextField(textx, rowsy, 300, 65, function(event)
+				if event.phase == "submitted" then
+					native.setKeyboardFocus(nil)
+				end
+			end)
+
+			self.m_cols.inputType = "number"
+			self.m_rows.inputType = "number"
+
+		-- In the simulator, fall back to buttons and a software keyboard.
+		else
+			local options = { is_modal = true }
+
+			self.m_cols, self.m_colsedit = common_ui.EditableString(self.view, self.m_keyboard, textx, self.m_cols_text.y, options)
+			self.m_rows, self.m_rowsedit = common_ui.EditableString(self.view, self.m_keyboard, textx, self.m_rows_text.y, options)
+
+			self.m_keyboard:toFront()
+
+			local w = .5 * self.m_colsedit.width
+
+			for _, what in ipairs{ "m_cols", "m_colsedit", "m_rows", "m_rowsedit" } do
+				self[what]:translate(w, 0)
 			end
-		end)
-
-		self.m_rows = native.newTextField(textx, rowsy, 300, 65, function(event)
-			if event.phase == "submitted" then
-				native.setKeyboardFocus(nil)
-			end
-		end)
-
-		self.m_cols.inputType = "number"
-		self.m_rows.inputType = "number"
-
-	-- In the simulator, fall back to buttons and a software keyboard.
-	else
-		local options = { is_modal = true }
-
-		self.m_cols, self.m_colsedit = common_ui.EditableString(self.view, self.m_keyboard, textx, self.m_cols_text.y, options)
-		self.m_rows, self.m_rowsedit = common_ui.EditableString(self.view, self.m_keyboard, textx, self.m_rows_text.y, options)
-
-		self.m_keyboard:toFront()
-
-		local w = .5 * self.m_colsedit.width
-
-		for _, what in ipairs{ "m_cols", "m_colsedit", "m_rows", "m_rowsedit" } do
-			self[what]:translate(w, 0)
-		end
-	end
-
-	-- Add the actual text, now that the input widgets have been decided.
-	self.m_cols.text = format("%i", Cols)
-	self.m_rows.text = format("%i", Rows)
-
-	-- If any WIP levels exist, enumerate them and put them in a listbox.
-	local levels = persistence.GetLevels(true)
-
-	if #levels > 0 then
-		sort(levels, function(level1, level2)
-			return level1.name < level2.name
-		end)
-
-		self.m_levels_list = common_ui.Listbox(self.view, display.contentWidth - 350, 20, {
-			--
-			get_text = function(index)
-				return levels[index].name
-			end,
-
-			--
-			press = function(index)
-				UpdateCurrent(self, levels, index)
-			end
-		})
-
-		self.m_current = display.newText(self.view, "", 0, 0, native.systemFont, 22)
-
-		self.m_frame = common_ui.Frame(self.m_levels_list, 0, 0, 1)
-
-		local add_row = common_ui.ListboxRowAdder()
-
-		for _ = 1, #levels do
-			self.m_levels_list:insertRow(add_row)
 		end
 
-		UpdateCurrent(self, levels, 1)
+		-- Add the actual text, now that the input widgets have been decided.
+		self.m_cols.text = format("%i", Cols)
+		self.m_rows.text = format("%i", Rows)
 
-		self.m_delete = button.Button(self.view, nil, display.contentWidth - (200 + 20), display.contentHeight - (20 + 190), 200, 50, function()
-			local index = self.m_load_index
+		-- If any WIP levels exist, enumerate them and put them in a listbox.
+		local levels = persistence.GetLevels(true)
 
-			-- Remove the level from the database, the local sorted list, and the listbox.
-			persistence.RemoveLevel(levels[index].name, true)
+		if #levels > 0 then
+			sort(levels, function(level1, level2)
+				return level1.name < level2.name
+			end)
 
-			remove(levels, index)
+			self.m_levels_list = common_ui.Listbox(self.view, display.contentWidth - 350, 20, {
+				--
+				get_text = function(index)
+					return levels[index].name
+				end,
 
-			self.m_levels_list:deleteRow(index)
+				--
+				press = function(index)
+					UpdateCurrent(self, levels, index)
+				end
+			})
 
-			-- Update the listbox selection to reflect the missing element, or remove all
-			-- the load elements entirely if no more levels exist.
-			if #levels == 0 then
-				CleanupLoadElements()
-			else
-				UpdateCurrent(self, levels, index <= #levels and index or index - 1)
+			self.m_current = display.newText(self.view, "", 0, 0, native.systemFont, 22)
+
+			self.m_frame = common_ui.Frame(self.m_levels_list, 0, 0, 1)
+
+			local add_row = common_ui.ListboxRowAdder()
+
+			for _ = 1, #levels do
+				self.m_levels_list:insertRow(add_row)
 			end
-		end, "Delete scene")
 
-		self.m_load = button.Button(self.view, nil, display.contentWidth - (200 + 20), display.contentHeight - (20 + 120), 200, 50, function()
-			local level = levels[self.m_load_index]
-			local params = persistence.Decode(level.data)
+			UpdateCurrent(self, levels, 1)
 
-			params.is_loading = level.name
+			self.m_delete = button.Button(self.view, nil, display.contentWidth - (200 + 20), display.contentHeight - (20 + 190), 200, 50, function()
+				local index = self.m_load_index
 
-			scenes.GoToScene{ name = "scene.MapEditor", params = params }
-		end, "Load Scene")
+				-- Remove the level from the database, the local sorted list, and the listbox.
+				persistence.RemoveLevel(levels[index].name, true)
+
+				remove(levels, index)
+
+				self.m_levels_list:deleteRow(index)
+
+				-- Update the listbox selection to reflect the missing element, or remove all the load
+				-- elements entirely if no more levels exist.
+				if #levels == 0 then
+					CleanupLoadElements()
+				else
+					UpdateCurrent(self, levels, index <= #levels and index or index - 1)
+				end
+			end, "Delete scene")
+
+			self.m_load = button.Button(self.view, nil, display.contentWidth - (200 + 20), display.contentHeight - (20 + 120), 200, 50, function()
+				local level = levels[self.m_load_index]
+				local params = persistence.Decode(level.data)
+
+				params.is_loading = level.name
+
+				scenes.GoToScene{ name = "scene.MapEditor", params = params }
+			end, "Load Scene")
+		end
 	end
 end
 
-Scene:addEventListener("enterScene")
+Scene:addEventListener("show")
 
--- Exit Scene --
-function Scene:exitScene ()
-	self.m_cols:removeSelf()
-	self.m_rows:removeSelf()
+-- Hide Scene --
+function Scene:hide (event)
+	if event.phase == "did" then
+		self.m_cols:removeSelf()
+		self.m_rows:removeSelf()
 
-	if not OnDevice then
-		self.m_colsedit:removeSelf()
-		self.m_rowsedit:removeSelf()
+		if not OnDevice then
+			self.m_colsedit:removeSelf()
+			self.m_rowsedit:removeSelf()
+		end
+
+		CleanupLoadElements()
+
+		scenes.SetListenFunc(nil)
 	end
-
-	CleanupLoadElements()
-
-	scenes.SetListenFunc(nil)
 end
 
-Scene:addEventListener("exitScene")
+Scene:addEventListener("hide")
 
 return Scene

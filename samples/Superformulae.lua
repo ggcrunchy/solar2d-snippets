@@ -41,17 +41,17 @@ local timer = timer
 local transition = transition
 
 -- Corona modules --
-local storyboard = require("storyboard")
+local composer = require("composer")
 
 -- Superformulae demo scene --
-local Scene = storyboard.newScene()
+local Scene = composer.newScene()
 
 --
-function Scene:createScene ()
+function Scene:create ()
 	buttons.Button(self.view, nil, 120, 75, 200, 50, scenes.Opener{ name = "scene.Choices" }, "Go Back")
 end
 
-Scene:addEventListener("createScene")
+Scene:addEventListener("create")
 
 -- --
 local CenterX, CenterY = display.contentCenterX, display.contentCenterY
@@ -72,71 +72,75 @@ local InputParams = {
 local N = 200
 
 --
-function Scene:enterScene ()
-	-- One going on its own, transition among parameters... (mostly working)
-	-- Another that can be edited
-	-- Squircles or superellipses to round it out
+function Scene:show (event)
+	if event.phase == "did" then
+		-- One going on its own, transition among parameters... (mostly working)
+		-- Another that can be edited
+		-- Squircles or superellipses to round it out
 
-	local inputs = { m = 2, n1 = 2, n2 = 2, n3 = 2, r = 0, g = 0, b = 1, a = 1, waiting = true }
-  
-	self.render = timer.performWithDelay(30, function()
-		--
-		if inputs.waiting then
-			inputs.waiting = false
+		local inputs = { m = 2, n1 = 2, n2 = 2, n3 = 2, r = 0, g = 0, b = 1, a = 1, waiting = true }
+	  
+		self.render = timer.performWithDelay(30, function()
+			--
+			if inputs.waiting then
+				inputs.waiting = false
 
-			InputParams.m = 1 + random() * 19
-			InputParams.n1 = 5 + random() * 9
-			InputParams.n2 = 1 + random() * 19
-			InputParams.n3 = 1 + random() * 19
-			InputParams.r = random()
-			InputParams.g = random()
-			InputParams.b = random()
-			InputParams.a = .5 + random() * .5
+				InputParams.m = 1 + random() * 19
+				InputParams.n1 = 5 + random() * 9
+				InputParams.n2 = 1 + random() * 19
+				InputParams.n3 = 1 + random() * 19
+				InputParams.r = random()
+				InputParams.g = random()
+				InputParams.b = random()
+				InputParams.a = .5 + random() * .5
 
-			transition.to(inputs, InputParams)
-		end
+				transition.to(inputs, InputParams)
+			end
 
-		--
-		display.remove(self.curve)
+			--
+			display.remove(self.curve)
 
-		--
-		local m, n1, n2, n3 = .25 * inputs.m, -1 / inputs.n1, inputs.n2, inputs.n3
-		local da = 2 * pi / N
-		local dp_r, dp_i, cphi, sphi = cos(da), sin(da), 1, 0
-		local dmp_r, dmp_i, cmphi, smphi = cos(m * da), sin(m * da), 1, 0
+			--
+			local m, n1, n2, n3 = .25 * inputs.m, -1 / inputs.n1, inputs.n2, inputs.n3
+			local da = 2 * pi / N
+			local dp_r, dp_i, cphi, sphi = cos(da), sin(da), 1, 0
+			local dmp_r, dmp_i, cmphi, smphi = cos(m * da), sin(m * da), 1, 0
 
-		self.curve = line_ex.NewLine(self.view)
+			self.curve = line_ex.NewLine(self.view)
 
-		self.curve:setStrokeColor(inputs.r, inputs.g, inputs.b, inputs.a)
+			self.curve:setStrokeColor(inputs.r, inputs.g, inputs.b, inputs.a)
 
-		self.curve.strokeWidth = 3	
+			self.curve.strokeWidth = 3	
 
-		for _ = 1, N do
-			local r = (abs(cmphi / A)^n2 + abs(smphi / B)^n3)^n1
-			local x, y = CenterX + r * cphi, CenterY + r * sphi
+			for _ = 1, N do
+				local r = (abs(cmphi / A)^n2 + abs(smphi / B)^n3)^n1
+				local x, y = CenterX + r * cphi, CenterY + r * sphi
 
-			self.curve:append(x, y)
+				self.curve:append(x, y)
 
-			cphi, sphi = dp_r * cphi - dp_i * sphi, dp_i * cphi + dp_r * sphi
-			cmphi, smphi = dmp_r * cmphi - dmp_i * smphi, dmp_i * cmphi + dmp_r * smphi
-		end
+				cphi, sphi = dp_r * cphi - dp_i * sphi, dp_i * cphi + dp_r * sphi
+				cmphi, smphi = dmp_r * cmphi - dmp_i * smphi, dmp_i * cmphi + dmp_r * smphi
+			end
 
-		self.curve:close()
-	end, 0)
+			self.curve:close()
+		end, 0)
+	end
 end
 
-Scene:addEventListener("enterScene")
+Scene:addEventListener("show")
 
 --
-function Scene:exitScene ()
-	timer.cancel(self.render)
+function Scene:hide (event)
+	if event.phase == "did" then
+		timer.cancel(self.render)
 
-	display.remove(self.curve)
+		display.remove(self.curve)
 
-	self.curve = nil
-	self.render = nil
+		self.curve = nil
+		self.render = nil
+	end
 end
 
-Scene:addEventListener("exitScene")
+Scene:addEventListener("hide")
 
 return Scene

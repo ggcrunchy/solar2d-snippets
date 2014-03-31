@@ -45,17 +45,17 @@ local display = display
 local timer = timer
 
 -- Corona modules --
-local storyboard = require("storyboard")
+local composer = require("composer")
 
 -- Orbits and lattices demo scene --
-local Scene = storyboard.newScene()
+local Scene = composer.newScene()
 
 --
-function Scene:createScene ()
+function Scene:create ()
 	button.Button(self.view, nil, 120, 75, 200, 50, scenes.Opener{ name = "scene.Choices" }, "Go Back")
 end
 
-Scene:addEventListener("createScene")
+Scene:addEventListener("create")
 
 -- --
 local NCols, NRows = 20, 20
@@ -143,102 +143,106 @@ local function SetupCircle (circle, w, h, ignore_put)
 end
 
 --
-function Scene:enterScene ()
-	local lgroup = display.newGroup()
+function Scene:show (event)
+	if event.phase == "did" then
+		local lgroup = display.newGroup()
 
-	self.view:insert(lgroup)
+		self.view:insert(lgroup)
 
-	--
-	local w, h = CellDims()
-	local xi, yi = CellXY(1, 1, w, h)
-	local xf, yf = CellXY(NCols + 1, NRows + 1, w, h)
+		--
+		local w, h = CellDims()
+		local xi, yi = CellXY(1, 1, w, h)
+		local xf, yf = CellXY(NCols + 1, NRows + 1, w, h)
 
-	for i = 1, NCols + 1 do
-		local cx, _ = CellXY(i, 1, w, h)
+		for i = 1, NCols + 1 do
+			local cx, _ = CellXY(i, 1, w, h)
 
-		Line(lgroup, cx, yi, cx, yf)
-	end
-
-	for i = 1, NRows + 1 do
-		local _, cy = CellXY(1, i, w, h)
-
-		Line(lgroup, xi, cy, xf, cy)
-	end
-
-	lgroup.alpha = .4
-
-	--
-	local circles, paths = {}, {}
-
-	for _ = 1, 5 do
-		local circle = display.newCircle(self.view, 0, 0, 5)
-
-		circle:setFillColor(0, 0, 255)
-
-		SetupCircle(circle, w, h)
-
-		circles[#circles + 1] = circle
-	end
-
-	--
-	self.change = timers.Repeat(function()
-		for _, circle in ipairs(circles) do
-			SetupCircle(circle, w, h, true)
+			Line(lgroup, cx, yi, cx, yf)
 		end
 
-		display.remove(mid and mid.m_group)
-		display.remove(mid)
+		for i = 1, NRows + 1 do
+			local _, cy = CellXY(1, i, w, h)
 
-		mid = nil
-	end, 13000)
+			Line(lgroup, xi, cy, xf, cy)
+		end
 
-	--
-	self.timer = timers.RepeatEx(function(event)
+		lgroup.alpha = .4
+
 		--
-		local x, y, when = 0, 0, event.m_elapsed / 1000
+		local circles, paths, mid = {}, {}
 
-		for _, circle in ipairs(circles) do
-			PutCircle(circle, when)
+		for _ = 1, 5 do
+			local circle = display.newCircle(self.view, 0, 0, 5)
 
-			x, y = x + circle.x, y + circle.y
+			circle:setFillColor(0, 0, 1)
+
+			SetupCircle(circle, w, h)
+
+			circles[#circles + 1] = circle
 		end
 
 		--
-		if not mid then
-			mid = display.newCircle(self.view, 0, 0, 8)
+		self.change = timers.Repeat(function()
+			for _, circle in ipairs(circles) do
+				SetupCircle(circle, w, h, true)
+			end
 
-			mid.m_r, mid.m_g, mid.m_b = .125 + random() * .5, .125 + random() * .5, .125 + random() * .5
-			mid.m_group = display.newGroup()
+			display.remove(mid and mid.m_group)
+			display.remove(mid)
 
-			self.view:insert(mid.m_group)
-
-			mid:setFillColor(.75, 0, .75)
-		end
+			mid = nil
+		end, 13000)
 
 		--
-		local after = display.newCircle(mid.m_group, mid.x, mid.y, 2)
+		self.timer = timers.RepeatEx(function(event)
+			--
+			local x, y, when = 0, 0, event.m_elapsed / 1000
 
-		after:setFillColor(mid.m_r, mid.m_g, mid.m_b)
+			for _, circle in ipairs(circles) do
+				PutCircle(circle, when)
 
-		mid.x, mid.y = x / #circles, y / #circles
-	end, 30)
+				x, y = x + circle.x, y + circle.y
+			end
+
+			--
+			if not mid then
+				mid = display.newCircle(self.view, 0, 0, 8)
+
+				mid.m_r, mid.m_g, mid.m_b = .125 + random() * .5, .125 + random() * .5, .125 + random() * .5
+				mid.m_group = display.newGroup()
+
+				self.view:insert(mid.m_group)
+
+				mid:setFillColor(.75, 0, .75)
+			end
+
+			--
+			local after = display.newCircle(mid.m_group, mid.x, mid.y, 2)
+
+			after:setFillColor(mid.m_r, mid.m_g, mid.m_b)
+
+			mid.x, mid.y = x / #circles, y / #circles
+		end, 30)
+	end
 end
 
-Scene:addEventListener("enterScene")
+Scene:addEventListener("show")
 
 --
-function Scene:exitScene ()
-	for i = self.view.numChildren, 2, -1 do
-		self.view[i]:removeSelf()
+function Scene:hide (event)
+	if event.phase == "did" then
+		for i = self.view.numChildren, 2, -1 do
+			self.view[i]:removeSelf()
+		end
+
+		timer.cancel(self.change)
+		timer.cancel(self.timer)
+
+		self.change = nil
+		self.timer = nil
 	end
-
-	timer.cancel(self.change)
-	timer.cancel(self.timer)
-
-	self.change = nil
-	self.timer = nil
 end
 
-Scene:addEventListener("exitScene")
+Scene:addEventListener("hide")
 
 return Scene

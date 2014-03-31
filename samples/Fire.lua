@@ -45,13 +45,13 @@ local display = display
 local timer = timer
 
 -- Corona modules --
-local storyboard = require("storyboard")
+local composer = require("composer")
 local widget = require("widget")
 
 -- Fire demo scene --
-local Scene = storyboard.newScene()
+local Scene = composer.newScene()
 --
-function Scene:createScene ()
+function Scene:create ()
 	buttons.Button(self.view, nil, 120, 75, 200, 50, scenes.Opener{ name = "scene.Choices" }, "Go Back")
 
 	self.sliders = {}
@@ -75,7 +75,7 @@ end
 	end
 end
 
-Scene:addEventListener("createScene")
+Scene:addEventListener("create")
 
 -- --
 local NCols = 80
@@ -93,114 +93,118 @@ local PixelWidth, PixelHeight = 8, 4
 local Height = math.ceil(BoxHeight / PixelHeight)
 
 --
-function Scene:enterScene ()
-	--
-	self.igroup = display.newGroup()
-
-	self.view:insert(self.igroup)
-
-	--
-	self.sliders[1]:setValue(84)
-	self.sliders[2]:setValue(35)
-	self.sliders[3]:setValue(0)
-	self.sliders[4]:setValue(55)
-
-	--
-	local heat = {}
-
-	for i = 1, Height do
-		local row = {}
-
-		for j = 1, NCols do
-			row[j] = 0
-		end
-
-		heat[i] = row
-	end
-
-	--
-	self.render = timer.performWithDelay(20, function()
+function Scene:show (event)
+	if event.phase == "did" then
 		--
-		local coals = heat[1]
-		local base = self.sliders[3].value / 100
-		local range = .3 + 1.2 * self.sliders[4].value / 100
+		self.igroup = display.newGroup()
 
-		for i = 1, NCols do
-			coals[i] = base + random() * range
-		end
+		self.view:insert(self.igroup)
 
 		--
-		local k = round(self.sliders[2].value / 5)
-		local scale = k / (k * 4 + 1)
-
-		for h = Height, 2, -1 do
-			local r0 = heat[h]
-			local r1 = heat[h - 1]
-			local r2 = heat[h > 2 and h - 2 or Height]
-			local li = NCols
-
-			for i = 1, NCols do
-				local ri = i < NCols and i + 1 or 1
-
-				r0[i] = (r1[li] + r1[i] + r1[ri] + r2[i]) * scale
-
-				li = i
-			end
-		end
+		self.sliders[1]:setValue(84)
+		self.sliders[2]:setValue(35)
+		self.sliders[3]:setValue(0)
+		self.sliders[4]:setValue(55)
 
 		--
-		local R, G, B = hsv.RGB_Hue(self.sliders[1].value / 100)
-		local pix, index = self.igroup, 1
-		local nloaded = pix.numChildren
+		local heat = {}
 
 		for i = 1, Height do
-			for _, intensity in ipairs(heat[i]) do
-				if index > nloaded then
-					return
+			local row = {}
+
+			for j = 1, NCols do
+				row[j] = 0
+			end
+
+			heat[i] = row
+		end
+
+		--
+		self.render = timer.performWithDelay(20, function()
+			--
+			local coals = heat[1]
+			local base = self.sliders[3].value / 100
+			local range = .3 + 1.2 * self.sliders[4].value / 100
+
+			for i = 1, NCols do
+				coals[i] = base + random() * range
+			end
+
+			--
+			local k = round(self.sliders[2].value / 5)
+			local scale = k / (k * 4 + 1)
+
+			for h = Height, 2, -1 do
+				local r0 = heat[h]
+				local r1 = heat[h - 1]
+				local r2 = heat[h > 2 and h - 2 or Height]
+				local li = NCols
+
+				for i = 1, NCols do
+					local ri = i < NCols and i + 1 or 1
+
+					r0[i] = (r1[li] + r1[i] + r1[ri] + r2[i]) * scale
+
+					li = i
+				end
+			end
+
+			--
+			local R, G, B = hsv.RGB_Hue(self.sliders[1].value / 100)
+			local pix, index = self.igroup, 1
+			local nloaded = pix.numChildren
+
+			for i = 1, Height do
+				for _, intensity in ipairs(heat[i]) do
+					if index > nloaded then
+						return
+					end
+
+					local r, g, b = hsv.RGB_ColorSV(R, G, B, 1, min(intensity, 1))
+
+					pix[index]:setFillColor(r, g, b)
+
+					index = index + 1
+				end
+			end
+		end, 0)
+
+		--
+		self.allocate_pixels = timers.WrapEx(function()
+			local step, y = timers.YieldEach(30), BoxY
+
+			for _ = 1, Height do
+				for col = 1, NCols do
+					local pixel = display.newRect(self.igroup, 0, 0, PixelWidth, PixelHeight)
+
+					pixel.anchorX, pixel.x = 0, BoxX + col * PixelWidth
+					pixel.anchorY, pixel.y = 0, y
+
+					step()
 				end
 
-				local r, g, b = hsv.RGB_ColorSV(R, G, B, 1, min(intensity, 1))
-
-				pix[index]:setFillColor(r, g, b)
-
-				index = index + 1
+				y = y - PixelHeight
 			end
-		end
-	end, 0)
-
-	--
-	self.allocate_pixels = timers.WrapEx(function()
-		local step, y = timers.YieldEach(30), BoxY
-
-		for _ = 1, Height do
-			for col = 1, NCols do
-				local pixel = display.newRect(self.igroup, 0, 0, PixelWidth, PixelHeight)
-
-				pixel.anchorX, pixel.x = 0, BoxX + col * PixelWidth
-				pixel.anchorY, pixel.y = 0, y
-
-				step()
-			end
-
-			y = y - PixelHeight
-		end
-	end)
+		end)
+	end
 end
 
-Scene:addEventListener("enterScene")
+Scene:addEventListener("show")
 
 --
-function Scene:exitScene ()
-	timer.cancel(self.render)
-	timer.cancel(self.allocate_pixels)
+function Scene:hide (event)
+	if event.phase == "did" then
+		timer.cancel(self.render)
+		timer.cancel(self.allocate_pixels)
 
-	self.igroup:removeSelf()
+		self.igroup:removeSelf()
 
-	self.igroup = nil
-	self.render = nil
-	self.allocate_pixels = nil
+		self.igroup = nil
+		self.render = nil
+		self.allocate_pixels = nil
+	end
 end
 
-Scene:addEventListener("exitScene")
+Scene:addEventListener("hide")
 
 return Scene

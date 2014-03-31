@@ -40,7 +40,7 @@ local display = display
 local native = native
 
 -- Corona modules --
-local storyboard = require("storyboard")
+local composer = require("composer")
 local widget = require("widget")
 
 -- Exports --
@@ -147,7 +147,7 @@ local LinkTouch = touch.TouchHelperFunc(function(_, link)
 	params.sub = link.m_sub
 	params.tags = link.m_tags
 end, nil, function(_, link)
-	storyboard.showOverlay("overlay.Link", OverlayArgs)
+	composer.showOverlay("overlay.Link", OverlayArgs)
 
 	local params = OverlayArgs.params
 

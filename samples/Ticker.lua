@@ -42,17 +42,17 @@ local timer = timer
 
 -- Corona modules --
 local json = require("json")
-local storyboard = require("storyboard")
+local composer = require("composer")
 
 -- Ticker demo scene --
-local Scene = storyboard.newScene()
+local Scene = composer.newScene()
 
 --
-function Scene:createScene ()
+function Scene:create ()
 	buttons.Button(self.view, nil, 120, 75, 200, 50, scenes.Opener{ name = "scene.Choices" }, "Go Back")
 end
 
-Scene:addEventListener("createScene")
+Scene:addEventListener("create")
 
 -- --
 local LastTime = {}
@@ -98,28 +98,30 @@ for _, what in ipairs{ "btc_usd", "ltc_btc", "ltc_usd", "btc_eur", "btc_rur" } d
 end
 
 --
-function Scene:enterScene ()
-	self.str = display.newText(self.view, "", 150, 100, native.systemFontBold, 30)
-	self.update_ticker = timer.performWithDelay(300, function()
+function Scene:show (event)
+	if event.phase == "did" then
+		self.str = display.newText(self.view, "", 150, 100, native.systemFontBold, 30)
+		self.update_ticker = timer.performWithDelay(300, function()
+			--
+			for _, ticker in ipairs(Tickers) do
+				network.request(ticker.url, "GET", ticker.listener)
+			end
+
+			--
+			self.str.text = Cur.btc_usd
+
+			-- Plot!
+			-- ...
+		end, 0)
+
 		--
-		for _, ticker in ipairs(Tickers) do
-			network.request(ticker.url, "GET", ticker.listener)
+		for what in pairs(LastTime) do
+			Cur[what], LastTime[what], Max[what], Min[what] = "", -1, -1, 0
 		end
-
-		--
-		self.str.text = Cur.btc_usd
-
-		-- Plot!
-		-- ...
-	end, 0)
-
-	--
-	for what in pairs(LastTime) do
-		Cur[what], LastTime[what], Max[what], Min[what] = "", -1, -1, 0
 	end
 end
 
-Scene:addEventListener("enterScene")
+Scene:addEventListener("show")
 
 --[=[
 	print("address", event.address )
@@ -131,15 +133,17 @@ Scene:addEventListener("enterScene")
 	print("IsReachableViaWiFi", event.isReachableViaWiFi)
 ]=]
 --
-function Scene:exitScene ()
-	timer.cancel(self.update_ticker)
+function Scene:hide (event)
+	if event.phase == "did" then
+		timer.cancel(self.update_ticker)
 
-	--
-	for what in pairs(LastTime) do
-		LastTime[what] = 0 / 0
+		--
+		for what in pairs(LastTime) do
+			LastTime[what] = 0 / 0
+		end
 	end
 end
 
-Scene:addEventListener("exitScene")
+Scene:addEventListener("hide")
 
 return Scene

@@ -38,8 +38,8 @@ local scenes = require("utils.Scenes")
 local timers = require("game.Timers")
 
 -- Corona modules --
+local composer = require("composer")
 local physics = require("physics")
-local storyboard = require("storyboard")
 
 -- Corona globals --
 local display = display
@@ -48,14 +48,14 @@ local timer = timer
 local transition = transition
 
 -- Hop demo scene --
-local Scene = storyboard.newScene()
+local Scene = composer.newScene()
 
 --
-function Scene:createScene ()
+function Scene:create ()
 	buttons.Button(self.view, nil, 120, 75, 200, 50, scenes.Opener{ name = "scene.Choices" }, "Go Back")
 end
 
-Scene:addEventListener("createScene")
+Scene:addEventListener("create")
 
 --
 local DW = display.contentWidth
@@ -334,37 +334,41 @@ local function OnCollision (event)
 end
 
 --
-function Scene:enterScene ()
-	physics.start()
+function Scene:show (event)
+	if event.phase == "did" then
+		physics.start()
 
-	Runtime:addEventListener("collision", OnCollision)
+		Runtime:addEventListener("collision", OnCollision)
 
-	Launch()
+		Launch()
 
-	self.update_blades = timers.Repeat(UpdateBlades)
+		self.update_blades = timers.Repeat(UpdateBlades)
+	end
 end
 
-Scene:addEventListener("enterScene")
+Scene:addEventListener("show")
 
 --
-function Scene:exitScene ()
-	Groups:removeSelf()
+function Scene:hide (event)
+	if event.phase == "did" then
+		Groups:removeSelf()
 
-	Groups, Layers = nil
+		Groups, Layers = nil
 
-	for _, name in ipairs{ "take_off", "change_speed", "spawn_bullet", "spawn_enemy", "update_blades" } do
-		if self[name] then
-			timer.cancel(self[name])
+		for _, name in ipairs{ "take_off", "change_speed", "spawn_bullet", "spawn_enemy", "update_blades" } do
+			if self[name] then
+				timer.cancel(self[name])
 
-			self[name] = nil
+				self[name] = nil
+			end
 		end
+
+		Runtime:removeEventListener("collision", OnCollision)
+
+		physics.stop()
 	end
-
-	Runtime:removeEventListener("collision", OnCollision)
-
-	physics.stop()
 end
 
-Scene:addEventListener("exitScene")
+Scene:addEventListener("hide")
 
 return Scene

@@ -41,10 +41,10 @@ local timer = timer
 local transition = transition
 
 -- Corona modules --
-local storyboard = require("storyboard")
+local composer = require("composer")
 
 -- Thoughts demo scene --
-local Scene = storyboard.newScene()
+local Scene = composer.newScene()
 
 -- Moby Dick, chapter 1: http://www.gutenberg.org/cache/epub/2701/pg2701.txt
 local HenleyText = [[
@@ -270,7 +270,7 @@ local function See (word, prev)
 end
 
 --
-function Scene:createScene ()
+function Scene:create ()
 	buttons.Button(self.view, nil, 120, 75, 200, 50, scenes.Opener{ name = "scene.Choices" }, "Go Back")
 
 	-- Initialize Henley.
@@ -284,14 +284,14 @@ function Scene:createScene ()
 	end
 end
 
-Scene:addEventListener("createScene")
+Scene:addEventListener("create")
 
 --
-function Scene:destroyScene ()
+function Scene:destroy ()
 	Words = nil
 end
 
-Scene:addEventListener("destroyScene")
+Scene:addEventListener("destroy")
 
 local dw = display.contentWidth
 local dh = display.contentHeight
@@ -385,64 +385,68 @@ function TextFadeParams.onComplete (word)
 end
 
 --
-function Scene:enterScene ()
-	Thoughts, Timers, Delay = {}, {}, 0
+function Scene:show (event)
+	if event.phase == "did" then
+		Thoughts, Timers, Delay = {}, {}, 0
 
-	for _, thought in ipairs{
-		{ x = 20, y = dh - 50, text = "Hmm!", name = "first" },
-		{ x = 70, y = dh / 2, text = "I've got it." },
-		{ x = dw / 2, y = dh / 3, text = "I wonder if\nthis solves\neverything?", name = "silly" },
-		"first",
-		{ x = 10, y = 150, text = "Errr..." },
-		{ x = dw * .55, y = dh * .6, text = "Well." },
-		"silly",
-		{ x = dw / 4, y = dh / 3, text = "Ho-ho!\nHow silly of me!" },
-		{ x = dw / 2, y = dh - 100, text = "Dag\nnab\nbit" }
-	} do
-		if type(thought) == "string" then
-			Timers[#Timers + 1] = timer.performWithDelay(Delay, function()
-				Thoughts[thought]:removeSelf()
+		for _, thought in ipairs{
+			{ x = 20, y = dh - 50, text = "Hmm!", name = "first" },
+			{ x = 70, y = dh / 2, text = "I've got it." },
+			{ x = dw / 2, y = dh / 3, text = "I wonder if\nthis solves\neverything?", name = "silly" },
+			"first",
+			{ x = 10, y = 150, text = "Errr..." },
+			{ x = dw * .55, y = dh * .6, text = "Well." },
+			"silly",
+			{ x = dw / 4, y = dh / 3, text = "Ho-ho!\nHow silly of me!" },
+			{ x = dw / 2, y = dh - 100, text = "Dag\nnab\nbit" }
+		} do
+			if type(thought) == "string" then
+				Timers[#Timers + 1] = timer.performWithDelay(Delay, function()
+					Thoughts[thought]:removeSelf()
 
-				Thoughts[thought] = nil
-			end)
+					Thoughts[thought] = nil
+				end)
 
-			Delay = Delay + 50
-		else
-			Timers[#Timers + 1] = timer.performWithDelay(Delay, function()
-				local balloon = balloons.Thought(self.view, thought.x, thought.y, thought.text, random(3, 5))
+				Delay = Delay + 50
+			else
+				Timers[#Timers + 1] = timer.performWithDelay(Delay, function()
+					local balloon = balloons.Thought(self.view, thought.x, thought.y, thought.text, random(3, 5))
 
-				if thought.name then
-					Thoughts[thought.name] = balloon
-				end
-			end)
+					if thought.name then
+						Thoughts[thought.name] = balloon
+					end
+				end)
 
-			Delay = Delay + 2500
+				Delay = Delay + 2500
+			end
 		end
+
+		-- Kick off Henley.
+		HenleyWords, Prev, Right = {}, ".", 0
+
+		NewWord(self.view, TextFadeParams)
 	end
-
-	-- Kick off Henley.
-	HenleyWords, Prev, Right = {}, ".", 0
-
-	NewWord(self.view, TextFadeParams)
 end
 
-Scene:addEventListener("enterScene")
+Scene:addEventListener("show")
 
 --
-function Scene:exitScene ()
-	transition.cancel(WordFade)
+function Scene:hide (event)
+	if event.phase == "did" then
+		transition.cancel(WordFade)
 
-	for _, btimer in ipairs(Timers) do
-		timer.cancel(btimer)
+		for _, btimer in ipairs(Timers) do
+			timer.cancel(btimer)
+		end
+
+		for i = self.view.numChildren, 2, -1 do
+			self.view[i]:removeSelf()
+		end
+
+		HenleyWords, Thoughts = nil
 	end
-
-	for i = self.view.numChildren, 2, -1 do
-		self.view[i]:removeSelf()
-	end
-
-	HenleyWords, Thoughts = nil
 end
 
-Scene:addEventListener("exitScene")
+Scene:addEventListener("hide")
 
 return Scene

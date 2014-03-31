@@ -40,7 +40,7 @@ local native = native
 local system = system
 
 -- Corona modules --
-local storyboard = require("storyboard")
+local composer = require("composer")
 
 -- Use graceful exit method on Android.
 if system.getInfo("platformName") == "Android" then
@@ -48,7 +48,7 @@ if system.getInfo("platformName") == "Android" then
 end
 
 -- Title scene --
-local Scene = storyboard.newScene()
+local Scene = composer.newScene()
 
 -- Samples names --
 local Names = {
@@ -83,7 +83,7 @@ local function SetCurrent (current, index)
 end
 
 --
-function Scene:createScene ()
+function Scene:create ()
 	local Current = display.newText(self.view, "", 0, 50, native.systemFont, 35)
 	local Choices = common_ui.Listbox(self.view, 20, 20, {
 		-- --
@@ -112,11 +112,11 @@ function Scene:createScene ()
 			local name = Names[Current.m_id]
 
 			if name == "Game" then
-				storyboard.gotoScene("scene.Level", { params = 1 })
+				composer.gotoScene("scene.Level", { params = 1 })
 			elseif name == "Editor" then
-				storyboard.gotoScene("scene.EditorSetup")
+				composer.gotoScene("scene.EditorSetup")
 			else
-				storyboard.gotoScene("samples." .. name)
+				composer.gotoScene("samples." .. name)
 			end
 		end, "Launch",
 		scenes.Opener{ name = "scene.Options", "zoomInOutFadeRotate", "fade", "fromTop" }, "Options",
@@ -128,19 +128,21 @@ function Scene:createScene ()
 	)
 end
 
-Scene:addEventListener("createScene")
+Scene:addEventListener("create")
 
 --
-function Scene:enterScene ()
-	-- First time on title screen, this session?
-	local prev = storyboard.getPrevious()
+function Scene:show (event)
+	if event.phase == "did" then
+		-- First time on title screen, this session?
+		local prev = composer.getSceneName("previous")
 
-	if prev == "scene.Intro" or prev == "scene.Level" then
-		dispatch_list.CallList("enter_menus")
-		-- ????
+		if prev == "scene.Intro" or prev == "scene.Level" then
+			dispatch_list.CallList("enter_menus")
+			-- ????
+		end
 	end
 end
 
-Scene:addEventListener("enterScene")
+Scene:addEventListener("show")
 
 return Scene

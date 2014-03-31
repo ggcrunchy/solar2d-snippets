@@ -36,16 +36,16 @@ local touch = require("ui.Touch")
 local display = display
 
 -- Corona modules --
-local storyboard = require("storyboard")
+local composer = require("composer")
 
 -- Help overlay --
-local Overlay = storyboard.newScene()
+local Overlay = composer.newScene()
 
 --
 local function DefTouch () return true end
 
 --
-function Overlay:createScene ()
+function Overlay:create ()
 	-- Corona hack: block input to lower layer
 	local wall = display.newRect(self.view, 0, 0, display.contentWidth, display.contentHeight)
 
@@ -78,11 +78,11 @@ function Overlay:createScene ()
 
 	--
 	button.Button(self.view, nil, display.contentWidth - 100, 10, 35, 35, function()
-		storyboard.hideOverlay(true)
+		composer.hideOverlay(true)
 	end, "X")
 end
 
-Overlay:addEventListener("createScene")
+Overlay:addEventListener("create")
 
 --
 local ShowText = touch.TouchHelperFunc(function(_, node)
@@ -98,82 +98,86 @@ local ShowText = touch.TouchHelperFunc(function(_, node)
 end)
 
 --
-function Overlay:enterScene ()
-	local function on_help (_, text, binding)
-		if text and binding and (binding.isVisible or binding.m_is_proxy) then
-			local bounds = binding.contentBounds
-
-			--
-			local minx, miny = bounds.xMin, bounds.yMin
-			local maxx, maxy = bounds.xMax, bounds.yMax
-			local help = display.newRoundedRect(self.help_group, .5 * (minx + maxx), .5 * (miny + maxy), maxx - minx, maxy - miny, 15)
-
-			help:setFillColor(1, 1, 0, .125)
-			help:setStrokeColor(1, 1, 0)
-
-			help.strokeWidth = 4
-
-			--
-			local dx, dw, n = 0, 0, 1 
-
-			if type(text) ~= "string" then
-				n = #text
-
-				if n > 1 then
-					dw = help.width / n
-					dx = (n - 1) * dw / 2
-				else
-					text = text[1]
-				end
-			end
-
-			--
-			local x, y = help.x - dx, help.y
-
-			for i = 1, n do
-				local node = display.newCircle(self.help_group, x, y, 15)
-
-				node:addEventListener("touch", ShowText)
-				node:setFillColor(0, 0, 1)
+function Overlay:show (event)
+	if event.phase == "did" then
+		local function on_help (_, text, binding)
+			if text and binding and (binding.isVisible or binding.m_is_proxy) then
+				local bounds = binding.contentBounds
 
 				--
-				if n > 1 then
-					node.m_text = text[i]
+				local minx, miny = bounds.xMin, bounds.yMin
+				local maxx, maxy = bounds.xMax, bounds.yMax
+				local help = display.newRoundedRect(self.help_group, .5 * (minx + maxx), .5 * (miny + maxy), maxx - minx, maxy - miny, 15)
 
-					if i < n then
-						local x2 = x + .5 * dw
-						local sep = display.newLine(self.help_group, x2, miny, x2, maxy)
+				help:setFillColor(1, 1, 0, .125)
+				help:setStrokeColor(1, 1, 0)
 
-						sep:setStrokeColor(1, 1, 0)
+				help.strokeWidth = 4
 
-						sep.strokeWidth = 4
+				--
+				local dx, dw, n = 0, 0, 1 
+
+				if type(text) ~= "string" then
+					n = #text
+
+					if n > 1 then
+						dw = help.width / n
+						dx = (n - 1) * dw / 2
+					else
+						text = text[1]
 					end
-				else
-					node.m_text = text
 				end
 
 				--
-				local qmark = display.newText(self.help_group, "?", node.x, node.y, native.systemFontBold, 30)
+				local x, y = help.x - dx, help.y
 
-				x = x + dw
+				for i = 1, n do
+					local node = display.newCircle(self.help_group, x, y, 15)
+
+					node:addEventListener("touch", ShowText)
+					node:setFillColor(0, 0, 1)
+
+					--
+					if n > 1 then
+						node.m_text = text[i]
+
+						if i < n then
+							local x2 = x + .5 * dw
+							local sep = display.newLine(self.help_group, x2, miny, x2, maxy)
+
+							sep:setStrokeColor(1, 1, 0)
+
+							sep.strokeWidth = 4
+						end
+					else
+						node.m_text = text
+					end
+
+					--
+					local qmark = display.newText(self.help_group, "?", node.x, node.y, native.systemFontBold, 30)
+
+					x = x + dw
+				end
 			end
 		end
-	end
 
-	common.GetHelp(on_help)
-	grid.GetHelp(on_help)
-	common.GetHelp(on_help, "Common")
+		common.GetHelp(on_help)
+		grid.GetHelp(on_help)
+		common.GetHelp(on_help, "Common")
+	end
 end
 
-Overlay:addEventListener("enterScene")
+Overlay:addEventListener("show")
 
 --
-function Overlay:exitScene ()
-	for i = self.help_group.numChildren, 1, -1 do
-		self.help_group:remove(i)
+function Overlay:hide (event)
+	if event.phase == "did" then
+		for i = self.help_group.numChildren, 1, -1 do
+			self.help_group:remove(i)
+		end
 	end
 end
 
-Overlay:addEventListener("exitScene")
+Overlay:addEventListener("hide")
 
 return Overlay

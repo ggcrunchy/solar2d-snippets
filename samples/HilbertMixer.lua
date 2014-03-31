@@ -48,18 +48,18 @@ local display = display
 local transition = transition
 
 -- Corona modules --
-local storyboard = require("storyboard")
+local composer = require("composer")
 local widget = require("widget")
 
 -- Curves demo scene --
-local Scene = storyboard.newScene()
+local Scene = composer.newScene()
 
 --
-function Scene:createScene ()
+function Scene:create ()
 	buttons.Button(self.view, nil, 120, 75, 200, 50, scenes.Opener{ name = "scene.Choices" }, "Go Back")
 end
 
-Scene:addEventListener("createScene")
+Scene:addEventListener("create")
 
 -- --
 local R, G, B
@@ -355,122 +355,126 @@ local function EnterFrame ()
 end
 
 --
-function Scene:enterScene ()
-	self.igroup = display.newGroup()
+function Scene:show (event)
+	if event.phase == "did" then
+		self.igroup = display.newGroup()
 
-	self.view:insert(self.igroup)
+		self.view:insert(self.igroup)
 
-	local points, nparts = {}, NParts * Units
+		local points, nparts = {}, NParts * Units
 
-	for i = 1, 5 do
-		local trail = {}
+		for i = 1, 5 do
+			local trail = {}
 
-		points[i] = {
-			angle = 0, da = random(3, 7) * pi / 20,
-			start = random(Min, Max),
-			div = random(150, 600),
-			trail = trail
-		}
+			points[i] = {
+				angle = 0, da = random(3, 7) * pi / 20,
+				start = random(Min, Max),
+				div = random(150, 600),
+				trail = trail
+			}
 
-		for i = 1, nparts do
-			local rect = display.newRect(self.igroup, 0, 0, 3, 3)
-			local scale = (i - 1) / nparts
+			for i = 1, nparts do
+				local rect = display.newRect(self.igroup, 0, 0, 3, 3)
+				local scale = (i - 1) / nparts
 
-			rect.alpha = .6 - .4 * scale
-			rect.isVisible = false
+				rect.alpha = .6 - .4 * scale
+				rect.isVisible = false
 
-			trail[i] = rect
+				trail[i] = rect
+			end
+
+			points[i].x, points[i].y = GetXY(points[i].start, points[i].div)
 		end
 
-		points[i].x, points[i].y = GetXY(points[i].start, points[i].div)
+		--
+		Now = 0
+
+		OnDone()
+
+		--
+		local tab_buttons = {
+			-- Naive curve smoothing --
+			{ 
+				label = "Naive",
+
+				onPress = function()
+					Which = "naive"
+				end
+			},
+
+			-- Catmull-Rom curve --
+			{
+				label = "Catmull-Rom",
+
+				onPress = function()
+					Which = "catmull_rom"
+				end
+			}
+		}
+
+		self.tabs = common_ui.TabBar(self.view, tab_buttons, { top = display.contentHeight - 65, left = 250, width = 200 }, true)
+
+		self.tabs:setSelected(1, true)
+
+		--
+		self.points = points
+		self.smooth = checkbox.Checkbox(self.view, nil, 40, display.contentHeight - 50, 30, 30, function(_, check)
+			self.tabs.isVisible = check
+		end)
+
+		self.str = display.newText(self.view, "Smooth polygon", 0, self.smooth.y, native.systemFont, 20)
+
+		self.str.anchorX, self.str.x = 0, self.smooth.x + self.smooth.width + 5
+
+		self.acoeff = widget.newSlider{
+			left = 20, top = 90, width = 120, height = 70,
+
+			listener = function(event)
+				SetA(event.value)
+			end
+		}
+
+		self.hscale = widget.newSlider{
+			left = 20, top = 150, width = 120, height = 70,
+
+			listener = function(event)
+				SetH(event.value)
+			end
+		}
+
+		SetA(self.acoeff.value)
+		SetH(self.hscale.value)
+
+		--
+		Runtime:addEventListener("enterFrame", EnterFrame)
 	end
-
-	--
-	Now = 0
-
-	OnDone()
-
-	--
-	local tab_buttons = {
-		-- Naive curve smoothing --
-		{ 
-			label = "Naive",
-
-			onPress = function()
-				Which = "naive"
-			end
-		},
-
-		-- Catmull-Rom curve --
-		{
-			label = "Catmull-Rom",
-
-			onPress = function()
-				Which = "catmull_rom"
-			end
-		}
-	}
-
-	self.tabs = common_ui.TabBar(self.view, tab_buttons, { top = display.contentHeight - 65, left = 250, width = 200 }, true)
-
-	self.tabs:setSelected(1, true)
-
-	--
-	self.points = points
-	self.smooth = checkbox.Checkbox(self.view, nil, 40, display.contentHeight - 50, 30, 30, function(_, check)
-		self.tabs.isVisible = check
-	end)
-
-	self.str = display.newText(self.view, "Smooth polygon", 0, self.smooth.y, native.systemFont, 20)
-
-	self.str.anchorX, self.str.x = 0, self.smooth.x + self.smooth.width + 5
-
-	self.acoeff = widget.newSlider{
-		left = 20, top = 90, width = 120, height = 70,
-
-		listener = function(event)
-			SetA(event.value)
-		end
-	}
-
-	self.hscale = widget.newSlider{
-		left = 20, top = 150, width = 120, height = 70,
-
-		listener = function(event)
-			SetH(event.value)
-		end
-	}
-
-	SetA(self.acoeff.value)
-	SetH(self.hscale.value)
-
-	--
-	Runtime:addEventListener("enterFrame", EnterFrame)
 end
 
-Scene:addEventListener("enterScene")
+Scene:addEventListener("show")
 
 --
-function Scene:exitScene ()
-	self.points = nil
+function Scene:hide (event)
+	if event.phase == "did" then
+		self.points = nil
 
-	self.igroup:removeSelf()
+		self.igroup:removeSelf()
 
-	display.remove(self.polygon)
-	display.remove(self.trace)
+		display.remove(self.polygon)
+		display.remove(self.trace)
 
-	self.polygon = nil
-	self.trace = nil
+		self.polygon = nil
+		self.trace = nil
 
-	self.acoeff:removeSelf()
-	self.hscale:removeSelf()
-	self.smooth:removeSelf()
-	self.str:removeSelf()
+		self.acoeff:removeSelf()
+		self.hscale:removeSelf()
+		self.smooth:removeSelf()
+		self.str:removeSelf()
 
-	--
-	Runtime:removeEventListener("enterFrame", EnterFrame)
+		--
+		Runtime:removeEventListener("enterFrame", EnterFrame)
+	end
 end
 
-Scene:addEventListener("exitScene")
+Scene:addEventListener("hide")
 
 return Scene

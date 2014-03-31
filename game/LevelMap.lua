@@ -50,7 +50,7 @@ local tile_maps = require("game.TileMaps")
 local display = display
 
 -- Corona modules --
-local storyboard = require("storyboard")
+local composer = require("composer")
 
 -- Exports --
 local M = {}
@@ -270,7 +270,7 @@ local function Leave (info)
 		return_to = return_to(info)
 	end
 
-	storyboard.gotoScene(return_to, "crossFade")
+	composer.gotoScene(return_to, "crossFade")
 end
 
 -- Possible overlays to play on unload --

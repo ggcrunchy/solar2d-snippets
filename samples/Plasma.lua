@@ -47,11 +47,11 @@ local display = display
 local timer = timer
 
 -- Corona modules --
-local storyboard = require("storyboard")
+local composer = require("composer")
 local widget = require("widget")
 
 -- Pixels demo scene --
-local Scene = storyboard.newScene()
+local Scene = composer.newScene()
 
 -- --
 local NCols, NRows = 120, 115
@@ -66,7 +66,7 @@ local PixelWidth, PixelHeight = 3, 3
 local Right = BoxX + NCols * PixelWidth
 
 --
-function Scene:createScene ()
+function Scene:create ()
 	buttons.Button(self.view, nil, 120, 75, 200, 50, scenes.Opener{ name = "scene.Choices" }, "Go Back")
 
 	self.sliders = {}
@@ -94,7 +94,7 @@ end
 	end
 end
 
-Scene:addEventListener("createScene")
+Scene:addEventListener("create")
 
 --
 local function When (t, slider)
@@ -110,104 +110,108 @@ local function When (t, slider)
 end
 
 --
-function Scene:enterScene ()
-	--
-	self.igroup = display.newGroup()
-
-	self.view:insert(self.igroup)
-
-	--
-	for _, slider in ipairs(self.sliders) do
-		slider:setValue(slider.m_def)
-	end
-
-	--
-	self.render = timer.performWithDelay(10, function(event)
+function Scene:show (event)
+	if event.phase == "did" then
 		--
-		local sliders, t = self.sliders, .125 * pi * event.time / 1000
+		self.igroup = display.newGroup()
+
+		self.view:insert(self.igroup)
 
 		--
-		local t1 = When(t, sliders[1])
-		local t2 = When(t, sliders[2])
-		local t3 = When(t, sliders[3])
+		for _, slider in ipairs(self.sliders) do
+			slider:setValue(slider.m_def)
+		end
 
 		--
-		local k1 = t2 - 16
-		local k2 = t1 / 3 - 32
+		self.render = timer.performWithDelay(10, function(event)
+			--
+			local sliders, t = self.sliders, .125 * pi * event.time / 1000
 
-		--
-		t1 = t1 * 1.4
-		t2 = t2 * 1.2
-		t3 = t3 * 3.7
+			--
+			local t1 = When(t, sliders[1])
+			local t2 = When(t, sliders[2])
+			local t3 = When(t, sliders[3])
 
-		--
-		local fa = ldexp(1, -round(sliders[4].value / 10))
-		local fb = ldexp(1, -round(sliders[5].value / 10))
-		local fc = ldexp(1, -round(sliders[6].value / 10))
+			--
+			local k1 = t2 - 16
+			local k2 = t1 / 3 - 32
 
-		--
-		local pix, index = self.igroup, 1
-		local nloaded = pix.numChildren
+			--
+			t1 = t1 * 1.4
+			t2 = t2 * 1.2
+			t3 = t3 * 3.7
 
-		for row = 1, NRows do
-			local ka, kb = (row - 65)^2, (row + k2)^2
+			--
+			local fa = ldexp(1, -round(sliders[4].value / 10))
+			local fb = ldexp(1, -round(sliders[5].value / 10))
+			local fc = ldexp(1, -round(sliders[6].value / 10))
 
-			for col = 1, NCols do
-				if index > nloaded then
-					return
+			--
+			local pix, index = self.igroup, 1
+			local nloaded = pix.numChildren
+
+			for row = 1, NRows do
+				local ka, kb = (row - 65)^2, (row + k2)^2
+
+				for col = 1, NCols do
+					if index > nloaded then
+						return
+					end
+
+					--
+					-- TODO: In theory, it would be cheaper to do the columns in the outer loop and
+					-- restructure the indexing accordingly (assuming the present behavior is to be
+					-- left intact)... in that case, deal with it during allocation?
+					local A = fa * sqrt((col + k1)^2 + ka)
+					local B = fb * sqrt((col - 106)^2 + kb)
+					local C = fc * (col + row)
+
+					--
+					-- TODO: For that matter, all the sines can then be done incrementally
+					local rc = .5 + .1667 * (sin(t1 * A) + sin(t2 * A) + sin(t3 * A))
+					local gc = .5 + .1667 * (sin(t1 * B) + sin(t2 * B) + sin(t3 * B))
+					local bc = .5 + .1667 * (sin(t1 * C) + sin(t2 * C) + sin(t3 * C))
+
+					pix[index]:setFillColor(rc, gc, bc)
+
+					index = index + 1
 				end
-
-				--
-				-- TODO: In theory, it would be cheaper to do the columns in the outer loop and
-				-- restructure the indexing accordingly (assuming the present behavior is to be
-				-- left intact)... in that case, deal with it during allocation?
-				local A = fa * sqrt((col + k1)^2 + ka)
-				local B = fb * sqrt((col - 106)^2 + kb)
-				local C = fc * (col + row)
-
-				--
-				-- TODO: For that matter, all the sines can then be done incrementally
-				local rc = .5 + .1667 * (sin(t1 * A) + sin(t2 * A) + sin(t3 * A))
-				local gc = .5 + .1667 * (sin(t1 * B) + sin(t2 * B) + sin(t3 * B))
-				local bc = .5 + .1667 * (sin(t1 * C) + sin(t2 * C) + sin(t3 * C))
-
-				pix[index]:setFillColor(rc, gc, bc)
-
-				index = index + 1
 			end
-		end
-	end, 0)
+		end, 0)
 
-	self.allocate_pixels = timers.WrapEx(function()
-		local step = timers.YieldEach(30)
+		self.allocate_pixels = timers.WrapEx(function()
+			local step = timers.YieldEach(30)
 
-		for row = 1, NRows do
-			for col = 1, NCols do
-				local pixel = display.newRect(self.igroup, 0, 0, PixelWidth, PixelHeight)
+			for row = 1, NRows do
+				for col = 1, NCols do
+					local pixel = display.newRect(self.igroup, 0, 0, PixelWidth, PixelHeight)
 
-				pixel.anchorX, pixel.x = 0, BoxX + col * PixelWidth
-				pixel.anchorY, pixel.y = 0, BoxY + row * PixelHeight
+					pixel.anchorX, pixel.x = 0, BoxX + col * PixelWidth
+					pixel.anchorY, pixel.y = 0, BoxY + row * PixelHeight
 
-				step()
+					step()
+				end
 			end
-		end
-	end)
+		end)
+	end
 end
 
-Scene:addEventListener("enterScene")
+Scene:addEventListener("show")
 
 --
-function Scene:exitScene ()
-	timer.cancel(self.render)
-	timer.cancel(self.allocate_pixels)
+function Scene:hide (event)
+	if event.phase == "did" then
+		timer.cancel(self.render)
+		timer.cancel(self.allocate_pixels)
 
-	self.igroup:removeSelf()
+		self.igroup:removeSelf()
 
-	self.igroup = nil
-	self.render = nil
-	self.allocate_pixels = nil
+		self.igroup = nil
+		self.render = nil
+		self.allocate_pixels = nil
+	end
 end
 
-Scene:addEventListener("exitScene")
+Scene:addEventListener("hide")
 
 return Scene
