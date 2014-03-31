@@ -49,9 +49,6 @@ local Clear = UL + UR + LL + LR
 -- No flags set: full --
 local Full = 0
 
--- Column increments (upper-left -> upper-right -> lower-right -> lower-left --
-local Step = { 1, 0, -1 }
-
 --- DOCME
 function M.NewGrid (get_object, dim, w, h, ncols, nrows, base_dir)
 	local reel = _NewReel_(dim, w / ncols, h / nrows, base_dir)
@@ -79,9 +76,9 @@ function M.NewGrid (get_object, dim, w, h, ncols, nrows, base_dir)
 		if ndirty > 0 then
 			-- Visit each dirty cell, building up a state from the cell's corners.
 			for i = 1, ndirty, 3 do
-				local j, index, col, row = 1, unpack(dirty_cells, i, i + 2)
+				local index, col, row = unpack(dirty_cells, i, i + 2)
 
-				repeat
+				for j = 1, 4 do
 					if dirty_cells[-index] ~= id then
 						local ul = cleared[index - pitch - 1] and UL or None
 						local ur = cleared[index - pitch] and UR or None
@@ -112,16 +109,16 @@ function M.NewGrid (get_object, dim, w, h, ncols, nrows, base_dir)
 					end
 
 					-- Step to another corner.
-					local dc = Step[j]
+					if j < 4 then
+						local dc = 2 - j
 
-					if dc ~= 0 then
-						index, col = index + dc, col + dc
-					else
-						index, row = index + pitch, row + 1
+						if dc ~= 0 then
+							index, col = index + dc, col + dc
+						else
+							index, row = index + pitch, row + 1
+						end
 					end
-
-					j = j + 1
-				until j > 3
+				end
 			end
 
 			-- Update the ID and invalidate one cell.
