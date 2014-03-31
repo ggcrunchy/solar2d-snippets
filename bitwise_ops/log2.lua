@@ -53,7 +53,7 @@ do
 	local n = 1
 
 	for i = 0, 54 do
-		Lg[n % 59], n = i, n + n
+		Lg[n % 59], n = i, 2 * n
 	end
 
 	Lg[15] = false

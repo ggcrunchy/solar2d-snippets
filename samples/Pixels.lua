@@ -111,8 +111,8 @@ end
 local function NewQuat (index)
 	local quat = Angles[index].q
 	local x = 2 * (random() - .5)
-	local y = 2 * (random() - .5) * sqrt(max(0, 1 - x * x))
-	local z = (random() < .5 and -1 or 1) * sqrt(max(0, 1 - x * x - y * y))
+	local y = 2 * (random() - .5) * sqrt(max(0, 1 - x^2))
+	local z = (random() < .5 and -1 or 1) * sqrt(max(0, 1 - x^2 - y^2))
 	local theta = (pi / 6 + random() * pi / 3) * (random() < .5 and -1 or 1)
 	local stheta = sin(theta)
 
@@ -325,9 +325,9 @@ function Scene:enterScene ()
 					if GetPixel() then
 						pixel.x, pixel.y = CenterX + x, y
 
-						local uz = sqrt(max(zpart - ux * ux, 0))
+						local uz = sqrt(max(zpart - ux^2, 0))
 						local zz = light_z - Radius * uz
-						local len = sqrt(xx * xx + y2 + zz * zz)
+						local len = sqrt(xx^2 + y2 + zz^2)
 						local k = min(.5 * (ux * xx + ydot + uz * zz) / len + .5, 1)
 
 						pixel:setFillColor(.09 + k * .91, .11 + k * .89, .09 + k * .91)

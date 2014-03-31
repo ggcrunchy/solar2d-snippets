@@ -122,8 +122,7 @@ do
 			for k = 2, i do
 				Rom1[k] = (kpower * Rom1[k - 1] - Rom0[k - 1]) / (kpower - 1)
 
-				kpower = kpower + kpower
-				kpower = kpower + kpower
+				kpower = 4 * kpower
 			end
 
 			-- Save extrapolated values for next pass.
@@ -131,7 +130,7 @@ do
 				Rom0[j] = Rom1[j]
 			end
 
-			ipower, h = ipower + ipower, .5 * h
+			ipower, h = 2 * ipower, .5 * h
 		end
 
 		return Rom0[Order]

@@ -322,7 +322,7 @@ local DefConvolve2D = AuxConvolve2D.full
 -- * For **"full"**: _scols_ + _kcols_ - 1.
 -- * For **"same"**: _scols_.
 function M.Convolve_2D (signal, kernel, scols, kcols, shape)
-	return (AuxConvolve2D[shape] or DefConvolve2D)(signal, kernel, scols, kcols)-- and nil
+	return (AuxConvolve2D[shape] or DefConvolve2D)(signal, kernel, scols, kcols)
 end
 
 -- Scratch buffers used to perform transforms --
@@ -344,7 +344,7 @@ local function LenPower (n1, n2)
 	local len, n = n1 + n2 - 1, 1
 
 	while n < len do
-		n = n + n
+		n = 2 * n
 	end
 
 	return len, n
@@ -444,10 +444,10 @@ function M.Convolve_FFT2D (signal, kernel, scols, kcols, opts)
 	fft.IFFT_2D(B, m, n)
 
 	-- ...and get the convolution by scaling the real parts of the result.
-	local csignal, offset, delta = {}, 0, m + m
+	local csignal, offset, delta = {}, 0, 2 * m
 
 	for _ = 1, h do
-		for j = 1, w + w, 2 do
+		for j = 1, 2 * w, 2 do
 			csignal[#csignal + 1] = B[offset + j] / area
 		end
 

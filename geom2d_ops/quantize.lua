@@ -34,7 +34,7 @@ local M = {}
 
 -- Helper to bin distances
 local function AuxQuantize (op, dx, dy, len, bias)
-	return op(sqrt(dx * dx + dy * dy) / len + (bias or 0))
+	return op(sqrt(dx^2 + dy^2) / len + (bias or 0))
 end
 
 --- Quantizes a distance, as `bin = Round(distance / len + bias)`, rounding down.

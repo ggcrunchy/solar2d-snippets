@@ -195,8 +195,8 @@ local function MergeDotIntoSequence (dot, touch)
 	end
 end
 
--- Pulsing button transition --
-local ScaleInOut = { time = 250, transition = easing.outQuad }
+-- Pulsing button transition; button scaling in or out --
+local ScaleInOut, Scaling = { time = 250, transition = easing.outQuad }
 
 -- Kick off a scale (either in or out) in the button pulse
 local function ScaleActionButton (button, delta)

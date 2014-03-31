@@ -112,7 +112,7 @@ local function FadeIn (block)
 	end)
 
 	-- Spread out until all tiles in the block have been cued.
-	local radius, t0 = sqrt(nx * nx + ny * ny) / 2000
+	local radius, t0 = sqrt(nx^2 + ny^2) / 2000
 
 	timers.RepeatEx(function(event)
 		t0 = t0 or event.time

@@ -63,7 +63,7 @@ end
 -- @number t Curve parameter.
 -- @treturn number 1 - _t_ &sup2;.
 function M.OneMinusT2 (t)
-	return 1 - t * t
+	return 1 - t^2
 end
 
 --- Shifted variant of @{OneMinusT2}.
@@ -76,7 +76,7 @@ M.OneMinusT2_Shifted = Remap(M.OneMinusT2)
 -- @number t Curve parameter.
 -- @treturn number 1 - _t_ &sup3;.
 function M.OneMinusT3 (t)
-	return 1 - t * t * t
+	return 1 - t^3
 end
 
 --- Shifted variant of @{OneMinusT3}
@@ -95,7 +95,7 @@ M.OneMinusT3_ShiftedAbs = RemapAbs(M.OneMinusT3)
 -- @number t Curve parameter.
 -- @treturn number Curve value at _t_.
 function M.Perlin (t)
-	return t * t * t * (t * (t * 6 - 15) + 10)
+	return t^3 * (t * (t * 6 - 15) + 10)
 end
 
 -- Remaps a curve's domain (namely, [-1, +1] -> [0, 1])
@@ -134,7 +134,7 @@ end
 -- @number t Curve parameter.
 -- @treturn number _t_ &sup2;.
 function M.T2 (t)
-	return t * t
+	return t^2
 end
 
 --- Shifted variant of @{T2}.
@@ -147,7 +147,7 @@ M.T2_Shifted = Remap(M.T2)
 -- @number t Curve parameter.
 -- @treturn number _t_ &sup3;.
 function M.T3 (t)
-	return t * t * t
+	return t^3
 end
 
 --- Shifted variant of @{T3}.
@@ -174,7 +174,7 @@ function M.UnitTangent (curve, t, dt)
 	local x1, y1 = curve(t - dt)
 	local x2, y2 = curve(t + dt)
 	local dx, dy = x2 - x1, y2 - y1
-	local len = sqrt(dx * dx + dy * dy)
+	local len = sqrt(dx^2 + dy^2)
 
 	return dx / len, dy / len
 end

@@ -181,7 +181,7 @@ function M.Snowfall (group, images, max)
 
 				-- Build a random curve between the top and bottom positions.
 				local dx, dy = x2 - x1, y2 - y1
-				local mag = sqrt(dx * dx + dy * dy)
+				local mag = sqrt(dx^2 + dy^2)
 				local u_dx, u_dy = dx / mag, dy / mag
 
 				AddToPath(path, x1, y1)

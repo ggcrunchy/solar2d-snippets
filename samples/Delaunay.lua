@@ -354,7 +354,7 @@ function Scene:enterScene ()
 		ShowText("Adding circumcircle")
 
 		local dx, dy = maxx - cx, maxy - cy
-		local radius = floor(sqrt(dx * dx + dy * dy + .5))
+		local radius = floor(sqrt(dx^2 + dy^2 + .5))
 
 		self.circumcircle = display.newCircle(self.view, cx, cy, radius)
 

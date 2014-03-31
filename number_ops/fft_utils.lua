@@ -49,12 +49,12 @@ local M = {}
 function M.PrepareSeparateFFTs_2D (out1, out2, m, n, arr1, cols1, arr2, cols2, na1, na2)
 	na1, na2 = na1 or #arr1, na2 or #arr2
 
-	local j, ii1, ii2 = 1, 1, 1
+	local j, ii1, ii2, m2 = 1, 1, 1, 2 * m
 
 	for row = 1, n do
 		local oi1, oi2 = j, j
 
-		for _ = 1, m + m, 2 do
+		for _ = 1, m2, 2 do
 			out1[j], out1[j + 1], out2[j], out2[j + 1], j = 0, 0, 0, 0, j + 2
 		end
 
@@ -94,7 +94,7 @@ function M.PrepareTwoFFTs_1D (out, size, arr1, m, arr2, n)
 		out[j], out[j + 1], j = 0, arr2[i], j + 2
 	end
 
-	for i = j, size + size, 2 do
+	for i = j, 2 * size, 2 do
 		out[i], out[i + 1] = 0, 0
 	end
 
@@ -161,7 +161,7 @@ function M.PrepareTwoFFTs_2D (out, size, arr1, cols1, arr2, cols2, ncols, na1, n
 	end
 
 	-- Fill the remaining rows with zeroes.
-	for i = j, size + size, 2 do
+	for i = j, 2 * size, 2 do
 		out[i], out[i + 1] = 0, 0
 	end
 

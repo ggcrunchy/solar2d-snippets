@@ -39,7 +39,7 @@ local M = {}
 local function BitReverse (v, n, offset)
 	local j = 0
 
-	for i = 0, n + n - 4, 2 do
+	for i = 0, 2 * n - 4, 2 do
 		if i < j then
 			local io, jo = i + offset, j + offset
 
@@ -64,7 +64,7 @@ local function Transform (v, n, theta, offset)
 
 	BitReverse(v, n, offset)
 
-	local n2, dual, dual2, dual4 = n + n, 1, 2, 4
+	local n2, dual, dual2, dual4 = 2 * n, 1, 2, 4
 
 	repeat
 		for k = 1, n2 - 1, dual4 do
@@ -77,11 +77,11 @@ local function Transform (v, n, theta, offset)
 			v[i], v[i + 1] = ir + jr, ii + ji
 		end
 
-		local s, s2 = sin(theta), 2.0 * sin(theta * 0.5)^2
+		local s1, s2 = sin(theta), 2.0 * sin(theta * 0.5)^2
 		local wr, wi = 1.0, 0.0
 
 		for a = 3, dual2 - 1, 2 do
-			wr, wi = wr - s * wi - s2 * wr, wi + s * wr - s2 * wi
+			wr, wi = wr - s1 * wi - s2 * wr, wi + s1 * wr - s2 * wi
 
 			for k = a, a + n2 - dual4, dual4 do
 				local i = offset + k
@@ -95,7 +95,7 @@ local function Transform (v, n, theta, offset)
 			end
 		end
 
-		dual, dual2, dual4, theta = dual2, dual4, dual4 + dual4, .5 * theta
+		dual, dual2, dual4, theta = dual2, dual4, 2 * dual4, .5 * theta
 	until dual >= n
 end
 
@@ -132,7 +132,7 @@ end
 -- @uint w
 -- @uint h
 function M.FFT_2D (m, w, h)
-	local w2 = w + w
+	local w2 = 2 * w
 	local area = w2 * h
 
 	for i = 1, area, w2 do
@@ -144,8 +144,8 @@ end
 
 -- Helper for common part of real transforms
 local function AuxRealXform (v, n, c1, c2, theta, offset)
-	local s, s2 = sin(theta), 2 * sin(0.5 * theta)^2
-	local wr, wi, nf = 1.0 - s2, s, offset + n + n + 2
+	local s1, s2 = sin(theta), 2 * sin(0.5 * theta)^2
+	local wr, wi, nf = 1.0 - s2, s1, offset + 2 * (n + 1)
 
 	for k = 3, n, 2 do
 		local i, j = offset + k, nf - k
@@ -158,7 +158,7 @@ local function AuxRealXform (v, n, c1, c2, theta, offset)
 		v[i], v[i + 1] = r1 + rr_ii, ri_ir + i1
 		v[j], v[j + 1] = r1 - rr_ii, ri_ir - i1
 
-		wr, wi = wr - s * wi - s2 * wr, wi + s * wr - s2 * wi
+		wr, wi = wr - s1 * wi - s2 * wr, wi + s1 * wr - s2 * wi
 	end
 end
 
@@ -208,7 +208,7 @@ end
 -- @uint w
 -- @uint h
 function M.IFFT_2D (m, w, h)
-	local w2 = w + w
+	local w2 = 2 * w
 	local area = w2 * h
 
 	TransformColumns(m, w2, h, area, -pi)
@@ -236,7 +236,7 @@ end
 -- @uint w
 -- @uint h
 function M.IFFT_Real2D (m, w, h)
-	local w2 = w + w
+	local w2 = 2 * w
 	local area = w2 * h
 
 	TransformColumns(m, w2, h, area, -pi)
@@ -249,17 +249,16 @@ function M.IFFT_Real2D (m, w, h)
 		local a, b = m[j], m[j + 1]
 
 		m[j], m[j + 1] = .5 * (a + b), .5 * (a - b)
-
+-- ^^ These j-based offsets are probably off? (Need to roll or bit-reverse???)
 		Transform(m, w, -pi, j - 1)
 	end
--- TODO: Still not right?
 end
 
 --- DOCME
 function M.Multiply_1D (v1, v2, n, out)
 	out = out or v1
 
-	for i = 1, n + n, 2 do
+	for i = 1, 2 * n, 2 do
 		local a, b, c, d = v1[i], v1[i + 1], v2[i], v2[i + 1]
 
 		out[i], out[i + 1] = a * c - b * d, b * c + a * d
@@ -270,7 +269,7 @@ end
 function M.Multiply_2D (m1, m2, w, h, out)
 	out = out or m1
 
-	for i = 1, (w + w) * h, 2 do
+	for i = 1, 2 * w * h, 2 do
 		local a, b, c, d = m1[i], m1[i + 1], m2[i], m2[i + 1]
 
 		out[i], out[i + 1] = a * c - b * d, b * c + a * d
@@ -288,7 +287,7 @@ function M.TwoFFTs_ThenMultiply1D (v, n)
 	v[1], v[2] = v[1] * v[2], 0
 	v[m], v[m + 1] = v[m] * v[m + 1], 0
 
-	local len = m + m
+	local len = 2 * m
 
 	for i = 3, n, 2 do
 		local j = len - i
@@ -311,7 +310,7 @@ local N = {}
 -- @uint w
 -- @uint h
 function M.TwoFFTs_ThenMultiply2D (m, w, h)
-	local w2 = w + w
+	local w2 = 2 * w
 	local area, len = w2 * h, w2 + 2
 
 	--
@@ -383,7 +382,7 @@ function M.TwoGoertzels_ThenMultiply1D (v1, v2, n, out)
 
 	local k, wr, wi, omega, da = 2, 1, 0, 0, 2 * pi / n
 
-	for i = 1, n + n, 2 do
+	for i = 1, 2 * n, 2 do
 		local a, b, c, d = AuxTwoGoertzels(v1, v2, n, k, wr, wi, 0)
 
 		out[i], out[i + 1] = a * c - b * d, -(b * c + a * d)
@@ -400,7 +399,7 @@ local Transpose = {}
 
 --
 local function InPlaceResolve (out, w2, h2, last_row)
-	local col, h4 = 0, h2 + h2
+	local col, h4 = 0, 2 * h2
 
 	for i = 1, w2, 2 do
 		local ci, coff = i, last_row + i
@@ -426,7 +425,7 @@ end
 -- @array? out
 function M.TwoGoertzels_ThenMultiply2D (m1, m2, w, h, out)
 	local coeff, wr, wi, omega, da = 2, 1, 0, 0, 2 * pi / w
-	local offset, col, w2, h2 = 0, 1, w + w, h + h
+	local offset, col, w2, h2 = 0, 1, 2 * w, 2 * h
 	local last_row = w2 * (h - 1)
 
 	--

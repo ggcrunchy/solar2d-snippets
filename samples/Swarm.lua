@@ -269,7 +269,7 @@ local MaxSpeed
 --
 local function Seek (boid, x, y)
 	local dx, dy = x - boid.x, y - boid.y
-	local speed = MaxSpeed / sqrt(dx * dx + dy * dy)
+	local speed = MaxSpeed / sqrt(dx^2 + dy^2)
 
 	return dx * speed - boid.m_vx, dy * speed - boid.m_vy
 end
@@ -504,7 +504,7 @@ function Scene:enterScene ()
 			boid.m_vx = vx
 			boid.m_vy = vy
 
-			local mag = sqrt(vx * vx + vy * vy)
+			local mag = sqrt(vx^2 + vy^2)
 
 			if mag > 1e-9 then
 				boid.m_hx = vx / mag

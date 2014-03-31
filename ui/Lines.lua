@@ -105,7 +105,7 @@ local function UpdateLines ()
 				end
 
 				local dx, dy = p2x - p1x, p2y - p1y
-				local len = sqrt(dx * dx + dy * dy)
+				local len = sqrt(dx^2 + dy^2)
 
 				-- There are at least two points in the curve: we use a single segment
 				-- if the endpoints are close or nearly horizontal / vertical to each

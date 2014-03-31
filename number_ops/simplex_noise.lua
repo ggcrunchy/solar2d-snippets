@@ -90,12 +90,12 @@ local Grads3 = {
 do
 	-- 2D weight contribution
 	local function GetN (ix, iy, x, y)
-		local t = .5 - x * x - y * y
+		local t = .5 - x^2 - y^2
 		local index = Perms12[ix + Perms[iy + 1]]
 		local grad = Grads3[index]
-		local t2 = t * t
+		local t2 = t^2
 
-		return max(0, t2 * t2) * (grad[1] * x + grad[2] * y)
+		return max(0, t2^2) * (grad[1] * x + grad[2] * y)
 	end
 
 	-- 2D skew factor:
@@ -145,12 +145,12 @@ end
 do
 	-- 3D weight contribution
 	local function GetN (ix, iy, iz, x, y, z)
-		local t = .6 - x * x - y * y - z * z
+		local t = .6 - x^2 - y^2 - z^2
 		local index = Perms12[ix + Perms[iy + Perms[iz + 1]]]
 		local grad = Grads3[index]
-		local t2 = t * t
+		local t2 = t^2
 
-		return max(0, t2 * t2) * (grad[1] * x + grad[2] * y + grad[3] * z)
+		return max(0, t2^2) * (grad[1] * x + grad[2] * y + grad[3] * z)
 	end
 
 	-- 3D skew factors:
@@ -256,12 +256,12 @@ do
 
 	-- 4D weight contribution
 	local function GetN (ix, iy, iz, iw, x, y, z, w)
-		local t = .6 - x * x - y * y - z * z - w * w
+		local t = .6 - x^2 - y^2 - z^2 - w^2
 		local index = (Perms[ix + Perms[iy + Perms[iz + Perms[iw + 1]]]] - 1) % 0x20 + 1
 		local grad = Grads4[index]
-		local t2 = t * t
+		local t2 = t^2
 
-		return max(0, t2 * t2) * (grad[1] * x + grad[2] * y + grad[3] * z + grad[4] * w)
+		return max(0, t2^2) * (grad[1] * x + grad[2] * y + grad[3] * z + grad[4] * w)
 	end
 
 	-- A lookup table to traverse the simplex around a given point in 4D.

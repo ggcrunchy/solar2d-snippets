@@ -77,7 +77,7 @@ function M.MakeFlags (names)
 	for _, name in ipairs(names) do
 		flags[name] = cur_flag
 
-		cur_flag = cur_flag + cur_flag
+		cur_flag = 2 * cur_flag
 	end
 
 	return flags
@@ -101,7 +101,7 @@ end
 -- @uint flag Flag (i.e. a power of 2 constant).
 -- @treturn boolean _flag_ is present in _var_?
 function M.TestFlag (var, flag)
-	return var % (flag + flag) >= flag
+	return var % (2 * flag) >= flag
 end
 
 -- Cache module members.

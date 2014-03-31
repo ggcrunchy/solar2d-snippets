@@ -52,7 +52,7 @@ local M = {}
 -- @treturn number ...and y-coordinate.
 function M.Bezier2 (p1, q, p2, t)
 	local s = 1 - t
-	local a, b, c = s * s, 2 * s * t, t * t
+	local a, b, c = s^2, 2 * s * t, t^2
 
 	return a * p1.x + b * q.x + c * p2.x, a * p1.y + b * q.y + c * p2.y
 end
@@ -154,8 +154,8 @@ function M.Length2 (p1, q, p2)
 	local ax, bx = p2.x - qpx, qpx - p1x
 	local ay, by = p2.y - qpy, qpy - p1y
 
-	local A = ax * ax + ay * ay
-	local C = bx * bx + by * by
+	local A = ax^2 + ay^2
+	local C = bx^2 + by^2
 
 	if A > 1e-9 then
 		A = 4 * A
@@ -165,7 +165,7 @@ function M.Length2 (p1, q, p2)
 		local A_2, C_2 = sqrt(A), 2 * sqrt(C)
 		local A_32, BA = 2 * A * A_2, B / A_2
 
-		return (A_32 * Sabc + A_2 * B * (Sabc - C_2) + (4 * C * A - B * B) * log((2 * A_2 + BA + Sabc) / (BA + C_2))) / (4 * A_32)
+		return (A_32 * Sabc + A_2 * B * (Sabc - C_2) + (4 * C * A - B^2) * log((2 * A_2 + BA + Sabc) / (BA + C_2))) / (4 * A_32)
 	else
 		return sqrt(C)
 	end
@@ -252,11 +252,11 @@ do
 		local x, y = V[base], V[base + 1]
 		local dx, dy = V[base + 6] - x, V[base + 7] - y
 
-		local len, main_len = 0, sqrt(dx * dx + dy * dy)
+		local len, main_len = 0, sqrt(dx^2 + dy^2)
 
 		for _ = 1, 3 do
 			dx, dy = V[base + 2] - x, V[base + 3] - y
-			len = len + sqrt(dx * dx + dy * dy)
+			len = len + sqrt(dx^2 + dy^2)
 			base, x, y = base + 2, x + dx, y + dy
 		end
 

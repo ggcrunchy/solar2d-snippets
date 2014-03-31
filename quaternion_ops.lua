@@ -65,7 +65,7 @@ end
 -- q = [0, theta * v] -> [cos(theta), sin(theta) * v]
 function M.Exp (qout, q)
 	local x, y, z = q.x, q.y, q.z
-	local theta = sqrt(x * x + y * y + z * z)
+	local theta = sqrt(x^2 + y^2 + z^2)
 
 	qout.w = cos(theta)
 
@@ -87,7 +87,7 @@ end
 
 --- DOCME
 function M.Length (q)
-	return sqrt(q.x * q.x + q.y * q.y + q.z * q.z + q.w * q.w)
+	return sqrt(q.x^2 + q.y^2 + q.z^2 + q.w^2)
 end
 
 --- DOCME
@@ -227,7 +227,7 @@ _SquadQ2S2_ = M.SquadQ2S2
 	local Factor = Scale * (-.5 / (Neighborhood * math.sqrt(Neighborhood))) 
 
 	local function Norm (x, y)
-		local s = x * x + y * y
+		local s = x^2 + y^2
 		local k1 = AddK + Factor * (s - Neighborhood)
 		local k = k1
 
@@ -247,12 +247,12 @@ _SquadQ2S2_ = M.SquadQ2S2
 		local x2 = random()
 
 		for _ = 1, 10 do
-			local y1 = math.sqrt(math.max(1 - x1 * x1, 0))
-			local y2 = math.sqrt(math.max(1 - x2 * x2, 0))
+			local y1 = math.sqrt(math.max(1 - x1^2, 0))
+			local y2 = math.sqrt(math.max(1 - x2^2, 0))
 			local t = random()
 			local x, y = (1 - t) * x1 + t * x2, (1 - t) * y1 + t * y2
 			local nx, ny, k, s = Norm(x, y)
-			local len = math.sqrt(nx * nx + ny * ny)
+			local len = math.sqrt(nx^2 + ny^2)
 
 	if len < .95 or len > 1.05 then
 	--	printf("K = %.4f, S = %.4f, t = %.3f, got len = %.4f", k, s, t, len)

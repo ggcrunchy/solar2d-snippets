@@ -26,6 +26,8 @@
 -- Standard library imports --
 local format = string.format
 local ipairs = ipairs
+local max = math.max
+local min = math.min
 
 -- Modules --
 local button = require("ui.Button")
@@ -92,7 +94,7 @@ function M:AddImage (options)
 		image.xScale = 64 / image.width
 		image.yScale = 64 / image.height
 	else
-		image = display.newRoundedRect(dgroup, 0, 0, 64, 64, 12)
+		image = display.newRoundedRect(self:ItemGroup(), 0, 0, 64, 64, 12)
 	end
 
 	self:CommonAdd(image, options)

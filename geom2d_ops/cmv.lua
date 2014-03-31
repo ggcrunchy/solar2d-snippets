@@ -786,13 +786,13 @@ inline double area(const Point2D &a, const Point2D &b) {
 	return a.y*b.x-a.x*b.y;
 }
 inline double dist(const Point2D &a, const Point2D &b) {
-	return sqrt((a.x-b.x)*(a.x-b.x)+(a.y-b.y)*(a.y-b.y));
+	return sqrt((a.x-b.x)^2+(a.y-b.y)^2);
 }
 inline double distSquare(const Point2D &a, const Point2D &b) {
-	return (a.x-b.x)*(a.x-b.x)+(a.y-b.y)*(a.y-b.y);
+	return (a.x-b.x)^2+(a.y-b.y)^2;
 }
 inline double modulus(const Point2D &a) {
-	return sqrt(a.x*a.x+a.y*a.y);
+	return sqrt(a.x^2+a.y^2);
 }
 inline Point2D rotateL(const Point2D &a) {
 	return Point2D(-a.y, a.x);
@@ -957,7 +957,7 @@ void poissonMVCs(const vector<Point2D> &poly, const Point2D &p, vector<double> &
 		for(int i = 0;  i < int(poly.size());  i++) {
 			double A = inner(zeta[i], zeta[i]);
 			double B = inner(tmpP, zeta[i]);
-			xi[i] = zeta[i]*((-B+sqrt(B*B-A*C))/A)-tau;
+			xi[i] = zeta[i]*((-B+sqrt(B^2-A*C))/A)-tau;
 		}
 		for(int i = 0;  i < int(poly.size());  i++) {
 			int j = (i+1)%int(poly.size());

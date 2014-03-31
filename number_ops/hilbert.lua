@@ -150,10 +150,10 @@ function M.GetXY (order, s)
 	for i = 2 * order - 2, 0, -2 do
 		local row = bor(4 * state, MaskedShift(s, i, 3))
 
-		x = bor(x + x, MaskedShift(0x936C, row, 1))
-		y = bor(y + y, MaskedShift(0x39C6, row, 1))
+		x = bor(2 * x, MaskedShift(0x936C, row, 1))
+		y = bor(2 * y, MaskedShift(0x39C6, row, 1))
 
-		state = MaskedShift(0x3E6B94C1, row + row, 3)
+		state = MaskedShift(0x3E6B94C1, 2 * row, 3)
 	end
 
 	return x, y
@@ -175,7 +175,7 @@ function M.GetXY_Incremental (order, x, y)
 
 	for i = order - 1, 0, -1 do
 		local row = bor(4 * state, 2 * MaskedShift(x, i, 1), MaskedShift(y, i, 1))
-		local r2 = row + row
+		local r2 = 2 * row
 
 		if MaskedShift(0xBDDB, row, 1) ~= 0 then
 			dx = MaskedShift(0x16451659, r2, 3) - 1
@@ -199,7 +199,7 @@ function M.GetS (order, x, y)
 
 	for i = order - 1, 0, -1 do
 		local row = bor(4 * state, 2 * MaskedShift(x, i, 1), MaskedShift(y, i, 1))
-		local r2 = row + row
+		local r2 = 2 * row
 
 		s = bor(4 * s, MaskedShift(0x361E9CB4, r2, 3))
 		state = MaskedShift(0x8FE65831, r2, 3)

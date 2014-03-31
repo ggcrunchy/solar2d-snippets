@@ -34,7 +34,7 @@ local M = {}
 -- @number dy ...and y-axis.
 -- @treturn number Distance.
 function M.Distance (dx, dy)
-	return sqrt(dx * dx + dy * dy)
+	return sqrt(dx^2 + dy^2)
 end
 
 --- Getter.
@@ -44,9 +44,7 @@ end
 -- @number qy ...and y-axis.
 -- @treturn number Distance.
 function M.Distance_Between (px, py, qx, qy)
-	local dx, dy = qx - px, qy - py
-
-	return sqrt(dx * dx + dy * dy)
+	return sqrt((qx - px)^2 + (qy - py)^2)
 end
 
 --- Getter.

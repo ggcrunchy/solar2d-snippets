@@ -63,7 +63,7 @@ function M.Binary (n, block_size, pad)
 				char, n = "1", n - bit
 			end
 
-			Acc[pos], bit = char, bit + bit
+			Acc[pos], bit = char, 2 * bit
 		until n == 0
 
 		-- If desired, pad the result to the block size.

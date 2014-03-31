@@ -103,7 +103,7 @@ local function GenHuffmanTable (codes, from, yfunc, n)
 			end
 		end
 
-		code, skip, cword = code + code, skip + skip, cword + 2^16
+		code, skip, cword = 2 * code, 2 * skip, cword + 2^16
 	end
 
 	return codes

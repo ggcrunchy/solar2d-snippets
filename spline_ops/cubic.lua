@@ -362,11 +362,11 @@ end
 function M.SetPolyFromCoeffs (poly, ax, ay, bx, by, cx, cy)
 	-- Given curve Ax^3 + Bx^2 + Cx + D, the derivative is 3Ax^2 + 2Bx + C, which
 	-- when squared (in the arc length formula) yields these coefficients. 
-	poly[1] = 9 * (ax * ax + ay * ay)
+	poly[1] = 9 * (ax^2 + ay^2)
 	poly[2] = 12 * (ax * bx + ay * by)
-	poly[3] = 6 * (ax * cx + ay * cy) + 4 * (bx * bx + by * by)
+	poly[3] = 6 * (ax * cx + ay * cy) + 4 * (bx^2 + by^2)
 	poly[4] = 4 * (bx * cx + by * cy)
-	poly[5] = cx * cx + cy * cy
+	poly[5] = cx^2 + cy^2
 end
 
 -- Intermediate coefficients --

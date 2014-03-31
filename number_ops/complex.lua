@@ -48,7 +48,7 @@ local M = {}
 -- @number b ...and complex part.
 -- @treturn number Absolute value.
 function M.Abs (a, b)
-	return sqrt(a * a + b * b)
+	return sqrt(a^2 + b^2)
 end
 
 --- Adds complex numbers _z1_ and _z2_.
@@ -90,11 +90,11 @@ local HalfPi = pi / 2
 -- @treturn number Real part of result...
 -- @treturn number ...and imaginary part (**n.b.** non-unique).
 function M.Atan (a, b)
-	local p, m, aa = 1 + b, 1 - b, a * a
-	local i, r = .25 * (log(p * p + aa) - log(m * m + aa))
+	local p, m, aa = 1 + b, 1 - b, a^2
+	local i, r = .25 * (log(p^2 + aa) - log(m^2 + aa))
 
 	if a ~= 0 then
-		local angle = atan((1 - aa - b * b) / (a + a))
+		local angle = atan(.5 * (1 - aa - b^2) / a)
 
 		r = (a > 0 and (HalfPi - angle) or -(HalfPi + angle)) / 2
 	elseif -1 < b and b < 1 then
@@ -124,7 +124,7 @@ end
 function M.Distance (a, b, c, d)
 	local dr, di = c - a, d - b
 
-	return sqrt(dr * dr + di * di)
+	return sqrt(dr^2 + di^2)
 end
 
 --- Divides _z1_ by _z2_.
@@ -135,7 +135,7 @@ end
 -- @treturn number Real part of quotient...
 -- @treturn number ...and imaginary part.
 function M.Div (a, b, c, d)
-	local denom = c * c + d * d
+	local denom = c^2 + d^2
 
 	return (a * c + b * d) / denom, (b * c - a * d) / denom
 end
@@ -167,7 +167,7 @@ end
 -- @treturn number Real part of inverse...
 -- @treturn number ...and imaginary part.
 function M.Inverse (a, b)
-	local denom = a * a + b * b
+	local denom = a^2 + b^2
 
 	return a / denom, -b / denom
 end
@@ -178,7 +178,7 @@ end
 -- @treturn number Real part of result...
 -- @treturn number ...and imaginary part (**n.b.** non-unique).
 function M.Log (a, b)
-	return .5 * log(a * a + b * b), atan2(b, a)
+	return .5 * log(a^2 + b^2), atan2(b, a)
 end
 
 --- Multiplies _z1_ by _z2_.
@@ -224,7 +224,7 @@ end
 -- @number b ...and complex part.
 -- @treturn number Norm.
 function M.Norm (a, b)
-	return a * a + b * b
+	return a^2 + b^2
 end
 
 --- Computes _z_ scaled to have absolute value of 1.
@@ -233,7 +233,7 @@ end
 -- @treturn number Real part of result...
 -- @treturn number ...and imaginary part.
 function M.Normalize (a, b)
-	local mag = sqrt(a * a + b * b)
+	local mag = sqrt(a^2 + b^2)
 
 	return a / mag, b / mag
 end
@@ -246,7 +246,7 @@ end
 -- @treturn number ...and imaginary part.
 -- @see Pow_Complex
 function M.Pow (a, b, n)
-	local r = exp(.5 * n * log(a * a + b * b))
+	local r = exp(.5 * n * log(a^2 + b^2))
 	local theta = n * atan2(b, a)
 
 	return r * cos(theta), r * sin(theta)
@@ -261,7 +261,7 @@ end
 -- @treturn number ...and imaginary part.
 -- @see Pow, RaiseReal
 function M.Pow_Complex (a, b, c, d)
-	a, b = .5 * log(a * a + b * b), atan2(b, a)
+	a, b = .5 * log(a^2 + b^2), atan2(b, a)
 	a, b = a * c - b * d, b * c + a * d
 
  	local t = exp(a)
