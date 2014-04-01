@@ -49,73 +49,79 @@ local utils = require("ui.Utils")
 local display = display
 
 -- Exports --
---local 
+--local
 M = {}
 
 --
 local function Cell (grid, x, y)
-	local gx, gy = grid:contentToLocal(x, y)
-	local col = array_index.FitToSlot(gx, -grid.width / 2, grid.width / grid.m_ncols)
-	local row = array_index.FitToSlot(gy, -grid.height / 2, grid.height / grid.m_nrows)
+local gx, gy = grid:contentToLocal(x, y)
+local col = array_index.FitToSlot(gx, -grid.width / 2, grid.width /
+grid.m_ncols)
+local row = array_index.FitToSlot(gy, -grid.height / 2, grid.height /
+grid.m_nrows)
 
-	return col, row
+return col, row
 end
 
 --
 local function PosDim (grid)
-	local x, dw = grid.x - .5 * grid.width, grid.width / grid.m_ncols
-	local y, dh = grid.y - .5 * grid.height, grid.height / grid.m_nrows
+local x, dw = grid.x - .5 * grid.width, grid.width / grid.m_ncols
+local y, dh = grid.y - .5 * grid.height, grid.height / grid.m_nrows
 
-	return x, y, dw, dh
+return x, y, dw, dh
 end
 
 --
 local function GetTarget (grid)
-	return grid.parent:GetTarget()
+return grid.parent:GetTarget()
 end
 
 -- Touch listener
 local Touch = touch.TouchHelperFunc(function(event, grid)
-	-- Track initial coordinates for dragging.
-	local col, row = Cell(grid, event.x, event.y)
-	local x, y, dw, dh = PosDim(grid)
+-- Track initial coordinates for dragging.
+local col, row = Cell(grid, event.x, event.y)
+local x, y, dw, dh = PosDim(grid)
 
-	grid.m_func(GetTarget(grid), col, row, x + (col - 1) * dw, y + (row - 1) * dh, dw, dh)
+grid.m_func(GetTarget(grid), col, row, x + (col - 1) * dw, y + (row -
+1) * dh, dw, dh)
 
-	grid.m_col, grid.m_row = col, row
+grid.m_col, grid.m_row = col, row
 end, function(event, grid)
-	-- Fit the new position to a cell and do the callback on it if the cell has changed.
-	-- Since moving may skip over intervening cells, we do a line traversal to approximate
-	-- the path, likewise performing callbacks on each cell in between.
-	local end_col, end_row = Cell(grid, event.x, event.y)
+-- Fit the new position to a cell and do the callback on it if the
+cell has changed.
+-- Since moving may skip over intervening cells, we do a line
+traversal to approximate
+-- the path, likewise performing callbacks on each cell in between.
+local end_col, end_row = Cell(grid, event.x, event.y)
 
-	end_col = range.ClampIn(end_col, 1, grid.m_ncols)
-	end_row = range.ClampIn(end_row, 1, grid.m_nrows)
+end_col = range.ClampIn(end_col, 1, grid.m_ncols)
+end_row = range.ClampIn(end_row, 1, grid.m_nrows)
 
-	local x, y, dw, dh = PosDim(grid)
-	local func, group = grid.m_func, GetTarget(grid)
-	local first = true
+local x, y, dw, dh = PosDim(grid)
+local func, group = grid.m_func, GetTarget(grid)
+local first = true
 -- TODO: I have gotten an "y1 is nil" error...
-	for col, row in grid_iterators.LineIter(grid.m_col, grid.m_row, end_col, end_row) do
-		if not first then
-			func(group, col, row, x + (col - 1) * dw, y + (row - 1) * dh, dw, dh)
-		end
+for col, row in grid_iterators.LineIter(grid.m_col, grid.m_row,
+end_col, end_row) do
+if not first then
+func(group, col, row, x + (col - 1) * dw, y + (row - 1) * dh, dw, dh)
+end
 
-		first = false
-	end
+first = false
+end
 
-	-- Commit the new previous coordinates.
-	grid.m_col = end_col
-	grid.m_row = end_row
+-- Commit the new previous coordinates.
+grid.m_col = end_col
+grid.m_row = end_row
 end)
 
 -- Common line add logic
 local function AddGridLine (group, skin, x1, y1, x2, y2)
-	local line = display.newLine(group, x1, y1, x2, y2)
+local line = display.newLine(group, x1, y1, x2, y2)
 
-	line.strokeWidth = skin.grid2d_linewidth
+line.strokeWidth = skin.grid2d_linewidth
 
-	line:setStrokeColor(colors.GetColor(skin.grid2d_linecolor))
+line:setStrokeColor(colors.GetColor(skin.grid2d_linecolor))
 end
 
 -- Cache of simulated touch events --
@@ -131,147 +137,147 @@ local Events = {}
 -- @uint cols
 -- @uint rows
 -- @callable func
--- @treturn DisplayGroup Child #1: the background; Child #2: the target + lines group. 
+-- @treturn DisplayGroup Child #1: the background; Child #2: the
+target + lines group.
 -- @see ui.Skin.GetSkin
 function M.Grid2D (group, skin, x, y, w, h, cols, rows, func)
-	skin = skins.GetSkin(skin)
+skin = skins.GetSkin(skin)
 
-	local ggroup = display.newGroup()
+local ggroup = display.newGroup()
 
-	group:insert(ggroup)
+group:insert(ggroup)
 
-	--
---[[
-	local name, xs, ys = mask.NewMask_Pattern("__GRID2D_MASK_%ix%i__", w, h)
-	local mask = graphics.newMask(name, system.CachesDirectory)
+--
+local cgroup = display.newContainer(w, h)
 
-	ggroup:setMask(mask)
+ggroup:insert(cgroup)
 
-	ggroup.maskScaleX = xs
-	ggroup.maskScaleY = ys
-	ggroup.maskX = x + w / 2
-	ggroup.maskY = y + h / 2
-]]
--- ^^^ Container, with:
--- * Target (can be enabled / d)
--- * Background (ditto)
--- ^^^ Line group (~, separate so as not to get clipped)
-	--
-	local back = display.newRect(ggroup, x, y, w, h)
+cgroup.x, cgroup.y = x, y
 
-	back:translate(w / 2, h / 2)
+--
+local target = display.newGroup()
 
-	if not skin.grid2d_backopaque then
-		back.isHitTestable = true
-		back.isVisible = false
-	end
+cgroup:insert(target, true)
+target:translate(-w / 2, -h / 2)
 
-	back:setFillColor(colors.GetColor(skin.grid2d_backcolor))
+--
+local back = display.newRect(0, 0, w, h)
 
-	back.m_ncols = cols
-	back.m_nrows = rows
-	back.m_func = func
+cgroup:insert(back, true)
+cgroup:translate(w / 2, h / 2)
 
-	--
-	back:addEventListener("touch", Touch)
+if not skin.grid2d_backopaque then
+back.isHitTestable = true
+back.isVisible = false
+end
 
-	--
-	local lgroup = display.newGroup()
+back:setFillColor(colors.GetColor(skin.grid2d_backcolor))
 
-	ggroup:insert(lgroup)
+back.m_ncols = cols
+back.m_nrows = rows
+back.m_func = func
 
-	local xoff, dw = 0, w / cols
+--
+back:addEventListener("touch", Touch)
 
-	for _ = 1, cols + 1 do
-		AddGridLine(lgroup, skin, x + xoff, y, x + xoff, y + h)
+--
+local lgroup = display.newGroup()
 
-		xoff = xoff + dw
-	end
+ggroup:insert(lgroup)
 
-	local yoff, dh = 0, h / rows
+local xoff, dw = 0, w / cols
 
-	for _ = 1, rows + 1 do
-		AddGridLine(lgroup, skin, x, y + yoff, x + w, y + yoff)
+for _ = 1, cols + 1 do
+AddGridLine(lgroup, skin, x + xoff, y, x + xoff, y + h)
 
-		yoff = yoff + dh
-	end
+xoff = xoff + dw
+end
 
-	---DOCME
-	-- @function ggroup:GetTarget
-	-- @bool no_auto_group
-	-- @treturn DisplayGroup X
-	ggroup.GetTarget = utils.GetTarget
+local yoff, dh = 0, h / rows
 
-	--- DOCME
-	-- @string name
-	-- @string dir
-	function ggroup:SetMask (name, dir)
-		utils.SetMask(self, back, name, dir)
-	end
+for _ = 1, rows + 1 do
+AddGridLine(lgroup, skin, x, y + yoff, x + w, y + yoff)
 
-	---DOCME
-	-- @pgroup target
-	-- @pgroup reserve
-	function ggroup:SetTarget (target, reserve)
-		utils.SetTarget(self, target, lgroup, reserve)
-	end	
+yoff = yoff + dh
+end
 
-	--- Manually performs a touch (or drag) on the grid.
-	--
-	-- This will trigger the grid's current touch behavior. Any in-progress touch state
-	-- is preserved during this call.
-	-- @uint col Initial touch column...
-	-- @uint row ...and row.
-	-- @uint cto Final column... (If absent, _col_.)
-	-- @uint rto ...and row. (Ditto for _row_.)
-	function ggroup:TouchCell (col, row, cto, rto)
-		local scol, srow, x, y, dw, dh = self.m_col, self.m_row, PosDim(back)
-		local event = remove(Events) or { name = "touch", id = "ignore_me" }
+---DOCME
+-- @function ggroup:GetTarget
+-- @bool no_auto_group
+-- @treturn DisplayGroup X
+ggroup.GetTarget = utils.GetTarget
 
-		event.target, event.x, event.y = back, x + (col - .5) * dw, y + (row - .5) * dh
-		event.phase = "began"
+--- DOCME
+-- @string name
+-- @string dir
+function ggroup:SetMask (name, dir)
+utils.SetMask(self, back, name, dir)
+end
 
-		Touch(event)
+---DOCME
+-- @pgroup target
+-- @pgroup reserve
+function ggroup:SetTarget (target, reserve)
+utils.SetTarget(self, target, lgroup, reserve)
+end
 
-		cto, rto = cto or col, rto or row
+--- Manually performs a touch (or drag) on the grid.
+--
+-- This will trigger the grid's current touch behavior. Any
+in-progress touch state
+-- is preserved during this call.
+-- @uint col Initial touch column...
+-- @uint row ...and row.
+-- @uint cto Final column... (If absent, _col_.)
+-- @uint rto ...and row. (Ditto for _row_.)
+function ggroup:TouchCell (col, row, cto, rto)
+local scol, srow, x, y, dw, dh = self.m_col, self.m_row, PosDim(back)
+local event = remove(Events) or { name = "touch", id = "ignore_me" }
 
-		if col ~= cto or row ~= rto then
-			event.x, event.y = x + (cto - .5) * dw, y + (rto - .5) * dh
-			event.phase = "moved"
+event.target, event.x, event.y = back, x + (col - .5) * dw, y + (row - .5) * dh
+event.phase = "began"
 
-			Touch(event)
-		end
+Touch(event)
 
-		event.phase = "ended"
+cto, rto = cto or col, rto or row
 
-		Touch(event)
+if col ~= cto or row ~= rto then
+event.x, event.y = x + (cto - .5) * dw, y + (rto - .5) * dh
+event.phase = "moved"
 
-		self.m_col, self.m_row, event.target = scol, srow
+Touch(event)
+end
 
-		Events[#Events + 1] = event
-	end
+event.phase = "ended"
 
-	--- Variant of @{ggroup:TouchCell} that uses x- and y-coordinates.
-	-- @number x Initial touch x-coordinate.
-	-- @number y ...and y-coordinate.
-	-- @number xto Final x... (If absent, _x_.)
-	-- @number yto ...and y. (Ditto for _y_.)
-	function ggroup:TouchXY (x, y, xto, yto)
-		local col, row = Cell(back, x, y)
+Touch(event)
 
-		self:TouchCell(col, row, Cell(back, xto or x, yto or y))
-	end
+self.m_col, self.m_row, event.target = scol, srow
 
-	-- Provide the grid.
-	return ggroup
+Events[#Events + 1] = event
+end
+
+--- Variant of @{ggroup:TouchCell} that uses x- and y-coordinates.
+-- @number x Initial touch x-coordinate.
+-- @number y ...and y-coordinate.
+-- @number xto Final x... (If absent, _x_.)
+-- @number yto ...and y. (Ditto for _y_.)
+function ggroup:TouchXY (x, y, xto, yto)
+local col, row = Cell(back, x, y)
+
+self:TouchCell(col, row, Cell(back, xto or x, yto or y))
+end
+
+-- Provide the grid.
+return ggroup
 end
 
 -- Main 2D grid skin --
 skins.AddToDefaultSkin("grid2d", {
-	backcolor = { .375, .375, .375, .75 },
-	backopaque = true,
-	linecolor = "white",
-	linewidth = 2
+backcolor = { .375, .375, .375, .75 },
+backopaque = true,
+linecolor = "white",
+linewidth = 2
 })
 
 -- Export the module.
@@ -280,9 +286,11 @@ end
 
 --
 function Scene:create ()
-	self.gg = M.Grid2D(self.view, nil, 20, 20, 400, 400, 10, 10, function(group, col, row, x, y, dw, dh)
-		--
-	end)
+self.gg = M.Grid2D(self.view, nil, 20, 20, 400, 400, 10, 10,
+function(group, col, row, x, y, dw, dh)
+--
+end)
+
 -- TODO: Get several atop one another working right...
 end
 
