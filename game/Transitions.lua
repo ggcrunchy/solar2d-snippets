@@ -141,7 +141,7 @@ do
 		for i = 1, #(options and Keys or "") do
 			local k = Keys[i]
 
-			Params[k] = options[k]
+			Params[k] = options[k] or Params[k]
 		end
 
 		local handle = transition.to(proxy, Params)
@@ -157,14 +157,20 @@ do
 
 	--- DOCME
 	function M.Proxy (func, options, arg)
-		Params.onComplete = nil
-
 		return AuxProxy(func, options, arg)
 	end
 
 	--- DOCME
 	function M.Proxy_Done (func, on_done, options, arg)
 		Params.onComplete = OnDone
+
+		return AuxProxy(func, options, arg, on_done)
+	end
+
+	--- DOCME
+	function M.Proxy_Repeat (func, on_done, options, arg)
+		Params.onRepeat = OnDone
+		Params.iterations = 0
 
 		return AuxProxy(func, options, arg, on_done)
 	end

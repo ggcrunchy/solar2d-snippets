@@ -244,12 +244,14 @@ function M.IFFT_Real2D (m, w, h)
 	local angle = -pi / w
 
 	for j = 1, area, w2 do
+-- Roll into temp buffer and fire
 		AuxRealXform(m, w, 0.5, 0.5, angle, j - 1)
 
 		local a, b = m[j], m[j + 1]
 
 		m[j], m[j + 1] = .5 * (a + b), .5 * (a - b)
 -- ^^ These j-based offsets are probably off? (Need to roll or bit-reverse???)
+-- But would be horizontal roll?
 		Transform(m, w, -pi, j - 1)
 	end
 end

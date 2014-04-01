@@ -123,7 +123,7 @@ function Scene:hide (event)
 		if self.line then
 			self.line:removeSelf()
 		end
-	--	display.remove(self.line)
+
 		timer.cancel(self.timer)
 
 		self.text:removeSelf()

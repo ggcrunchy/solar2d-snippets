@@ -42,6 +42,7 @@ local number_funcs = require("number_ops.funcs")
 local scenes = require("utils.Scenes")
 local sheet = require("ui.Sheet")
 local timers = require("game.Timers")
+local transitions = require("game.Transitions")
 
 -- Corona globals --
 local display = display
@@ -57,6 +58,10 @@ local Scene = composer.newScene()
 
 --
 function Scene:create ()
+	self.background = display.newRect(self.view, 0, 0, display.contentWidth, display.contentHeight)
+
+	self.background:translate(display.contentCenterX, display.contentCenterY)
+
 	buttons.Button(self.view, nil, 120, 75, 200, 50, scenes.Opener{ name = "scene.Choices" }, "Go Back")
 
 	self.action = display.newText(self.view, "", 250, 35, native.systemFontBold, 24)
@@ -349,7 +354,7 @@ end
 -- How many tiles are still filling? --
 local NumLeft
 
--- --
+-- Filling tiles fade-in transition --
 local FadeInParams = {
 	time = 400, alpha = 1, transition = easing.outQuad,
 
@@ -358,9 +363,40 @@ local FadeInParams = {
 	end
 }
 
+-- Background colors transition --
+local ColorParams = { time = 3000, transition = easing.inOutExpo }
+
+-- Generates new interpolating colors
+local function NewColor ()
+	return .1 + random() * .4, .1 + random() * .4, .1 + random() * .4
+end
+
+-- Interpolating colors --
+local R1, G1, B1, R2, G2, B2
+
+-- Switches interpolating colors periodically
+local function SwitchColor ()
+	R1, G1, B1 = R2, G2, B2
+	R2, G2, B2 = NewColor()
+end
+
+-- Interpolated color update
+local function UpdateColor (t, background)
+	local s = 1 - t
+
+	background:setFillColor(s * R1 + t * R2, s * G1 + t * G2, s * B1 + t * B2)
+end
+
 --
 function Scene:show (event)
 	if event.phase == "did" then
+		R1, G1, B1 = NewColor()
+		R2, G2, B2 = NewColor()
+
+		self.background:setFillColor(R1, G1, B1)
+
+		self.update_color = transitions.Proxy_Repeat(UpdateColor, SwitchColor, ColorParams, self.background)
+
 		local images = sheet.TileImage("Background_Assets/Background.png", NCols, NRows, 120, 80, 330, 200)
 
 		self.tiles = display.newGroup()
@@ -429,11 +465,14 @@ function Scene:hide (event)
 			timer.cancel(self.effects)
 		end
 
+		transition.cancel(self.update_color)
+
 		self.tiles:removeSelf()
 
 		self.effects = nil
 		self.tiles = nil
 		self.timer = nil
+		self.update_color = nil
 
 		self.action.text = ""
 		self.effect.text = ""
