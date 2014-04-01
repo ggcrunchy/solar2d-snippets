@@ -152,6 +152,10 @@ function M.Grid2D (group, skin, x, y, w, h, cols, rows, func)
 	ggroup.maskX = x + w / 2
 	ggroup.maskY = y + h / 2
 ]]
+-- ^^^ Container, with:
+-- * Target (can be enabled / d)
+-- * Background (ditto)
+-- ^^^ Line group (~, separate so as not to get clipped)
 	--
 	local back = display.newRect(ggroup, x, y, w, h)
 
@@ -276,7 +280,10 @@ end
 
 --
 function Scene:create ()
-	self.gg = M.Grid2D(self.view, nil, 20, 20, 400, 400, 10, 10, function() end)
+	self.gg = M.Grid2D(self.view, nil, 20, 20, 400, 400, 10, 10, function(group, col, row, x, y, dw, dh)
+		--
+	end)
+-- TODO: Get several atop one another working right...
 end
 
 Scene:addEventListener("create")
