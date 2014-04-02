@@ -103,7 +103,7 @@ end
 -- @array v
 -- @uint n
 function M.FFT_1D (v, n)
-	Transform(v, n, pi, 0)
+	Transform(v, n, -pi, 0)
 end
 
 -- Temporary store, used to transpose columns --
@@ -136,10 +136,10 @@ function M.FFT_2D (m, w, h)
 	local area = w2 * h
 
 	for i = 1, area, w2 do
-		Transform(m, w, pi, i - 1)
+		Transform(m, w, -pi, i - 1)
 	end
 
-	TransformColumns(m, w2, h, area, pi)
+	TransformColumns(m, w2, h, area, -pi)
 end
 
 -- Helper for common part of real transforms
@@ -166,8 +166,8 @@ end
 -- @array v
 -- @uint n
 function M.FFT_Real1D (v, n)
-	Transform(v, n, pi, 0)
-	AuxRealXform(v, n, 0.5, -0.5, pi / n, 0)
+	Transform(v, n, -pi, 0)
+	AuxRealXform(v, n, 0.5, -0.5, -pi / n, 0)
 
 	local a, b = v[1], v[2]
 
@@ -179,7 +179,7 @@ end
 -- @array v
 -- @uint index
 -- @uint n
--- @uint? offset
+-- @uint[opt=0] offset
 -- @treturn number R
 -- @treturn number I
 function M.Goertzel (v, index, n, offset)
@@ -193,14 +193,14 @@ function M.Goertzel (v, index, n, offset)
 		sp2, sp1 = sp1, v[offset + i] + k * sp1 - sp2
 	end
 
-	return sp1 * wr - sp2, -sp1 * wi
+	return sp1 * wr - sp2, sp1 * wi
 end
 
 --- DOCME
 -- @array v
 -- @uint n
 function M.IFFT_1D (v, n)
-	Transform(v, n, -pi, 0)
+	Transform(v, n, pi, 0)
 end
 
 --- DOCME
@@ -211,10 +211,10 @@ function M.IFFT_2D (m, w, h)
 	local w2 = 2 * w
 	local area = w2 * h
 
-	TransformColumns(m, w2, h, area, -pi)
+	TransformColumns(m, w2, h, area, pi)
 
 	for i = 1, area, w2 do
-		Transform(m, w, -pi, i - 1)
+		Transform(m, w, pi, i - 1)
 	end
 end
 
@@ -222,13 +222,13 @@ end
 -- @array v
 -- @uint n
 function M.IFFT_Real1D (v, n)
-	AuxRealXform(v, n, 0.5, 0.5, -pi / n, 0)
+	AuxRealXform(v, n, 0.5, 0.5, pi / n, 0)
 
 	local a, b = v[1], v[2]
 
 	v[1], v[2] = .5 * (a + b), .5 * (a - b)
 
-	Transform(v, n, -pi, 0)
+	Transform(v, n, pi, 0)
 end
 
 --- DOCME
@@ -241,7 +241,7 @@ function M.IFFT_Real2D (m, w, h)
 
 	TransformColumns(m, w2, h, area, -pi)
 
-	local angle = -pi / w
+	local angle = pi / w
 
 	for j = 1, area, w2 do
 -- Roll into temp buffer and fire
@@ -252,7 +252,7 @@ function M.IFFT_Real2D (m, w, h)
 		m[j], m[j + 1] = .5 * (a + b), .5 * (a - b)
 -- ^^ These j-based offsets are probably off? (Need to roll or bit-reverse???)
 -- But would be horizontal roll?
-		Transform(m, w, -pi, j - 1)
+		Transform(m, w, pi, j - 1)
 	end
 end
 
@@ -282,7 +282,7 @@ end
 -- @array v
 -- @uint n
 function M.TwoFFTs_ThenMultiply1D (v, n)
-	Transform(v, n, pi, 0)
+	Transform(v, n, -pi, 0)
 
 	local m = n + 1
 
@@ -319,7 +319,7 @@ function M.TwoFFTs_ThenMultiply2D (m, w, h)
 	for offset = 1, area, w2 do
 		local center, om1 = offset + w, offset - 1
 
-		Transform(m, w, pi, om1)
+		Transform(m, w, -pi, om1)
 
 		N[offset], N[center] = m[offset + 1], m[center + 1]
 		m[offset + 1], m[center + 1] = 0, 0
@@ -340,8 +340,8 @@ function M.TwoFFTs_ThenMultiply2D (m, w, h)
 	end
 
 	--
-	TransformColumns(m, w2, h, area, pi)
-	TransformColumns(N, w2, h, area, pi)
+	TransformColumns(m, w2, h, area, -pi)
+	TransformColumns(N, w2, h, area, -pi)
 
 	--
 	local index = 1
@@ -374,30 +374,37 @@ local function AuxTwoGoertzels (m1, m2, n, k, wr, wi, offset)
 	return a, b, c, d
 end
 
+-- --
+local Transpose = {}
+
 --- DOCME
 -- @array v1
 -- @array v2
 -- @uint n
--- @array? out
+-- @array[opt=v1] out
 function M.TwoGoertzels_ThenMultiply1D (v1, v2, n, out)
-	out = out or v1
+	out = (out and out ~= v1) and out or Transpose
 
+	local out_of_place = out and out ~= v1
 	local k, wr, wi, omega, da = 2, 1, 0, 0, 2 * pi / n
 
 	for i = 1, 2 * n, 2 do
 		local a, b, c, d = AuxTwoGoertzels(v1, v2, n, k, wr, wi, 0)
 
-		out[i], out[i + 1] = a * c - b * d, -(b * c + a * d)
--- ^^ ???: imag seem to need to be negative...
+		out[i], out[i + 1] = a * c - b * d, b * c + a * d
+
 		omega = omega + da
 		wr, wi = cos(omega), sin(omega)
 		k = 2 * wr
 	end
--- ^^ In-place friendly?
-end
 
--- --
-local Transpose = {}
+	--
+	if out == Transpose then
+		for i = 1, 2 * n do
+			v1[i] = Transpose[i]
+		end
+	end
+end
 
 --
 local function InPlaceResolve (out, w2, h2, last_row)
@@ -412,7 +419,7 @@ local function InPlaceResolve (out, w2, h2, last_row)
 			local a, b = Transpose[cj], Transpose[cj + 1]
 			local c, d = Transpose[ck], Transpose[ck + 1]
 
-			out[ci], out[ci + 1], ci, coff = a * c - b * d, -(b * c + a * d), coff, coff - w2
+			out[ci], out[ci + 1], ci, coff = a * c - b * d, b * c + a * d, coff, coff - w2
 		end
 
 		col = col + h4
@@ -424,7 +431,7 @@ end
 -- @array m2
 -- @uint w
 -- @uint h
--- @array? out
+-- @array[opt=m1] out
 function M.TwoGoertzels_ThenMultiply2D (m1, m2, w, h, out)
 	local coeff, wr, wi, omega, da = 2, 1, 0, 0, 2 * pi / w
 	local offset, col, w2, h2 = 0, 1, 2 * w, 2 * h
@@ -466,7 +473,7 @@ function M.TwoGoertzels_ThenMultiply2D (m1, m2, w, h, out)
 				local a, b = Column[i], Column[i + 1]
 				local c, d = Column[j], Column[j + 1]
 
-				out[ci], out[ci + 1], ci, coff = a * c - b * d, -(b * c + a * d), coff, coff - w2
+				out[ci], out[ci + 1], ci, coff = a * c - b * d, b * c + a * d, coff, coff - w2
 			end
 
 			col = col + 2

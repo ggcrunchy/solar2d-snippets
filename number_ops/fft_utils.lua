@@ -43,9 +43,9 @@ local M = {}
 -- @uint cols1 Number of columns in _arr1_.
 -- @array arr2 Matrix #2 of real values.
 -- @uint cols2 Number of columns in _arr2_.
--- @uint? na1 Number of elements in _arr1_, i.e. the product of the number of rows and _cols1_.
--- If absent, #_arr1_.
--- @uint? na2 Likewise, for _arr2_ resp. _cols2_. If absent, #_arr2_.
+-- @uint[opt=#arr1] na1 Number of elements in _arr1_, i.e. the product of the number of rows
+-- and _cols1_.
+-- @uint[opt=#arr2] na2 Likewise, for _arr2_ resp. _cols2_.
 function M.PrepareSeparateFFTs_2D (out1, out2, m, n, arr1, cols1, arr2, cols2, na1, na2)
 	na1, na2 = na1 or #arr1, na2 or #arr2
 
@@ -110,9 +110,9 @@ end
 -- @array arr2 Matrix #2 of real values.
 -- @uint cols2 Number of columns in _arr2_.
 -- @uint ncols Number of columns in _out_.
--- @uint? na1 Number of elements in _arr1_, i.e. the product of the number of rows and _cols1_.
--- If absent, #_arr1_.
--- @uint? na2 Likewise, for _arr2_ resp. _cols2_. If absent, #_arr2_.
+-- @uint[opt=#arr1] na1 Number of elements in _arr1_, i.e. the product of the number of rows
+-- and _cols1_.
+-- @uint[opt=#arr2] na2 Likewise, for _arr2_ resp. _cols2_.
 -- @treturn boolean Were _arr1_ and _arr2_ swapped before packing?
 function M.PrepareTwoFFTs_2D (out, size, arr1, cols1, arr2, cols2, ncols, na1, na2)
 	na1, na2 = na1 or #arr1, na2 or #arr2
@@ -178,9 +178,9 @@ end
 -- @uint cols1 Number of columns in _arr1_.
 -- @array arr2 Matrix #2 of real values.
 -- @uint cols2 Number of columns in _arr2_.
--- @uint? na1 Number of elements in _arr1_, i.e. the product of the number of rows and _cols1_.
--- If absent, #_arr1_.
--- @uint? na2 Likewise, for _arr2_ resp. _cols2_. If absent, #_arr2_.
+-- @uint[opt=#arr1] na1 Number of elements in _arr1_, i.e. the product of the number of rows
+-- and _cols1_.
+-- @uint[opt=#arr2] na2 Likewise, for _arr2_ resp. _cols2_.
 function M.PrepareTwoGoertzels_2D (out1, out2, m, n, arr1, cols1, arr2, cols2, na1, na2)
 	na1, na2 = na1 or #arr1, na2 or #arr2
 

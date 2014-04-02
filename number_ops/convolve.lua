@@ -314,10 +314,11 @@ local DefConvolve2D = AuxConvolve2D.full
 -- @array kernel ...and kernel.
 -- @uint scols Number of columns in _signal_... 
 -- @uint kcols ... and in _kernel_.
--- @string? shape One of **"compact"**, **"full"**, or **"same"**, which determines how much
--- of the convolution is returned (emanating from the center). If absent, **"full"**.
+-- @string[opt="full"] shape One of **"compact"**, **"full"**, or **"same"**, which describes
+-- how much of the convolution is returned (emanating from the center).
 -- @treturn array Convolution.
 -- @treturn uint Number of columns in the convolution, given _shape_:
+--
 -- * For **"compact"**: _scols_ - _kcols_ + 1.
 -- * For **"full"**: _scols_ + _kcols_ - 1.
 -- * For **"same"**: _scols_.
@@ -354,7 +355,7 @@ end
 -- and _kernel_ combinations, this may be significantly faster than @{Convolve_1D}.
 -- @array signal Real discrete signal...
 -- @array kernel ...and kernel.
--- @ptable? opts Optional convolve options. Fields:
+-- @ptable[opt] opts Convolve options. Fields:
 --
 -- * **method**: If this is **"goertzel"**, the transforms are done using the [Goertzel algorithm](http://en.wikipedia.org/wiki/Goertzel_algorithm),
 -- which may offer better performance in some cases. Otherwise, the two real FFT's are
@@ -378,15 +379,24 @@ function M.Convolve_FFT1D (signal, kernel, opts)
 		fft_utils.PrepareTwoFFTs_1D(B, n, signal, sn, kernel, kn)
 		fft.TwoFFTs_ThenMultiply1D(B, n)
 	end
-
+local aaa={}
+for i = 1, #B do
+	aaa[i]=B[i]
+end
+fft.IFFT_1D(aaa, n)
 	-- ...transform back to the time domain...
 	local nreal = .5 * n
 
 	fft.IFFT_Real1D(B, nreal)
-
+-- ^^ ???? :(
 	-- ...and get the convolution by scaling the real parts of the result.
 	local csignal = {}
-
+local bbb={}
+for i = 1, clen + clen,2 do
+	bbb[#bbb+1]=aaa[i]/n
+end
+vdump(bbb)
+vdump(B)
 	for i = 1, clen do
 		csignal[#csignal + 1] = B[i] / nreal
 	end
@@ -400,7 +410,7 @@ end
 -- @array kernel ...and kernel.
 -- @uint scols Number of columns in _signal_... 
 -- @uint kcols ... and in _kernel_.
--- @ptable? opts Optional convolve options. Fields:
+-- @ptable[opt] opts Convolve options. Fields:
 --
 -- * **method**: If this is **"goertzel"**, the transforms are done using the [Goertzel algorithm](http://en.wikipedia.org/wiki/Goertzel_algorithm),
 -- which may offer better performance in some cases. If it is **"two_ffts"**, the two real

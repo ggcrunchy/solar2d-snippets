@@ -1,4 +1,8 @@
 --- Some operations on complex numbers.
+--
+-- In the methods section, the type **Complex** indicates either: a complex number (as
+-- returned by one of @{CacheFactory}, @{New}, @{ComplexMT:Dup}, or @{ComplexMT:Dup_Raw})
+-- or a number, which will be interpreted as a pure real complex number.
 
 --
 -- Permission is hereby granted, free of charge, to any person obtaining
@@ -140,7 +144,7 @@ function M.Div (a, b, c, d)
 	return (a * c + b * d) / denom, (b * c - a * d) / denom
 end
 
---- Computes e^_z_.
+--- Computes **e**^_z_.
 -- @number a Real part of _z_...
 -- @number b ...and complex part.
 -- @treturn number Real part of result...
@@ -306,25 +310,39 @@ function M.Sub (a, b, c, d)
 	return a - c, b - d
 end
 
---- DOCME 
+--- Factory for building complex number caches, as per @{var_ops.cache.Factory}.
+-- @function CacheFactory
+-- @string[opt] how Factory argument.
+-- @treturn function Cache function, as per @{var_ops.cache.Factory}.
 M.CacheFactory = cache.Factory(function(ComplexMT, new)
 	local Complex, call, get2 = tuple.PairMethods_NewGet(new, "m_r", "m_i")
 	local uf, uf_scalar = tuple.PairMethods_Unary(Complex, call)
 	local bf, bf_scalar = tuple.PairMethods_Binary(Complex, get2)
 
-	--- DOCME
+	--- Method variant of @{Abs}.
+	-- @function ComplexMT:Abs
+	-- @treturn number Absolute value.
 	ComplexMT.Abs = uf_scalar(M.Abs)
 
-	--- DOCME
+	--- Metamethod.
+	-- @tparam Complex Augend.	
+	-- @tparam Complex Addend.
+	-- @treturn Complex Sum, as per @{Add}.
 	ComplexMT.__add = bf(M.Add)
 
-	--- DOCME
+	--- Method variant of @{Area}.
+	-- @function ComplexMT:Area
+	-- @treturn number Signed area.
 	ComplexMT.Area = bf_scalar(M.Area)
 
-	--- DOCME
+	--- Method variant of @{Arg}.
+	-- @function ComplexMT:Arg
+	-- @treturn number Argument.
 	ComplexMT.Arg = uf_scalar(M.Arg)
 
-	--- DOCME
+	--- Method variant of @{Atan}.
+	-- @function ComplexMT:Atan
+	-- @treturn Complex Arctangent.
 	ComplexMT.Atan = uf(M.Atan)
 
 	--- Getter.
@@ -334,19 +352,32 @@ M.CacheFactory = cache.Factory(function(ComplexMT, new)
 		return self.m_r, self.m_i
 	end
 
-	--- DOCME
+	--- Method variant of @{Conjugate}.
+	-- @function ComplexMT:Conjugate
+	-- @treturn Complex Conjugate.
 	ComplexMT.Conjugate = uf(M.Conjugate)
 
-	--- DOCME
+	--- Method variant of @{Distance}.
+	-- @function ComplexMT:Distance
+	-- @treturn number Distance.
 	ComplexMT.Distance = bf_scalar(M.Distance)
 
-	--- DOCME
+	--- Metamethod.
+	-- @tparam Complex Dividend.	
+	-- @tparam Complex Divisor.
+	-- @treturn Complex Quotient.
 	ComplexMT.__div = bf(M.Div)
 
-	--- DOCME
+	--- Duplicates the complex number.
+	--
+	-- If the complex number cache is active, said number is added to the cache.
+	-- @function ComplexMT:Dup
+	-- @treturn Complex New complex number instance with same values.
 	ComplexMT.Dup = uf(Complex)
 
-	--- DOCME
+	--- Variant of @{ComplexMT:Dup} that does not add the result to the cache.
+	-- @function ComplexMT:Dup_Raw
+	-- @treturn Complex New complex number instance with same values.
 	ComplexMT.Dup_Raw = uf(function(a, b)
 		return Complex(a, b, true)
 	end)
@@ -359,7 +390,9 @@ M.CacheFactory = cache.Factory(function(ComplexMT, new)
 		return z1.m_r == z2.m_r and z1.m_i == z2.m_i
 	end
 
-	--- DOCME
+	--- Method variant of @{Exp}.
+	-- @function ComplexMT:Exp
+	-- @treturn Complex Base-**e** power.
 	ComplexMT.Exp = uf(M.Exp)
 
 	--- Getter.
@@ -368,34 +401,54 @@ M.CacheFactory = cache.Factory(function(ComplexMT, new)
 		return self.m_i
 	end
 
-	--- DOCME
+	--- Method variant of @{Inner}.
+	-- @function ComplexMT:Inner
+	-- @treturn number Inner product.
 	ComplexMT.Inner = bf_scalar(M.Inner)
 
-	--- DOCME
+	--- Method variant of @{Inverse}.
+	-- @function ComplexMT:Inverse
+	-- @treturn Complex Multiplicative inverse.
 	ComplexMT.Inverse = uf(M.Inverse)
 
 	--- Metamethod (unsupported in Lua 5.1), aliases @{Abs}.
 	ComplexMT.__len = ComplexMT.Abs
 
-	--- DOCME
+	--- Method variant of @{Log}.
+	-- @function ComplexMT:Log
+	-- @treturn Complex Logarithm.
 	ComplexMT.Log = uf(M.Log)
 
-	--- DOCME
+	--- Metamethod.
+	-- @tparam Complex Multiplicand.	
+	-- @tparam Complex Multiplier.
+	-- @treturn Complex Product, as per @{Mul}.
 	ComplexMT.__mul = bf(M.Mul)
 
-	--- DOCME
+	--- Method variant of @{Mul_I}.
+	-- @function ComplexMT:Mul_I
+	-- @treturn Complex Product with _i_.
 	ComplexMT.Mul_I = uf(M.Mul_I)
 
-	--- DOCME
+	--- Method variant of @{Mul_NegI}.
+	-- @function ComplexMT:Mul_NegI
+	-- @treturn Complex Product with -_i_.
 	ComplexMT.Mul_NegI = uf(M.Mul_NegI)
 
-	--- DOCME
+	--- Method variant of @{Norm}.
+	-- @function ComplexMT:Norm
+	-- @treturn number Norm.
 	ComplexMT.Norm = uf_scalar(M.Norm)
 
-	--- DOCME
+	--- Method variant of @{Normalize}.
+	-- @function ComplexMT:Normalize
+	-- @treturn Complex Normalized result.
 	ComplexMT.Normalize = uf(M.Normalize)
 
-	--- DOCME
+	--- Metamethod.
+	-- @tparam Complex Base.	
+	-- @tparam Complex Exponent.
+	-- @treturn Complex Power, as per @{Pow_Complex}.
 	ComplexMT.__pow = bf(M.Pow_Complex)
 
 	--- Getter.
@@ -404,21 +457,39 @@ M.CacheFactory = cache.Factory(function(ComplexMT, new)
 		return self.m_r
 	end
 
-	--- DOCME
+	--- Alias of @{ComplexMT:Inverse}.
+	-- @function ComplexMT:Reciprocal
 	ComplexMT.Reciprocal = ComplexMT.Inverse
 
-	--- DOCME
+	--- Metamethod.
+	-- @tparam Complex Minuend.
+	-- @tparam Complex Subtrahend.
+	-- @treturn Complex Difference, as per @{Sub}.
 	ComplexMT.__sub = bf(M.Sub)
 
-	--- DOCME
+	--- Metamethod.
+	-- @tparam Complex Number to negate, as per @{Negate}.
+	-- @treturn Complex Result.
 	ComplexMT.__unm = uf(M.Negate)
 
-	--
+	-- Supply the maker function for cached use.
 	return Complex
 end)
 
---- DOCME
-M.New = M.CacheFactory("get_uncached_maker")
+-- Helper to make a new complex number
+local Make = M.CacheFactory("get_uncached_maker")
+
+--- Creates a new uncached complex number.
+-- @number[opt=0] a Real component...
+-- @number[opt=0] b ...and imaginary component.
+-- @treturn Complex Complex number.
+function M.New (a, b)
+	local z = Make()
+
+	z.m_r, z.m_i = a or 0, b or 0
+
+	return z
+end
 
 -- Export the module.
 return M

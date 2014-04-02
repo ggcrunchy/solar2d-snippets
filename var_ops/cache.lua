@@ -177,9 +177,9 @@ function M.SimpleCache ()
 end
 
 --- Wipes an array and puts it into a cache, returning the cleared values.
--- @tparam table cache Cache of used arrays.
--- @param array Array to clear.
--- @uint count Size of array; if absent, `#array`.
+-- @ptable cache Cache of used arrays.
+-- @array array Array to clear.
+-- @uint[opt=#array] count Size of array.
 -- @param wipe Value used to wipe cleared entries.
 -- @return Array values (number of return values = _count_).
 -- @see array_ops.wipe.UnpackAndWipe
@@ -190,9 +190,9 @@ function M.UnpackWipeAndRecache (cache, array, count, wipe)
 end
 
 --- Wipes an array and puts it into a cache.
--- @tparam table cache Cache of used arrays.
--- @param array Array to clear.
--- @uint count Size of array; if absent, `#array`.
+-- @ptable cache Cache of used arrays.
+-- @array array Array to clear.
+-- @uint[opt=#array] count Size of array.
 -- @param wipe Value used to wipe cleared entries.
 -- @return _array_.
 -- @see array_ops.wipe.WipeRange
@@ -206,9 +206,9 @@ end
 local TableOptions = { unpack_and_wipe = M.UnpackWipeAndRecache, wipe_range = M.WipeAndRecache }
 
 --- Builds a table-based cache.
--- @param on_restore Logic to call on returning the table to the cache; the table is its
--- first argument, followed by any other arguments passed to the cache function. If **nil**,
--- this is a no-op.
+-- @param[opt] on_restore Logic to call on returning the table to the cache; the table is
+-- its first argument, followed by any other arguments passed to the cache function. If
+-- **nil**, this is a no-op.
 --
 -- If this is **"unpack\_and\_wipe"** or **"wipe_range"**, then that operation from @{array_ops.wipe}
 -- is used as the restore logic. In this case, the operation's results are returned by the
@@ -221,7 +221,7 @@ local TableOptions = { unpack_and_wipe = M.UnpackWipeAndRecache, wipe_range = M.
 -- If instead the argument is **"peek"**, that table is returned, but without being removed.
 -- If the cache is empty, **nil** is returned.
 --
--- Otherwise, the first argument must be table (though it need not have belonged to the
+-- Otherwise, the first argument must be a table (though it need not have belonged to the
 -- cache). Any restore logic will be called, passing this table and any additional arguments.
 -- The table will then be restored to the cache.
 -- @see array_ops.wipe.UnpackAndWipe, array_ops.wipe.WipeRange
