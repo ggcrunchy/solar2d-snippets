@@ -174,25 +174,26 @@ local aa={}
 	for i = 1, n do
 aa[#aa+1]=v[i]
 aa[#aa+1]=0
-	--	v[n + i] = 0
 	end
-local m=n
-n=n/2
+
+	local mid, nf = n, 2 * (n + 1)
+
+	n = .5 * n
+
 	Transform(v, n, -pi, 0)
 	AuxRealXform(v, n, 0.5, -0.5, -pi / n, 0)
 
 	local a, b = v[1], v[2]
 
-	v[1], v[m + 2] = a + b, 0
-	v[2], v[m + 1] = 0, a - b
+	v[1], v[mid + 2] = a + b, 0
+	v[2], v[mid + 1] = 0, a - b
 
-local x=2*m+2
-	for i = 3, m, 2 do
-		v[x - i] = v[i]
-		v[x - i+1]=-v[i+1]
+	for i = 3, mid, 2 do
+		local j = nf - i
+
+		v[j], v[j + 1] = v[i], -v[i + 1]
 	end
-
-M.FFT_1D(aa, m)
+M.FFT_1D(aa, mid)
 vdump(aa)
 end
 

@@ -147,6 +147,7 @@ local A, B, W, H = {17,24,1,8,15,
 					10,12,19,21,3,
 					11,18,25,2,9 }, {1,3,1,0,5,0,2,1,2}, 5, 3
 local t1 = convolve.Convolve_2D(A, B, W, H)
+
 -- From a paper...
 vdump(M.CircularConvolve_2D({1,0,2,1}, {1,0,1,1}, 2,2))
 -- Contrast to http://www.mathworks.com/matlabcentral/answers/100887-how-do-i-apply-a-2d-circular-convolution-without-zero-padding-in-matlab
@@ -173,13 +174,13 @@ local w={1,1,1,1,0,0,0,0}
 require("number_ops.fft").FFT_Real1D(w, 8)
 vdump(w)
 
-local w={1,3,1,1,0,0,7,0}
-require("number_ops.fft").FFT_Real1D(w, 8)
-vdump(w)
+local wa={1,3,1,1,0,0,7,0}
+require("number_ops.fft").FFT_Real1D(wa, 8)
+vdump(wa)
 
-local w={2,1,1,2,9,3,4,6}
-require("number_ops.fft").FFT_Real1D(w, 8)
-vdump(w)
+local wb={2,1,1,2,9,3,4,6}
+require("number_ops.fft").FFT_Real1D(wb, 8)
+vdump(wb)
 
 --]=]
 -- Kick off the app.
