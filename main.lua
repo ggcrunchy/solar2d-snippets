@@ -169,6 +169,9 @@ for i = 1, #t1 do
 	end
 end
 print("DONE")
+local w={1,1,1,1,0,0,0,0}
+require("number_ops.fft").FFT_Real1D(w, 8)
+vdump(w)
 --]=]
 -- Kick off the app.
 scenes.GoToScene{ name = "scene.Intro" }

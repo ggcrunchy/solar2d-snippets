@@ -1,4 +1,4 @@
---- An implementation of the Fast Fourier Transform.
+--- Operations for the Fast Fourier Transform.
 
 --
 -- Permission is hereby granted, free of charge, to any person obtaining
@@ -99,9 +99,11 @@ local function Transform (v, n, theta, offset)
 	until dual >= n
 end
 
---- DOCME
--- @array v
--- @uint n
+--- One-dimensional forward Fast Fourier Transform.
+-- @array v Vector of complex value pairs (size = 2 * _n_).
+--
+-- Afterward, this will be the transformed data.
+-- @uint n Power-of-2 count of elements in _v_.
 function M.FFT_1D (v, n)
 	Transform(v, n, -pi, 0)
 end
@@ -127,10 +129,12 @@ local function TransformColumns (m, w2, h, area, angle)
 	end
 end
 
---- DOCME
--- @array m
--- @uint w
--- @uint h
+--- Two-dimensional forward Fast Fourier Transform.
+-- @array m Matrix of complex value pairs (size = 2 * _w_ * _h_).
+--
+-- Afterward, this will be the transformed data.
+-- @uint w Power-of-2 width of _m_...
+-- @uint h ...and height.
 function M.FFT_2D (m, w, h)
 	local w2 = 2 * w
 	local area = w2 * h
@@ -166,22 +170,31 @@ end
 -- @array v
 -- @uint n
 function M.FFT_Real1D (v, n)
+local aa={}
+	for i = 1, n do
+aa[#aa+1]=v[i]
+aa[#aa+1]=0
+		v[n + i] = 0
+	end
+
 	Transform(v, n, -pi, 0)
 	AuxRealXform(v, n, 0.5, -0.5, -pi / n, 0)
 
 	local a, b = v[1], v[2]
 
 	v[1], v[2] = a + b, a - b
+M.FFT_1D(aa, n)
+vdump(aa)
 -- ^^ TODO: Test!
 end
 
---- DOCME
--- @array v
--- @uint index
--- @uint n
--- @uint[opt=0] offset
--- @treturn number R
--- @treturn number I
+--- Computes a sample using the [Goertzel algorithm](http://en.wikipedia.org/wiki/Goertzel_algorithm), without performing a full FFT.
+-- @array v Vector of complex value pairs, consisting of one or more rows of size 2 * _n_.
+-- @uint index Index of sample, relative to _offset_.
+-- @uint n Number of complex elements in a row of _v_ (may be non-power-of-2).
+-- @uint[opt=0] offset Multiple-of-_n_ offset of row.
+-- @treturn number Real part of sample...
+-- @treturn number ...and imaginary part.
 function M.Goertzel (v, index, n, offset)
 	offset = offset or 0
 
@@ -196,17 +209,21 @@ function M.Goertzel (v, index, n, offset)
 	return sp1 * wr - sp2, sp1 * wi
 end
 
---- DOCME
--- @array v
--- @uint n
+--- One-dimensional inverse Fast Fourier Transform.
+-- @array v Vector of complex value pairs (size = 2 * _n_).
+--
+-- Afterward, this will be the transformed data.
+-- @uint n Power-of-2 count of elements in _v_.
 function M.IFFT_1D (v, n)
 	Transform(v, n, pi, 0)
 end
 
---- DOCME
--- @array m
--- @uint w
--- @uint h
+--- Two-dimensional inverse Fast Fourier Transform.
+-- @array m Matrix of complex value pairs (size = 2 * _w_ * _h_).
+--
+-- Afterward, this will be the transformed data.
+-- @uint w Power-of-2 width of _m_...
+-- @uint h ...and height.
 function M.IFFT_2D (m, w, h)
 	local w2 = 2 * w
 	local area = w2 * h
@@ -218,9 +235,12 @@ function M.IFFT_2D (m, w, h)
 	end
 end
 
---- DOCME
--- @array v
--- @uint n
+--- One-dimensional inverse Fast Fourier Transform, specialized for output known to be real.
+-- @array v Vector of complex value pairs (size = 2 * _n_).
+--
+-- Afterward, this will be the transformed data, but reinterpreted as a real vector (of
+-- size = _n_).
+-- @uint n Power-of-2 count of elements in _v_.
 function M.IFFT_Real1D (v, n)
 	AuxRealXform(v, n, 0.5, 0.5, pi / n, 0)
 
@@ -231,10 +251,13 @@ function M.IFFT_Real1D (v, n)
 	Transform(v, n, pi, 0)
 end
 
---- DOCME
--- @array m
--- @uint w
--- @uint h
+--- Two-dimensional inverse Fast Fourier Transform, specialized for output known to be real.
+-- @array v Vector of complex value pairs (size = 2 * _n_).
+--
+-- Afterward, this will be the transformed data, but reinterpreted as a real matrix (of
+-- size = _w_ * _h_).
+-- @uint w Power-of-2 width of _m_...
+-- @uint h ...and height.
 function M.IFFT_Real2D (m, w, h)
 	local w2 = 2 * w
 	local area = w2 * h
@@ -256,7 +279,11 @@ function M.IFFT_Real2D (m, w, h)
 	end
 end
 
---- DOCME
+--- Performs element-wise multiplication on two complex vectors.
+-- @array v1 Vector #1 of complex value pairs...
+-- @array v2 ...and vector #2.
+-- @uint n Power-of-2 count of elements in _v1_ and _v2_.
+-- @array[opt=v1] Vector of (_n_) complex results.
 function M.Multiply_1D (v1, v2, n, out)
 	out = out or v1
 
@@ -267,7 +294,11 @@ function M.Multiply_1D (v1, v2, n, out)
 	end
 end
 
---- DOCME
+--- Performs element-wise multiplication on two complex matrices.
+-- @array m1 Matrix #1 of complex value pairs...
+-- @array m2 ...and matrix #2.
+-- @uint w Power-of-2 width of _m1_ and _m2_.
+-- @array[opt=m1] Matrix of (_w_ * _h_) complex results.
 function M.Multiply_2D (m1, m2, w, h, out)
 	out = out or m1
 
@@ -278,9 +309,13 @@ function M.Multiply_2D (m1, m2, w, h, out)
 	end
 end
 
---- DOCME
--- @array v
--- @uint n
+--- Performs one-dimensional forward Fast Fourier Transforms of two real vectors, then
+-- multiplies them by one another.
+-- @array v Vector of pairs, as { ..., element from vector #1, element from vector #2, ... }.
+--
+-- Afterward, this will be the products.
+-- @uint n Power-of-2 width of _v_ (i.e. count of elements in each real vector).
+-- @see Multiply_1D, number_ops.fft_utils.PrepareTwoFFTs_1D
 function M.TwoFFTs_ThenMultiply1D (v, n)
 	Transform(v, n, -pi, 0)
 
@@ -307,10 +342,14 @@ end
 -- Second matrix, for decomposing the FFT'd real matrix --
 local N = {}
 
---- DOCME
--- @array m
--- @uint w
--- @uint h
+--- Performs two-dimensional forward Fast Fourier Transforms of two real matrices, then
+-- multiplies them by one another.
+-- @array m Vector of pairs, as { ..., element from matrix #1, element from matrix #2, ... }.
+--
+-- Afterward, this will be the products.
+-- @uint w Power-of-2 width of _m_ (i.e. width in each real matrix)...
+-- @uint h ...and height.
+-- @see Multiply_2D, number_ops.fft_utils.PrepareTwoFFTs_2D
 function M.TwoFFTs_ThenMultiply2D (m, w, h)
 	local w2 = 2 * w
 	local area, len = w2 * h, w2 + 2
@@ -355,6 +394,7 @@ function M.TwoFFTs_ThenMultiply2D (m, w, h)
 
 			m[index], m[index + 1], index = a * c - b * d, b * c + a * d, index + 2
 		end
+-- TODO: Supposedly there's some diagonal symmetry in the matrix...
 	end
 end
 
@@ -374,7 +414,7 @@ local function AuxTwoGoertzels (m1, m2, n, k, wr, wi, offset)
 	return a, b, c, d
 end
 
--- --
+-- Scratch buffer for in-place pre-multiplied Goertzel pairs, e.g. to transpose the matrices --
 local Transpose = {}
 
 --- DOCME
@@ -398,7 +438,7 @@ function M.TwoGoertzels_ThenMultiply1D (v1, v2, n, out)
 		k = 2 * wr
 	end
 
-	--
+	-- If the operation was dumped into a scratch buffer, i.e. feed it back through the input.
 	if out == Transpose then
 		for i = 1, 2 * n do
 			v1[i] = Transpose[i]
