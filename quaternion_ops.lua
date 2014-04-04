@@ -26,12 +26,30 @@
 local abs = math.abs
 local acos = math.acos
 local cos = math.cos
+local exp = math.exp
+local log = math.log
 local pi = math.pi
 local sin = math.sin
 local sqrt = math.sqrt
 
+-- Modules --
+local robust = require("number_ops.robust")
+
 -- Cached module references --
-local _Add_, _Conjugate_, _Dot_, _Exp_, _Inverse_, _Length_, _Log_, _Multiply_, _Normalize_, _Scale_, _SquadAuxQuats_, _SquadQ2S2_ 
+local _Add_
+local _AngleBetween_
+local _Conjugate_
+local _Dot_
+local _Exp_
+local _Inverse_
+local _Length_
+local _Log_
+local _Multiply_
+local _Negate_
+local _Normalize_
+local _Scale_
+local _SquadAuxQuats_
+local _SquadQ2S2_ 
 
 -- Exports --
 local M = {}
@@ -44,6 +62,28 @@ function M.Add (qout, q1, q2)
 	qout.w = q1.w + q2.w
 
 	return qout
+end
+
+--- DOCME
+function M.Add_Scaled (qout, q1, q2, k)
+	qout.x = q1.x + q2.x * k
+	qout.y = q1.y + q2.y * k
+	qout.z = q1.z + q2.z * k
+	qout.w = q1.w + q2.w * k
+
+	return qout
+end
+
+-- --
+local AuxAngleBetween
+
+do
+	local A1, A2 = {}, {}
+
+	--- DOCME
+	function M.AngleBetween (q1, q2)
+		return AuxAngleBetween(_Normalize_(A1, q1), _Normalize_(A2, q2))
+	end
 end
 
 --- DOCME
@@ -62,20 +102,26 @@ function M.Dot (q1, q2)
 end
 
 --- DOCME
--- q = [0, theta * v] -> [cos(theta), sin(theta) * v]
+-- q = [a, theta * v], len(v) = 1 -> [e^a*cos(theta), e^a*sin(theta) * v]
 function M.Exp (qout, q)
 	local x, y, z = q.x, q.y, q.z
 	local theta = sqrt(x^2 + y^2 + z^2)
-
+--[[
+From Numpy (https://github.com/numpy/numpy-dtypes/blob/76da931005a088f9e5f75d8ea2d58428cad2a975/npytypes/quaternion/quaternion.c#L135)
+   if theta > 1e-9 then
+      local s = robust.SinOverX(theta)
+      local e = exp(q.w)
+      qout.w, qout.x, qout.y, qout.z = e*cos(theta), e*s*q.x, e*s*q.y, e*s*q.z
+	else
+		qout.w, qout.x, qout.y, qout.z = 0, 0, 0, 0
+   end
+if true then return qout end
+--]]
 	qout.w = cos(theta)
 
-	if abs(theta) > 1e-9 then
-		local coeff = sin(theta) / theta
+	local coeff = robust.SinOverX(theta)
 
-		qout.x, qout.y, qout.z = coeff * x, coeff * y, coeff * z
-	else
-		qout.x, qout.y, qout.z = x, y, z
-	end
+	qout.x, qout.y, qout.z = coeff * x, coeff * y, coeff * z
 
 	return qout
 end
@@ -91,12 +137,25 @@ function M.Length (q)
 end
 
 --- DOCME
--- q = [cos(theta), sin(theta) * v] -> [0, theta * v]
+-- q = [len(q) * cos(theta), len(q) * sin(theta) * v] -> [ln(len(q)), acos(w / len(q)) * v], len(v) = 1
 function M.Log (qout, q)
 	local qw, coeff = q.w
-
+--[[
+	From Numpy: (https://github.com/numpy/numpy-dtypes/blob/76da931005a088f9e5f75d8ea2d58428cad2a975/npytypes/quaternion/quaternion.c#L121)
+local sumvsq = q.x^2 + q.y^2 + q.z^2
+local vnorm = sqrt(sumvsq)
+   if vnorm > 1e-9 then
+      local m = sqrt(q.w^2 + sumvsq)
+      local s = acos(q.w/m) / vnorm
+      qout.w, qout.x, qout.y, qout.z = log(m), s*q.x, s*q.y, s*q.z
+   else
+      qout.w, qout.x, qout.y, qout.z = 0, 0, 0, 0
+   end
+if true then return qout end
+--]]
+---[[
 	if abs(qw) < 1 then
-		local theta = acos(qw)
+		local theta = acos(qw)-- / lenq)
 		local stheta = sin(theta)
 
 		if abs(stheta) > 1e-9 then
@@ -111,7 +170,7 @@ function M.Log (qout, q)
 	else
 		qout.x, qout.y, qout.z = q.x, q.y, q.z
 	end
-
+--]]
 	return qout
 end
 
@@ -124,6 +183,16 @@ function M.Multiply (qout, q1, q2)
 	qout.y = w1 * y2 + w2 * y1 + z1 * x2 - z2 * x1
 	qout.z = w1 * z2 + w2 * x1 + x1 * y2 - x2 * y1
 	qout.w = w1 * w2 - x1 * x2 - y1 * y2 - z1 * z2
+
+	return qout
+end
+
+--- DOCME
+function M.Negate (qout, q)
+	qout.x = -q.x
+	qout.y = -q.y
+	qout.z = -q.z
+	qout.w = -q.w
 
 	return qout
 end
@@ -144,28 +213,36 @@ function M.Scale (qout, q, k)
 end
 
 do
-	--
 	local Qf, Qt = {}, {}
 
+	--
 	local function AuxSlerp (qout, q1, q2, t, can_flip)
 		local ilen1, ilen2 = 1 / _Length_(q1), 1 / _Length_(q2)
-		local dot, s = _Dot_(q1, q2) * ilen1 * ilen2, 1 - t
+		local dot, s = _Dot_(q1, q2)--[[ * ilen1 * ilen2]], 1 - t
 
-		if dot < .97 then
-			local theta = acos(dot)
+		local v, w = q1, q2
 
-			if can_flip and dot < 0 then
-				theta, ilen2 = pi - theta, -ilen2
+		if dot < 0 then
+			_Negate_(Qf, q1)
+			_Negate_(Qt, q2)
+
+			if _Dot_(Qf, q2) > _Dot_(q1, Qt) then
+				v = Qf
+			else
+				w = Qt
 			end
+			-- ^^??
+		end
 
-			local stheta = 1 / sin(theta)
+		local theta = _AngleBetween_(q1, q2)
+		local denom = robust.SinOverX(theta)
 
-			_Add_(qout, _Scale_(Qf, q1, sin(s * theta) * stheta * ilen1), _Scale_(Qt, q2, sin(t * theta) * stheta * ilen2))
-		else
-			_Add_(qout, _Scale_(Qf, q1, s), _Scale_(Qt, q2, t))
-			_Normalize_(qout, qout)
-		end -- TODO: dot < -.97...
-
+		_Add_(qout, _Scale_(Qf, v, robust.Slerp(s, theta, denom) * ilen1), _Scale_(Qt, w, robust.Slerp(t, theta, denom) * ilen2))
+--[[
+		if can_flip and dot < 0 then
+			theta, ilen2 = pi - theta, -ilen2
+		end
+--]]
 		return qout
 	end
 
@@ -205,8 +282,22 @@ do
 	end
 end
 
+--- DOCME
+function M.Sub (qout, q1, q2)
+	qout.x = q1.x - q2.x
+	qout.y = q1.y - q2.y
+	qout.z = q1.z - q2.z
+	qout.w = q1.w - q2.w
+
+	return qout
+end
+
+--
+AuxAngleBetween = robust.AngleBetween_OutParam(M.Dot, M.Length, M.Add, M.Negate)
+
 -- Cache module members.
 _Add_ = M.Add
+_AngleBetween_ = M.AngleBetween
 _Conjugate_ = M.Conjugate
 _Dot_ = M.Dot
 _Exp_ = M.Exp
@@ -214,6 +305,7 @@ _Inverse_ = M.Inverse
 _Length_ = M.Length
 _Log_ = M.Log
 _Multiply_ = M.Multiply
+_Negate_ = M.Negate
 _Normalize_ = M.Normalize
 _Scale_ = M.Scale
 _SquadAuxQuats_ = M.SquadAuxQuats
