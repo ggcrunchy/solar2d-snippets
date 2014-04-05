@@ -379,24 +379,15 @@ function M.Convolve_FFT1D (signal, kernel, opts)
 		fft_utils.PrepareTwoFFTs_1D(B, n, signal, sn, kernel, kn)
 		fft.TwoFFTs_ThenMultiply1D(B, n)
 	end
-local aaa={}
-for i = 1, #B do
-	aaa[i]=B[i]
-end
-fft.IFFT_1D(aaa, n)
+
 	-- ...transform back to the time domain...
 	local nreal = .5 * n
 
 	fft.IFFT_Real1D(B, nreal)
--- ^^ ???? :(
+
 	-- ...and get the convolution by scaling the real parts of the result.
 	local csignal = {}
-local bbb={}
-for i = 1, clen + clen,2 do
-	bbb[#bbb+1]=aaa[i]/n
-end
-vdump(bbb)
-vdump(B)
+
 	for i = 1, clen do
 		csignal[#csignal + 1] = B[i] / nreal
 	end

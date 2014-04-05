@@ -147,22 +147,26 @@ function M.FFT_2D (m, w, h)
 end
 
 -- Helper for common part of real transforms
-local function AuxRealXform (v, n, c1, c2, theta, offset)
-	local s1, s2 = sin(theta), 2 * sin(0.5 * theta)^2
-	local wr, wi, nf = 1.0 - s2, s1, offset + 2 * (n + 1)
+local function AuxRealXform (v, n, coeff)
+	local n2, ca, sa = 2 * n, 1, 0
+	local nf, nend, da = n2 + 2, 2 * n2, pi / n2
 
-	for k = 3, n, 2 do
-		local i, j = offset + k, nf - k
-		local a, b, c, d = v[i], v[i + 1], v[j], v[j + 1]
-		local r1, i1 = c1 * (a + c), c1 * (b - d)
-		local r2, i2 = -(b + d), a - c
-		local rr_ii = c2 * (wr * r2 - wi * i2)
-		local ri_ir = c2 * (wr * i2 + wi * r2)
+	for j = 1, n2, 2 do
+		if j > 1 then
+			local angle = (j - 1) * da
 
-		v[i], v[i + 1] = r1 + rr_ii, ri_ir + i1
-		v[j], v[j + 1] = r1 - rr_ii, ri_ir - i1
+			ca, sa = cos(angle), sin(angle)
+		end
 
-		wr, wi = wr - s1 * wi - s2 * wr, wi + s1 * wr - s2 * wi
+		local k, l = nf - j, nend - j
+		local ar, ai = .5 * (1 - sa), coeff * ca
+		local br, bi = .5 * (1 + sa), -coeff * ca
+		local xr, xi = v[j], v[j + 1]
+		local yr, yi = v[k], v[k + 1]
+		local xa1, xa2 = xr * ar - xi * ai, xi * ar + xr * ai
+		local yb1, yb2 = yr * br + yi * bi, yr * bi - yi * br
+
+		v[l], v[l + 1] = xa1 + yb1, xa2 + yb2
 	end
 end
 
@@ -170,31 +174,35 @@ end
 -- @array v
 -- @uint n
 function M.FFT_Real1D (v, n)
-local aa={}
-	for i = 1, n do
-aa[#aa+1]=v[i]
-aa[#aa+1]=0
-	end
-
-	local mid, nf = n, 2 * (n + 1)
+	local n2, n4 = n, 2 * n
 
 	n = .5 * n
 
 	Transform(v, n, -pi, 0)
-	AuxRealXform(v, n, 0.5, -0.5, -pi / n, 0)
 
+	-- From the periodicity of the DFT, it follows that that X(N + k) = X(k).
 	local a, b = v[1], v[2]
 
-	v[1], v[mid + 2] = a + b, 0
-	v[2], v[mid + 1] = 0, a - b
+	v[n2 + 1], v[n2 + 2] = a, b
 
-	for i = 3, mid, 2 do
-		local j = nf - i
+	-- Perform extra processing.
+	AuxRealXform(v, n, -.5)
 
-		v[j], v[j + 1] = v[i], -v[i + 1]
+	v[1], v[2] = v[n4 - 1], v[n4]
+
+	-- Use complex conjugate symmetry properties to get the rest.
+	local nf = n4 + 2
+
+	for j = 3, n2, 2 do
+		local k = nf - j
+		local a, b = v[k - 2], v[k - 1]
+
+		v[j], v[j + 1] = a, b
+		v[k], v[k + 1] = a, -b
 	end
-M.FFT_1D(aa, mid)
-vdump(aa)
+
+	-- Finally, with the slot free, set the middle values.
+	v[n2 + 1], v[n2 + 2] = a - b, 0
 end
 
 --- Computes a sample using the [Goertzel algorithm](http://en.wikipedia.org/wiki/Goertzel_algorithm), without performing a full FFT.
@@ -251,13 +259,22 @@ end
 -- size = _n_).
 -- @uint n Power-of-2 count of elements in _v_.
 function M.IFFT_Real1D (v, n)
-	AuxRealXform(v, n, 0.5, 0.5, pi / n, 0)
+	AuxRealXform(v, n, .5)
 
-	local a, b = v[1], v[2]
+	-- Perform the inverse DFT, given that x(n) = (1 / N)*DFT{X*(k)}*.
+	local n2, n4 = 2 * n, 4 * n
 
-	v[1], v[2] = .5 * (a + b), .5 * (a - b)
+	for i = 1, n2, 2 do
+		local k = n4 - i
 
-	Transform(v, n, pi, 0)
+		v[i], v[i + 1] = v[k], -v[k + 1]
+	end
+
+	Transform(v, n, -pi, 0)
+
+	for i = 2, n2, 2 do
+		v[i] = -v[i]
+	end
 end
 
 --- Two-dimensional inverse Fast Fourier Transform, specialized for output known to be real.
@@ -544,13 +561,10 @@ end
 
 -- From Texas Instruments paper:
 
--- --
-local Temp = {}
-
---
-local function Split (data, n, coeff)
+-- Additional computations required to perform real transform
+local function Split (v, n, coeff)
 	local n2, ca, sa = 2 * n, 1, 0
-	local nf, da = n2 + 2, pi / n2
+	local nf, nend, da = n2 + 2, 2 * n2, pi / n2
 
 	for j = 1, n2, 2 do
 		if j > 1 then
@@ -559,81 +573,27 @@ local function Split (data, n, coeff)
 			ca, sa = cos(angle), sin(angle)
 		end
 
-		local k = nf - j
+		local k, l = nf - j, nend - j
 		local ar, ai = .5 * (1 - sa), coeff * ca
 		local br, bi = .5 * (1 + sa), -coeff * ca
-		local xr, xi = data[j], data[j + 1]
-		local yr, yi = data[k], data[k + 1]
+		local xr, xi = v[j], v[j + 1]
+		local yr, yi = v[k], v[k + 1]
 		local xa1, xa2 = xr * ar - xi * ai, xi * ar + xr * ai
 		local yb1, yb2 = yr * br + yi * bi, yr * bi - yi * br
 
-		Temp[j], Temp[j + 1] = xa1 + yb1, xa2 + yb2
+		v[l], v[l + 1] = xa1 + yb1, xa2 + yb2
 	end
-
-	data[1], data[2] = Temp[1], Temp[2]
 end
 
 --- DOCME
 function M.RealFT_TI (v, n)
-	Transform(v, n, -pi, 0)
 
-	-- Because of the periodicity property of the DFT, we know that X(N+k)=X(k).
-	local a, b, n2 = v[1], v[2], 2 * n
-
-	v[n2 + 1], v[n2 + 2] = a, b
-
-	-- The split function performs the additional computations required to get G(k) from X(k).
-	Split(v, n, -.5)
-
-	-- Use complex conjugate symmetry properties to get the rest of G(k)
-	v[n2 + 1], v[n2 + 2] = a - b, 0
-
-	local nf = 2 * (n2 + 1)
-
-	for j = 3, n2, 2 do
-		local a, b, k = Temp[j], Temp[j + 1], nf - j
-
-		v[j], v[j + 1] = a, b
-		v[k], v[k + 1] = a, -b
-	end
 end
 
---[[
-	IDFT:
-	
-/* Inverse DFT – We now want to get back g(n). */
-/* The split function performs the additional computations required to get X(k) from G(k). */
-split(NUMPOINTS, G, IA, IB, x);
-/* Take the inverse DFT of X(k) to get x(n). Note the inverse DFT could be any
-IDFT implementation, such as an IFFT. */
-/* The inverse DFT can be calculated by using the forward DFT algorithm directly by
-complex conjugation – x(n) = (1/N)(DFT{X*(k)})*, where * is the complex conjugate
-operator. */
-/* Compute the complex conjugate of X(k). */
-for (k=0; k<NUMPOINTS; k++)
-{
-x[k].imag = –x[k].imag; /* complex conjugate X(k) */
-}
-/* Compute the DFT of X*(k). */
-dft(NUMPOINTS, x);
-/* Complex conjugate the output of the DFT and divide by N to get x(n). */
-for (n=0; n<NUMPOINTS; n++)
-	for (n=0; n<NUMPOINTS; n++)
-{
-x[n].real = x[n].real/16;
-x[n].imag = (–x[n].imag)/16;
-}
-/* g(2n) = xr(n) and g(2n + 1) = xi(n) */
-for (n=0; n<NUMPOINTS; n++)
-{
-g[2*n] = x[n].real;
-g[2*n + 1] = x[n].imag;
-}
-return(0);
-}
-]]
+--- DOCME
+function M.RealIFT_TI (v, n)
 
---]=]
+end
 
 -- Export the module.
 return M
