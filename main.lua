@@ -170,17 +170,49 @@ for i = 1, #t1 do
 	end
 end
 print("DONE")
+
+local fft=require("number_ops.fft")
+
+local function Copy (t)
+	local u = {}
+	for i = 1, #t do
+		u[i] = t[i]
+	end
+	return u
+end
+
 local w={1,1,1,1,0,0,0,0}
-require("number_ops.fft").FFT_Real1D(w, 8)
-vdump(w)
+local ww=Copy(w)
+local ww2=Copy(w)
+fft.FFT_Real1D(w, 8)
+--vdump(w)
+print("")
+fft.RealFT_TI(ww2, 4, 1)
+vdump(ww2)
+print("")
 
 local wa={1,3,1,1,0,0,7,0}
-require("number_ops.fft").FFT_Real1D(wa, 8)
-vdump(wa)
+local waw=Copy(wa)
+local waw2=Copy(wa)
+fft.FFT_Real1D(wa, 8)
+--vdump(wa)
+print("")
+fft.RealFT_TI(waw2, 4, 1)
+vdump(waw2)
+print("")
 
 local wb={2,1,1,2,9,3,4,6}
-require("number_ops.fft").FFT_Real1D(wb, 8)
-vdump(wb)
+local wbw=Copy(wb)
+local wbw2=Copy(wb)
+fft.FFT_Real1D(wb, 8)
+--vdump(wb)
+print("")
+fft.RealFT_TI(wbw2, 4, 1)
+vdump(wbw2)
+print("")
+
+print("DONE")
+]]
 
 --]=]
 -- Kick off the app.

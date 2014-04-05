@@ -540,5 +540,100 @@ function M.TwoGoertzels_ThenMultiply2D (m1, m2, w, h, out)
 	end
 end
 
+---[=[
+
+-- From Texas Instruments paper:
+
+-- --
+local Temp = {}
+
+--
+local function Split (data, n, coeff)
+	local n2, ca, sa = 2 * n, 1, 0
+	local nf, da = n2 + 2, pi / n2
+
+	for j = 1, n2, 2 do
+		if j > 1 then
+			local angle = (j - 1) * da
+
+			ca, sa = cos(angle), sin(angle)
+		end
+
+		local k = nf - j
+		local ar, ai = .5 * (1 - sa), coeff * ca
+		local br, bi = .5 * (1 + sa), -coeff * ca
+		local xr, xi = data[j], data[j + 1]
+		local yr, yi = data[k], data[k + 1]
+		local xa1, xa2 = xr * ar - xi * ai, xi * ar + xr * ai
+		local yb1, yb2 = yr * br + yi * bi, yr * bi - yi * br
+
+		Temp[j], Temp[j + 1] = xa1 + yb1, xa2 + yb2
+	end
+
+	data[1], data[2] = Temp[1], Temp[2]
+end
+
+--- DOCME
+function M.RealFT_TI (v, n)
+	Transform(v, n, -pi, 0)
+
+	-- Because of the periodicity property of the DFT, we know that X(N+k)=X(k).
+	local a, b, n2 = v[1], v[2], 2 * n
+
+	v[n2 + 1], v[n2 + 2] = a, b
+
+	-- The split function performs the additional computations required to get G(k) from X(k).
+	Split(v, n, -.5)
+
+	-- Use complex conjugate symmetry properties to get the rest of G(k)
+	v[n2 + 1], v[n2 + 2] = a - b, 0
+
+	local nf = 2 * (n2 + 1)
+
+	for j = 3, n2, 2 do
+		local a, b, k = Temp[j], Temp[j + 1], nf - j
+
+		v[j], v[j + 1] = a, b
+		v[k], v[k + 1] = a, -b
+	end
+end
+
+--[[
+	IDFT:
+	
+/* Inverse DFT – We now want to get back g(n). */
+/* The split function performs the additional computations required to get X(k) from G(k). */
+split(NUMPOINTS, G, IA, IB, x);
+/* Take the inverse DFT of X(k) to get x(n). Note the inverse DFT could be any
+IDFT implementation, such as an IFFT. */
+/* The inverse DFT can be calculated by using the forward DFT algorithm directly by
+complex conjugation – x(n) = (1/N)(DFT{X*(k)})*, where * is the complex conjugate
+operator. */
+/* Compute the complex conjugate of X(k). */
+for (k=0; k<NUMPOINTS; k++)
+{
+x[k].imag = –x[k].imag; /* complex conjugate X(k) */
+}
+/* Compute the DFT of X*(k). */
+dft(NUMPOINTS, x);
+/* Complex conjugate the output of the DFT and divide by N to get x(n). */
+for (n=0; n<NUMPOINTS; n++)
+	for (n=0; n<NUMPOINTS; n++)
+{
+x[n].real = x[n].real/16;
+x[n].imag = (–x[n].imag)/16;
+}
+/* g(2n) = xr(n) and g(2n + 1) = xi(n) */
+for (n=0; n<NUMPOINTS; n++)
+{
+g[2*n] = x[n].real;
+g[2*n + 1] = x[n].imag;
+}
+return(0);
+}
+]]
+
+--]=]
+
 -- Export the module.
 return M
