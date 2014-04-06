@@ -28,6 +28,8 @@ local acos = math.acos
 local cos = math.cos
 local exp = math.exp
 local log = math.log
+local max = math.max
+local min = math.min
 local pi = math.pi
 local sin = math.sin
 local sqrt = math.sqrt
@@ -104,24 +106,18 @@ end
 --- DOCME
 -- q = [a, theta * v], len(v) = 1 -> [e^a*cos(theta), e^a*sin(theta) * v]
 function M.Exp (qout, q)
-	local x, y, z = q.x, q.y, q.z
-	local theta = sqrt(x^2 + y^2 + z^2)
---[[
-From Numpy (https://github.com/numpy/numpy-dtypes/blob/76da931005a088f9e5f75d8ea2d58428cad2a975/npytypes/quaternion/quaternion.c#L135)
-   if theta > 1e-9 then
-      local s = robust.SinOverX(theta)
-      local e = exp(q.w)
-      qout.w, qout.x, qout.y, qout.z = e*cos(theta), e*s*q.x, e*s*q.y, e*s*q.z
+	-- Adapted from:
+	-- https://github.com/numpy/numpy-dtypes/blob/76da931005a088f9e5f75d8ea2d58428cad2a975/npytypes/quaternion/quaternion.c#L135
+	local qx, qy, qz, ew = q.x, q.y, q.z, exp(q.w)
+	local vnorm = sqrt(qx^2 + qy^2 + qz^2)
+
+	if vnorm > 1e-9 then
+		local coeff = ew * robust.SinOverX(vnorm)
+
+		qout.w, qout.x, qout.y, qout.z = ew * cos(vnorm), coeff * qx, coeff * qy, coeff * qz
 	else
-		qout.w, qout.x, qout.y, qout.z = 0, 0, 0, 0
-   end
-if true then return qout end
---]]
-	qout.w = cos(theta)
-
-	local coeff = robust.SinOverX(theta)
-
-	qout.x, qout.y, qout.z = coeff * x, coeff * y, coeff * z
+		qout.w, qout.x, qout.y, qout.z = ew, 0, 0, 0   
+    end
 
 	return qout
 end
@@ -139,38 +135,22 @@ end
 --- DOCME
 -- q = [len(q) * cos(theta), len(q) * sin(theta) * v] -> [ln(len(q)), acos(w / len(q)) * v], len(v) = 1
 function M.Log (qout, q)
-	local qw, coeff = q.w
---[[
-	From Numpy: (https://github.com/numpy/numpy-dtypes/blob/76da931005a088f9e5f75d8ea2d58428cad2a975/npytypes/quaternion/quaternion.c#L121)
-local sumvsq = q.x^2 + q.y^2 + q.z^2
-local vnorm = sqrt(sumvsq)
-   if vnorm > 1e-9 then
-      local m = sqrt(q.w^2 + sumvsq)
-      local s = acos(q.w/m) / vnorm
-      qout.w, qout.x, qout.y, qout.z = log(m), s*q.x, s*q.y, s*q.z
-   else
-      qout.w, qout.x, qout.y, qout.z = 0, 0, 0, 0
-   end
-if true then return qout end
---]]
----[[
-	if abs(qw) < 1 then
-		local theta = acos(qw)-- / lenq)
-		local stheta = sin(theta)
+	-- Adapted from:
+	-- https://github.com/numpy/numpy-dtypes/blob/76da931005a088f9e5f75d8ea2d58428cad2a975/npytypes/quaternion/quaternion.c#L121
+	local qx, qy, qz = q.x, q.y, q.z
+	local sqr = qx^2 + qy^2 + qz^2
+	local vnorm = sqrt(sqr)
 
-		if abs(stheta) > 1e-9 then
-			coeff = theta / stheta
-		end
-	end
+	if vnorm > 1e-9 then
+		local qw = q.w
+		local mag = sqrt(sqr + qw^2)
+		local coeff = max(min(qw / mag, 1), -1) / vnorm
 
-	qout.w = 0
-
-	if coeff then
-		qout.x, qout.y, qout.z = coeff * q.x, coeff * q.y, coeff * q.z
+		qout.w, qout.x, qout.y, qout.z = log(mag), coeff * qx, coeff * qy, coeff * qz
 	else
-		qout.x, qout.y, qout.z = q.x, q.y, q.z
+		qout.w, qout.x, qout.y, qout.z = 0, 0, 0, 0
 	end
---]]
+
 	return qout
 end
 
@@ -216,46 +196,32 @@ do
 	local Qf, Qt = {}, {}
 
 	--
-	local function AuxSlerp (qout, q1, q2, t, can_flip)
-		local ilen1, ilen2 = 1 / _Length_(q1), 1 / _Length_(q2)
-		local dot, s = _Dot_(q1, q2)--[[ * ilen1 * ilen2]], 1 - t
-
-		local v, w = q1, q2
-
-		if dot < 0 then
+	local function AuxSlerp (qout, q1, q2, t)
+		if _Dot_(q1, q2) < 0 then
 			_Negate_(Qf, q1)
-			_Negate_(Qt, q2)
 
-			if _Dot_(Qf, q2) > _Dot_(q1, Qt) then
-				v = Qf
-			else
-				w = Qt
-			end
-			-- ^^??
+			q1 = Qf
 		end
 
 		local theta = _AngleBetween_(q1, q2)
 		local denom = robust.SinOverX(theta)
+		local k1, k2 = robust.Slerp(1 - t, theta, denom) / _Length_(q1), robust.Slerp(t, theta, denom) / _Length_(q2)
 
-		_Add_(qout, _Scale_(Qf, v, robust.Slerp(s, theta, denom) * ilen1), _Scale_(Qt, w, robust.Slerp(t, theta, denom) * ilen2))
---[[
-		if can_flip and dot < 0 then
-			theta, ilen2 = pi - theta, -ilen2
-		end
---]]
+		_Add_(qout, _Scale_(Qf, q1, k1), _Scale_(Qt, q2, k2))
+
 		return qout
 	end
 
 	--- DOCME
 	function M.Slerp (qout, q1, q2, t)
-		return AuxSlerp(qout, q1, q2, t, true)
+		return AuxSlerp(qout, q1, q2, t)
 	end
 
 	local Qa, Qb = {}, {}
 
 	--- DOCME
 	function M.SquadQ2S2 (qout, q1, q2, s1, s2, t)
-		return AuxSlerp(qout, AuxSlerp(Qa, q1, q2, t), AuxSlerp(Qb, s1, s2, t), 2 * t * (1 - t), true)
+		return AuxSlerp(qout, AuxSlerp(Qa, q1, q2, t), AuxSlerp(Qb, s1, s2, t), 2 * t * (1 - t))
 	end
 end
 
@@ -265,11 +231,11 @@ do
 	--- DOCME
 	function M.SquadAuxQuats (qout, qprev, q, qnext)
 		_Inverse_(Qi, q)
-		_Log_(Log1, _Multiply_(Log1, Qi, qprev))
-		_Log_(Log2, _Multiply_(Log2, Qi, qnext))
+		_Log_(Log1, _Multiply_(Log1, qprev, Qi))
+		_Log_(Log2, _Multiply_(Log2, qnext, Qi))
 		_Scale_(Sum, _Add_(Sum, Log1, Log2), -.25)
 
-		return _Multiply_(qout, q, _Exp_(Sum, Sum))
+		return _Multiply_(qout, _Exp_(Sum, Sum), q)
 	end
 end
 
@@ -310,51 +276,6 @@ _Normalize_ = M.Normalize
 _Scale_ = M.Scale
 _SquadAuxQuats_ = M.SquadAuxQuats
 _SquadQ2S2_ = M.SquadQ2S2
-
---[[
---
-	local Neighborhood = .959066
-	local Scale = 1.000311
-	local AddK = Scale / math.sqrt(Neighborhood)
-	local Factor = Scale * (-.5 / (Neighborhood * math.sqrt(Neighborhood))) 
-
-	local function Norm (x, y)
-		local s = x^2 + y^2
-		local k1 = AddK + Factor * (s - Neighborhood)
-		local k = k1
-
-		if s < .83042395 then
-			k = k * k1
-
-			if s < .30174562 then
-				k = k * k1
-			end
-		end
-
-		return x * k, y * k, k, s
-	end
-
-	for i = 1, 20 do
-		local x1 = random() --i / 21
-		local x2 = random()
-
-		for _ = 1, 10 do
-			local y1 = math.sqrt(math.max(1 - x1^2, 0))
-			local y2 = math.sqrt(math.max(1 - x2^2, 0))
-			local t = random()
-			local x, y = (1 - t) * x1 + t * x2, (1 - t) * y1 + t * y2
-			local nx, ny, k, s = Norm(x, y)
-			local len = math.sqrt(nx^2 + ny^2)
-
-	if len < .95 or len > 1.05 then
-	--	printf("K = %.4f, S = %.4f, t = %.3f, got len = %.4f", k, s, t, len)
-	--	print("")
-	end
-
-		--	printf("Started with (%.4f, %.4f), got (%.4f, %.4f), len = %.6f", x, y, nx, ny, len)
-		end
-	end
-]]
 
 -- Export the module.
 return M
