@@ -225,6 +225,8 @@ function M.Multiply_2D (m1, m2, w, h, out)
 end
 
 -- Helper for common part of real transforms
+-- Adapted from:
+-- http://processors.wiki.ti.com/index.php/Efficient_FFT_Computation_of_Real_Input
 local function AuxRealXform (v, n, coeff)
 	local n2, ca, sa = 2 * n, 1, 0
 	local nf, nend, da = n2 + 2, 2 * n2, pi / n2
@@ -266,7 +268,7 @@ function M.RealFFT_1D (v, n)
 
 	v[n2 + 1], v[n2 + 2] = a, b
 
-	-- Perform extra processing.
+	-- Unravel the conjugate (right) half of the results.
 	AuxRealXform(v, n, -.5)
 
 	v[1], v[2] = v[n4 - 1], v[n4]
@@ -282,7 +284,7 @@ function M.RealFFT_1D (v, n)
 		v[k], v[k + 1] = a, -b
 	end
 
-	-- Finally, with the slot free, set the middle values.
+	-- Finally, with its slot no longer needed as input, set the middle element.
 	v[n2 + 1], v[n2 + 2] = a - b, 0
 end
 
@@ -311,6 +313,11 @@ function M.RealIFFT_1D (v, n)
 	end
 end
 
+--- DOCME
+function M.RealFFT_2D (m, w, h)
+	--TODO!
+end
+
 --- Two-dimensional inverse Fast Fourier Transform, specialized for output known to be real.
 -- @array m Matrix of complex value pairs (size = 2 * _w_ * _h_).
 --
@@ -319,6 +326,7 @@ end
 -- @uint w Power-of-2 width of _m_...
 -- @uint h ...and height.
 function M.RealIFFT_2D (m, w, h)
+	-- BROKEN!
 	local w2 = 2 * w
 	local area = w2 * h
 
@@ -339,6 +347,58 @@ function M.RealIFFT_2D (m, w, h)
 	end
 end
 
+-- Helper to do complex multiplication over a real-based column
+local function MulColumn (m, col, w2, area)
+	local i, j = col + w2, area + col - w2
+
+	repeat
+		local r1, i1, r2, i2 = m[i], m[i + 1], m[j], m[j + 1]
+		local a, b = r1 + r2, i1 - i2 
+		local c, d = i1 + i2, r2 - r1
+		local real = .25 * (a * c - b * d)
+		local imag = .25 * (b * c + a * d)
+
+		m[i], m[i + 1] = real, imag
+		m[j], m[j + 1] = real, -imag
+
+		i, j = i + w2, j - w2
+	until i == j
+end
+
+-- Helper to do complex multiplication over a real-based row
+local function MulRow (v, n1, n2, len, om1i, om1j)
+	for i = n1, n2, 2 do
+		local j = len - i
+		local io, jo = om1i + i, om1j + j
+		local r1, i1, r2, i2 = v[io], v[io + 1], v[jo], v[jo + 1]
+		local a, b = r1 + r2, i1 - i2 
+		local c, d = i1 + i2, r2 - r1
+		local real = .25 * (a * c - b * d)
+		local imag = .25 * (b * c + a * d)
+
+		v[io], v[io + 1] = real, imag
+		v[jo], v[jo + 1] = real, -imag
+	end
+end
+
+-- Complex multiplication over a real-based row with pure real 1 and N / 2 + 1 elements
+local function MulRowWithReals (v, n, len, offset)
+	local center, om1 = offset + n, offset - 1
+
+	v[offset], v[offset + 1] = v[offset] * v[offset + 1], 0
+	v[center], v[center + 1] = v[center] * v[center + 1], 0
+
+	MulRow(v, 3, n, len, om1, om1)
+end
+
+-- Complex multiplication over a  real-based row without pure real 1 and N / 2 elements
+local function MulInnerRow (v, n, n2, len, offset)
+	local om1 = offset - 1
+
+	MulRow(v, 3, n, len, om1, 0)
+	MulRow(v, n + 3, n2, len, om1, 0)
+end
+
 --- Performs one-dimensional forward Fast Fourier Transforms of two real vectors, then
 -- multiplies them by one another.
 -- @array v Vector of pairs, as { ..., element from vector #1, element from vector #2, ... }.
@@ -348,31 +408,8 @@ end
 -- @see Multiply_1D, number_ops.fft_utils.PrepareTwoFFTs_1D
 function M.TwoFFTsThenMultiply_1D (v, n)
 	Transform(v, n, -pi, 0)
-
-	local m = n + 1
-
-	v[1], v[2] = v[1] * v[2], 0
-	v[m], v[m + 1] = v[m] * v[m + 1], 0
-
-	local len = 2 * m
-
-	for i = 3, n, 2 do
-		local j = len - i
-		local r1, i1, r2, i2 = v[i], v[i + 1], v[j], v[j + 1]
-		local a, b = r1 + r2, i1 - i2 
-		local c, d = i1 + i2, r2 - r1
-		local real = .25 * (a * c - b * d)
-		local imag = .25 * (b * c + a * d)
-
-		v[i], v[i + 1] = real, imag
-		v[j], v[j + 1] = real, -imag
-	end
-print("OK")
-vdump(v)
+	MulRowWithReals(v, n, 2 * (n + 1), 1)
 end
-
--- Second matrix, for decomposing the FFT'd real matrix --
-local N = {}
 
 --- Performs two-dimensional forward Fast Fourier Transforms of two real matrices, then
 -- multiplies them by one another.
@@ -386,47 +423,32 @@ function M.TwoFFTsThenMultiply_2D (m, w, h)
 	local w2 = 2 * w
 	local area, len = w2 * h, w2 + 2
 
-	--
+	-- Perform 2D transform.
 	for offset = 1, area, w2 do
-		local center, om1 = offset + w, offset - 1
-
-		Transform(m, w, -pi, om1)
-
-		N[offset], N[center] = m[offset + 1], m[center + 1]
-		m[offset + 1], m[center + 1] = 0, 0
-		N[offset + 1], N[center + 1] = 0, 0
-
-		for i = 3, w, 2 do
-			local j = len - i
-			local io, jo = om1 + i, om1 + j
-			local r1, i1, r2, i2 = m[io], m[io + 1], m[jo], m[jo + 1]
-			local a, b = .5 * (r1 + r2), .5 * (i1 - i2)
-			local c, d = .5 * (i1 + i2), .5 * (r2 - r1)
-
-			m[io], m[io + 1] = a, b
-			m[jo], m[jo + 1] = a, -b
-			N[io], N[io + 1] = c, d
-			N[jo], N[jo + 1] = c, -d
-		end
+		Transform(m, w, -pi, offset - 1)
 	end
 
-	--
 	TransformColumns(m, w2, h, area, -pi)
-	TransformColumns(N, w2, h, area, -pi)
 
-	--
-	local index = 1
+	-- Columns 1 and H / 2 + 1 (except elements in row 1 and W / 2 + 1)...
+	MulColumn(m, 1, w2, area)
+	MulColumn(m, w + 1, w2, area)
 
-	for offset = 1, area, w2 do
-		local center = offset + w
+	-- ...rows 1 and W / 2 + 1...
+	local half = .5 * area
 
-		for i = 0, w2 - 1, 2 do
-			local i1, i2 = offset + i, center + i
-			local a, b, c, d = m[i1], m[i1 + 1], N[i1], N[i1 + 1]
+	MulRowWithReals(m, w, len, 1)
+	MulRowWithReals(m, w, len, half + 1)
 
-			m[index], m[index + 1], index = a * c - b * d, b * c + a * d, index + 2
-		end
--- TODO: Supposedly there's some diagonal symmetry in the matrix...
+	-- ...and the rest. For each pair of rows (2, H), (3, H - 1), etc. the corresponding
+	-- elements in column pairs (2, W), (3, W - 1), etc. can be unpacked (as per those same
+	-- columns in the 1D transform with two FFT's) to obtain the complex results.
+	local endi = area + 2
+
+	for offset = w2 + 1, half, w2 do
+		MulInnerRow(m, w, w2, endi, offset)
+		
+		endi = endi - w2
 	end
 end
 
@@ -502,11 +524,41 @@ end
 
 -- Transposed Goertzel matrix --
 local Transpose = {}
+--[[
+local function ZeroOr (n)
+	if n > 0 then
+		return "+", n
+	elseif n < 0 then
+		return "", n
+	else
+		return " ", 0
+	end
+end
 
+local function Format (str, n)
+	return str:format(math.abs(n) < 100 and " " or "", math.abs(n) < 10 and " " or "", ZeroOr(n))
+end
+
+local function vd (m, ff, w2, h)
+	local index = 0
+	for i = 1, h do
+		local line = {}
+		for j = 1, w2, 2 do
+			line[#line + 1] = Format("(%s%s%s%.2f", m[index + j])
+			line[#line + 1] = Format("%s%s%s%.2f)", m[index + j + 1])
+		end
+		index = index + w2
+		ff:write(table.concat(line, ", "), "\n")
+	end
+end
+--]]
 -- Processes the entire matrix and moves the final results back
 local function SameDestResolve (out, w2, h2, last_row)
 	local col, h4 = 0, 2 * h2
-
+--[[
+local mm, nn = {}, {}
+local ff = io.open(system.pathForFile("Out.txt", system.DocumentsDirectory), "wt")
+--]]
 	for i = 1, w2, 2 do
 		local ci, coff = i, last_row + i
 
@@ -515,12 +567,57 @@ local function SameDestResolve (out, w2, h2, last_row)
 			local cj, ck = col + j, col + k
 			local a, b = Transpose[cj], Transpose[cj + 1]
 			local c, d = Transpose[ck], Transpose[ck + 1]
-
+--[[
+mm[ci], mm[ci+1]=a,b
+nn[ci], nn[ci+1]=c,d
+--]]
 			out[ci], out[ci + 1], ci, coff = a * c - b * d, b * c + a * d, coff, coff - w2
 		end
 
 		col = col + h4
 	end
+--[[
+ff:write("MM", "\n")
+vd(mm, ff, w2, h2/2)
+ff:write("\n")
+ff:write("NN", "\n")
+vd(nn, ff, w2, h2/2)
+ff:close()
+--]]
+--[[
+	Results from testing:
+
+MM
+(+325.00,    0.00), (  -0.00, -156.92), ( +65.00,   -0.00), (  -0.00,  -26.92), ( +65.00,   -0.00), (  +0.00,  +26.92), ( +65.00,   -0.00), (  +0.00, +156.92)
+(  -0.00, -156.92), ( -75.77,  +58.00), ( +89.60,  -31.38), ( -13.00,  -44.77), (  -4.20,  -31.38), ( +13.00,  +23.17), ( +36.14,  -31.38), ( +75.77,   -4.00)
+( +65.00,    0.00), ( +76.43,  -31.38), ( +13.00,  -84.00), ( -12.63,   -5.38), ( +13.00,  -28.00), (  -8.43,   +5.38), ( +13.00,   +8.00), ( +32.63,  +31.38)
+(  +0.00,  -26.92), ( -13.00,  -28.77), (  +7.86,   -5.38), (  -2.23,  -58.00), ( -43.80,   -5.38), (  +2.23,   +4.00), ( +10.40,   -5.38), ( +13.00,  -28.83)
+( +65.00,    0.00), (  -2.54,  -31.38), ( +13.00,  -36.00), ( -53.46,   -5.38), ( +13.00,   +0.00), ( -53.46,   +5.38), ( +13.00,  +36.00), (  -2.54,  +31.38)
+(  -0.00,  +26.92), ( +13.00,  +28.83), ( +10.40,   +5.38), (  +2.23,   -4.00), ( -43.80,   +5.38), (  -2.23,  +58.00), (  +7.86,   +5.38), ( -13.00,  +28.77)
+( +65.00,    0.00), ( +32.63,  -31.38), ( +13.00,   -8.00), (  -8.43,   -5.38), ( +13.00,  +28.00), ( -12.63,   +5.38), ( +13.00,  +84.00), ( +76.43,  +31.38)
+(  +0.00, +156.92), ( +75.77,   +4.00), ( +36.14,  +31.38), ( +13.00,  -23.17), (  -4.20,  +31.38), ( -13.00,  +44.77), ( +89.60,  +31.38), ( -75.77,  -58.00)
+
+NN
+( +15.00,    0.00), (  +9.36,   -9.36), (  -0.00,   -9.00), (  -3.36,   -3.36), (  -3.00,   +0.00), (  -3.36,   +3.36), (  +0.00,   +9.00), (  +9.36,   +9.36)
+(  +8.54,   -8.54), (  +0.41,  -10.83), (  -4.54,   -6.54), (  -4.83,   -2.41), (  -4.54,   +0.54), (  -2.41,   +4.83), (  +4.54,   +6.54), ( +10.83,   +0.41)
+(  -0.00,   -5.00), (  -3.12,   -3.95), (  -5.00,   -2.00), (  -5.95,   +1.12), (  -4.00,   +5.00), (  +1.12,   +5.95), (  +5.00,   +2.00), (  +3.95,   -3.12)
+(  +1.46,   +1.46), (  +0.83,   -0.41), (  -2.54,   +0.54), (  -2.41,   +5.17), (  +2.54,   +6.54), (  +5.17,   +2.41), (  +2.54,   -0.54), (  +0.41,   +0.83)
+(  +5.00,    0.00), (  +2.29,   -2.29), (  +0.00,   +1.00), (  +3.71,   +3.71), (  +7.00,   -0.00), (  +3.71,   -3.71), (  -0.00,   -1.00), (  +2.29,   +2.29)
+(  +1.46,   -1.46), (  +0.41,   -0.83), (  +2.54,   +0.54), (  +5.17,   -2.41), (  +2.54,   -6.54), (  -2.41,   -5.17), (  -2.54,   -0.54), (  +0.83,   +0.41)
+(  +0.00,   +5.00), (  +3.95,   +3.12), (  +5.00,   -2.00), (  +1.12,   -5.95), (  -4.00,   -5.00), (  -5.95,   -1.12), (  -5.00,   +2.00), (  -3.12,   +3.95)
+(  +8.54,   +8.54), ( +10.83,   -0.41), (  +4.54,   -6.54), (  -2.41,   -4.83), (  -4.54,   -0.54), (  -4.83,   +2.41), (  -4.54,   +6.54), (  +0.41,  +10.83)
+
+symmetry: X_k1,k2 = X*_N1-k1,N2-k2
+	Okay, so first column and row stay fixed
+	Also, middle column and row
+	But have expected internal symmetry
+	Otherwise, columns 2-N/2, N/2+2-N are reversed on way up
+	Seems to apply pre- and post-transpose
+
+	Plan of attack:
+	Begin with second half
+
+--]]
 end
 
 --- DOCME
