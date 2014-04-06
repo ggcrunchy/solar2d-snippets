@@ -197,7 +197,7 @@ end
 -- @array v1 Vector #1 of complex value pairs...
 -- @array v2 ...and vector #2.
 -- @uint n Power-of-2 count of elements in _v1_ and _v2_.
--- @array[opt=v1] Vector of (_n_) complex results.
+-- @array[opt=v1] out Vector of (_n_) complex results.
 function M.Multiply_1D (v1, v2, n, out)
 	out = out or v1
 
@@ -211,8 +211,9 @@ end
 --- Performs element-wise multiplication on two complex matrices.
 -- @array m1 Matrix #1 of complex value pairs...
 -- @array m2 ...and matrix #2.
--- @uint w Power-of-2 width of _m1_ and _m2_.
--- @array[opt=m1] Matrix of (_w_ * _h_) complex results.
+-- @uint w Power-of-2 width of _m1_ and _m2_...
+-- @uint h ...and height.
+-- @array[opt=m1] out Matrix of (_w_ * _h_) complex results.
 function M.Multiply_2D (m1, m2, w, h, out)
 	out = out or m1
 
@@ -366,6 +367,8 @@ function M.TwoFFTsThenMultiply_1D (v, n)
 		v[i], v[i + 1] = real, imag
 		v[j], v[j + 1] = real, -imag
 	end
+print("OK")
+vdump(v)
 end
 
 -- Second matrix, for decomposing the FFT'd real matrix --
@@ -443,8 +446,18 @@ local function AuxTwoGoertzels (m1, m2, n, k, wr, wi, offset)
 	return a, b, c, d
 end
 
--- Scratch buffer for pre-multiplied Goertzel pairs, e.g. to transpose matrices --
-local Transpose = {}
+-- Helper for real parts calculated by Goertzel (samples 0, n / 2)
+local function AuxTwoGoertzels_Real (m1, m2, n, k, wr, offset)
+	local sp1, sp2, tp1, tp2 = 0, 0, 0, 0
+
+	for _ = 1, n do
+		offset = offset + 1
+		sp2, sp1 = sp1, m1[offset] + k * sp1 - sp2
+		tp2, tp1 = tp1, m2[offset] + k * tp1 - tp2
+	end
+
+	return (sp1 * wr - sp2) * (tp1 * wr - tp2), 0
+end
 
 --- Performs one-dimensional forward Fast Fourier Transforms of two real vectors using the
 -- [Goertzel algorithm](http://en.wikipedia.org/wiki/Goertzel_algorithm), then multiplies them by one another.
@@ -454,30 +467,41 @@ local Transpose = {}
 -- @array[opt=v1] out Complex output vector (of size = 2 * _n_), i.e. the products.
 -- @see Multiply_1D
 function M.TwoGoertzelsThenMultiply_1D (v1, v2, n, out)
-	out = (out and out ~= v1) and out or Transpose
+	out = out or v1
 
-	local k, wr, wi, omega, da = 2, 1, 0, 0, 2 * pi / n
+	-- Assign pure real element N / 2 + 1 (outside of input range).
+	out[n + 1], out[n + 2] = AuxTwoGoertzels_Real(v1, v2, n, -2, -1, 0)
 
-	for i = 1, 2 * n, 2 do
-		if i > 1 then
-			omega = omega + da
-			wr, wi = cos(omega), sin(omega)
-			k = 2 * wr
-		end
+	-- Assign elements N / 2 + 2 to N (safely beyond input range) in order, which will be the
+	-- conjugates of the products of elements N / 2 to 2.
+	local omega, da, nf = pi, 2 * pi / n, 2 * (n + 1)
 
-		local a, b, c, d = AuxTwoGoertzels(v1, v2, n, k, wr, wi, 0)
+	for i = n - 1, 3, -2 do
+		omega = omega - da
 
-		out[i], out[i + 1] = a * c - b * d, b * c + a * d
+		local wr, wi, j = cos(omega), sin(omega), nf - i
+		local a, b, c, d = AuxTwoGoertzels(v1, v2, n, 2 * wr, wr, wi, 0)
+
+		out[j], out[j + 1] = a * c - b * d, -(b * c + a * d)
 	end
 
-	-- If the results were dumped into a scratch buffer (to account for the source being the
-	-- same as the destination), feed them back through the input.
-	if out == Transpose then
-		for i = 1, 2 * n do
-			v1[i] = Transpose[i]
-		end
+	-- Assign pure real element 1 (last use of input, thus can be overwritten).
+	local r1 = AuxTwoGoertzels_Real(v1, v2, n, 2, 1, 0)
+
+	out[1], out[2] = AuxTwoGoertzels_Real(v1, v2, n, 2, 1, 0)
+
+	-- The input is no longer needed, so reconstruct the first half of the array by conjugating
+	-- elements 2 to N / 2, overwriting the old entries. If the operation is out-of-place, this
+	-- is still about as good as any other approach.
+	for i = 3, n, 2 do
+		local j = nf - i
+
+		out[i], out[i + 1] = out[j], -out[j + 1]
 	end
 end
+
+-- Transposed Goertzel matrix --
+local Transpose = {}
 
 -- Processes the entire matrix and moves the final results back
 local function SameDestResolve (out, w2, h2, last_row)

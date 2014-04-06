@@ -97,7 +97,7 @@ function M.PrepareSeparateFFTs_2D (out1, out2, m, n, arr1, cols1, arr2, cols2, n
 	end
 end
 
---- Prepares two real vectors to be processed in a single FFT, e.g. as setup for @{number_ops.fft.TwoFFTs_ThenMultiply1D}.
+--- Prepares two real vectors to be processed in a single FFT, e.g. as setup for @{number_ops.fft.TwoFFTsThenMultiply_1D}.
 -- @array out Complex output vector, which will be populated from _arr1_ and _arr2_ and
 -- padded with zeroes as needed.
 -- @uint size Power-of-2 size of _out_.
@@ -130,7 +130,7 @@ function M.PrepareTwoFFTs_1D (out, size, arr1, m, arr2, n)
 	return swapped
 end
 
---- Prepares two real matrices to be processed in a single FFT, e.g. as setup for @{number_ops.fft.TwoFFTs_ThenMultiply2D}.
+--- Prepares two real matrices to be processed in a single FFT, e.g. as setup for @{number_ops.fft.TwoFFTsThenMultiply_2D}.
 -- @array out Complex output matrix, which will be populated from _arr1_ and _arr2_ and
 -- padded with zeroes as needed.
 -- @uint size Power-of-2 size of _out_.
@@ -197,7 +197,7 @@ function M.PrepareTwoFFTs_2D (out, size, arr1, cols1, arr2, cols2, ncols, na1, n
 	return swapped
 end
 
---- Prepares two real vectors to be processed in a single FFT, e.g. as setup for @{number_ops.fft.TwoFFTs_ThenMultiply1D}.
+--- Prepares two real vectors to be processed in a single FFT, e.g. as setup for @{number_ops.fft.TwoGoertzelsThenMultiply_1D}.
 -- @array out1 Real output vector, which will be populated from _arr1_ and padded with
 -- zeroes as needed...
 -- @array out2 ...the same, for _arr2_.
@@ -224,7 +224,7 @@ function M.PrepareTwoGoertzels_1D (out1, out2, size, arr1, m, arr2, n)
 	end
 end
 
---- Prepares two real vectors to be processed in a single FFT, e.g. as setup for @{number_ops.fft.TwoGoertzels_ThenMultiply2D}.
+--- Prepares two real vectors to be processed in a single FFT, e.g. as setup for @{number_ops.fft.TwoGoertzelsThenMultiply_2D}.
 -- @array out1 Real output matrix, which will be populated from _arr1_ and padded with
 -- zeroes as needed...
 -- @array out2 ...the same, for _arr2_.
