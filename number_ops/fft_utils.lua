@@ -33,6 +33,35 @@
 -- Exports --
 local M = {}
 
+--- Prepares two real vectors to be consumed by separate (but ostensibly related) FFT's.
+-- @array out1 Complex output vector, which will be populated from _arr1_ and padded with
+-- zeroes as needed...
+-- @array out2 ...the same, for _arr2_.
+-- @uint size Power-of-2 size of _out1_ and _out2_, &ge; max(_m_, _n_).
+-- @array arr1 Vector #1 of real values.
+-- @uint m Number of elements in _arr1_.
+-- @array arr2 Vector #2 of real values.
+-- @uint n Number of elements in _arr2_.
+function M.PrepareSeparateFFTs_1D (out1, out2, size, arr1, m, arr2, n)
+	if m > n then
+		arr1, arr2, out1, out2, m, n = arr2, arr1, out2, out1, n, m
+	end
+
+	local j = 1
+
+	for i = 1, m do
+		out1[j], out1[j + 1], out2[j], out2[j + 1], j = arr1[i], 0, arr2[i], 0, j + 2
+	end
+
+	for i = m + 1, n do
+		out1[j], out1[j + 1], out2[j], out2[j + 1], j = 0, arr1[i], 0, 0, 0, j + 2
+	end
+
+	for i = j, 2 * size, 2 do
+		out1[i], out1[i + 1], out2[i], out2[i + 1] = 0, 0, 0, 0
+	end
+end
+
 --- Prepares two real matrices to be consumed by separate (but ostensibly related) FFT's.
 -- @array out1 Complex output matrix, which will be populated from _arr1_ and padded with
 -- zeroes as needed...
@@ -168,8 +197,35 @@ function M.PrepareTwoFFTs_2D (out, size, arr1, cols1, arr2, cols2, ncols, na1, n
 	return swapped
 end
 
+--- Prepares two real vectors to be processed in a single FFT, e.g. as setup for @{number_ops.fft.TwoFFTs_ThenMultiply1D}.
+-- @array out1 Real output vector, which will be populated from _arr1_ and padded with
+-- zeroes as needed...
+-- @array out2 ...the same, for _arr2_.
+-- @uint size Power-of-2 size of _out1_ and _out2_.
+-- @array arr1 Vector #1 of real values.
+-- @uint m Number of elements in _arr1_.
+-- @array arr2 Vector #2 of real values.
+-- @uint n Number of elements in _arr2_.
+function M.PrepareTwoGoertzels_1D (out1, out2, size, arr1, m, arr2, n)
+	for i = 1, m do
+		out1[i] = arr1[i]
+	end
+
+	for i = 1, n do
+		out2[i] = arr2[i]
+	end
+
+	for i = m + 1, size do
+		out1[i] = 0
+	end
+
+	for i = n + 1, size do
+		out2[i] = 0
+	end
+end
+
 --- Prepares two real vectors to be processed in a single FFT, e.g. as setup for @{number_ops.fft.TwoGoertzels_ThenMultiply2D}.
--- @array out1 Complex output matrix, which will be populated from _arr1_ and padded with
+-- @array out1 Real output matrix, which will be populated from _arr1_ and padded with
 -- zeroes as needed...
 -- @array out2 ...the same, for _arr2_.
 -- @uint m Power-of-2 width of _out1_ and _out2_, &ge; max(_cols1_, _cols2_)...

@@ -146,65 +146,6 @@ function M.FFT_2D (m, w, h)
 	TransformColumns(m, w2, h, area, -pi)
 end
 
--- Helper for common part of real transforms
-local function AuxRealXform (v, n, coeff)
-	local n2, ca, sa = 2 * n, 1, 0
-	local nf, nend, da = n2 + 2, 2 * n2, pi / n2
-
-	for j = 1, n2, 2 do
-		if j > 1 then
-			local angle = (j - 1) * da
-
-			ca, sa = cos(angle), sin(angle)
-		end
-
-		local k, l = nf - j, nend - j
-		local ar, ai = .5 * (1 - sa), coeff * ca
-		local br, bi = .5 * (1 + sa), -coeff * ca
-		local xr, xi = v[j], v[j + 1]
-		local yr, yi = v[k], v[k + 1]
-		local xa1, xa2 = xr * ar - xi * ai, xi * ar + xr * ai
-		local yb1, yb2 = yr * br + yi * bi, yr * bi - yi * br
-
-		v[l], v[l + 1] = xa1 + yb1, xa2 + yb2
-	end
-end
-
---- DOCME
--- @array v
--- @uint n
-function M.FFT_Real1D (v, n)
-	local n2, n4 = n, 2 * n
-
-	n = .5 * n
-
-	Transform(v, n, -pi, 0)
-
-	-- From the periodicity of the DFT, it follows that that X(N + k) = X(k).
-	local a, b = v[1], v[2]
-
-	v[n2 + 1], v[n2 + 2] = a, b
-
-	-- Perform extra processing.
-	AuxRealXform(v, n, -.5)
-
-	v[1], v[2] = v[n4 - 1], v[n4]
-
-	-- Use complex conjugate symmetry properties to get the rest.
-	local nf = n4 + 2
-
-	for j = 3, n2, 2 do
-		local k = nf - j
-		local a, b = v[k - 2], v[k - 1]
-
-		v[j], v[j + 1] = a, b
-		v[k], v[k + 1] = a, -b
-	end
-
-	-- Finally, with the slot free, set the middle values.
-	v[n2 + 1], v[n2 + 2] = a - b, 0
-end
-
 --- Computes a sample using the [Goertzel algorithm](http://en.wikipedia.org/wiki/Goertzel_algorithm), without performing a full FFT.
 -- @array v Vector of complex value pairs, consisting of one or more rows of size 2 * _n_.
 -- @uint index Index of sample, relative to _offset_.
@@ -252,59 +193,6 @@ function M.IFFT_2D (m, w, h)
 	end
 end
 
---- One-dimensional inverse Fast Fourier Transform, specialized for output known to be real.
--- @array v Vector of complex value pairs (size = 2 * _n_).
---
--- Afterward, this will be the transformed data, but reinterpreted as a real vector (of
--- size = _n_).
--- @uint n Power-of-2 count of elements in _v_.
-function M.IFFT_Real1D (v, n)
-	AuxRealXform(v, n, .5)
-
-	-- Perform the inverse DFT, given that x(n) = (1 / N)*DFT{X*(k)}*.
-	local n2, n4 = 2 * n, 4 * n
-
-	for i = 1, n2, 2 do
-		local k = n4 - i
-
-		v[i], v[i + 1] = v[k], -v[k + 1]
-	end
-
-	Transform(v, n, -pi, 0)
-
-	for i = 2, n2, 2 do
-		v[i] = -v[i]
-	end
-end
-
---- Two-dimensional inverse Fast Fourier Transform, specialized for output known to be real.
--- @array v Vector of complex value pairs (size = 2 * _n_).
---
--- Afterward, this will be the transformed data, but reinterpreted as a real matrix (of
--- size = _w_ * _h_).
--- @uint w Power-of-2 width of _m_...
--- @uint h ...and height.
-function M.IFFT_Real2D (m, w, h)
-	local w2 = 2 * w
-	local area = w2 * h
-
-	TransformColumns(m, w2, h, area, -pi)
-
-	local angle = pi / w
-
-	for j = 1, area, w2 do
--- Roll into temp buffer and fire
-		AuxRealXform(m, w, 0.5, 0.5, angle, j - 1)
-
-		local a, b = m[j], m[j + 1]
-
-		m[j], m[j + 1] = .5 * (a + b), .5 * (a - b)
--- ^^ These j-based offsets are probably off? (Need to roll or bit-reverse???)
--- But would be horizontal roll?
-		Transform(m, w, pi, j - 1)
-	end
-end
-
 --- Performs element-wise multiplication on two complex vectors.
 -- @array v1 Vector #1 of complex value pairs...
 -- @array v2 ...and vector #2.
@@ -335,6 +223,121 @@ function M.Multiply_2D (m1, m2, w, h, out)
 	end
 end
 
+-- Helper for common part of real transforms
+local function AuxRealXform (v, n, coeff)
+	local n2, ca, sa = 2 * n, 1, 0
+	local nf, nend, da = n2 + 2, 2 * n2, pi / n2
+
+	for j = 1, n2, 2 do
+		if j > 1 then
+			local angle = (j - 1) * da
+
+			ca, sa = cos(angle), sin(angle)
+		end
+
+		local k, l = nf - j, nend - j
+		local ar, ai = .5 * (1 - sa), coeff * ca
+		local br, bi = .5 * (1 + sa), -coeff * ca
+		local xr, xi = v[j], v[j + 1]
+		local yr, yi = v[k], v[k + 1]
+		local xa1, xa2 = xr * ar - xi * ai, xi * ar + xr * ai
+		local yb1, yb2 = yr * br + yi * bi, yr * bi - yi * br
+
+		v[l], v[l + 1] = xa1 + yb1, xa2 + yb2
+	end
+end
+
+--- One-dimensional forward Fast Fourier Transform, specialized for real input.
+-- @array v Vector of real values (size = _n_).
+--
+-- Afterward, this will be the transformed data, but reinterpreted as a complex vector
+-- (of size = 2 * _n_).
+-- @uint n Power-of-2 count of real input elements in _v_.
+function M.RealFFT_1D (v, n)
+	local n2, n4 = n, 2 * n
+
+	n = .5 * n
+
+	Transform(v, n, -pi, 0)
+
+	-- From the periodicity of the DFT, it follows that that X(N + k) = X(k).
+	local a, b = v[1], v[2]
+
+	v[n2 + 1], v[n2 + 2] = a, b
+
+	-- Perform extra processing.
+	AuxRealXform(v, n, -.5)
+
+	v[1], v[2] = v[n4 - 1], v[n4]
+
+	-- Use complex conjugate symmetry properties to get the rest.
+	local nf = n4 + 2
+
+	for j = 3, n2, 2 do
+		local k = nf - j
+		local a, b = v[k - 2], v[k - 1]
+
+		v[j], v[j + 1] = a, b
+		v[k], v[k + 1] = a, -b
+	end
+
+	-- Finally, with the slot free, set the middle values.
+	v[n2 + 1], v[n2 + 2] = a - b, 0
+end
+
+--- One-dimensional inverse Fast Fourier Transform, specialized for output known to be real.
+-- @array v Vector of complex value pairs (size = 2 * _n_).
+--
+-- Afterward, this will be the transformed data, but reinterpreted as a real vector (also of
+-- size = 2 * _n_).
+-- @uint n Power-of-2 count of complex input elements in _v_.
+function M.RealIFFT_1D (v, n)
+	AuxRealXform(v, n, .5)
+
+	-- Perform the inverse DFT, given that x(n) = (1 / N)*DFT{X*(k)}*.
+	local n2, n4 = 2 * n, 4 * n
+
+	for i = 1, n2, 2 do
+		local k = n4 - i
+
+		v[i], v[i + 1] = v[k], -v[k + 1]
+	end
+
+	Transform(v, n, -pi, 0)
+
+	for i = 2, n2, 2 do
+		v[i] = -v[i]
+	end
+end
+
+--- Two-dimensional inverse Fast Fourier Transform, specialized for output known to be real.
+-- @array m Matrix of complex value pairs (size = 2 * _w_ * _h_).
+--
+-- Afterward, this will be the transformed data, but reinterpreted as a real matrix (also of
+-- size = 2 * _w_ * _h_).
+-- @uint w Power-of-2 width of _m_...
+-- @uint h ...and height.
+function M.RealIFFT_2D (m, w, h)
+	local w2 = 2 * w
+	local area = w2 * h
+
+	TransformColumns(m, w2, h, area, -pi)
+
+	local angle = pi / w
+
+	for j = 1, area, w2 do
+-- Roll into temp buffer and fire
+		AuxRealXform(m, w, 0.5, 0.5, angle, j - 1)
+
+		local a, b = m[j], m[j + 1]
+
+		m[j], m[j + 1] = .5 * (a + b), .5 * (a - b)
+-- ^^ These j-based offsets are probably off? (Need to roll or bit-reverse???)
+-- But would be horizontal roll?
+		Transform(m, w, pi, j - 1)
+	end
+end
+
 --- Performs one-dimensional forward Fast Fourier Transforms of two real vectors, then
 -- multiplies them by one another.
 -- @array v Vector of pairs, as { ..., element from vector #1, element from vector #2, ... }.
@@ -342,7 +345,7 @@ end
 -- Afterward, this will be the products.
 -- @uint n Power-of-2 width of _v_ (i.e. count of elements in each real vector).
 -- @see Multiply_1D, number_ops.fft_utils.PrepareTwoFFTs_1D
-function M.TwoFFTs_ThenMultiply1D (v, n)
+function M.TwoFFTsThenMultiply_1D (v, n)
 	Transform(v, n, -pi, 0)
 
 	local m = n + 1
@@ -376,7 +379,7 @@ local N = {}
 -- @uint w Power-of-2 width of _m_ (i.e. width in each real matrix)...
 -- @uint h ...and height.
 -- @see Multiply_2D, number_ops.fft_utils.PrepareTwoFFTs_2D
-function M.TwoFFTs_ThenMultiply2D (m, w, h)
+function M.TwoFFTsThenMultiply_2D (m, w, h)
 	local w2 = 2 * w
 	local area, len = w2 * h, w2 + 2
 
@@ -424,7 +427,7 @@ function M.TwoFFTs_ThenMultiply2D (m, w, h)
 	end
 end
 
---
+-- Helper to compute two parallel Goertzel samples at once
 local function AuxTwoGoertzels (m1, m2, n, k, wr, wi, offset)
 	local sp1, sp2, tp1, tp2 = 0, 0, 0, 0
 
@@ -440,31 +443,35 @@ local function AuxTwoGoertzels (m1, m2, n, k, wr, wi, offset)
 	return a, b, c, d
 end
 
--- Scratch buffer for in-place pre-multiplied Goertzel pairs, e.g. to transpose the matrices --
+-- Scratch buffer for pre-multiplied Goertzel pairs, e.g. to transpose matrices --
 local Transpose = {}
 
---- DOCME
--- @array v1
--- @array v2
--- @uint n
--- @array[opt=v1] out
-function M.TwoGoertzels_ThenMultiply1D (v1, v2, n, out)
+--- Performs one-dimensional forward Fast Fourier Transforms of two real vectors using the
+-- [Goertzel algorithm](http://en.wikipedia.org/wiki/Goertzel_algorithm), then multiplies them by one another.
+-- @array v1 Vector #1 of real elements...
+-- @array v2 ...and vector #2.
+-- @uint n Power-of-2 width of _v1_ and _v2_.
+-- @array[opt=v1] out Complex output vector (of size = 2 * _n_), i.e. the products.
+-- @see Multiply_1D
+function M.TwoGoertzelsThenMultiply_1D (v1, v2, n, out)
 	out = (out and out ~= v1) and out or Transpose
 
-	local out_of_place = out and out ~= v1
 	local k, wr, wi, omega, da = 2, 1, 0, 0, 2 * pi / n
 
 	for i = 1, 2 * n, 2 do
+		if i > 1 then
+			omega = omega + da
+			wr, wi = cos(omega), sin(omega)
+			k = 2 * wr
+		end
+
 		local a, b, c, d = AuxTwoGoertzels(v1, v2, n, k, wr, wi, 0)
 
 		out[i], out[i + 1] = a * c - b * d, b * c + a * d
-
-		omega = omega + da
-		wr, wi = cos(omega), sin(omega)
-		k = 2 * wr
 	end
 
-	-- If the operation was dumped into a scratch buffer, i.e. feed it back through the input.
+	-- If the results were dumped into a scratch buffer (to account for the source being the
+	-- same as the destination), feed them back through the input.
 	if out == Transpose then
 		for i = 1, 2 * n do
 			v1[i] = Transpose[i]
@@ -472,8 +479,8 @@ function M.TwoGoertzels_ThenMultiply1D (v1, v2, n, out)
 	end
 end
 
---
-local function InPlaceResolve (out, w2, h2, last_row)
+-- Processes the entire matrix and moves the final results back
+local function SameDestResolve (out, w2, h2, last_row)
 	local col, h4 = 0, 2 * h2
 
 	for i = 1, w2, 2 do
@@ -498,21 +505,23 @@ end
 -- @uint w
 -- @uint h
 -- @array[opt=m1] out
-function M.TwoGoertzels_ThenMultiply2D (m1, m2, w, h, out)
+function M.TwoGoertzelsThenMultiply_2D (m1, m2, w, h, out)
 	local coeff, wr, wi, omega, da = 2, 1, 0, 0, 2 * pi / w
 	local offset, col, w2, h2 = 0, 1, 2 * w, 2 * h
 	local last_row = w2 * (h - 1)
 
-	--
-	local out_of_place, arr, delta = out and out ~= m1
+	-- Check whether the source and destination match. If not, columns can be handled one at a
+	-- time. Otherwise, the whole matrix is copied (its transpose, rather), as the data gets
+	-- converted from real to complex and doing anything in-place ends up being too troublesome.
+	local dest_differs, arr, delta = out and out ~= m1
 
-	if out_of_place then
+	if dest_differs then
 		arr, delta = Column, 0
 	else
 		arr, delta = Transpose, h2 + h2
 	end
 
-	for _ = 1, w do
+	for col = 1, w do
 		--
 		local ri = 0
 
@@ -531,7 +540,7 @@ function M.TwoGoertzels_ThenMultiply2D (m1, m2, w, h, out)
 		Transform(arr, h, pi, offset + h2)
 
 		--
-		if out_of_place then
+		if dest_differs then
 			local ci, coff = col, last_row + col
 
 			for i = 1, h2, 2 do
@@ -546,53 +555,17 @@ function M.TwoGoertzels_ThenMultiply2D (m1, m2, w, h, out)
 		end
 
 		--
-		omega, offset = omega + da, offset + delta
-		wr, wi = cos(omega), sin(omega)
-		coeff = 2 * wr
-	end
-
-	--
-	if not out_of_place then
-		InPlaceResolve(m1, w2, h2, last_row)
-	end
-end
-
----[=[
-
--- From Texas Instruments paper:
-
--- Additional computations required to perform real transform
-local function Split (v, n, coeff)
-	local n2, ca, sa = 2 * n, 1, 0
-	local nf, nend, da = n2 + 2, 2 * n2, pi / n2
-
-	for j = 1, n2, 2 do
-		if j > 1 then
-			local angle = (j - 1) * da
-
-			ca, sa = cos(angle), sin(angle)
+		if col < w then
+			omega, offset = omega + da, offset + delta
+			wr, wi = cos(omega), sin(omega)
+			coeff = 2 * wr
 		end
-
-		local k, l = nf - j, nend - j
-		local ar, ai = .5 * (1 - sa), coeff * ca
-		local br, bi = .5 * (1 + sa), -coeff * ca
-		local xr, xi = v[j], v[j + 1]
-		local yr, yi = v[k], v[k + 1]
-		local xa1, xa2 = xr * ar - xi * ai, xi * ar + xr * ai
-		local yb1, yb2 = yr * br + yi * bi, yr * bi - yi * br
-
-		v[l], v[l + 1] = xa1 + yb1, xa2 + yb2
 	end
-end
 
---- DOCME
-function M.RealFT_TI (v, n)
-
-end
-
---- DOCME
-function M.RealIFT_TI (v, n)
-
+	-- If the source and destination were the same, do some final resolution.
+	if not dest_differs then
+		SameDestResolve(m1, w2, h2, last_row)
+	end
 end
 
 -- Export the module.

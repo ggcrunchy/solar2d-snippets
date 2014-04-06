@@ -329,17 +329,6 @@ end
 -- Scratch buffers used to perform transforms --
 local B, C = {}, {}
 
--- Helper to copy array into scratch buffer
-local function CopyThenPad (from, to, nfrom, n)
-	for i = 1, nfrom do
-		to[i] = from[i]
-	end
-
-	for i = nfrom + 1, n do
-		to[i] = 0
-	end
-end
-
 -- Helper to compute a dimension length and associated power-of-2
 local function LenPower (n1, n2)
 	local len, n = n1 + n2 - 1, 1
@@ -351,6 +340,32 @@ local function LenPower (n1, n2)
 	return len, n
 end
 
+-- One-dimensional FFT-based convolution methods --
+local AuxMethod1D = {}
+
+-- Goertzel method
+function AuxMethod1D.goertzel (n, signal, sn, kernel, kn)
+	fft_utils.PrepareTwoGoertzels_1D(B, C, n, signal, sn, kernel, kn)
+	fft.TwoGoertzelsThenMultiply_1D(B, C, n)
+end
+
+-- Separate FFT's method
+function AuxMethod1D.separate (n, signal, sn, kernel, kn)
+	fft_utils.PrepareSeparateFFTs_1D(B, C, n, signal, sn, kernel, kn)
+	fft.FFT_1D(B, n)
+	fft.FFT_1D(C, n)
+	fft.Multiply_1D(B, C, n)
+end
+
+-- Two FFT's method
+function AuxMethod1D.two_ffts (n, signal, sn, kernel, kn)
+	fft_utils.PrepareTwoFFTs_1D(B, n, signal, sn, kernel, kn)
+	fft.TwoFFTsThenMultiply_1D(B, n)
+end
+
+-- Default one-dimensional FFT-based convolution method
+local DefMethod1D = AuxMethod1D.two_ffts
+
 --- One-dimensional linear convolution using fast Fourier transforms. For certain _signal_
 -- and _kernel_ combinations, this may be significantly faster than @{Convolve_1D}.
 -- @array signal Real discrete signal...
@@ -358,32 +373,24 @@ end
 -- @ptable[opt] opts Convolve options. Fields:
 --
 -- * **method**: If this is **"goertzel"**, the transforms are done using the [Goertzel algorithm](http://en.wikipedia.org/wiki/Goertzel_algorithm),
--- which may offer better performance in some cases. Otherwise, the two real FFT's are
--- computed as one stock complex FFT.
+-- which may offer better performance in some cases. If it is **"separate"**, two FFT's are
+-- computed separately. Otherwise, the two real FFT's are computed as one complex FFT.
 -- is used to perform the 
 -- @treturn array Convolution.
-function M.Convolve_FFT1D (signal, kernel, opts)
-	local method = opts and opts.method
-
+function M.ConvolveFFT_1D (signal, kernel, opts)
 	-- Determine how much padding is needed to have matching power-of-2 sizes.
 	local sn, kn = #signal, #kernel
 	local clen, n = LenPower(sn, kn)
 
 	-- Perform an FFT on the signal and kernel (both at once). Multiply the (complex) results...
-	if method == "goertzel" then
-		CopyThenPad(signal, B, sn, n)
-		CopyThenPad(kernel, C, kn, n)
+	local method = AuxMethod1D[opts and opts.method] or DefMethod1D
 
-		fft.TwoGoertzels_ThenMultiply1D(B, C, n)
-	else
-		fft_utils.PrepareTwoFFTs_1D(B, n, signal, sn, kernel, kn)
-		fft.TwoFFTs_ThenMultiply1D(B, n)
-	end
+	method(n, signal, sn, kernel, kn)
 
 	-- ...transform back to the time domain...
 	local nreal = .5 * n
 
-	fft.IFFT_Real1D(B, nreal)
+	fft.RealIFFT_1D(B, nreal)
 
 	-- ...and get the convolution by scaling the real parts of the result.
 	local csignal = {}
@@ -395,6 +402,32 @@ function M.Convolve_FFT1D (signal, kernel, opts)
 	return csignal
 end
 
+-- Two-dimensional FFT-based convolution methods --
+local AuxMethod2D = {}
+
+-- Goertzel method
+function AuxMethod2D.goertzel (m, n, signal, scols, kernel, kcols, sn, kn)
+	fft_utils.PrepareTwoGoertzels_2D(B, C, m, n, signal, scols, kernel, kcols, sn, kn)
+	fft.TwoGoertzelsThenMultiply_2D(B, C, m, n)
+end
+
+-- Separate FFT's method
+function AuxMethod2D.separate (m, n, signal, scols, kernel, kcols, sn, kn)
+	fft_utils.PrepareSeparateFFTs_2D(B, C, m, n, signal, scols, kernel, kcols, sn, kn)
+	fft.FFT_2D(B, m, n)
+	fft.FFT_2D(C, m, n)
+	fft.Multiply_2D(B, C, m, n)
+end
+
+-- Two FFT's method
+function AuxMethod2D.two_ffts (m, n, signal, scols, kernel, kcols, sn, kn, area)
+	fft_utils.PrepareTwoFFTs_2D(B, area, signal, scols, kernel, kcols, m, sn, kn)
+	fft.TwoFFTsThenMultiply_2D(B, m, n)
+end
+
+-- Default two-dimensional FFT-based convolution method
+local DefMethod2D = AuxMethod2D.two_ffts
+
 --- Two-dimensional linear convolution using fast Fourier transforms. For certain _signal_
 -- and _kernel_ combinations, this may be significantly faster than @{Convolve_2D}.
 -- @array signal Real discrete signal...
@@ -403,15 +436,11 @@ end
 -- @uint kcols ... and in _kernel_.
 -- @ptable[opt] opts Convolve options. Fields:
 --
--- * **method**: If this is **"goertzel"**, the transforms are done using the [Goertzel algorithm](http://en.wikipedia.org/wiki/Goertzel_algorithm),
--- which may offer better performance in some cases. If it is **"two_ffts"**, the two real
--- FFT's are computed as one stock complex FFT. Otherwise, two FFT's are computed separately.
+-- * **method**: As per @{ConvolveFFT_1D}, but with 2D variants.
 -- @treturn array Convolution.
 -- @treturn uint Number of columns in the convolution. Currently, only the **"full"** shape
 -- is supported, i.e. #_scols_ + #_kcols_ - 1.
-function M.Convolve_FFT2D (signal, kernel, scols, kcols, opts)
-	local method = opts and opts.method
-
+function M.ConvolveFFT_2D (signal, kernel, scols, kcols, opts)
 	-- Determine how much padding each dimension needs, to have matching power-of-2 sizes.
 	local sn, kn = #signal, #kernel
 	local srows = sn / scols
@@ -421,18 +450,9 @@ function M.Convolve_FFT2D (signal, kernel, scols, kcols, opts)
 	local area = m * n
 
 	-- Perform an FFT on the signal and kernel (both at once). Multiply the (complex) results...
-	if method == "goertzel" then
-		fft_utils.PrepareTwoGoertzels_2D(B, C, m, n, signal, scols, kernel, kcols, sn, kn)
-		fft.TwoGoertzels_ThenMultiply2D(B, C, m, n)
-	elseif method == "two_ffts" then
-		fft_utils.PrepareTwoFFTs_2D(B, area, signal, scols, kernel, kcols, m, sn, kn)
-		fft.TwoFFTs_ThenMultiply2D(B, m, n)
-	else
-		fft_utils.PrepareSeparateFFTs_2D(B, C, m, n, signal, scols, kernel, kcols, sn, kn)
-		fft.FFT_2D(B, m, n)
-		fft.FFT_2D(C, m, n)
-		fft.Multiply_2D(B, C, m, n)
-	end
+	local method = AuxMethod2D[opts and opts.method] or DefMethod2D
+
+	method(m, n, signal, scols, kernel, kcols, sn, kn, area)
 
 	-- ...transform back to the time domain...
 --[[
