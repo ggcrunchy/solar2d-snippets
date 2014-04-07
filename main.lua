@@ -152,6 +152,21 @@ local function CompareMethods (dim, t, ...)
 end
 
 do
+	print("Linear")
+	local A, B = {1,2,1}, {1,2,3}
+	local t1 = convolve.Convolve_1D(A, B)
+	vdump(t1)
+	print("Circular")
+	vdump(convolve.CircularConvolve_1D(A, B))
+
+	CompareMethods(1, t1,
+		"Goertzels", convolve.ConvolveFFT_1D(A, B, { method = "goertzel" }),
+		"Separate FFT's", convolve.ConvolveFFT_1D(A, B, { method = "separate" }),
+		"Two FFT's", convolve.ConvolveFFT_1D(A, B)
+	)
+end
+
+do
 	-- Referring to:
 	-- http://www.songho.ca/dsp/convolution/convolution2d_example.html
 	-- http://www.johnloomis.org/ece563/notes/filter/conv/convolution.html
@@ -175,6 +190,51 @@ do
 		"Two FFT's", convolve.ConvolveFFT_2D(A, B, W, H)
 	)
 end
-]]
+
+do
+	local fft=require("number_ops.fft")
+
+	local function vdump2 (t)
+		for i = 1, #t do
+			if math.abs(t[i]) < 1e-9 then
+				t[i] = 0
+			end
+		end
+
+		vdump(t)
+	end
+
+	for _, v in ipairs{
+		{1,1,1,1,0,0,0,0}, {1,3,1,1,0,0,7,0}, {2,1,1,2,9,3,4,6}
+	} do
+		local stock, n = {}, #v
+		local half = n / 2
+
+		for _, real in ipairs(v) do
+			stock[#stock + 1] = real
+			stock[#stock + 1] = 0
+		end
+
+		print("TABLE")
+		vdump(v)
+		print("")
+		print("Stock FFT")
+		fft.FFT_1D(stock, n)
+		vdump2(stock)
+		print("")
+		print("Real FFT")
+		fft.RealFFT_1D(v, n)
+		vdump2(v)
+		print("")
+		print("Real IFFT")
+		fft.RealIFFT_1D(v, half)
+		for i = 1, n do
+			v[i] = v[i] / half
+		end
+		vdump2(v)
+		print("")
+	end
+end
+--]]
 -- Kick off the app.
 scenes.GoToScene{ name = "scene.Intro" }

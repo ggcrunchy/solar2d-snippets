@@ -56,13 +56,62 @@ local function BitReverse (v, n, offset)
 	end
 end
 
+-- Cached trigonometric results (when reused across multiple rows) --
+local WaveTable = {}
+
+-- Current wavetable index; active method function; identifier --
+local Index, Func, ID
+
+-- Wavetable methods and setup --
+local Methods, Setup = {}, {}
+
+-- Sines-based pairs method, i.e. sin(theta), 1 - cos(theta)
+do
+	local Theta
+
+	function Methods.sines ()
+		local a, b = sin(Theta), 2.0 * sin(Theta * 0.5)^2
+
+		WaveTable[Index + 1], WaveTable[Index + 2] = a, b
+		Index, Theta = Index + 2, .5 * Theta
+
+		return a, b
+	end
+
+	function Setup.sines ()
+		Theta = ID < 0 and -pi or pi
+	end
+end
+
+-- Wavetable-reading method
+local function FromTable ()
+	local a, b = WaveTable[Index + 1], WaveTable[Index + 2]
+
+	Index = Index + 2
+
+	return a, b
+end
+
+-- Helper to choose or update a wavetable method
+local function ChooseMethod (id, what, arg)
+	local func = Methods[what]
+
+	if id ~= ID or func ~= Func then
+		ID, Func = id, func
+
+		Setup[what](arg)
+	end
+end
+
 -- Butterflies: setup and divide-and-conquer (two-point transforms)
-local function Transform (v, n, theta, offset)
+local function Transform (v, n, offset)
 	if n <= 1 then
 		return
 	end
 
 	BitReverse(v, n, offset)
+
+	Index = 0
 
 	local n2, dual, dual2, dual4 = 2 * n, 1, 2, 4
 
@@ -77,8 +126,7 @@ local function Transform (v, n, theta, offset)
 			v[i], v[i + 1] = ir + jr, ii + ji
 		end
 
-		local s1, s2 = sin(theta), 2.0 * sin(theta * 0.5)^2
-		local wr, wi = 1.0, 0.0
+		local wr, wi, s1, s2 = 1.0, 0.0, Func()
 
 		for a = 3, dual2 - 1, 2 do
 			wr, wi = wr - s1 * wi - s2 * wr, wi + s1 * wr - s2 * wi
@@ -95,8 +143,10 @@ local function Transform (v, n, theta, offset)
 			end
 		end
 
-		dual, dual2, dual4, theta = dual2, dual4, 2 * dual4, .5 * theta
+		dual, dual2, dual4 = dual2, dual4, 2 * dual4
 	until dual >= n
+
+	Func = FromTable
 end
 
 --- One-dimensional forward Fast Fourier Transform.
@@ -105,14 +155,15 @@ end
 -- Afterward, this will be the transformed data.
 -- @uint n Power-of-2 count of elements in _v_.
 function M.FFT_1D (v, n)
-	Transform(v, n, -pi, 0)
+	ChooseMethod(-n, "sines")
+	Transform(v, n, 0)
 end
 
 -- Temporary store, used to transpose columns --
 local Column = {}
 
 -- Helper to do column part of 2D transforms
-local function TransformColumns (m, w2, h, area, angle)
+local function TransformColumns (m, w2, h, area)
 	for i = 1, w2, 2 do
 		local n, ri = 1, i
 
@@ -120,7 +171,7 @@ local function TransformColumns (m, w2, h, area, angle)
 			Column[n], Column[n + 1], n, ri = m[ri], m[ri + 1], n + 2, ri + w2
 		until ri > area
 
-		Transform(Column, h, angle, 0)
+		Transform(Column, h, 0)
 
 		repeat
 			n, ri = n - 2, ri - w2
@@ -139,11 +190,14 @@ function M.FFT_2D (m, w, h)
 	local w2 = 2 * w
 	local area = w2 * h
 
+	ChooseMethod(-w, "sines")
+
 	for i = 1, area, w2 do
-		Transform(m, w, -pi, i - 1)
+		Transform(m, w, i - 1)
 	end
 
-	TransformColumns(m, w2, h, area, -pi)
+	ChooseMethod(-h, "sines")
+	TransformColumns(m, w2, h, area)
 end
 
 -- Computes a cosine-sine pair
@@ -177,7 +231,8 @@ end
 -- Afterward, this will be the transformed data.
 -- @uint n Power-of-2 count of elements in _v_.
 function M.IFFT_1D (v, n)
-	Transform(v, n, pi, 0)
+	ChooseMethod(n, "sines")
+	Transform(v, n, 0)
 end
 
 --- Two-dimensional inverse Fast Fourier Transform.
@@ -190,10 +245,13 @@ function M.IFFT_2D (m, w, h)
 	local w2 = 2 * w
 	local area = w2 * h
 
-	TransformColumns(m, w2, h, area, pi)
+	ChooseMethod(h, "sines")
+	TransformColumns(m, w2, h, area)
+
+	ChooseMethod(w, "sines")
 
 	for i = 1, area, w2 do
-		Transform(m, w, pi, i - 1)
+		Transform(m, w, i - 1)
 	end
 end
 
@@ -254,7 +312,8 @@ end
 
 -- Computes part of a forward real transform, leaving the rest for symmetry
 local function RealXformRight (v, n, n2, n4--[[, offset]])
-	Transform(v, n, -pi, 0)
+	ChooseMethod(-n, "sines")
+	Transform(v, n, 0)
 
 	-- From the periodicity of the DFT, it follows that that X(N + k) = X(k).
 	local a, b = v[1], v[2]
@@ -314,7 +373,8 @@ function M.RealIFFT_1D (v, n)
 		v[i], v[i + 1] = v[k], -v[k + 1]
 	end
 
-	Transform(v, n, -pi, 0)
+	ChooseMethod(-n, "sines")
+	Transform(v, n, 0)
 
 	for i = 2, n2, 2 do
 		v[i] = -v[i]
@@ -338,9 +398,11 @@ function M.RealIFFT_2D (m, w, h)
 	local w2 = 2 * w
 	local area = w2 * h
 
-	TransformColumns(m, w2, h, area, -pi)
+	ChooseMethod(-h, "sines")
+	TransformColumns(m, w2, h, area)
 
-	local angle = pi / w
+--	local angle = pi / w
+	ChooseMethod(w, "sines")
 
 	for j = 1, area, w2 do
 -- Roll into temp buffer and fire
@@ -419,7 +481,8 @@ end
 -- @uint n Power-of-2 width of _v_ (i.e. count of elements in each real vector).
 -- @see Multiply_1D, number_ops.fft_utils.PrepareTwoFFTs_1D
 function M.TwoFFTsThenMultiply_1D (v, n)
-	Transform(v, n, -pi, 0)
+	ChooseMethod(-n, "sines")
+	Transform(v, n, 0)
 	MulRowWithReals(v, n, 2 * (n + 1), 1)
 end
 
@@ -436,11 +499,14 @@ function M.TwoFFTsThenMultiply_2D (m, w, h)
 	local area, len = w2 * h, w2 + 2
 
 	-- Perform 2D transform.
+	ChooseMethod(-w, "sines")
+
 	for offset = 1, area, w2 do
-		Transform(m, w, -pi, offset - 1)
+		Transform(m, w, offset - 1)
 	end
 
-	TransformColumns(m, w2, h, area, -pi)
+	ChooseMethod(-h, "sines")
+	TransformColumns(m, w2, h, area)
 -- TODO: This does double the work, no? (ignores symmetry, should be special-cased)
 	-- Columns 1 and H / 2 + 1 (except elements in row 1 and W / 2 + 1)...
 	MulColumns(m, 1, w, w2, area)
@@ -538,24 +604,6 @@ end
 function M.TwoGoertzelsThenMultiply_1D (v1, v2, n, out)
 	RowWithReals(v1, v2, n, 0, 0, 2 * pi / n, 2 * (n + 1), CosSin, out or v1)
 	-- ^^ Probably won't extend to 2D
-end
-
--- Cached cosine-sine pairs (when reused across multiple rows) --
--- TODO: Trying to puzzle out a way to stash this in the matrix (or could just hijack Column?)
-local WaveTable = {}
-
--- Returns a cached cosine-sine pair
-local function CosSinLoad (omega, index)
-	return WaveTable[index - 2], WaveTable[index - 1]
-end
-
--- Computes a cosine-sine pair, saving it to the wave table first
-local function CosSinSave (omega, index)
-	local ca, sa = cos(omega), sin(omega)
-
-	WaveTable[index - 2], WaveTable[index - 1] = ca, sa
-
-	return ca, sa
 end
 
 -- Transposed Goertzel matrix --
@@ -676,6 +724,8 @@ function M.TwoGoertzelsThenMultiply_2D (m1, m2, w, h, out)
 		arr, delta = Transpose, 2 * h2
 	end
 
+	ChooseMethod(h, "sines")
+
 	for col = 1, w do
 		--
 		local ri = 0
@@ -691,8 +741,8 @@ function M.TwoGoertzelsThenMultiply_2D (m1, m2, w, h, out)
 		end
 
 		--
-		Transform(arr, h, pi, offset)
-		Transform(arr, h, pi, offset + h2)
+		Transform(arr, h, offset)
+		Transform(arr, h, offset + h2)
 
 		--
 		if dest_differs then
