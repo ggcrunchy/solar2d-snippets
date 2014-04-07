@@ -146,6 +146,11 @@ function M.FFT_2D (m, w, h)
 	TransformColumns(m, w2, h, area, -pi)
 end
 
+-- Computes a cosine-sine pair
+local function CosSin (omega)
+	return cos(omega), sin(omega)
+end
+
 --- Computes a sample using the [Goertzel algorithm](http://en.wikipedia.org/wiki/Goertzel_algorithm), without performing a full FFT.
 -- @array v Vector of complex value pairs, consisting of one or more rows of size 2 * _n_.
 -- @uint index Index of sample, relative to _offset_.
@@ -156,8 +161,7 @@ end
 function M.Goertzel (v, index, n, offset)
 	offset = offset or 0
 
-	local omega = 2 * (index - 1) * pi / n
-	local wr, wi = cos(omega), sin(omega)
+	local wr, wi = CosSin(2 * (index - 1) * pi / n)
 	local k, sp1, sp2 = 2 * wr, 0, 0
 
 	for i = 1, n do
@@ -233,9 +237,7 @@ local function AuxRealXform (v, n, coeff)
 
 	for j = 1, n2, 2 do
 		if j > 1 then
-			local angle = (j - 1) * da
-
-			ca, sa = cos(angle), sin(angle)
+			ca, sa = CosSin((j - 1) * da)
 		end
 
 		local k, l = nf - j, nend - j
@@ -250,17 +252,8 @@ local function AuxRealXform (v, n, coeff)
 	end
 end
 
---- One-dimensional forward Fast Fourier Transform, specialized for real input.
--- @array v Vector of real values (size = _n_).
---
--- Afterward, this will be the transformed data, but reinterpreted as a complex vector
--- (of size = 2 * _n_).
--- @uint n Power-of-2 count of real input elements in _v_.
-function M.RealFFT_1D (v, n)
-	local n2, n4 = n, 2 * n
-
-	n = .5 * n
-
+-- Computes part of a forward real transform, leaving the rest for symmetry
+local function RealXformRight (v, n, n2, n4--[[, offset]])
 	Transform(v, n, -pi, 0)
 
 	-- From the periodicity of the DFT, it follows that that X(N + k) = X(k).
@@ -271,21 +264,36 @@ function M.RealFFT_1D (v, n)
 	-- Unravel the conjugate (right) half of the results.
 	AuxRealXform(v, n, -.5)
 
-	v[1], v[2] = v[n4 - 1], v[n4]
+	-- Return the pure real elements.
+	return v[n4 - 1], a - b
+end
+
+--- One-dimensional forward Fast Fourier Transform, specialized for real input.
+-- @array v Vector of real values (size = _n_).
+--
+-- Afterward, this will be the transformed data, but reinterpreted as a complex vector
+-- (of size = 2 * _n_).
+-- @uint n Power-of-2 count of real input elements in _v_.
+function M.RealFFT_1D (v, n)
+	-- Compute the right half of the transform, along with the first element.
+	local n2, n4 = n, 2 * n
+	local left, mid = RealXformRight(v, .5 * n, n2, n4)
+
+	v[1], v[2] = left, 0
 
 	-- Use complex conjugate symmetry properties to get the rest.
 	local nf = n4 + 2
 
 	for j = 3, n2, 2 do
 		local k = nf - j
-		local a, b = v[k - 2], v[k - 1]
+		local real, imag = v[k - 2], v[k - 1]
 
-		v[j], v[j + 1] = a, b
-		v[k], v[k + 1] = a, -b
+		v[j], v[j + 1] = real, imag
+		v[k], v[k + 1] = real, -imag
 	end
 
 	-- Finally, with its slot no longer needed as input, set the middle element.
-	v[n2 + 1], v[n2 + 2] = a - b, 0
+	v[n2 + 1], v[n2 + 2] = mid, 0
 end
 
 --- One-dimensional inverse Fast Fourier Transform, specialized for output known to be real.
@@ -347,21 +355,25 @@ function M.RealIFFT_2D (m, w, h)
 	end
 end
 
--- Helper to do complex multiplication over a real-based column
-local function MulColumn (m, col, w2, area)
-	local i, j = col + w2, area + col - w2
+-- Helper to do complex multiplication over two real-based columns (1 and W / 2 + 1)
+local function MulColumns (m, col, w, w2, area)
+	local i, j, back, dj = col + w2, area + col - w2, -(w2 + w)
 
 	repeat
-		local r1, i1, r2, i2 = m[i], m[i + 1], m[j], m[j + 1]
-		local a, b = r1 + r2, i1 - i2 
-		local c, d = i1 + i2, r2 - r1
-		local real = .25 * (a * c - b * d)
-		local imag = .25 * (b * c + a * d)
+		dj = w
 
-		m[i], m[i + 1] = real, imag
-		m[j], m[j + 1] = real, -imag
+		for _ = 1, 2 do
+			local r1, i1, r2, i2 = m[i], m[i + 1], m[j], m[j + 1]
+			local a, b = r1 + r2, i1 - i2 
+			local c, d = i1 + i2, r2 - r1
+			local real = .25 * (a * c - b * d)
+			local imag = .25 * (b * c + a * d)
 
-		i, j = i + w2, j - w2
+			m[i], m[i + 1] = real, imag
+			m[j], m[j + 1] = real, -imag
+
+			i, j, dj = i + w, j + dj, back
+		end
 	until i == j
 end
 
@@ -429,11 +441,10 @@ function M.TwoFFTsThenMultiply_2D (m, w, h)
 	end
 
 	TransformColumns(m, w2, h, area, -pi)
-
+-- TODO: This does double the work, no? (ignores symmetry, should be special-cased)
 	-- Columns 1 and H / 2 + 1 (except elements in row 1 and W / 2 + 1)...
-	MulColumn(m, 1, w2, area)
-	MulColumn(m, w + 1, w2, area)
-
+	MulColumns(m, 1, w, w2, area)
+-- ...and this could be incorporated as well...
 	-- ...rows 1 and W / 2 + 1...
 	local half = .5 * area
 
@@ -468,7 +479,7 @@ local function AuxTwoGoertzels (m1, m2, n, k, wr, wi, offset)
 	return a, b, c, d
 end
 
--- Helper for real parts calculated by Goertzel (samples 0, n / 2)
+-- Helper for real parts calculated by Goertzel (samples 1, N / 2 + 1)
 local function AuxTwoGoertzels_Real (m1, m2, n, k, wr, offset)
 	local sp1, sp2, tp1, tp2 = 0, 0, 0, 0
 
@@ -478,7 +489,43 @@ local function AuxTwoGoertzels_Real (m1, m2, n, k, wr, offset)
 		tp2, tp1 = tp1, m2[offset] + k * tp1 - tp2
 	end
 
-	return (sp1 * wr - sp2) * (tp1 * wr - tp2), 0
+	return sp1 * wr - sp2, tp1 * wr - tp2
+end
+
+--
+local function RowWithReals (v1, v2, n, from, to, da, nfpo, cs, out)
+	-- Assign pure real element N / 2 + 1 (outside of input range).
+	local on = to + n
+	local mid1, mid2 = AuxTwoGoertzels_Real(v1, v2, n, -2, -1, from)
+
+	out[on + 1], out[on + 2] = mid1 * mid2, 0
+
+	-- Assign elements N / 2 + 2 to N (safely beyond input range) in order, which will be the
+	-- conjugates of the products of elements N / 2 to 2.
+	local omega = pi
+
+	for i = n - 1, 3, -2 do
+		omega = omega - da
+
+		local j, wr, wi = nfpo - i, cs(omega, i)
+		local a, b, c, d = AuxTwoGoertzels(v1, v2, n, 2 * wr, wr, wi, from)
+
+		out[j], out[j + 1] = a * c - b * d, -(b * c + a * d)
+	end
+
+	-- Assign pure real element 1 (last use of input, thus can be overwritten).
+	local left1, left2 = AuxTwoGoertzels_Real(v1, v2, n, 2, 1, from)
+
+	out[to + 1], out[to + 2] = left1 * left2, 0
+
+	-- The input is no longer needed, so reconstruct the first half of the array by conjugating
+	-- elements 2 to N / 2, overwriting the old entries. If the operation is out-of-place, this
+	-- is still about as good as any other approach.
+	for i = 3, n, 2 do
+		local oi, oj = to + i, nfpo - i
+
+		out[oi], out[oi + 1] = out[oj], -out[oj + 1]
+	end
 end
 
 --- Performs one-dimensional forward Fast Fourier Transforms of two real vectors using the
@@ -489,37 +536,26 @@ end
 -- @array[opt=v1] out Complex output vector (of size = 2 * _n_), i.e. the products.
 -- @see Multiply_1D
 function M.TwoGoertzelsThenMultiply_1D (v1, v2, n, out)
-	out = out or v1
+	RowWithReals(v1, v2, n, 0, 0, 2 * pi / n, 2 * (n + 1), CosSin, out or v1)
+	-- ^^ Probably won't extend to 2D
+end
 
-	-- Assign pure real element N / 2 + 1 (outside of input range).
-	out[n + 1], out[n + 2] = AuxTwoGoertzels_Real(v1, v2, n, -2, -1, 0)
+-- Cached cosine-sine pairs (when reused across multiple rows) --
+-- TODO: Trying to puzzle out a way to stash this in the matrix (or could just hijack Column?)
+local WaveTable = {}
 
-	-- Assign elements N / 2 + 2 to N (safely beyond input range) in order, which will be the
-	-- conjugates of the products of elements N / 2 to 2.
-	local omega, da, nf = pi, 2 * pi / n, 2 * (n + 1)
+-- Returns a cached cosine-sine pair
+local function CosSinLoad (omega, index)
+	return WaveTable[index - 2], WaveTable[index - 1]
+end
 
-	for i = n - 1, 3, -2 do
-		omega = omega - da
+-- Computes a cosine-sine pair, saving it to the wave table first
+local function CosSinSave (omega, index)
+	local ca, sa = cos(omega), sin(omega)
 
-		local wr, wi, j = cos(omega), sin(omega), nf - i
-		local a, b, c, d = AuxTwoGoertzels(v1, v2, n, 2 * wr, wr, wi, 0)
+	WaveTable[index - 2], WaveTable[index - 1] = ca, sa
 
-		out[j], out[j + 1] = a * c - b * d, -(b * c + a * d)
-	end
-
-	-- Assign pure real element 1 (last use of input, thus can be overwritten).
-	local r1 = AuxTwoGoertzels_Real(v1, v2, n, 2, 1, 0)
-
-	out[1], out[2] = AuxTwoGoertzels_Real(v1, v2, n, 2, 1, 0)
-
-	-- The input is no longer needed, so reconstruct the first half of the array by conjugating
-	-- elements 2 to N / 2, overwriting the old entries. If the operation is out-of-place, this
-	-- is still about as good as any other approach.
-	for i = 3, n, 2 do
-		local j = nf - i
-
-		out[i], out[i + 1] = out[j], -out[j + 1]
-	end
+	return ca, sa
 end
 
 -- Transposed Goertzel matrix --
@@ -607,16 +643,6 @@ NN
 (  +0.00,   +5.00), (  +3.95,   +3.12), (  +5.00,   -2.00), (  +1.12,   -5.95), (  -4.00,   -5.00), (  -5.95,   -1.12), (  -5.00,   +2.00), (  -3.12,   +3.95)
 (  +8.54,   +8.54), ( +10.83,   -0.41), (  +4.54,   -6.54), (  -2.41,   -4.83), (  -4.54,   -0.54), (  -4.83,   +2.41), (  -4.54,   +6.54), (  +0.41,  +10.83)
 
-symmetry: X_k1,k2 = X*_N1-k1,N2-k2
-	Okay, so first column and row stay fixed
-	Also, middle column and row
-	But have expected internal symmetry
-	Otherwise, columns 2-N/2, N/2+2-N are reversed on way up
-	Seems to apply pre- and post-transpose
-
-	Plan of attack:
-	Begin with second half
-
 --]]
 end
 
@@ -630,7 +656,15 @@ function M.TwoGoertzelsThenMultiply_2D (m1, m2, w, h, out)
 	local coeff, wr, wi, omega, da = 2, 1, 0, 0, 2 * pi / w
 	local offset, col, w2, h2 = 0, 1, 2 * w, 2 * h
 	local last_row = w2 * (h - 1)
-
+-- Plan of attack:
+--	Do rows h / 2 + 1 .. h (save WT on first go, then reuse)
+--	Then rows h / 2 .. 1 (on these, okay if right-to-left)
+--	On each row, pack two reals into columns 1, w / 2 + 1
+--	Two-FFT-then-multiply them (get right half, save sample #1)
+--	For interior elements... :/
+--	Can use symmetry, so exactly enough space...
+--	Just transform those the long way, I guess
+--	Then tease out symmetry and do multiplies
 	-- Check whether the source and destination match. If not, columns can be handled one at a
 	-- time. Otherwise, the whole matrix is copied (its transpose, rather), as the data gets
 	-- converted from real to complex and doing anything in-place ends up being too troublesome.
@@ -639,7 +673,7 @@ function M.TwoGoertzelsThenMultiply_2D (m1, m2, w, h, out)
 	if dest_differs then
 		arr, delta = Column, 0
 	else
-		arr, delta = Transpose, h2 + h2
+		arr, delta = Transpose, 2 * h2
 	end
 
 	for col = 1, w do
