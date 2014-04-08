@@ -58,7 +58,7 @@ end
 
 -- Helper to build cached cosine / sine wave functions
 local function WaveFunc (get, init)
-	local ai, bi, da, cur, state, s0, wt = 0, 1, -2
+	local ai, bi, da, cur, s1, s2, wt = 0, 1, -2
 
 	return function()
 		-- A negative index access will populate the corresponding positive index in the wavetable,
@@ -73,17 +73,16 @@ local function WaveFunc (get, init)
 		if id ~= cur then
 			-- Dirty: initialize the state and walk one index in the negative direction.
 			cur, da = id, -2
-			state = init(id)
-			s0 = state
+			s1, s2 = init(id)
 
 			-- On the first preparation, generate a wavetable and bind a metatable to populate it
 			-- when its negative keys are accessed.
 			if not wt then
 				wt = {
 					__index  = function(t, k)
-						local a, b, ns = get(state, s0)
+						local a, b, ns = get(s1, s2)
 
-						t[-k], t[1 - k], state = a, b, ns
+						t[-k], t[1 - k], s1 = a, b, ns
 
 						return a
 					end
@@ -294,7 +293,9 @@ local GetCosSin, BeginCS, EndCS = WaveFunc(function(theta, da)
 
 	return ca, sa, theta + da
 end, function(n)
-	return pi / n
+	local da = pi / n
+
+	return da, da
 end)
 
 -- Helper for common part of real transforms
@@ -399,6 +400,8 @@ end
 --- DOCME
 function M.RealFFT_2D (m, w, h)
 	--TODO!
+	-- h 1D real transforms, then FFT w/2 + 1 of those?
+	-- Use symmetry to expand the rest...
 end
 
 --- Two-dimensional inverse Fast Fourier Transform, specialized for output known to be real.
@@ -480,7 +483,7 @@ local function MulRowWithReals (v, n, len, offset)
 	MulRow(v, 3, n, len, om1, om1)
 end
 
--- Complex multiplication over a  real-based row without pure real 1 and N / 2 elements
+-- Complex multiplication over a real-based row without pure real 1 and N / 2 elements
 local function MulInnerRow (v, n, n2, len, offset)
 	local om1 = offset - 1
 
@@ -500,6 +503,26 @@ function M.TwoFFTsThenMultiply_1D (v, n)
 	Transform(v, n, 0)
 	MulRowWithReals(v, n, 2 * (n + 1), 1)
 end
+
+--[[
+Mistaken, but might still be usable for 2D real FFT...
+local function Reflect (m, w, w2, area)
+	local ul, ll = w2, area - w2
+
+	repeat
+		local ur, lr = ul + w2, ll + w2
+
+		for i = 3, w, 2 do
+			local j, k = ll + i, ul + i
+
+			m[ur - 1], m[ur], ur = m[j], -m[j + 1], ur - 2
+			m[lr - 1], m[lr], lr = m[k], -m[k + 1], lr - 2
+		end
+
+		ul, ll = ul + w2, ll - w2
+	until ul == ll
+end
+]]
 
 --- Performs two-dimensional forward Fast Fourier Transforms of two real matrices, then
 -- multiplies them by one another.
@@ -522,10 +545,10 @@ function M.TwoFFTsThenMultiply_2D (m, w, h)
 
 	BeginSines(-h)
 	TransformColumns(m, w2, h, area)
--- TODO: This does double the work, no? (ignores symmetry, should be special-cased)
+
 	-- Columns 1 and H / 2 + 1 (except elements in row 1 and W / 2 + 1)...
 	MulColumns(m, 1, w, w2, area)
--- ...and this could be incorporated as well...
+
 	-- ...rows 1 and W / 2 + 1...
 	local half = .5 * area
 
@@ -573,41 +596,16 @@ local function AuxTwoGoertzels_Real (m1, m2, n, k, wr, offset)
 	return sp1 * wr - sp2, tp1 * wr - tp2
 end
 
---
-local function RowWithReals (v1, v2, n, from, to, da, nfpo, cs, out)
-	-- Assign pure real element N / 2 + 1 (outside of input range).
-	local on = to + n
-	local mid1, mid2 = AuxTwoGoertzels_Real(v1, v2, n, -2, -1, from)
+-- Directed cosine-sine pairs method
+local GetDirCosSin, BeginDirCS, EndDirCS = WaveFunc(function(theta, da)
+	theta = theta + da
 
-	out[on + 1], out[on + 2] = mid1 * mid2, 0
+	local ca, sa = CosSin(theta)
 
-	-- Assign elements N / 2 + 2 to N (safely beyond input range) in order, which will be the
-	-- conjugates of the products of elements N / 2 to 2.
-	local omega = pi
-
-	for i = n - 1, 3, -2 do
-		omega = omega - da
-
-		local j, wr, wi = nfpo - i, cs(omega, i)
-		local a, b, c, d = AuxTwoGoertzels(v1, v2, n, 2 * wr, wr, wi, from)
-
-		out[j], out[j + 1] = a * c - b * d, -(b * c + a * d)
-	end
-
-	-- Assign pure real element 1 (last use of input, thus can be overwritten).
-	local left1, left2 = AuxTwoGoertzels_Real(v1, v2, n, 2, 1, from)
-
-	out[to + 1], out[to + 2] = left1 * left2, 0
-
-	-- The input is no longer needed, so reconstruct the first half of the array by conjugating
-	-- elements 2 to N / 2, overwriting the old entries. If the operation is out-of-place, this
-	-- is still about as good as any other approach.
-	for i = 3, n, 2 do
-		local oi, oj = to + i, nfpo - i
-
-		out[oi], out[oi + 1] = out[oj], -out[oj + 1]
-	end
-end
+	return ca, sa, theta
+end, function(n)
+	return n > 0 and pi or 0, -2 * pi / n
+end)
 
 --- Performs one-dimensional forward Fast Fourier Transforms of two real vectors using the
 -- [Goertzel algorithm](http://en.wikipedia.org/wiki/Goertzel_algorithm), then multiplies them by one another.
@@ -617,8 +615,41 @@ end
 -- @array[opt=v1] out Complex output vector (of size = 2 * _n_), i.e. the products.
 -- @see Multiply_1D
 function M.TwoGoertzelsThenMultiply_1D (v1, v2, n, out)
-	RowWithReals(v1, v2, n, 0, 0, 2 * pi / n, 2 * (n + 1), CosSin, out or v1)
-	-- ^^ Probably won't extend to 2D
+	out = out or v1
+
+	-- Assign pure real element N / 2 + 1 (outside of input range).
+	local mid1, mid2 = AuxTwoGoertzels_Real(v1, v2, n, -2, -1, 0)
+
+	out[n + 1], out[n + 2] = mid1 * mid2, 0
+
+	-- Assign elements N / 2 + 2 to N (safely beyond input range) in order, which will be the
+	-- conjugates of the products of elements N / 2 to 2.
+	BeginDirCS(n)
+
+	local nfpo = 2 * (n + 1)
+
+	for i = n - 1, 3, -2 do
+		local j, wr, wi = nfpo - i, GetDirCosSin()
+		local a, b, c, d = AuxTwoGoertzels(v1, v2, n, 2 * wr, wr, wi, 0)
+
+		out[j], out[j + 1] = a * c - b * d, -(b * c + a * d)
+	end
+
+	EndDirCS()
+
+	-- Assign pure real element 1 (last use of input, thus can be overwritten).
+	local left1, left2 = AuxTwoGoertzels_Real(v1, v2, n, 2, 1, 0)
+
+	out[1], out[2] = left1 * left2, 0
+
+	-- The input is no longer needed, so reconstruct the first half of the array by conjugating
+	-- elements 2 to N / 2, overwriting the old entries. If the operation is out-of-place, this
+	-- is still about as good as any other approach.
+	for i = 3, n, 2 do
+		local j = nfpo - i
+
+		out[i], out[i + 1] = out[j], -out[j + 1]
+	end
 end
 
 -- Transposed Goertzel matrix --
@@ -716,9 +747,8 @@ end
 -- @uint h
 -- @array[opt=m1] out
 function M.TwoGoertzelsThenMultiply_2D (m1, m2, w, h, out)
-	local coeff, wr, wi, omega, da = 2, 1, 0, 0, 2 * pi / w
+	local coeff, wr, wi = 2, 1, 0
 	local offset, col, w2, h2 = 0, 1, 2 * w, 2 * h
-	-- ^^ Whoops, conflicting `col'...
 	local last_row = w2 * (h - 1)
 -- Plan of attack:
 --	Do rows h / 2 + 1 .. h (save WT on first go, then reuse)
@@ -739,10 +769,35 @@ function M.TwoGoertzelsThenMultiply_2D (m1, m2, w, h, out)
 	else
 		arr, delta = Transpose, 2 * h2
 	end
+--[[
+local aa, bb={},{}
+do
+	local offset = 0
+	for i = 1, h do
+		local left1, left2 = AuxTwoGoertzels_Real(m1, m2, w, 2, 1, offset)
+		local mid1, mid2 = AuxTwoGoertzels_Real(m1, m2, w, -2, -1, offset)
+print(left1, left2, mid1, mid2)
+		aa[#aa+1],bb[#bb+1] = left1, mid1
+		aa[#aa+1],bb[#bb+1] = left2, mid2
+		offset = offset + w
+	end
+	M.TwoFFTsThenMultiply_1D(aa, h)
+	M.TwoFFTsThenMultiply_1D(bb, h)
+end
+^^ Works!!!
+Put "left", mid into left, mid in row w / 2 + 1...
+Fill in rows w / 2 + 2 to w (use symmetry)
+Should have consumed at least one row of the matrix (unless a 2-row'er? :/)
+Do interior columns, multiply lower halves, put into those spots
+Put column 1 values ("left") into rows w / 2 and w / 2 - 1
+Finally, move columns up and then do symmetry?
+Still need to refine, obviously...
+]]
 
+	BeginDirCS(-w)
 	BeginSines(h)
 
-	for col = 1, w do
+	for rc = 1, w do
 		--
 		local ri = 0
 
@@ -776,12 +831,13 @@ function M.TwoGoertzelsThenMultiply_2D (m1, m2, w, h, out)
 		end
 
 		--
-		if col < w then
-			omega, offset = omega + da, offset + delta
-			wr, wi = cos(omega), sin(omega)
-			coeff = 2 * wr
+		if rc < w then
+			wr, wi = GetDirCosSin()
+			coeff, offset = 2 * wr, offset + delta
 		end
 	end
+
+	EndDirCS()
 
 	-- If the source and destination were the same, do some final resolution.
 	if not dest_differs then
