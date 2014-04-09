@@ -231,9 +231,18 @@ end
 --
 -- Afterward, this will be the transformed data.
 -- @uint n Power-of-2 count of elements in _v_.
-function M.IFFT_1D (v, n)
+-- @string[opt] norm Normalization method. If **"none"**, no normalization is performed.
+-- Otherwise, all results are divided by _n_.
+function M.IFFT_1D (v, n, norm)
 	BeginSines(n)
 	Transform(v, n, 0)
+
+	-- If desired, do normalization.
+	if norm ~= "none" then
+		for i = 1, 2 * n do
+			v[i] = v[i] / n
+		end
+	end
 end
 
 --- Two-dimensional inverse Fast Fourier Transform.
@@ -242,7 +251,9 @@ end
 -- Afterward, this will be the transformed data.
 -- @uint w Power-of-2 width of _m_...
 -- @uint h ...and height.
-function M.IFFT_2D (m, w, h)
+-- @string[opt] norm Normalization method. If **"none"**, no normalization is performed.
+-- Otherwise, all results are divided by _w_ * _h_.
+function M.IFFT_2D (m, w, h, norm)
 	local w2 = 2 * w
 	local area = w2 * h
 
@@ -252,6 +263,15 @@ function M.IFFT_2D (m, w, h)
 
 	for i = 1, area, w2 do
 		Transform(m, w, i - 1)
+	end
+
+	-- If desired, do normalization.
+	if norm ~= "none" then
+		local n = .5 * area
+
+		for i = 1, area do
+			m[i] = m[i] / n
+		end
 	end
 end
 
@@ -302,9 +322,7 @@ end)
 -- http://processors.wiki.ti.com/index.php/Efficient_FFT_Computation_of_Real_Input
 local function AuxRealXform (v, n, n2, coeff, ro, wo)
 	local nf, nend, ca, sa = ro + n2 + 2, wo + 2 * n2, 1, 0
-if AAA then
-	print("N", nf, nend, n2, ro, wo)
-end
+
 	for j = 1, n2, 2 do
 		if j > 1 then
 			ca, sa = GetCosSin()
@@ -315,17 +333,13 @@ end
 		local br, bi = .5 * (1 + sa), -coeff * ca
 		local xr, xi = v[oj], v[oj + 1]
 		local yr, yi = v[ok], v[ok + 1]
-if AAA then
-	print("Ojkl", oj, ok, ol)
-end
+
 		local xa1, xa2 = xr * ar - xi * ai, xi * ar + xr * ai
 		local yb1, yb2 = yr * br + yi * bi, yr * bi - yi * br
 
 		v[ol], v[ol + 1] = xa1 + yb1, xa2 + yb2
 	end
-if AAA then
-	print("")
-end
+
 	ResetCS()
 end
 
@@ -381,34 +395,6 @@ function M.RealFFT_1D (v, n)
 	BeginCS(half)
 	BeginSines(-half)
 	RealRow(v, half, n, 2 * n, 0, 0)
-end
-
---- One-dimensional inverse Fast Fourier Transform, specialized for output known to be real.
--- @array v Vector of complex value pairs (size = 2 * _n_).
---
--- Afterward, this will be the transformed data, but reinterpreted as a real vector (also of
--- size = 2 * _n_).
--- @uint n Power-of-2 count of complex input elements in _v_.
-function M.RealIFFT_1D (v, n)
-	BeginCS(n)
-
-	local n2, n4 = 2 * n, 4 * n
-
-	AuxRealXform(v, n, n2, .5, 0, 0)
-
-	-- Perform the inverse DFT, given that x(n) = (1 / N)*DFT{X*(k)}*.
-	for i = 1, n2, 2 do
-		local k = n4 - i
-
-		v[i], v[i + 1] = v[k], -v[k + 1]
-	end
-
-	BeginSines(-n)
-	Transform(v, n, 0)
-
-	for i = 2, n2, 2 do
-		v[i] = -v[i]
-	end
 end
 
 -- Fills in a 2D real-based matrix via symmetry
@@ -477,6 +463,52 @@ function M.RealFFT_2D (m, w, h)
 	Reflect(m, w, w2, area)
 end
 
+-- Common real IFFT logic
+local function AuxRealIFFT (v, n, n2, n4, ro, wo)
+	-- Do the inverse setup in-place, allowing what follows to move the results.
+	AuxRealXform(v, n, n2, .5, ro, ro)
+
+	-- Perform the inverse DFT, given that x(n) = (1 / N) * DFT{X*(k)}*.
+	for i = 1, n2, 2 do
+		local j = n4 - i
+		local oi, oj = wo + i, ro + j
+
+		v[oi], v[oi + 1] = v[oj], -v[oj + 1]
+	end
+
+	Transform(v, n, wo)
+
+	for i = 2, n2, 2 do
+		local oi = wo + i
+
+		v[oi] = -v[oi]
+	end
+end
+
+--- One-dimensional inverse Fast Fourier Transform, specialized for output known to be real.
+-- @array v Vector of complex value pairs (size = 2 * _n_).
+--
+-- Afterward, this will be the transformed data, but reinterpreted as a real vector (also of
+-- size = 2 * _n_).
+-- @uint n Power-of-2 count of complex input elements in _v_.
+-- @string[opt] norm Normalization method. If **"none"**, no normalization is performed.
+-- Otherwise, all results are divided by _n_.
+function M.RealIFFT_1D (v, n, norm)
+	BeginCS(n)
+	BeginSines(-n)
+
+	local n2 = 2 * n
+
+	AuxRealIFFT(v, n, n2, 4 * n, 0, 0)
+
+	-- If desired, do normalization.
+	if norm ~= "none" then
+		for i = 1, n2 do
+			v[i] = v[i] / n
+		end
+	end
+end
+
 --- Two-dimensional inverse Fast Fourier Transform, specialized for output known to be real.
 -- @array m Matrix of complex value pairs (size = 2 * _w_ * _h_).
 --
@@ -484,65 +516,35 @@ end
 -- size = 2 * _w_ * _h_).
 -- @uint w Power-of-2 width of _m_...
 -- @uint h ...and height.
-function M.RealIFFT_2D (m, w, h)
-	--
+-- @string[opt] norm Normalization method. If **"none"**, no normalization is performed.
+-- Otherwise, all results are divided by _w_ * _h_.
+function M.RealIFFT_2D (m, w, h, norm)
+	-- Transform the matrix's left half plus the middle column (the rest is symmetric).
 	local w2, w4 = 2 * w, 4 * w
 
 	BeginSines(h)
 	TransformColumns(m, w4, h, w4 * h, w2 + 2)
-AAA=true
-	--
+
+	-- Transform each of the half rows.
 	BeginCS(w)
 	BeginSines(-w)
 
 	local ro, wo = 0, 0
 
 	for _ = 1, h do
-		AuxRealXform(m, w, w2, .5, ro, ro)
-
-		-- Perform the inverse DFT, given that x(n) = (1 / N)*DFT{X*(k)}*.
-		for i = 1, w2, 2 do
-			local j = w4 - i
-			local oi, oj = wo + i, wo + j
-print("I,J", oi, oj)
-			m[oi], m[oi + 1] = m[oj], -m[oj + 1]
-		end
-
-		Transform(m, w, wo)
-
-		for i = 2, w2, 2 do
-			local oi = wo + i
-
-			m[oi] = -m[oi]
-print("M[J]", m[oi-1],m[oi])
-		end
+		AuxRealIFFT(m, w, w2, w4, ro, wo)
 
 		ro, wo = ro + w4, wo + w2
 	end
-AAA=false
---[[
-	-- BROKEN!
-	local w2 = 2 * w
-	local area = w2 * h
 
-	BeginSines(h)
-	TransformColumns(m, w2, h, area)
+	-- If desired, do normalization.
+	if norm ~= "none" then
+		local n = w * h
 
---	local angle = pi / w
-	BeginSines(w)
-
-	for j = 1, area, w2 do
--- Roll into temp buffer and fire
-	--	AuxRealXform(m, w, 0.5, 0.5, angle, j - 1)
-
-		local a, b = m[j], m[j + 1]
-
-		m[j], m[j + 1] = .5 * (a + b), .5 * (a - b)
--- ^^ These j-based offsets are probably off? (Need to roll or bit-reverse???)
--- But would be horizontal roll?
-		Transform(m, w, pi, j - 1)
+		for i = 1, 2 * n do
+			m[i] = m[i] / n
+		end
 	end
-]]
 end
 
 -- Helper to do complex multiplication over two real-based columns (1 and W / 2 + 1)

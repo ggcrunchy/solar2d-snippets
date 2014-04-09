@@ -372,6 +372,7 @@ local DefMethod1D = AuxMethod1D.two_ffts
 -- @array kernel ...and kernel.
 -- @ptable[opt] opts Convolve options. Fields:
 --
+-- * **into**: If provided, this table will receive the convolution.
 -- * **method**: If this is **"goertzel"**, the transforms are done using the [Goertzel algorithm](http://en.wikipedia.org/wiki/Goertzel_algorithm),
 -- which may offer better performance in some cases. If it is **"separate"**, two FFT's are
 -- computed separately. Otherwise, the two real FFT's are computed as one complex FFT.
@@ -388,15 +389,13 @@ function M.ConvolveFFT_1D (signal, kernel, opts)
 	method(n, signal, sn, kernel, kn)
 
 	-- ...transform back to the time domain...
-	local nreal = .5 * n
-
-	fft.RealIFFT_1D(B, nreal)
+	fft.RealIFFT_1D(B, .5 * n)
 
 	-- ...and get the convolution by scaling the real parts of the result.
-	local csignal = {}
+	local csignal = opts and opts.into or {}
 
 	for i = 1, clen do
-		csignal[#csignal + 1] = B[i] / nreal
+		csignal[i] = B[i]
 	end
 
 	return csignal
@@ -436,6 +435,7 @@ local DefMethod2D = AuxMethod2D.two_ffts
 -- @uint kcols ... and in _kernel_.
 -- @ptable[opt] opts Convolve options. Fields:
 --
+-- * **into**: If provided, this table will receive the convolution.
 -- * **method**: As per @{ConvolveFFT_1D}, but with 2D variants.
 -- @treturn array Convolution.
 -- @treturn uint Number of columns in the convolution. Currently, only the **"full"** shape
@@ -447,32 +447,24 @@ function M.ConvolveFFT_2D (signal, kernel, scols, kcols, opts)
 	local krows = kn / kcols
 	local w, m = LenPower(scols, kcols)
 	local h, n = LenPower(srows, krows)
-	local area = m * n
 
 	-- Perform an FFT on the signal and kernel (both at once). Multiply the (complex) results...
 	local method = AuxMethod2D[opts and opts.method] or DefMethod2D
 
-	method(m, n, signal, scols, kernel, kcols, sn, kn, area)
+	method(m, n, signal, scols, kernel, kcols, sn, kn, m * n)
 
 	-- ...transform back to the time domain...
---[[
-	local mreal = .5 * m
-
-	fft.IFFT_Real2D(B, mreal, .5 * n)
-
-	-- shift?
---]]
-	fft.IFFT_2D(B, m, n)
+	fft.RealIFFT_2D(B, .5 * m, n)
 
 	-- ...and get the convolution by scaling the real parts of the result.
-	local csignal, offset, delta = {}, 0, 2 * m
+	local csignal, offset, index = opts and opts.into or {}, 0, 1
 
 	for _ = 1, h do
-		for j = 1, 2 * w, 2 do
-			csignal[#csignal + 1] = B[offset + j] / area
+		for j = 1, w do
+			csignal[index], index = B[offset + j], index + 1
 		end
 
-		offset = offset + delta
+		offset = offset + m
 	end
 
 	return csignal
