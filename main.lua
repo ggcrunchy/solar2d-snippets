@@ -210,12 +210,13 @@ do
 	for _, v in ipairs{
 		{1,1,1,1,0,0,0,0}, {1,3,1,1,0,0,7,0}, {2,1,1,2,9,3,4,6}
 	} do
-		local stock, n = {}, #v
+		local stock, real, n = {}, {}, #v
 		local half = n / 2
 
-		for _, real in ipairs(v) do
-			stock[#stock + 1] = real
+		for _, r in ipairs(v) do
+			stock[#stock + 1] = r
 			stock[#stock + 1] = 0
+			real[#real + 1] = r
 		end
 
 		print("TABLE")
@@ -226,17 +227,66 @@ do
 		vdump2(stock)
 		print("")
 		print("Real FFT")
-		fft.RealFFT_1D(v, n)
-		vdump2(v)
+		fft.RealFFT_1D(real, n)
+		vdump2(real)
 		print("")
 		print("Real IFFT")
-		fft.RealIFFT_1D(v, half)
+		fft.RealIFFT_1D(real, half)
 		for i = 1, n do
-			v[i] = v[i] / half
+			real[i] = real[i] / half
 		end
-		vdump2(v)
+		vdump2(real)
 		print("")
 	end
+
+	local a = { 1, 0, 2, 0, 3, 0, 7, 0,
+				2, 0, 3, 0, 1, 0, 8, 0,
+				3, 0, 1, 0, 2, 0, 6, 0,
+				6, 0, 7, 0, 8, 0, 2, 0 }
+	local b, c = {}, {}
+	for i = 1, #a, 2 do
+		b[#b + 1] = a[i]
+		c[#c + 1] = a[i]
+	end
+	fft.FFT_2D(a, 4, 4)
+--	vdump(a)
+	do
+		print("")
+		local ii=1
+		for i = 1, 4 do
+			local aa={}
+			for j = 1, 8 do
+				aa[#aa+1]=("%.2f"):format(a[ii])
+				ii=ii+1
+			end
+			print(table.concat(aa, " "))
+		end
+	end
+	fft.RealFFT_2D(b, 4, 4)
+AAA=true
+	local d={}
+	for i = 1, #b do
+		d[#d + 1] = b[i]
+	end
+	fft.IFFT_2D(d, 4, 4)
+--	vdump(b)
+	do
+		print("")
+		local ii=1
+		for i = 1, 4 do
+			local aa={}
+			for j = 1, 8 do
+				aa[#aa+1]=("%.2f"):format(b[ii])
+				ii=ii+1
+			end
+			print(table.concat(aa, " "))
+		end
+	end
+	fft.RealIFFT_2D(b, 2, 4)
+	for i = 1, 2 * 4 do
+		b[i] = b[i] / (2 * 4)
+	end
+	vdump2(b)
 end
 --]]
 -- Kick off the app.

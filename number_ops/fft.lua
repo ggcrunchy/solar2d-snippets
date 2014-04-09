@@ -98,7 +98,7 @@ local function WaveFunc (get, init)
 end
 
 -- Sines-based pairs method, i.e. sin(theta), 1 - cos(theta)
-local GetSines, BeginSines, EndSines = WaveFunc(function(theta)
+local GetSines, BeginSines, ResetSines = WaveFunc(function(theta)
 	local half = .5 * theta
 
 	return sin(theta), 2.0 * sin(half)^2, half
@@ -147,7 +147,7 @@ local function Transform (v, n, offset)
 		dual, dual2, dual4 = dual2, dual4, 2 * dual4
 	until dual >= n
 
-	EndSines()
+	ResetSines()
 end
 
 --- One-dimensional forward Fast Fourier Transform.
@@ -164,8 +164,8 @@ end
 local Column = {}
 
 -- Helper to do column part of 2D transforms
-local function TransformColumns (m, w2, h, area)
-	for i = 1, w2, 2 do
+local function TransformColumns (m, w2, h, area, last)
+	for i = 1, last or w2, 2 do
 		local n, ri = 1, i
 
 		repeat
@@ -248,7 +248,6 @@ function M.IFFT_2D (m, w, h)
 
 	BeginSines(h)
 	TransformColumns(m, w2, h, area)
-
 	BeginSines(w)
 
 	for i = 1, area, w2 do
@@ -288,7 +287,7 @@ function M.Multiply_2D (m1, m2, w, h, out)
 end
 
 -- Cosine-sine pairs method
-local GetCosSin, BeginCS, EndCS = WaveFunc(function(theta, da)
+local GetCosSin, BeginCS, ResetCS = WaveFunc(function(theta, da)
 	local ca, sa = CosSin(theta)
 
 	return ca, sa, theta + da
@@ -298,49 +297,76 @@ end, function(n)
 	return da, da
 end)
 
--- Helper for common part of real transforms
+-- Helper for common part of real transforms (which may move the elements)
 -- Adapted from:
 -- http://processors.wiki.ti.com/index.php/Efficient_FFT_Computation_of_Real_Input
-local function AuxRealXform (v, n, coeff)
-	local n2, ca, sa = 2 * n, 1, 0
-	local nf, nend = n2 + 2, 2 * n2
-
-	BeginCS(n)
-
+local function AuxRealXform (v, n, n2, coeff, ro, wo)
+	local nf, nend, ca, sa = ro + n2 + 2, wo + 2 * n2, 1, 0
+if AAA then
+	print("N", nf, nend, n2, ro, wo)
+end
 	for j = 1, n2, 2 do
 		if j > 1 then
 			ca, sa = GetCosSin()
 		end
 
-		local k, l = nf - j, nend - j
+		local oj, ok, ol = ro + j, nf - j, nend - j
 		local ar, ai = .5 * (1 - sa), coeff * ca
 		local br, bi = .5 * (1 + sa), -coeff * ca
-		local xr, xi = v[j], v[j + 1]
-		local yr, yi = v[k], v[k + 1]
+		local xr, xi = v[oj], v[oj + 1]
+		local yr, yi = v[ok], v[ok + 1]
+if AAA then
+	print("Ojkl", oj, ok, ol)
+end
 		local xa1, xa2 = xr * ar - xi * ai, xi * ar + xr * ai
 		local yb1, yb2 = yr * br + yi * bi, yr * bi - yi * br
 
-		v[l], v[l + 1] = xa1 + yb1, xa2 + yb2
+		v[ol], v[ol + 1] = xa1 + yb1, xa2 + yb2
 	end
-
-	EndCS()
+if AAA then
+	print("")
+end
+	ResetCS()
 end
 
 -- Computes part of a forward real transform, leaving the rest for symmetry
-local function RealXformRight (v, n, n2, n4--[[, offset]])
-	BeginSines(-n)
-	Transform(v, n, 0)
+local function RealXformRight (v, n, n2, n4, ro, wo)
+	Transform(v, n, ro)
 
 	-- From the periodicity of the DFT, it follows that that X(N + k) = X(k).
-	local a, b = v[1], v[2]
+	local a, b, on2 = v[ro + 1], v[ro + 2], ro + n2
 
-	v[n2 + 1], v[n2 + 2] = a, b
+	v[on2 + 1], v[on2 + 2] = a, b
 
 	-- Unravel the conjugate (right) half of the results.
-	AuxRealXform(v, n, -.5)
+	AuxRealXform(v, n, n2, -.5, ro, wo)
 
 	-- Return the pure real elements.
-	return v[n4 - 1], a - b
+	return v[wo + n4 - 1], a - b
+end
+
+-- Transforms a row of real numbers
+local function RealRow (v, half, n2, n4, ro, wo)
+	-- Compute the right half of the transform, along with the first element.
+	local left, mid = RealXformRight(v, half, n2, n4, ro, wo)
+
+	v[wo + 1], v[wo + 2] = left, 0
+
+	-- Use complex conjugate symmetry properties to get the rest.
+	local nf = wo + n4 + 2
+
+	for j = 3, n2, 2 do
+		local oj, ok = wo + j, nf - j
+		local real, imag = v[ok - 2], v[ok - 1]
+
+		v[oj], v[oj + 1] = real, imag
+		v[ok], v[ok + 1] = real, -imag
+	end
+
+	-- Finally, with its slot no longer needed as input, set the middle element.
+	local on2 = wo + n2
+
+	v[on2 + 1], v[on2 + 2] = mid, 0
 end
 
 --- One-dimensional forward Fast Fourier Transform, specialized for real input.
@@ -350,25 +376,11 @@ end
 -- (of size = 2 * _n_).
 -- @uint n Power-of-2 count of real input elements in _v_.
 function M.RealFFT_1D (v, n)
-	-- Compute the right half of the transform, along with the first element.
-	local n2, n4 = n, 2 * n
-	local left, mid = RealXformRight(v, .5 * n, n2, n4)
+	local half = .5 * n
 
-	v[1], v[2] = left, 0
-
-	-- Use complex conjugate symmetry properties to get the rest.
-	local nf = n4 + 2
-
-	for j = 3, n2, 2 do
-		local k = nf - j
-		local real, imag = v[k - 2], v[k - 1]
-
-		v[j], v[j + 1] = real, imag
-		v[k], v[k + 1] = real, -imag
-	end
-
-	-- Finally, with its slot no longer needed as input, set the middle element.
-	v[n2 + 1], v[n2 + 2] = mid, 0
+	BeginCS(half)
+	BeginSines(-half)
+	RealRow(v, half, n, 2 * n, 0, 0)
 end
 
 --- One-dimensional inverse Fast Fourier Transform, specialized for output known to be real.
@@ -378,11 +390,13 @@ end
 -- size = 2 * _n_).
 -- @uint n Power-of-2 count of complex input elements in _v_.
 function M.RealIFFT_1D (v, n)
-	AuxRealXform(v, n, .5)
+	BeginCS(n)
 
-	-- Perform the inverse DFT, given that x(n) = (1 / N)*DFT{X*(k)}*.
 	local n2, n4 = 2 * n, 4 * n
 
+	AuxRealXform(v, n, n2, .5, 0, 0)
+
+	-- Perform the inverse DFT, given that x(n) = (1 / N)*DFT{X*(k)}*.
 	for i = 1, n2, 2 do
 		local k = n4 - i
 
@@ -397,11 +411,70 @@ function M.RealIFFT_1D (v, n)
 	end
 end
 
---- DOCME
+-- Fills in a 2D real-based matrix via symmetry
+local function Reflect (m, w, w2, area)
+	local ul, ll = w2, area - w2
+
+	-- Do the top and middle rows.
+	local rt, mid = w2, .5 * area
+	local rm = mid + w2
+
+	for i = 3, w, 2 do
+		local j = mid + i
+
+		m[rt - 1], m[rt], rt = m[i], -m[i + 1], rt - 2
+		m[rm - 1], m[rm], rm = m[j], -m[j + 1], rm - 2
+	end
+
+	-- Do the remaining paired rows: 2 and H, 3 and H - 1, etc.
+	repeat
+		local ur, lr = ul + w2, ll + w2
+
+		for i = 3, w, 2 do
+			local j, k = ll + i, ul + i
+
+			m[ur - 1], m[ur], ur = m[j], -m[j + 1], ur - 2
+			m[lr - 1], m[lr], lr = m[k], -m[k + 1], lr - 2
+		end
+
+		ul, ll = ul + w2, ll - w2
+	until ul == ll
+end
+
+--- Two-dimensional forward Fast Fourier Transform, specialized for real input.
+-- @array m Matrix of real values (size = _w_ * _h_).
+--
+-- Afterward, this will be the transformed data, but reinterpreted as a complex matrix (of
+-- size = 2 * _w_ * _h_).
+-- @uint w Power-of-2 width of _m_...
+-- @uint h ...and height.
 function M.RealFFT_2D (m, w, h)
-	--TODO!
-	-- h 1D real transforms, then FFT w/2 + 1 of those?
-	-- Use symmetry to expand the rest...
+	local half, w2 = .5 * w, 2 * w
+	local area = w2 * h
+
+	-- Ensure that rows always land in the array, which may not yet have been allocated, say
+	-- if no previous real -> complex transform has been performed with it.
+	for i = #m + 1, area do
+		m[i] = false
+	end
+
+	-- Perform a 1D real transform on each row. These are done in reverse order to avoid
+	-- overwriting pending rows (since, in general, the transformed output is complex and
+	-- takes up twice as much space).
+	BeginCS(half)
+	BeginSines(-half)
+
+	local ro, wo = (w - 1) * h, area - w2
+
+	repeat
+		RealRow(m, half, w, w2, ro, wo)
+
+		ro, wo = ro - w, wo - w2
+	until ro < 0
+
+	-- Transform the matrix's left half plus the middle column. Build the rest from symmetry.
+	TransformColumns(m, w2, h, area, w + 2)
+	Reflect(m, w, w2, area)
 end
 
 --- Two-dimensional inverse Fast Fourier Transform, specialized for output known to be real.
@@ -412,6 +485,42 @@ end
 -- @uint w Power-of-2 width of _m_...
 -- @uint h ...and height.
 function M.RealIFFT_2D (m, w, h)
+	--
+	local w2, w4 = 2 * w, 4 * w
+
+	BeginSines(h)
+	TransformColumns(m, w4, h, w4 * h, w2 + 2)
+AAA=true
+	--
+	BeginCS(w)
+	BeginSines(-w)
+
+	local ro, wo = 0, 0
+
+	for _ = 1, h do
+		AuxRealXform(m, w, w2, .5, ro, ro)
+
+		-- Perform the inverse DFT, given that x(n) = (1 / N)*DFT{X*(k)}*.
+		for i = 1, w2, 2 do
+			local j = w4 - i
+			local oi, oj = wo + i, wo + j
+print("I,J", oi, oj)
+			m[oi], m[oi + 1] = m[oj], -m[oj + 1]
+		end
+
+		Transform(m, w, wo)
+
+		for i = 2, w2, 2 do
+			local oi = wo + i
+
+			m[oi] = -m[oi]
+print("M[J]", m[oi-1],m[oi])
+		end
+
+		ro, wo = ro + w4, wo + w2
+	end
+AAA=false
+--[[
 	-- BROKEN!
 	local w2 = 2 * w
 	local area = w2 * h
@@ -433,6 +542,7 @@ function M.RealIFFT_2D (m, w, h)
 -- But would be horizontal roll?
 		Transform(m, w, pi, j - 1)
 	end
+]]
 end
 
 -- Helper to do complex multiplication over two real-based columns (1 and W / 2 + 1)
@@ -503,26 +613,6 @@ function M.TwoFFTsThenMultiply_1D (v, n)
 	Transform(v, n, 0)
 	MulRowWithReals(v, n, 2 * (n + 1), 1)
 end
-
---[[
-Mistaken, but might still be usable for 2D real FFT...
-local function Reflect (m, w, w2, area)
-	local ul, ll = w2, area - w2
-
-	repeat
-		local ur, lr = ul + w2, ll + w2
-
-		for i = 3, w, 2 do
-			local j, k = ll + i, ul + i
-
-			m[ur - 1], m[ur], ur = m[j], -m[j + 1], ur - 2
-			m[lr - 1], m[lr], lr = m[k], -m[k + 1], lr - 2
-		end
-
-		ul, ll = ul + w2, ll - w2
-	until ul == ll
-end
-]]
 
 --- Performs two-dimensional forward Fast Fourier Transforms of two real matrices, then
 -- multiplies them by one another.
@@ -597,7 +687,7 @@ local function AuxTwoGoertzels_Real (m1, m2, n, k, wr, offset)
 end
 
 -- Directed cosine-sine pairs method
-local GetDirCosSin, BeginDirCS, EndDirCS = WaveFunc(function(theta, da)
+local GetDirCosSin, BeginDirCS, ResetDirCS = WaveFunc(function(theta, da)
 	theta = theta + da
 
 	local ca, sa = CosSin(theta)
@@ -635,7 +725,7 @@ function M.TwoGoertzelsThenMultiply_1D (v1, v2, n, out)
 		out[j], out[j + 1] = a * c - b * d, -(b * c + a * d)
 	end
 
-	EndDirCS()
+	ResetDirCS()
 
 	-- Assign pure real element 1 (last use of input, thus can be overwritten).
 	local left1, left2 = AuxTwoGoertzels_Real(v1, v2, n, 2, 1, 0)
@@ -837,7 +927,7 @@ Still need to refine, obviously...
 		end
 	end
 
-	EndDirCS()
+	ResetDirCS()
 
 	-- If the source and destination were the same, do some final resolution.
 	if not dest_differs then
