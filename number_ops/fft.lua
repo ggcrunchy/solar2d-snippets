@@ -603,6 +603,12 @@ local function MulInnerRow (v, n, n2, len, offset)
 	MulRow(v, n + 3, n2, len, om1, 0)
 end
 
+-- Common one-dimensional two FFT's logic
+local function AuxTwoFFTs1D (v, n, offset)
+	Transform(v, n, offset)
+	MulRowWithReals(v, n, 2 * (n + 1), offset + 1)
+end
+
 --- Performs one-dimensional forward Fast Fourier Transforms of two real vectors, then
 -- multiplies them by one another.
 -- @array v Vector of pairs, as { ..., element from vector #1, element from vector #2, ... }.
@@ -612,8 +618,7 @@ end
 -- @see Multiply_1D, number_ops.fft_utils.PrepareTwoFFTs_1D
 function M.TwoFFTsThenMultiply_1D (v, n)
 	BeginSines(-n)
-	Transform(v, n, 0)
-	MulRowWithReals(v, n, 2 * (n + 1), 1)
+	AuxTwoFFTs1D(v, n, 0)
 end
 
 --- Performs two-dimensional forward Fast Fourier Transforms of two real matrices, then
@@ -657,6 +662,26 @@ function M.TwoFFTsThenMultiply_2D (m, w, h)
 		
 		endi = endi - w2
 	end
+if AAA then
+--	print("COMP", m, #AAA, #m)
+	for i = 1, #m do
+		if math.abs(m[i] - AAA[i]) > 1e-9 then
+		--	print("At", i, m[i]-AAA[i])
+		end
+	end
+	print("2FFT")
+	local lr=127
+	for i = 67, 71, 2 do
+		local lr2=lr
+		for j = i, i+48,16 do
+		print("LEFT: ", j, m[j], m[j+1])
+		print("LR: ", lr2, m[lr2], m[lr2+1])
+		lr2=lr2-16
+	end
+	print("")
+		lr=lr-2
+	end
+end
 end
 
 -- Helper to compute two parallel Goertzel samples at once
@@ -861,34 +886,145 @@ function M.TwoGoertzelsThenMultiply_2D (m1, m2, w, h, out)
 	else
 		arr, delta = Transpose, 2 * h2
 	end
---[[
-local aa, bb={},{}
-do
-	local offset = 0
-	for i = 1, h do
-		local left1, left2 = AuxTwoGoertzels_Real(m1, m2, w, 2, 1, offset)
-		local mid1, mid2 = AuxTwoGoertzels_Real(m1, m2, w, -2, -1, offset)
-print(left1, left2, mid1, mid2)
-		aa[#aa+1],bb[#bb+1] = left1, mid1
-		aa[#aa+1],bb[#bb+1] = left2, mid2
-		offset = offset + w
-	end
-	M.TwoFFTsThenMultiply_1D(aa, h)
-	M.TwoFFTsThenMultiply_1D(bb, h)
+	--[=[
+local ooo={}
+for i = 1, #m1 do
+	ooo[i]=m1[i]
 end
-^^ Works!!!
-Put "left", mid into left, mid in row w / 2 + 1...
-Fill in rows w / 2 + 2 to w (use symmetry)
-Should have consumed at least one row of the matrix (unless a 2-row'er? :/)
-Do interior columns, multiply lower halves, put into those spots
-Put column 1 values ("left") into rows w / 2 and w / 2 - 1
-Finally, move columns up and then do symmetry?
-Still need to refine, obviously...
-]]
-
+]=]
+	-- Ensure that rows always land in the array, which may not yet have been allocated, say
+	-- if no previous Goertzel transform has been performed with it.
+	local area = w2 * h
+---[=[
+out = out or m1
+	for i = #out + 1, area do
+		out[i] = false
+	end
+--]=]
+	--
 	BeginDirCS(-w)
 	BeginSines(h)
+---[=[
+	local half, nend = .5 * area, area + 2
 
+	for col = 3, w, 2 do
+		-- inter cols
+		local wr, wi = GetDirCosSin()
+		local coeff, offset = 2 * wr, 0
+
+		for i = 1, h2, 2 do
+			local j = i + h2
+
+			Column[i], Column[i + 1], Column[j], Column[j + 1] = AuxTwoGoertzels(m1, m2, w, coeff, wr, wi, offset)
+
+			offset = offset + w
+		end
+
+		-- transf
+		Transform(Column, h, 0)
+		Transform(Column, h, h2)
+
+		-- put row 1 on right
+		local left = half + col
+		local right = left + w
+		local a, b, c, d-- = Column[1], Column[2], Column[h2 + 1], Column[h2 + 2]
+
+--		out[right], out[right + 1] = a * c - b * d, b * c + a * d
+
+		-- put bottom into pos
+		local lr = nend - col
+
+		for i = 1, h, 2 do
+			local j = i + h2
+
+			a, b, c, d = Column[i], Column[i + 1], Column[j], Column[j + 1]
+
+			if i > 1 then
+				out[lr], out[lr + 1], lr = a * c - b * d, -(b * c + a * d), lr - w2
+print("LR", lr+w2,out[lr+w2], out[lr+w2+1])
+			else
+				local right = left + w
+
+				out[right], out[right + 1] = a * c - b * d, b * c + a * d
+			end
+
+			local i2, j2 = i + h, j + h
+
+			a, b, c, d = Column[i2], Column[i2 + 1], Column[j2], Column[j2 + 1]
+
+			out[left], out[left + 1], left = a * c - b * d, b * c + a * d, left + w2
+print("LEFT", left-w2,out[left-w2], out[left-w2+1])
+		end
+-- ^^^ Seems to be off by one... first entry, do something special
+	print("")
+	end
+
+	-- compute sides
+	do
+		BeginSines(-h)
+
+		local offset = 0
+
+		for i = 1, h2, 2 do
+			local j = i + h2
+
+			Column[i], Column[i + 1] = AuxTwoGoertzels_Real(m1, m2, w, 2, 1, offset)
+			Column[j], Column[j + 1] = AuxTwoGoertzels_Real(m1, m2, w, -2, -1, offset)
+
+			offset = offset + w
+		end
+
+		AuxTwoFFTs1D(Column, h, 0)
+		AuxTwoFFTs1D(Column, h, h2)
+	end
+
+	-- columns 1, w/2+1
+	do
+		local offset = 1
+
+		for i = 1, h2, 2 do
+			local center, j = offset + w, i + h2
+
+			out[offset], out[offset + 1] = Column[i], Column[i + 1]
+			out[center], out[center + 1] = Column[j], Column[j + 1]
+
+			offset = offset + w2
+		end
+	end
+
+	--
+	local mr, lr, to_bottom = half + w2 + 2, area + 2, area - w2
+
+	for col = 3, w, 2 do
+		local mri = mr - col
+		local a, b, uri = out[mri], out[mri + 1], mri - half 
+
+		out[col], out[col + 1], out[uri], out[uri + 1] = a, b, a, -b
+
+		local mli = half + col
+
+		out[mri], out[mri + 1] = out[mli], -out[mli + 1]
+
+		local lli, uli, lri = col + to_bottom, col, lr - col
+
+		for _ = 2, h, 2 do
+			uli, uri = uli + w2, uri + w2
+
+			out[uli], out[uli + 1] = out[lri], -out[lri]
+			out[uri], out[uri + 1] = out[lli], -out[lli]
+
+			lli, lri = lli - w2, lri - w2
+		end
+	end
+AAA={}
+for i = 1, #out do
+	AAA[i] = out[i]
+end
+	ResetDirCS()
+--	vdump(out)
+--]=]
+--[=[
+	BeginSines(h)
 	for rc = 1, w do
 		--
 		local ri = 0
@@ -935,6 +1071,7 @@ Still need to refine, obviously...
 	if not dest_differs then
 		SameDestResolve(m1, w2, h2, last_row)
 	end
+--]=]
 end
 
 -- Export the module.
