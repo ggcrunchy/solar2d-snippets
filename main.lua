@@ -178,9 +178,9 @@ do
 	print("")
 
 	CompareMethods(2, t1,
+		"Two FFT's", convolve.ConvolveFFT_2D(A, B, W, H),
 		"Goertzels", convolve.ConvolveFFT_2D(A, B, W, H, { method = "goertzel" }),
-		"Separate FFT's", convolve.ConvolveFFT_2D(A, B, W, H, { method = "separate" }),
-		"Two FFT's", convolve.ConvolveFFT_2D(A, B, W, H)
+		"Separate FFT's", convolve.ConvolveFFT_2D(A, B, W, H, { method = "separate" })
 	)
 end
 --]]

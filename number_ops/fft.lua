@@ -662,26 +662,6 @@ function M.TwoFFTsThenMultiply_2D (m, w, h)
 		
 		endi = endi - w2
 	end
-if AAA then
---	print("COMP", m, #AAA, #m)
-	for i = 1, #m do
-		if math.abs(m[i] - AAA[i]) > 1e-9 then
-		--	print("At", i, m[i]-AAA[i])
-		end
-	end
-	print("2FFT")
-	local lr=127
-	for i = 67, 71, 2 do
-		local lr2=lr
-		for j = i, i+48,16 do
-		print("LEFT: ", j, m[j], m[j+1])
-		print("LR: ", lr2, m[lr2], m[lr2+1])
-		lr2=lr2-16
-	end
-	print("")
-		lr=lr-2
-	end
-end
 end
 
 -- Helper to compute two parallel Goertzel samples at once
@@ -769,94 +749,6 @@ function M.TwoGoertzelsThenMultiply_1D (v1, v2, n, out)
 	end
 end
 
--- Transposed Goertzel matrix --
-local Transpose = {}
---[[
-local function ZeroOr (n)
-	if n > 0 then
-		return "+", n
-	elseif n < 0 then
-		return "", n
-	else
-		return " ", 0
-	end
-end
-
-local function Format (str, n)
-	return str:format(math.abs(n) < 100 and " " or "", math.abs(n) < 10 and " " or "", ZeroOr(n))
-end
-
-local function vd (m, ff, w2, h)
-	local index = 0
-	for i = 1, h do
-		local line = {}
-		for j = 1, w2, 2 do
-			line[#line + 1] = Format("(%s%s%s%.2f", m[index + j])
-			line[#line + 1] = Format("%s%s%s%.2f)", m[index + j + 1])
-		end
-		index = index + w2
-		ff:write(table.concat(line, ", "), "\n")
-	end
-end
---]]
--- Processes the entire matrix and moves the final results back
-local function SameDestResolve (out, w2, h2, last_row)
-	local col, h4 = 0, 2 * h2
---[[
-local mm, nn = {}, {}
-local ff = io.open(system.pathForFile("Out.txt", system.DocumentsDirectory), "wt")
---]]
-	for i = 1, w2, 2 do
-		local ci, coff = i, last_row + i
-
-		for j = 1, h2, 2 do
-			local k = j + h2
-			local cj, ck = col + j, col + k
-			local a, b = Transpose[cj], Transpose[cj + 1]
-			local c, d = Transpose[ck], Transpose[ck + 1]
---[[
-mm[ci], mm[ci+1]=a,b
-nn[ci], nn[ci+1]=c,d
---]]
-			out[ci], out[ci + 1], ci, coff = a * c - b * d, b * c + a * d, coff, coff - w2
-		end
-
-		col = col + h4
-	end
---[[
-ff:write("MM", "\n")
-vd(mm, ff, w2, h2/2)
-ff:write("\n")
-ff:write("NN", "\n")
-vd(nn, ff, w2, h2/2)
-ff:close()
---]]
---[[
-	Results from testing:
-
-MM
-(+325.00,    0.00), (  -0.00, -156.92), ( +65.00,   -0.00), (  -0.00,  -26.92), ( +65.00,   -0.00), (  +0.00,  +26.92), ( +65.00,   -0.00), (  +0.00, +156.92)
-(  -0.00, -156.92), ( -75.77,  +58.00), ( +89.60,  -31.38), ( -13.00,  -44.77), (  -4.20,  -31.38), ( +13.00,  +23.17), ( +36.14,  -31.38), ( +75.77,   -4.00)
-( +65.00,    0.00), ( +76.43,  -31.38), ( +13.00,  -84.00), ( -12.63,   -5.38), ( +13.00,  -28.00), (  -8.43,   +5.38), ( +13.00,   +8.00), ( +32.63,  +31.38)
-(  +0.00,  -26.92), ( -13.00,  -28.77), (  +7.86,   -5.38), (  -2.23,  -58.00), ( -43.80,   -5.38), (  +2.23,   +4.00), ( +10.40,   -5.38), ( +13.00,  -28.83)
-( +65.00,    0.00), (  -2.54,  -31.38), ( +13.00,  -36.00), ( -53.46,   -5.38), ( +13.00,   +0.00), ( -53.46,   +5.38), ( +13.00,  +36.00), (  -2.54,  +31.38)
-(  -0.00,  +26.92), ( +13.00,  +28.83), ( +10.40,   +5.38), (  +2.23,   -4.00), ( -43.80,   +5.38), (  -2.23,  +58.00), (  +7.86,   +5.38), ( -13.00,  +28.77)
-( +65.00,    0.00), ( +32.63,  -31.38), ( +13.00,   -8.00), (  -8.43,   -5.38), ( +13.00,  +28.00), ( -12.63,   +5.38), ( +13.00,  +84.00), ( +76.43,  +31.38)
-(  +0.00, +156.92), ( +75.77,   +4.00), ( +36.14,  +31.38), ( +13.00,  -23.17), (  -4.20,  +31.38), ( -13.00,  +44.77), ( +89.60,  +31.38), ( -75.77,  -58.00)
-
-NN
-( +15.00,    0.00), (  +9.36,   -9.36), (  -0.00,   -9.00), (  -3.36,   -3.36), (  -3.00,   +0.00), (  -3.36,   +3.36), (  +0.00,   +9.00), (  +9.36,   +9.36)
-(  +8.54,   -8.54), (  +0.41,  -10.83), (  -4.54,   -6.54), (  -4.83,   -2.41), (  -4.54,   +0.54), (  -2.41,   +4.83), (  +4.54,   +6.54), ( +10.83,   +0.41)
-(  -0.00,   -5.00), (  -3.12,   -3.95), (  -5.00,   -2.00), (  -5.95,   +1.12), (  -4.00,   +5.00), (  +1.12,   +5.95), (  +5.00,   +2.00), (  +3.95,   -3.12)
-(  +1.46,   +1.46), (  +0.83,   -0.41), (  -2.54,   +0.54), (  -2.41,   +5.17), (  +2.54,   +6.54), (  +5.17,   +2.41), (  +2.54,   -0.54), (  +0.41,   +0.83)
-(  +5.00,    0.00), (  +2.29,   -2.29), (  +0.00,   +1.00), (  +3.71,   +3.71), (  +7.00,   -0.00), (  +3.71,   -3.71), (  -0.00,   -1.00), (  +2.29,   +2.29)
-(  +1.46,   -1.46), (  +0.41,   -0.83), (  +2.54,   +0.54), (  +5.17,   -2.41), (  +2.54,   -6.54), (  -2.41,   -5.17), (  -2.54,   -0.54), (  +0.83,   +0.41)
-(  +0.00,   +5.00), (  +3.95,   +3.12), (  +5.00,   -2.00), (  +1.12,   -5.95), (  -4.00,   -5.00), (  -5.95,   -1.12), (  -5.00,   +2.00), (  -3.12,   +3.95)
-(  +8.54,   +8.54), ( +10.83,   -0.41), (  +4.54,   -6.54), (  -2.41,   -4.83), (  -4.54,   -0.54), (  -4.83,   +2.41), (  -4.54,   +6.54), (  +0.41,  +10.83)
-
---]]
-end
-
 --- DOCME
 -- @array m1
 -- @array m2
@@ -864,48 +756,22 @@ end
 -- @uint h
 -- @array[opt=m1] out
 function M.TwoGoertzelsThenMultiply_2D (m1, m2, w, h, out)
-	local coeff, wr, wi = 2, 1, 0
-	local offset, col, w2, h2 = 0, 1, 2 * w, 2 * h
-	local last_row = w2 * (h - 1)
--- Plan of attack:
---	Do rows h / 2 + 1 .. h (save WT on first go, then reuse)
---	Then rows h / 2 .. 1 (on these, okay if right-to-left)
---	On each row, pack two reals into columns 1, w / 2 + 1
---	Two-FFT-then-multiply them (get right half, save sample #1)
---	For interior elements... :/
---	Can use symmetry, so exactly enough space...
---	Just transform those the long way, I guess
---	Then tease out symmetry and do multiplies
-	-- Check whether the source and destination match. If not, columns can be handled one at a
-	-- time. Otherwise, the whole matrix is copied (its transpose, rather), as the data gets
-	-- converted from real to complex and doing anything in-place ends up being too troublesome.
-	local dest_differs, arr, delta = out and out ~= m1
+	out = out or m1
 
-	if dest_differs then
-		arr, delta = Column, 0
-	else
-		arr, delta = Transpose, 2 * h2
-	end
-	--[=[
-local ooo={}
-for i = 1, #m1 do
-	ooo[i]=m1[i]
-end
-]=]
 	-- Ensure that rows always land in the array, which may not yet have been allocated, say
 	-- if no previous Goertzel transform has been performed with it.
+	local w2, h2 = 2 * w, 2 * h
 	local area = w2 * h
----[=[
-out = out or m1
+
 	for i = #out + 1, area do
 		out[i] = false
 	end
---]=]
+
 	--
 	BeginDirCS(-w)
 	BeginSines(h)
----[=[
-	local half, nend = .5 * area, area + 2
+
+	local half, nend, to_bottom = .5 * area, area + 2, area - w2
 
 	for col = 3, w, 2 do
 		-- inter cols
@@ -926,37 +792,36 @@ out = out or m1
 
 		-- put row 1 on right
 		local left = half + col
-		local right = left + w
-		local a, b, c, d-- = Column[1], Column[2], Column[h2 + 1], Column[h2 + 2]
-
---		out[right], out[right + 1] = a * c - b * d, b * c + a * d
 
 		-- put bottom into pos
-		local lr = nend - col
+		local ll, lr = to_bottom + col, nend - col
 
 		for i = 1, h, 2 do
 			local j = i + h2
-
-			a, b, c, d = Column[i], Column[i + 1], Column[j], Column[j + 1]
+			local a, b, c, d, i1 = Column[i], Column[i + 1], Column[j], Column[j + 1]
 
 			if i > 1 then
-				out[lr], out[lr + 1], lr = a * c - b * d, -(b * c + a * d), lr - w2
-print("LR", lr+w2,out[lr+w2], out[lr+w2+1])
+				i1, ll = ll, ll - w2
 			else
-				local right = left + w
-
-				out[right], out[right + 1] = a * c - b * d, b * c + a * d
+				i1 = left + w
 			end
 
-			local i2, j2 = i + h, j + h
+			out[i1], out[i1 + 1] = a * c - b * d, b * c + a * d
 
-			a, b, c, d = Column[i2], Column[i2 + 1], Column[j2], Column[j2 + 1]
+			if i > 1 then
+				local k, l = h2 - i + 2, 2 * h2 - i + 2
 
-			out[left], out[left + 1], left = a * c - b * d, b * c + a * d, left + w2
-print("LEFT", left-w2,out[left-w2], out[left-w2+1])
+				a, b, c, d = Column[k], Column[k + 1], Column[l], Column[l + 1]
+
+				out[lr], out[lr + 1], lr = a * c - b * d, -(b * c + a * d), lr - w2
+			else
+				local k, l = i + h, j + h
+
+				a, b, c, d = Column[k], Column[k + 1], Column[l], Column[l + 1]
+
+				out[left], out[left + 1] = a * c - b * d, b * c + a * d
+			end
 		end
--- ^^^ Seems to be off by one... first entry, do something special
-	print("")
 	end
 
 	-- compute sides
@@ -993,85 +858,35 @@ print("LEFT", left-w2,out[left-w2], out[left-w2+1])
 	end
 
 	--
-	local mr, lr, to_bottom = half + w2 + 2, area + 2, area - w2
+	local mid, right = half + w, w2 + 2
+	local center = mid + 2
 
 	for col = 3, w, 2 do
-		local mri = mr - col
-		local a, b, uri = out[mri], out[mri + 1], mri - half 
+		local i, j = mid + col, right - col
+		local a, b = out[i], out[i + 1]
 
-		out[col], out[col + 1], out[uri], out[uri + 1] = a, b, a, -b
+		out[col], out[col + 1], out[j], out[j + 1] = a, b, a, -b
 
-		local mli = half + col
+		local k = center - col
 
-		out[mri], out[mri + 1] = out[mli], -out[mli + 1]
-
-		local lli, uli, lri = col + to_bottom, col, lr - col
-
-		for _ = 2, h, 2 do
-			uli, uri = uli + w2, uri + w2
-
-			out[uli], out[uli + 1] = out[lri], -out[lri]
-			out[uri], out[uri + 1] = out[lli], -out[lli]
-
-			lli, lri = lli - w2, lri - w2
-		end
+		out[i], out[i + 1] = out[k], -out[k + 1]
 	end
-AAA={}
-for i = 1, #out do
-	AAA[i] = out[i]
-end
-	ResetDirCS()
---	vdump(out)
---]=]
---[=[
-	BeginSines(h)
-	for rc = 1, w do
-		--
-		local ri = 0
 
-		for i = 1, h2, 2 do
-			local j, a, b, c, d = i + h2, AuxTwoGoertzels(m1, m2, w, coeff, wr, wi, ri)
-			local ci, cj = offset + i, offset + j
+	--
+	local ul, ur, ll, lr = w2, 2 * (w2 + 1), area - w2, area + 2
 
-			arr[ci], arr[ci + 1] = a, b
-			arr[cj], arr[cj + 1] = c, d
+	for col = 3, w, 2 do
+		local uli, uri, lli, lri = ul + col, ur - col, ll + col, lr - col
 
-			ri = ri + w
-		end
+		for _ = 3, h, 2 do
+			out[uli], out[uli + 1] = out[lri], -out[lri + 1]
+			out[uri], out[uri + 1] = out[lli], -out[lli + 1]
 
-		--
-		Transform(arr, h, offset)
-		Transform(arr, h, offset + h2)
-
-		--
-		if dest_differs then
-			local ci, coff = col, last_row + col
-
-			for i = 1, h2, 2 do
-				local j = i + h2
-				local a, b = Column[i], Column[i + 1]
-				local c, d = Column[j], Column[j + 1]
-
-				out[ci], out[ci + 1], ci, coff = a * c - b * d, b * c + a * d, coff, coff - w2
-			end
-
-			col = col + 2
-		end
-
-		--
-		if rc < w then
-			wr, wi = GetDirCosSin()
-			coeff, offset = 2 * wr, offset + delta
+			uli, uri, lli, lri = uli + w2, uri + w2, lli - w2, lri - w2
 		end
 	end
 
 	ResetDirCS()
-
-	-- If the source and destination were the same, do some final resolution.
-	if not dest_differs then
-		SameDestResolve(m1, w2, h2, last_row)
-	end
---]=]
 end
 
 -- Export the module.
