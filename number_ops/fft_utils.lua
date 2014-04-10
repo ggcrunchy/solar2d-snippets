@@ -197,6 +197,13 @@ function M.PrepareTwoFFTs_2D (out, size, arr1, cols1, arr2, cols2, ncols, na1, n
 	return swapped
 end
 
+-- PrepareTwoFFTS_2D variant... prepare half (real or imaginary part)
+-- ^^ Should take in swapped if an update? (or just lie to it and pass in the other)
+-- Can avoid some of the hassle in the "real" version
+-- If the smaller signal, COULD avoid redoing some of the zeroes...
+
+-- Stuff for rolling signals? (to facilitate overlap convolve methods)
+
 --- Prepares two real vectors to be processed in a single FFT, e.g. as setup for @{number_ops.fft.TwoGoertzelsThenMultiply_1D}.
 -- @array out1 Real output vector, which will be populated from _arr1_ and padded with
 -- zeroes as needed...
