@@ -161,6 +161,7 @@
   <li><a href="../modules/number_ops.morton.html">morton</a></li>
   <li><a href="../modules/number_ops.mwc_rng.html">mwc_rng</a></li>
   <li><a href="../modules/number_ops.range.html">range</a></li>
+  <li><a href="../modules/number_ops.robust.html">robust</a></li>
   <li><a href="../modules/number_ops.simplex_noise.html">simplex_noise</a></li>
   <li><a href="../modules/number_ops.summed_area.html">summed_area</a></li>
   <li><a href="../modules/number_ops.to_string.html">to_string</a></li>
@@ -168,6 +169,7 @@
   <li><a href="../modules/overlay.Help.html">Help</a></li>
   <li><a href="../modules/overlay.Link.html">Link</a></li>
   <li><a href="../modules/quaternion_ops.html">quaternion_ops</a></li>
+  <li><a href="../modules/samples.ColoredCorners.html">ColoredCorners</a></li>
   <li><a href="../modules/samples.Delaunay.html">Delaunay</a></li>
   <li><a href="../modules/samples.Fire.html">Fire</a></li>
   <li><a href="../modules/samples.Hilbert.html">Hilbert</a></li>
@@ -178,6 +180,7 @@
   <li><a href="../modules/samples.OrbitsAndLattices.html">OrbitsAndLattices</a></li>
   <li><a href="../modules/samples.Pixels.html">Pixels</a></li>
   <li><a href="../modules/samples.Plasma.html">Plasma</a></li>
+  <li><a href="../modules/samples.Seams.html">Seams</a></li>
   <li><a href="../modules/samples.SlowMo.html">SlowMo</a></li>
   <li><a href="../modules/samples.Snowfall.html">Snowfall</a></li>
   <li><a href="../modules/samples.Superformulae.html">Superformulae</a></li>
@@ -247,7 +250,7 @@
 <div id="content">
 
 <h1>Module <code>number_ops.fft</code></h1>
-<p>An implementation of the Fast Fourier Transform.</p>
+<p>Operations for the Fast Fourier Transform.</p>
 <p>
 
 </p>
@@ -257,59 +260,67 @@
 <table class="function_list">
 	<tr>
 	<td class="name" nowrap><a href="#FFT_1D">FFT_1D (v, n)</a></td>
-	<td class="summary">DOCME</td>
+	<td class="summary">One-dimensional forward Fast Fourier Transform.</td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#FFT_2D">FFT_2D (m, w, h)</a></td>
-	<td class="summary">DOCME</td>
+	<td class="summary">Two-dimensional forward Fast Fourier Transform.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#FFT_Real1D">FFT_Real1D (v, n)</a></td>
-	<td class="summary">DOCME</td>
+	<td class="name" nowrap><a href="#Goertzel">Goertzel (v, index, n[, offset=0])</a></td>
+	<td class="summary">Computes a sample using the <a href="http://en.wikipedia.org/wiki/Goertzel_algorithm">Goertzel algorithm</a>, without performing a full FFT.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#Goertzel">Goertzel (v, index, n, offset)</a></td>
-	<td class="summary">DOCME</td>
+	<td class="name" nowrap><a href="#IFFT_1D">IFFT_1D (v, n[, norm])</a></td>
+	<td class="summary">One-dimensional inverse Fast Fourier Transform.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#IFFT_1D">IFFT_1D (v, n)</a></td>
-	<td class="summary">DOCME</td>
+	<td class="name" nowrap><a href="#IFFT_2D">IFFT_2D (m, w, h[, norm])</a></td>
+	<td class="summary">Two-dimensional inverse Fast Fourier Transform.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#IFFT_2D">IFFT_2D (m, w, h)</a></td>
-	<td class="summary">DOCME</td>
+	<td class="name" nowrap><a href="#Multiply_1D">Multiply_1D (v1, v2, n[, out=v1])</a></td>
+	<td class="summary">Performs element-wise multiplication on two complex vectors.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#IFFT_Real1D">IFFT_Real1D (v, n)</a></td>
-	<td class="summary">DOCME</td>
+	<td class="name" nowrap><a href="#Multiply_2D">Multiply_2D (m1, m2, w, h[, out=m1])</a></td>
+	<td class="summary">Performs element-wise multiplication on two complex matrices.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#IFFT_Real2D">IFFT_Real2D (m, w, h)</a></td>
-	<td class="summary">DOCME</td>
+	<td class="name" nowrap><a href="#RealFFT_1D">RealFFT_1D (v, n)</a></td>
+	<td class="summary">One-dimensional forward Fast Fourier Transform, specialized for real input.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#Multiply_1D">Multiply_1D (v1, v2, n, out)</a></td>
-	<td class="summary">DOCME</td>
+	<td class="name" nowrap><a href="#RealFFT_2D">RealFFT_2D (m, w, h)</a></td>
+	<td class="summary">Two-dimensional forward Fast Fourier Transform, specialized for real input.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#Multiply_2D">Multiply_2D (m1, m2, w, h, out)</a></td>
-	<td class="summary">DOCME</td>
+	<td class="name" nowrap><a href="#RealIFFT_1D">RealIFFT_1D (v, n[, norm])</a></td>
+	<td class="summary">One-dimensional inverse Fast Fourier Transform, specialized for output known to be real.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#TwoFFTs_ThenMultiply1D">TwoFFTs_ThenMultiply1D (v, n)</a></td>
-	<td class="summary">DOCME</td>
+	<td class="name" nowrap><a href="#RealIFFT_2D">RealIFFT_2D (m, w, h[, norm])</a></td>
+	<td class="summary">Two-dimensional inverse Fast Fourier Transform, specialized for output known to be real.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#TwoFFTs_ThenMultiply2D">TwoFFTs_ThenMultiply2D (m, w, h)</a></td>
-	<td class="summary">DOCME</td>
+	<td class="name" nowrap><a href="#TwoFFTsThenMultiply_1D">TwoFFTsThenMultiply_1D (v, n)</a></td>
+	<td class="summary">Performs one-dimensional forward Fast Fourier Transforms of two real vectors, then
+ multiplies them by one another.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#TwoGoertzels_ThenMultiply1D">TwoGoertzels_ThenMultiply1D (v1, v2, n, out)</a></td>
-	<td class="summary">DOCME</td>
+	<td class="name" nowrap><a href="#TwoFFTsThenMultiply_2D">TwoFFTsThenMultiply_2D (m, w, h)</a></td>
+	<td class="summary">Performs two-dimensional forward Fast Fourier Transforms of two real matrices, then
+ multiplies them by one another.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#TwoGoertzels_ThenMultiply2D">TwoGoertzels_ThenMultiply2D (m1, m2, w, h, out)</a></td>
-	<td class="summary">DOCME</td>
+	<td class="name" nowrap><a href="#TwoGoertzelsThenMultiply_1D">TwoGoertzelsThenMultiply_1D (v1, v2, n[, out=v1])</a></td>
+	<td class="summary">Performs one-dimensional forward Fast Fourier Transforms of two real vectors using the
+ <a href="http://en.wikipedia.org/wiki/Goertzel_algorithm">Goertzel algorithm</a>, then multiplies them by one another.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#TwoGoertzelsThenMultiply_2D">TwoGoertzelsThenMultiply_2D (m1, m2, w, h[, out=m1])</a></td>
+	<td class="summary">Performs two-dimensional forward Fast Fourier Transforms of two real vectors using the
+ <a href="http://en.wikipedia.org/wiki/Goertzel_algorithm">Goertzel algorithm</a>, then multiplies them by one another.</td>
 	</tr>
 </table>
 
@@ -324,21 +335,19 @@
     <strong>FFT_1D (v, n)</strong>
     </dt>
     <dd>
-    DOCME
+    One-dimensional forward Fast Fourier Transform.
 
     <h3>Parameters:</h3>
     <ul>
         <li><span class="parameter">v</span>
             <span class="types"><span class="type">array</span></span>
+         Vector of complex value pairs (size = 2 * <em>n</em>).</p>
 
-
-
+<p> Afterward, this will be the transformed data.
         </li>
         <li><span class="parameter">n</span>
             <span class="types"><span class="type">uint</span></span>
-
-
-
+         Power-of-2 count of elements in <em>v</em>.
         </li>
     </ul>
 
@@ -352,55 +361,23 @@
     <strong>FFT_2D (m, w, h)</strong>
     </dt>
     <dd>
-    DOCME
+    Two-dimensional forward Fast Fourier Transform.
 
     <h3>Parameters:</h3>
     <ul>
         <li><span class="parameter">m</span>
             <span class="types"><span class="type">array</span></span>
+         Matrix of complex value pairs (size = 2 * <em>w</em> * <em>h</em>).</p>
 
-
-
+<p> Afterward, this will be the transformed data.
         </li>
         <li><span class="parameter">w</span>
             <span class="types"><span class="type">uint</span></span>
-
-
-
+         Power-of-2 width of <em>m</em>...
         </li>
         <li><span class="parameter">h</span>
             <span class="types"><span class="type">uint</span></span>
-
-
-
-        </li>
-    </ul>
-
-
-
-
-
-</dd>
-    <dt>
-    <a name = "FFT_Real1D"></a>
-    <strong>FFT_Real1D (v, n)</strong>
-    </dt>
-    <dd>
-    DOCME
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">v</span>
-            <span class="types"><span class="type">array</span></span>
-
-
-
-        </li>
-        <li><span class="parameter">n</span>
-            <span class="types"><span class="type">uint</span></span>
-
-
-
+         ...and height.
         </li>
     </ul>
 
@@ -411,36 +388,29 @@
 </dd>
     <dt>
     <a name = "Goertzel"></a>
-    <strong>Goertzel (v, index, n, offset)</strong>
+    <strong>Goertzel (v, index, n[, offset=0])</strong>
     </dt>
     <dd>
-    DOCME
+    Computes a sample using the <a href="http://en.wikipedia.org/wiki/Goertzel_algorithm">Goertzel algorithm</a>, without performing a full FFT.
 
     <h3>Parameters:</h3>
     <ul>
         <li><span class="parameter">v</span>
             <span class="types"><span class="type">array</span></span>
-
-
-
+         Vector of complex value pairs, consisting of one or more rows of size 2 * <em>n</em>.
         </li>
         <li><span class="parameter">index</span>
             <span class="types"><span class="type">uint</span></span>
-
-
-
+         Index of sample, relative to <em>offset</em>.
         </li>
         <li><span class="parameter">n</span>
             <span class="types"><span class="type">uint</span></span>
-
-
-
+         Number of complex elements in a row of <em>v</em> (may be non-power-of-2).
         </li>
         <li><span class="parameter">offset</span>
             <span class="types"><span class="type">uint</span></span>
-
-
-
+         Multiple-of-<em>n</em> offset of row.
+         (<em>default</em> 0)
         </li>
     </ul>
 
@@ -448,10 +418,10 @@
     <ol>
         <li>
            <span class="types"><span class="type">number</span></span>
-        R</li>
+        Real part of sample...</li>
         <li>
            <span class="types"><span class="type">number</span></span>
-        I</li>
+        ...and imaginary part.</li>
     </ol>
 
 
@@ -460,24 +430,27 @@
 </dd>
     <dt>
     <a name = "IFFT_1D"></a>
-    <strong>IFFT_1D (v, n)</strong>
+    <strong>IFFT_1D (v, n[, norm])</strong>
     </dt>
     <dd>
-    DOCME
+    One-dimensional inverse Fast Fourier Transform.
 
     <h3>Parameters:</h3>
     <ul>
         <li><span class="parameter">v</span>
             <span class="types"><span class="type">array</span></span>
+         Vector of complex value pairs (size = 2 * <em>n</em>).</p>
 
-
-
+<p> Afterward, this will be the transformed data.
         </li>
         <li><span class="parameter">n</span>
             <span class="types"><span class="type">uint</span></span>
-
-
-
+         Power-of-2 count of elements in <em>v</em>.
+        </li>
+        <li><span class="parameter">norm</span>
+            <span class="types"><a class="type" href="http://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
+         Normalization method. If <strong>"none"</strong>, no normalization is performed.
+ Otherwise, all results are divided by <em>n</em>.
         </li>
     </ul>
 
@@ -488,92 +461,31 @@
 </dd>
     <dt>
     <a name = "IFFT_2D"></a>
-    <strong>IFFT_2D (m, w, h)</strong>
+    <strong>IFFT_2D (m, w, h[, norm])</strong>
     </dt>
     <dd>
-    DOCME
+    Two-dimensional inverse Fast Fourier Transform.
 
     <h3>Parameters:</h3>
     <ul>
         <li><span class="parameter">m</span>
             <span class="types"><span class="type">array</span></span>
+         Matrix of complex value pairs (size = 2 * <em>w</em> * <em>h</em>).</p>
 
-
-
+<p> Afterward, this will be the transformed data.
         </li>
         <li><span class="parameter">w</span>
             <span class="types"><span class="type">uint</span></span>
-
-
-
+         Power-of-2 width of <em>m</em>...
         </li>
         <li><span class="parameter">h</span>
             <span class="types"><span class="type">uint</span></span>
-
-
-
+         ...and height.
         </li>
-    </ul>
-
-
-
-
-
-</dd>
-    <dt>
-    <a name = "IFFT_Real1D"></a>
-    <strong>IFFT_Real1D (v, n)</strong>
-    </dt>
-    <dd>
-    DOCME
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">v</span>
-            <span class="types"><span class="type">array</span></span>
-
-
-
-        </li>
-        <li><span class="parameter">n</span>
-            <span class="types"><span class="type">uint</span></span>
-
-
-
-        </li>
-    </ul>
-
-
-
-
-
-</dd>
-    <dt>
-    <a name = "IFFT_Real2D"></a>
-    <strong>IFFT_Real2D (m, w, h)</strong>
-    </dt>
-    <dd>
-    DOCME
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">m</span>
-            <span class="types"><span class="type">array</span></span>
-
-
-
-        </li>
-        <li><span class="parameter">w</span>
-            <span class="types"><span class="type">uint</span></span>
-
-
-
-        </li>
-        <li><span class="parameter">h</span>
-            <span class="types"><span class="type">uint</span></span>
-
-
-
+        <li><span class="parameter">norm</span>
+            <span class="types"><a class="type" href="http://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
+         Normalization method. If <strong>"none"</strong>, no normalization is performed.
+ Otherwise, all results are divided by <em>w</em> * <em>h</em>.
         </li>
     </ul>
 
@@ -584,32 +496,29 @@
 </dd>
     <dt>
     <a name = "Multiply_1D"></a>
-    <strong>Multiply_1D (v1, v2, n, out)</strong>
+    <strong>Multiply_1D (v1, v2, n[, out=v1])</strong>
     </dt>
     <dd>
-    DOCME
+    Performs element-wise multiplication on two complex vectors.
 
     <h3>Parameters:</h3>
     <ul>
         <li><span class="parameter">v1</span>
-
-
-
+            <span class="types"><span class="type">array</span></span>
+         Vector #1 of complex value pairs...
         </li>
         <li><span class="parameter">v2</span>
-
-
-
+            <span class="types"><span class="type">array</span></span>
+         ...and vector #2.
         </li>
         <li><span class="parameter">n</span>
-
-
-
+            <span class="types"><span class="type">uint</span></span>
+         Power-of-2 count of elements in <em>v1</em> and <em>v2</em>.
         </li>
         <li><span class="parameter">out</span>
-
-
-
+            <span class="types"><span class="type">array</span></span>
+         Vector of (<em>n</em>) complex results.
+         (<em>default</em> v1)
         </li>
     </ul>
 
@@ -620,37 +529,33 @@
 </dd>
     <dt>
     <a name = "Multiply_2D"></a>
-    <strong>Multiply_2D (m1, m2, w, h, out)</strong>
+    <strong>Multiply_2D (m1, m2, w, h[, out=m1])</strong>
     </dt>
     <dd>
-    DOCME
+    Performs element-wise multiplication on two complex matrices.
 
     <h3>Parameters:</h3>
     <ul>
         <li><span class="parameter">m1</span>
-
-
-
+            <span class="types"><span class="type">array</span></span>
+         Matrix #1 of complex value pairs...
         </li>
         <li><span class="parameter">m2</span>
-
-
-
+            <span class="types"><span class="type">array</span></span>
+         ...and matrix #2.
         </li>
         <li><span class="parameter">w</span>
-
-
-
+            <span class="types"><span class="type">uint</span></span>
+         Power-of-2 width of <em>m1</em> and <em>m2</em>...
         </li>
         <li><span class="parameter">h</span>
-
-
-
+            <span class="types"><span class="type">uint</span></span>
+         ...and height.
         </li>
         <li><span class="parameter">out</span>
-
-
-
+            <span class="types"><span class="type">array</span></span>
+         Matrix of (<em>w</em> * <em>h</em>) complex results.
+         (<em>default</em> m1)
         </li>
     </ul>
 
@@ -660,25 +565,24 @@
 
 </dd>
     <dt>
-    <a name = "TwoFFTs_ThenMultiply1D"></a>
-    <strong>TwoFFTs_ThenMultiply1D (v, n)</strong>
+    <a name = "RealFFT_1D"></a>
+    <strong>RealFFT_1D (v, n)</strong>
     </dt>
     <dd>
-    DOCME
+    One-dimensional forward Fast Fourier Transform, specialized for real input.
 
     <h3>Parameters:</h3>
     <ul>
         <li><span class="parameter">v</span>
             <span class="types"><span class="type">array</span></span>
+         Vector of real values (size = <em>n</em>).</p>
 
-
-
+<p> Afterward, this will be the transformed data, but reinterpreted as a complex vector
+ (of size = 2 * <em>n</em>).
         </li>
         <li><span class="parameter">n</span>
             <span class="types"><span class="type">uint</span></span>
-
-
-
+         Power-of-2 count of real input elements in <em>v</em>.
         </li>
     </ul>
 
@@ -688,31 +592,28 @@
 
 </dd>
     <dt>
-    <a name = "TwoFFTs_ThenMultiply2D"></a>
-    <strong>TwoFFTs_ThenMultiply2D (m, w, h)</strong>
+    <a name = "RealFFT_2D"></a>
+    <strong>RealFFT_2D (m, w, h)</strong>
     </dt>
     <dd>
-    DOCME
+    Two-dimensional forward Fast Fourier Transform, specialized for real input.
 
     <h3>Parameters:</h3>
     <ul>
         <li><span class="parameter">m</span>
             <span class="types"><span class="type">array</span></span>
+         Matrix of real values (size = <em>w</em> * <em>h</em>).</p>
 
-
-
+<p> Afterward, this will be the transformed data, but reinterpreted as a complex matrix (of
+ size = 2 * <em>w</em> * <em>h</em>).
         </li>
         <li><span class="parameter">w</span>
             <span class="types"><span class="type">uint</span></span>
-
-
-
+         Power-of-2 width of <em>m</em>...
         </li>
         <li><span class="parameter">h</span>
             <span class="types"><span class="type">uint</span></span>
-
-
-
+         ...and height.
         </li>
     </ul>
 
@@ -722,88 +623,218 @@
 
 </dd>
     <dt>
-    <a name = "TwoGoertzels_ThenMultiply1D"></a>
-    <strong>TwoGoertzels_ThenMultiply1D (v1, v2, n, out)</strong>
+    <a name = "RealIFFT_1D"></a>
+    <strong>RealIFFT_1D (v, n[, norm])</strong>
     </dt>
     <dd>
-    DOCME
+    One-dimensional inverse Fast Fourier Transform, specialized for output known to be real.
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">v</span>
+            <span class="types"><span class="type">array</span></span>
+         Vector of complex value pairs (size = 2 * <em>n</em>).</p>
+
+<p> Afterward, this will be the transformed data, but reinterpreted as a real vector (also of
+ size = 2 * <em>n</em>).
+        </li>
+        <li><span class="parameter">n</span>
+            <span class="types"><span class="type">uint</span></span>
+         Power-of-2 count of complex input elements in <em>v</em>.
+        </li>
+        <li><span class="parameter">norm</span>
+            <span class="types"><a class="type" href="http://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
+         Normalization method. If <strong>"none"</strong>, no normalization is performed.
+ Otherwise, all results are divided by <em>n</em>.
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "RealIFFT_2D"></a>
+    <strong>RealIFFT_2D (m, w, h[, norm])</strong>
+    </dt>
+    <dd>
+    Two-dimensional inverse Fast Fourier Transform, specialized for output known to be real.
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">m</span>
+            <span class="types"><span class="type">array</span></span>
+         Matrix of complex value pairs (size = 2 * <em>w</em> * <em>h</em>).</p>
+
+<p> Afterward, this will be the transformed data, but reinterpreted as a real matrix (also of
+ size = 2 * <em>w</em> * <em>h</em>).
+        </li>
+        <li><span class="parameter">w</span>
+            <span class="types"><span class="type">uint</span></span>
+         Power-of-2 width of <em>m</em>...
+        </li>
+        <li><span class="parameter">h</span>
+            <span class="types"><span class="type">uint</span></span>
+         ...and height.
+        </li>
+        <li><span class="parameter">norm</span>
+            <span class="types"><a class="type" href="http://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
+         Normalization method. If <strong>"none"</strong>, no normalization is performed.
+ Otherwise, all results are divided by <em>w</em> * <em>h</em>.
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "TwoFFTsThenMultiply_1D"></a>
+    <strong>TwoFFTsThenMultiply_1D (v, n)</strong>
+    </dt>
+    <dd>
+    Performs one-dimensional forward Fast Fourier Transforms of two real vectors, then
+ multiplies them by one another.
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">v</span>
+            <span class="types"><span class="type">array</span></span>
+         Vector of pairs, as { ..., element from vector #1, element from vector #2, ... }.</p>
+
+<p> Afterward, this will be the products.
+        </li>
+        <li><span class="parameter">n</span>
+            <span class="types"><span class="type">uint</span></span>
+         Power-of-2 width of <em>v</em> (i.e. count of elements in each real vector).
+        </li>
+    </ul>
+
+
+
+    <h3>See also:</h3>
+    <ul>
+         <li><a href="../modules/number_ops.fft.html#Multiply_1D">Multiply_1D</a></li>
+         <li><a href="../modules/number_ops.fft_utils.html#PrepareTwoFFTs_1D">number_ops.fft_utils.PrepareTwoFFTs_1D</a></li>
+    </ul>
+
+
+</dd>
+    <dt>
+    <a name = "TwoFFTsThenMultiply_2D"></a>
+    <strong>TwoFFTsThenMultiply_2D (m, w, h)</strong>
+    </dt>
+    <dd>
+    Performs two-dimensional forward Fast Fourier Transforms of two real matrices, then
+ multiplies them by one another.
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">m</span>
+            <span class="types"><span class="type">array</span></span>
+         Vector of pairs, as { ..., element from matrix #1, element from matrix #2, ... }.</p>
+
+<p> Afterward, this will be the products.
+        </li>
+        <li><span class="parameter">w</span>
+            <span class="types"><span class="type">uint</span></span>
+         Power-of-2 width of <em>m</em> (i.e. width in each real matrix)...
+        </li>
+        <li><span class="parameter">h</span>
+            <span class="types"><span class="type">uint</span></span>
+         ...and height.
+        </li>
+    </ul>
+
+
+
+    <h3>See also:</h3>
+    <ul>
+         <li><a href="../modules/number_ops.fft.html#Multiply_2D">Multiply_2D</a></li>
+         <li><a href="../modules/number_ops.fft_utils.html#PrepareTwoFFTs_2D">number_ops.fft_utils.PrepareTwoFFTs_2D</a></li>
+    </ul>
+
+
+</dd>
+    <dt>
+    <a name = "TwoGoertzelsThenMultiply_1D"></a>
+    <strong>TwoGoertzelsThenMultiply_1D (v1, v2, n[, out=v1])</strong>
+    </dt>
+    <dd>
+    Performs one-dimensional forward Fast Fourier Transforms of two real vectors using the
+ <a href="http://en.wikipedia.org/wiki/Goertzel_algorithm">Goertzel algorithm</a>, then multiplies them by one another.
 
     <h3>Parameters:</h3>
     <ul>
         <li><span class="parameter">v1</span>
             <span class="types"><span class="type">array</span></span>
-
-
-
+         Vector #1 of real elements...
         </li>
         <li><span class="parameter">v2</span>
             <span class="types"><span class="type">array</span></span>
-
-
-
+         ...and vector #2.
         </li>
         <li><span class="parameter">n</span>
             <span class="types"><span class="type">uint</span></span>
-
-
-
+         Power-of-2 width of <em>v1</em> and <em>v2</em>.
         </li>
         <li><span class="parameter">out</span>
             <span class="types"><span class="type">array</span></span>
-
-
-
+         Complex output vector (of size = 2 * <em>n</em>), i.e. the products.
+         (<em>default</em> v1)
         </li>
     </ul>
 
 
 
+    <h3>See also:</h3>
+    <ul>
+         <a href="../modules/number_ops.fft.html#Multiply_1D">Multiply_1D</a>
+    </ul>
 
 
 </dd>
     <dt>
-    <a name = "TwoGoertzels_ThenMultiply2D"></a>
-    <strong>TwoGoertzels_ThenMultiply2D (m1, m2, w, h, out)</strong>
+    <a name = "TwoGoertzelsThenMultiply_2D"></a>
+    <strong>TwoGoertzelsThenMultiply_2D (m1, m2, w, h[, out=m1])</strong>
     </dt>
     <dd>
-    DOCME
+    Performs two-dimensional forward Fast Fourier Transforms of two real vectors using the
+ <a href="http://en.wikipedia.org/wiki/Goertzel_algorithm">Goertzel algorithm</a>, then multiplies them by one another.
 
     <h3>Parameters:</h3>
     <ul>
         <li><span class="parameter">m1</span>
             <span class="types"><span class="type">array</span></span>
-
-
-
+         Matrix #1 of real elements...
         </li>
         <li><span class="parameter">m2</span>
             <span class="types"><span class="type">array</span></span>
-
-
-
+         ...and matrix #2.
         </li>
         <li><span class="parameter">w</span>
             <span class="types"><span class="type">uint</span></span>
-
-
-
+         Power-of-2 width of <em>v1</em> and <em>v2</em> (i.e. width in the real matrix)...
         </li>
         <li><span class="parameter">h</span>
             <span class="types"><span class="type">uint</span></span>
-
-
-
+         ...and height.
         </li>
         <li><span class="parameter">out</span>
             <span class="types"><span class="type">array</span></span>
-
-
-
+         Complex output matrix (of size = 2 * <em>w</em> * <em>h</em>), i.e. the products.
+         (<em>default</em> m1)
         </li>
     </ul>
 
 
 
+    <h3>See also:</h3>
+    <ul>
+         <a href="../modules/number_ops.fft.html#Multiply_2D">Multiply_2D</a>
+    </ul>
 
 
 </dd>

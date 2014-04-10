@@ -161,6 +161,7 @@
   <li><a href="../modules/number_ops.morton.html">morton</a></li>
   <li><a href="../modules/number_ops.mwc_rng.html">mwc_rng</a></li>
   <li><a href="../modules/number_ops.range.html">range</a></li>
+  <li><a href="../modules/number_ops.robust.html">robust</a></li>
   <li><a href="../modules/number_ops.simplex_noise.html">simplex_noise</a></li>
   <li><a href="../modules/number_ops.summed_area.html">summed_area</a></li>
   <li><a href="../modules/number_ops.to_string.html">to_string</a></li>
@@ -168,6 +169,7 @@
   <li><a href="../modules/overlay.Help.html">Help</a></li>
   <li><a href="../modules/overlay.Link.html">Link</a></li>
   <li><a href="../modules/quaternion_ops.html">quaternion_ops</a></li>
+  <li><a href="../modules/samples.ColoredCorners.html">ColoredCorners</a></li>
   <li><a href="../modules/samples.Delaunay.html">Delaunay</a></li>
   <li><a href="../modules/samples.Fire.html">Fire</a></li>
   <li><a href="../modules/samples.Hilbert.html">Hilbert</a></li>
@@ -178,6 +180,7 @@
   <li><a href="../modules/samples.OrbitsAndLattices.html">OrbitsAndLattices</a></li>
   <li><a href="../modules/samples.Pixels.html">Pixels</a></li>
   <li><a href="../modules/samples.Plasma.html">Plasma</a></li>
+  <li><a href="../modules/samples.Seams.html">Seams</a></li>
   <li><a href="../modules/samples.SlowMo.html">SlowMo</a></li>
   <li><a href="../modules/samples.Snowfall.html">Snowfall</a></li>
   <li><a href="../modules/samples.Superformulae.html">Superformulae</a></li>
@@ -259,7 +262,11 @@
 <h2><a href="#Functions">Functions</a></h2>
 <table class="function_list">
 	<tr>
-	<td class="name" nowrap><a href="#PrepareSeparateFFTs_2D">PrepareSeparateFFTs_2D (out1, out2, m, n, arr1, cols1, arr2, cols2, na1, na2)</a></td>
+	<td class="name" nowrap><a href="#PrepareSeparateFFTs_1D">PrepareSeparateFFTs_1D (out1, out2, size, arr1, m, arr2, n)</a></td>
+	<td class="summary">Prepares two real vectors to be consumed by separate (but ostensibly related) FFT's.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#PrepareSeparateFFTs_2D">PrepareSeparateFFTs_2D (out1, out2, m, n, arr1, cols1, arr2, cols2[, na1=#arr1[, na2=#arr2]])</a></td>
 	<td class="summary">Prepares two real matrices to be consumed by separate (but ostensibly related) FFT's.</td>
 	</tr>
 	<tr>
@@ -267,11 +274,15 @@
 	<td class="summary">Prepares two real vectors to be processed in a single FFT, e.g.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#PrepareTwoFFTs_2D">PrepareTwoFFTs_2D (out, size, arr1, cols1, arr2, cols2, ncols, na1, na2)</a></td>
+	<td class="name" nowrap><a href="#PrepareTwoFFTs_2D">PrepareTwoFFTs_2D (out, size, arr1, cols1, arr2, cols2, ncols[, na1=#arr1[, na2=#arr2]])</a></td>
 	<td class="summary">Prepares two real matrices to be processed in a single FFT, e.g.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#PrepareTwoGoertzels_2D">PrepareTwoGoertzels_2D (out1, out2, m, n, arr1, cols1, arr2, cols2, na1, na2)</a></td>
+	<td class="name" nowrap><a href="#PrepareTwoGoertzels_1D">PrepareTwoGoertzels_1D (out1, out2, size, arr1, m, arr2, n)</a></td>
+	<td class="summary">Prepares two real vectors to be processed in a single FFT, e.g.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#PrepareTwoGoertzels_2D">PrepareTwoGoertzels_2D (out1, out2, m, n, arr1, cols1, arr2, cols2[, na1=#arr1[, na2=#arr2]])</a></td>
 	<td class="summary">Prepares two real vectors to be processed in a single FFT, e.g.</td>
 	</tr>
 </table>
@@ -283,8 +294,53 @@
     <h2><a name="Functions"></a>Functions</h2>
     <dl class="function">
     <dt>
+    <a name = "PrepareSeparateFFTs_1D"></a>
+    <strong>PrepareSeparateFFTs_1D (out1, out2, size, arr1, m, arr2, n)</strong>
+    </dt>
+    <dd>
+    Prepares two real vectors to be consumed by separate (but ostensibly related) FFT's.
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">out1</span>
+            <span class="types"><span class="type">array</span></span>
+         Complex output vector, which will be populated from <em>arr1</em> and padded with
+ zeroes as needed...
+        </li>
+        <li><span class="parameter">out2</span>
+            <span class="types"><span class="type">array</span></span>
+         ...the same, for <em>arr2</em>.
+        </li>
+        <li><span class="parameter">size</span>
+            <span class="types"><span class="type">uint</span></span>
+         Power-of-2 size of <em>out1</em> and <em>out2</em>, &ge; max(<em>m</em>, <em>n</em>).
+        </li>
+        <li><span class="parameter">arr1</span>
+            <span class="types"><span class="type">array</span></span>
+         Vector #1 of real values.
+        </li>
+        <li><span class="parameter">m</span>
+            <span class="types"><span class="type">uint</span></span>
+         Number of elements in <em>arr1</em>.
+        </li>
+        <li><span class="parameter">arr2</span>
+            <span class="types"><span class="type">array</span></span>
+         Vector #2 of real values.
+        </li>
+        <li><span class="parameter">n</span>
+            <span class="types"><span class="type">uint</span></span>
+         Number of elements in <em>arr2</em>.
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
     <a name = "PrepareSeparateFFTs_2D"></a>
-    <strong>PrepareSeparateFFTs_2D (out1, out2, m, n, arr1, cols1, arr2, cols2, na1, na2)</strong>
+    <strong>PrepareSeparateFFTs_2D (out1, out2, m, n, arr1, cols1, arr2, cols2[, na1=#arr1[, na2=#arr2]])</strong>
     </dt>
     <dd>
     Prepares two real matrices to be consumed by separate (but ostensibly related) FFT's.
@@ -326,12 +382,14 @@
         </li>
         <li><span class="parameter">na1</span>
             <span class="types"><span class="type">uint</span></span>
-         Number of elements in <em>arr1</em>, i.e. the product of the number of rows and <em>cols1</em>.
- If absent, #<em>arr1</em>.
+         Number of elements in <em>arr1</em>, i.e. the product of the number of rows
+ and <em>cols1</em>.
+         (<em>default</em> #arr1)
         </li>
         <li><span class="parameter">na2</span>
             <span class="types"><span class="type">uint</span></span>
-         Likewise, for <em>arr2</em> resp. <em>cols2</em>. If absent, #<em>arr2</em>.
+         Likewise, for <em>arr2</em> resp. <em>cols2</em>.
+         (<em>default</em> #arr2)
         </li>
     </ul>
 
@@ -345,7 +403,7 @@
     <strong>PrepareTwoFFTs_1D (out, size, arr1, m, arr2, n)</strong>
     </dt>
     <dd>
-    Prepares two real vectors to be processed in a single FFT, e.g.  as setup for <a href="../modules/number_ops.fft.html#TwoFFTs_ThenMultiply1D">number_ops.fft.TwoFFTs_ThenMultiply1D</a>.
+    Prepares two real vectors to be processed in a single FFT, e.g.  as setup for <a href="../modules/number_ops.fft.html#TwoFFTsThenMultiply_1D">number_ops.fft.TwoFFTsThenMultiply_1D</a>.
 
     <h3>Parameters:</h3>
     <ul>
@@ -389,10 +447,10 @@
 </dd>
     <dt>
     <a name = "PrepareTwoFFTs_2D"></a>
-    <strong>PrepareTwoFFTs_2D (out, size, arr1, cols1, arr2, cols2, ncols, na1, na2)</strong>
+    <strong>PrepareTwoFFTs_2D (out, size, arr1, cols1, arr2, cols2, ncols[, na1=#arr1[, na2=#arr2]])</strong>
     </dt>
     <dd>
-    Prepares two real matrices to be processed in a single FFT, e.g.  as setup for <a href="../modules/number_ops.fft.html#TwoFFTs_ThenMultiply2D">number_ops.fft.TwoFFTs_ThenMultiply2D</a>.
+    Prepares two real matrices to be processed in a single FFT, e.g.  as setup for <a href="../modules/number_ops.fft.html#TwoFFTsThenMultiply_2D">number_ops.fft.TwoFFTsThenMultiply_2D</a>.
 
     <h3>Parameters:</h3>
     <ul>
@@ -427,12 +485,14 @@
         </li>
         <li><span class="parameter">na1</span>
             <span class="types"><span class="type">uint</span></span>
-         Number of elements in <em>arr1</em>, i.e. the product of the number of rows and <em>cols1</em>.
- If absent, #<em>arr1</em>.
+         Number of elements in <em>arr1</em>, i.e. the product of the number of rows
+ and <em>cols1</em>.
+         (<em>default</em> #arr1)
         </li>
         <li><span class="parameter">na2</span>
             <span class="types"><span class="type">uint</span></span>
-         Likewise, for <em>arr2</em> resp. <em>cols2</em>. If absent, #<em>arr2</em>.
+         Likewise, for <em>arr2</em> resp. <em>cols2</em>.
+         (<em>default</em> #arr2)
         </li>
     </ul>
 
@@ -448,17 +508,62 @@
 
 </dd>
     <dt>
-    <a name = "PrepareTwoGoertzels_2D"></a>
-    <strong>PrepareTwoGoertzels_2D (out1, out2, m, n, arr1, cols1, arr2, cols2, na1, na2)</strong>
+    <a name = "PrepareTwoGoertzels_1D"></a>
+    <strong>PrepareTwoGoertzels_1D (out1, out2, size, arr1, m, arr2, n)</strong>
     </dt>
     <dd>
-    Prepares two real vectors to be processed in a single FFT, e.g.  as setup for <a href="../modules/number_ops.fft.html#TwoGoertzels_ThenMultiply2D">number_ops.fft.TwoGoertzels_ThenMultiply2D</a>.
+    Prepares two real vectors to be processed in a single FFT, e.g.  as setup for <a href="../modules/number_ops.fft.html#TwoGoertzelsThenMultiply_1D">number_ops.fft.TwoGoertzelsThenMultiply_1D</a>.
 
     <h3>Parameters:</h3>
     <ul>
         <li><span class="parameter">out1</span>
             <span class="types"><span class="type">array</span></span>
-         Complex output matrix, which will be populated from <em>arr1</em> and padded with
+         Real output vector, which will be populated from <em>arr1</em> and padded with
+ zeroes as needed...
+        </li>
+        <li><span class="parameter">out2</span>
+            <span class="types"><span class="type">array</span></span>
+         ...the same, for <em>arr2</em>.
+        </li>
+        <li><span class="parameter">size</span>
+            <span class="types"><span class="type">uint</span></span>
+         Power-of-2 size of <em>out1</em> and <em>out2</em>.
+        </li>
+        <li><span class="parameter">arr1</span>
+            <span class="types"><span class="type">array</span></span>
+         Vector #1 of real values.
+        </li>
+        <li><span class="parameter">m</span>
+            <span class="types"><span class="type">uint</span></span>
+         Number of elements in <em>arr1</em>.
+        </li>
+        <li><span class="parameter">arr2</span>
+            <span class="types"><span class="type">array</span></span>
+         Vector #2 of real values.
+        </li>
+        <li><span class="parameter">n</span>
+            <span class="types"><span class="type">uint</span></span>
+         Number of elements in <em>arr2</em>.
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "PrepareTwoGoertzels_2D"></a>
+    <strong>PrepareTwoGoertzels_2D (out1, out2, m, n, arr1, cols1, arr2, cols2[, na1=#arr1[, na2=#arr2]])</strong>
+    </dt>
+    <dd>
+    Prepares two real vectors to be processed in a single FFT, e.g.  as setup for <a href="../modules/number_ops.fft.html#TwoGoertzelsThenMultiply_2D">number_ops.fft.TwoGoertzelsThenMultiply_2D</a>.
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">out1</span>
+            <span class="types"><span class="type">array</span></span>
+         Real output matrix, which will be populated from <em>arr1</em> and padded with
  zeroes as needed...
         </li>
         <li><span class="parameter">out2</span>
@@ -491,12 +596,14 @@
         </li>
         <li><span class="parameter">na1</span>
             <span class="types"><span class="type">uint</span></span>
-         Number of elements in <em>arr1</em>, i.e. the product of the number of rows and <em>cols1</em>.
- If absent, #<em>arr1</em>.
+         Number of elements in <em>arr1</em>, i.e. the product of the number of rows
+ and <em>cols1</em>.
+         (<em>default</em> #arr1)
         </li>
         <li><span class="parameter">na2</span>
             <span class="types"><span class="type">uint</span></span>
-         Likewise, for <em>arr2</em> resp. <em>cols2</em>. If absent, #<em>arr2</em>.
+         Likewise, for <em>arr2</em> resp. <em>cols2</em>.
+         (<em>default</em> #arr2)
         </li>
     </ul>
 

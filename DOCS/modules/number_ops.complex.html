@@ -162,6 +162,7 @@
   <li><a href="../modules/number_ops.morton.html">morton</a></li>
   <li><a href="../modules/number_ops.mwc_rng.html">mwc_rng</a></li>
   <li><a href="../modules/number_ops.range.html">range</a></li>
+  <li><a href="../modules/number_ops.robust.html">robust</a></li>
   <li><a href="../modules/number_ops.simplex_noise.html">simplex_noise</a></li>
   <li><a href="../modules/number_ops.summed_area.html">summed_area</a></li>
   <li><a href="../modules/number_ops.to_string.html">to_string</a></li>
@@ -169,6 +170,7 @@
   <li><a href="../modules/overlay.Help.html">Help</a></li>
   <li><a href="../modules/overlay.Link.html">Link</a></li>
   <li><a href="../modules/quaternion_ops.html">quaternion_ops</a></li>
+  <li><a href="../modules/samples.ColoredCorners.html">ColoredCorners</a></li>
   <li><a href="../modules/samples.Delaunay.html">Delaunay</a></li>
   <li><a href="../modules/samples.Fire.html">Fire</a></li>
   <li><a href="../modules/samples.Hilbert.html">Hilbert</a></li>
@@ -179,6 +181,7 @@
   <li><a href="../modules/samples.OrbitsAndLattices.html">OrbitsAndLattices</a></li>
   <li><a href="../modules/samples.Pixels.html">Pixels</a></li>
   <li><a href="../modules/samples.Plasma.html">Plasma</a></li>
+  <li><a href="../modules/samples.Seams.html">Seams</a></li>
   <li><a href="../modules/samples.SlowMo.html">SlowMo</a></li>
   <li><a href="../modules/samples.Snowfall.html">Snowfall</a></li>
   <li><a href="../modules/samples.Superformulae.html">Superformulae</a></li>
@@ -249,9 +252,9 @@
 
 <h1>Module <code>number_ops.complex</code></h1>
 <p>Some operations on complex numbers.</p>
-<p>
-
-</p>
+<p> In the methods section, the type <strong>Complex</strong> indicates either: a complex number (as
+ returned by one of <a href="../modules/number_ops.complex.html#CacheFactory">CacheFactory</a>, <a href="../modules/number_ops.complex.html#New">New</a>, <a href="../modules/number_ops.complex.html#ComplexMT:Dup">ComplexMT:Dup</a>, or <a href="../modules/number_ops.complex.html#ComplexMT:Dup_Raw">ComplexMT:Dup_Raw</a>)
+ or a number, which will be interpreted as a pure real complex number.</p>
 
 
 <h2><a href="#Functions">Functions</a></h2>
@@ -290,7 +293,7 @@
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#Exp">Exp (a, b)</a></td>
-	<td class="summary">Computes e^<em>z</em>.</td>
+	<td class="summary">Computes <strong>e</strong>^<em>z</em>.</td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#Inner">Inner (a, b, c, d)</a></td>
@@ -349,20 +352,96 @@
 	<td class="summary">Subtracts <em>z2</em> from <em>z1</em>.</td>
 	</tr>
 	<tr>
+	<td class="name" nowrap><a href="#CacheFactory">CacheFactory ([how])</a></td>
+	<td class="summary">Factory for building complex number caches, as per <a href="../modules/var_ops.cache.html#Factory">var_ops.cache.Factory</a>.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#ComplexMT:Abs">ComplexMT:Abs ()</a></td>
+	<td class="summary">Method variant of <a href="../modules/number_ops.complex.html#Abs">Abs</a>.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#ComplexMT:Area">ComplexMT:Area ()</a></td>
+	<td class="summary">Method variant of <a href="../modules/number_ops.complex.html#Area">Area</a>.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#ComplexMT:Arg">ComplexMT:Arg ()</a></td>
+	<td class="summary">Method variant of <a href="../modules/number_ops.complex.html#Arg">Arg</a>.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#ComplexMT:Atan">ComplexMT:Atan ()</a></td>
+	<td class="summary">Method variant of <a href="../modules/number_ops.complex.html#Atan">Atan</a>.</td>
+	</tr>
+	<tr>
 	<td class="name" nowrap><a href="#ComplexMT:Components">ComplexMT:Components ()</a></td>
 	<td class="summary">Getter.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#ComplexMT:Conjugate">ComplexMT:Conjugate ()</a></td>
+	<td class="summary">Method variant of <a href="../modules/number_ops.complex.html#Conjugate">Conjugate</a>.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#ComplexMT:Distance">ComplexMT:Distance ()</a></td>
+	<td class="summary">Method variant of <a href="../modules/number_ops.complex.html#Distance">Distance</a>.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#ComplexMT:Dup">ComplexMT:Dup ()</a></td>
+	<td class="summary">Duplicates the complex number.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#ComplexMT:Dup_Raw">ComplexMT:Dup_Raw ()</a></td>
+	<td class="summary">Variant of <a href="../modules/number_ops.complex.html#ComplexMT:Dup">ComplexMT:Dup</a> that does not add the result to the cache.</td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#ComplexMT.__eq">ComplexMT.__eq (z1, z2)</a></td>
 	<td class="summary">Metamethod.</td>
 	</tr>
 	<tr>
+	<td class="name" nowrap><a href="#ComplexMT:Exp">ComplexMT:Exp ()</a></td>
+	<td class="summary">Method variant of <a href="../modules/number_ops.complex.html#Exp">Exp</a>.</td>
+	</tr>
+	<tr>
 	<td class="name" nowrap><a href="#ComplexMT:Imag">ComplexMT:Imag ()</a></td>
 	<td class="summary">Getter.</td>
 	</tr>
 	<tr>
+	<td class="name" nowrap><a href="#ComplexMT:Inner">ComplexMT:Inner ()</a></td>
+	<td class="summary">Method variant of <a href="../modules/number_ops.complex.html#Inner">Inner</a>.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#ComplexMT:Inverse">ComplexMT:Inverse ()</a></td>
+	<td class="summary">Method variant of <a href="../modules/number_ops.complex.html#Inverse">Inverse</a>.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#ComplexMT:Log">ComplexMT:Log ()</a></td>
+	<td class="summary">Method variant of <a href="../modules/number_ops.complex.html#Log">Log</a>.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#ComplexMT:Mul_I">ComplexMT:Mul_I ()</a></td>
+	<td class="summary">Method variant of <a href="../modules/number_ops.complex.html#Mul_I">Mul_I</a>.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#ComplexMT:Mul_NegI">ComplexMT:Mul_NegI ()</a></td>
+	<td class="summary">Method variant of <a href="../modules/number_ops.complex.html#Mul_NegI">Mul_NegI</a>.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#ComplexMT:Norm">ComplexMT:Norm ()</a></td>
+	<td class="summary">Method variant of <a href="../modules/number_ops.complex.html#Norm">Norm</a>.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#ComplexMT:Normalize">ComplexMT:Normalize ()</a></td>
+	<td class="summary">Method variant of <a href="../modules/number_ops.complex.html#Normalize">Normalize</a>.</td>
+	</tr>
+	<tr>
 	<td class="name" nowrap><a href="#ComplexMT:Real">ComplexMT:Real ()</a></td>
 	<td class="summary">Getter.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#ComplexMT:Reciprocal">ComplexMT:Reciprocal ()</a></td>
+	<td class="summary">Alias of <a href="../modules/number_ops.complex.html#ComplexMT:Inverse">ComplexMT:Inverse</a>.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#New">New ([a=0[, b=0]])</a></td>
+	<td class="summary">Creates a new uncached complex number.</td>
 	</tr>
 </table>
 <h2><a href="#Fields">Fields</a></h2>
@@ -372,108 +451,32 @@
 	<td class="summary">Alias of <a href="../modules/number_ops.complex.html#Inverse">Inverse</a>.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#CacheFactory">CacheFactory</a></td>
-	<td class="summary">DOCME</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#ComplexMT.Abs">ComplexMT.Abs</a></td>
-	<td class="summary">DOCME</td>
-	</tr>
-	<tr>
 	<td class="name" nowrap><a href="#ComplexMT.__add">ComplexMT.__add</a></td>
-	<td class="summary">DOCME</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#ComplexMT.Area">ComplexMT.Area</a></td>
-	<td class="summary">DOCME</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#ComplexMT.Arg">ComplexMT.Arg</a></td>
-	<td class="summary">DOCME</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#ComplexMT.Atan">ComplexMT.Atan</a></td>
-	<td class="summary">DOCME</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#ComplexMT.Conjugate">ComplexMT.Conjugate</a></td>
-	<td class="summary">DOCME</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#ComplexMT.Distance">ComplexMT.Distance</a></td>
-	<td class="summary">DOCME</td>
+	<td class="summary">Metamethod.</td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#ComplexMT.__div">ComplexMT.__div</a></td>
-	<td class="summary">DOCME</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#ComplexMT.Dup">ComplexMT.Dup</a></td>
-	<td class="summary">DOCME</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#ComplexMT.Dup_Raw">ComplexMT.Dup_Raw</a></td>
-	<td class="summary">DOCME</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#ComplexMT.Exp">ComplexMT.Exp</a></td>
-	<td class="summary">DOCME</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#ComplexMT.Inner">ComplexMT.Inner</a></td>
-	<td class="summary">DOCME</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#ComplexMT.Inverse">ComplexMT.Inverse</a></td>
-	<td class="summary">DOCME</td>
+	<td class="summary">Metamethod.</td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#ComplexMT.__len">ComplexMT.__len</a></td>
 	<td class="summary">Metamethod (unsupported in Lua 5.1), aliases <a href="../modules/number_ops.complex.html#Abs">Abs</a>.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#ComplexMT.Log">ComplexMT.Log</a></td>
-	<td class="summary">DOCME</td>
-	</tr>
-	<tr>
 	<td class="name" nowrap><a href="#ComplexMT.__mul">ComplexMT.__mul</a></td>
-	<td class="summary">DOCME</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#ComplexMT.Mul_I">ComplexMT.Mul_I</a></td>
-	<td class="summary">DOCME</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#ComplexMT.Mul_NegI">ComplexMT.Mul_NegI</a></td>
-	<td class="summary">DOCME</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#ComplexMT.Norm">ComplexMT.Norm</a></td>
-	<td class="summary">DOCME</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#ComplexMT.Normalize">ComplexMT.Normalize</a></td>
-	<td class="summary">DOCME</td>
+	<td class="summary">Metamethod.</td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#ComplexMT.__pow">ComplexMT.__pow</a></td>
-	<td class="summary">DOCME</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#ComplexMT.Reciprocal">ComplexMT.Reciprocal</a></td>
-	<td class="summary">DOCME</td>
+	<td class="summary">Metamethod.</td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#ComplexMT.__sub">ComplexMT.__sub</a></td>
-	<td class="summary">DOCME</td>
+	<td class="summary">Metamethod.</td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#ComplexMT.__unm">ComplexMT.__unm</a></td>
-	<td class="summary">DOCME</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#New">New</a></td>
-	<td class="summary">DOCME</td>
+	<td class="summary">Metamethod.</td>
 	</tr>
 </table>
 
@@ -772,7 +775,7 @@
     <strong>Exp (a, b)</strong>
     </dt>
     <dd>
-    Computes e^<em>z</em>.
+    Computes <strong>e</strong>^<em>z</em>.
 
     <h3>Parameters:</h3>
     <ul>
@@ -1314,6 +1317,108 @@
 
 </dd>
     <dt>
+    <a name = "CacheFactory"></a>
+    <strong>CacheFactory ([how])</strong>
+    </dt>
+    <dd>
+    Factory for building complex number caches, as per <a href="../modules/var_ops.cache.html#Factory">var_ops.cache.Factory</a>.
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">how</span>
+            <span class="types"><a class="type" href="http://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
+         Factory argument.
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">function</span></span>
+        Cache function, as per <a href="../modules/var_ops.cache.html#Factory">var_ops.cache.Factory</a>.
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "ComplexMT:Abs"></a>
+    <strong>ComplexMT:Abs ()</strong>
+    </dt>
+    <dd>
+    Method variant of <a href="../modules/number_ops.complex.html#Abs">Abs</a>.
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">number</span></span>
+        Absolute value.
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "ComplexMT:Area"></a>
+    <strong>ComplexMT:Area ()</strong>
+    </dt>
+    <dd>
+    Method variant of <a href="../modules/number_ops.complex.html#Area">Area</a>.
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">number</span></span>
+        Signed area.
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "ComplexMT:Arg"></a>
+    <strong>ComplexMT:Arg ()</strong>
+    </dt>
+    <dd>
+    Method variant of <a href="../modules/number_ops.complex.html#Arg">Arg</a>.
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">number</span></span>
+        Argument.
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "ComplexMT:Atan"></a>
+    <strong>ComplexMT:Atan ()</strong>
+    </dt>
+    <dd>
+    Method variant of <a href="../modules/number_ops.complex.html#Atan">Atan</a>.
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">Complex</span></span>
+        Arctangent.
+    </ol>
+
+
+
+
+</dd>
+    <dt>
     <a name = "ComplexMT:Components"></a>
     <strong>ComplexMT:Components ()</strong>
     </dt>
@@ -1329,6 +1434,84 @@
         <li>
            <span class="types"><span class="type">number</span></span>
         Imaginary part.</li>
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "ComplexMT:Conjugate"></a>
+    <strong>ComplexMT:Conjugate ()</strong>
+    </dt>
+    <dd>
+    Method variant of <a href="../modules/number_ops.complex.html#Conjugate">Conjugate</a>.
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">Complex</span></span>
+        Conjugate.
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "ComplexMT:Distance"></a>
+    <strong>ComplexMT:Distance ()</strong>
+    </dt>
+    <dd>
+    Method variant of <a href="../modules/number_ops.complex.html#Distance">Distance</a>.
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">number</span></span>
+        Distance.
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "ComplexMT:Dup"></a>
+    <strong>ComplexMT:Dup ()</strong>
+    </dt>
+    <dd>
+    Duplicates the complex number. </p>
+
+<p> If the complex number cache is active, said number is added to the cache.
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">Complex</span></span>
+        New complex number instance with same values.
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "ComplexMT:Dup_Raw"></a>
+    <strong>ComplexMT:Dup_Raw ()</strong>
+    </dt>
+    <dd>
+    Variant of <a href="../modules/number_ops.complex.html#ComplexMT:Dup">ComplexMT:Dup</a> that does not add the result to the cache.
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">Complex</span></span>
+        New complex number instance with same values.
     </ol>
 
 
@@ -1366,6 +1549,25 @@
 
 </dd>
     <dt>
+    <a name = "ComplexMT:Exp"></a>
+    <strong>ComplexMT:Exp ()</strong>
+    </dt>
+    <dd>
+    Method variant of <a href="../modules/number_ops.complex.html#Exp">Exp</a>.
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">Complex</span></span>
+        Base-<strong>e</strong> power.
+    </ol>
+
+
+
+
+</dd>
+    <dt>
     <a name = "ComplexMT:Imag"></a>
     <strong>ComplexMT:Imag ()</strong>
     </dt>
@@ -1378,6 +1580,139 @@
 
            <span class="types"><span class="type">number</span></span>
         Imaginary part.
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "ComplexMT:Inner"></a>
+    <strong>ComplexMT:Inner ()</strong>
+    </dt>
+    <dd>
+    Method variant of <a href="../modules/number_ops.complex.html#Inner">Inner</a>.
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">number</span></span>
+        Inner product.
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "ComplexMT:Inverse"></a>
+    <strong>ComplexMT:Inverse ()</strong>
+    </dt>
+    <dd>
+    Method variant of <a href="../modules/number_ops.complex.html#Inverse">Inverse</a>.
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">Complex</span></span>
+        Multiplicative inverse.
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "ComplexMT:Log"></a>
+    <strong>ComplexMT:Log ()</strong>
+    </dt>
+    <dd>
+    Method variant of <a href="../modules/number_ops.complex.html#Log">Log</a>.
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">Complex</span></span>
+        Logarithm.
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "ComplexMT:Mul_I"></a>
+    <strong>ComplexMT:Mul_I ()</strong>
+    </dt>
+    <dd>
+    Method variant of <a href="../modules/number_ops.complex.html#Mul_I">Mul_I</a>.
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">Complex</span></span>
+        Product with <em>i</em>.
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "ComplexMT:Mul_NegI"></a>
+    <strong>ComplexMT:Mul_NegI ()</strong>
+    </dt>
+    <dd>
+    Method variant of <a href="../modules/number_ops.complex.html#Mul_NegI">Mul_NegI</a>.
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">Complex</span></span>
+        Product with -<em>i</em>.
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "ComplexMT:Norm"></a>
+    <strong>ComplexMT:Norm ()</strong>
+    </dt>
+    <dd>
+    Method variant of <a href="../modules/number_ops.complex.html#Norm">Norm</a>.
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">number</span></span>
+        Norm.
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "ComplexMT:Normalize"></a>
+    <strong>ComplexMT:Normalize ()</strong>
+    </dt>
+    <dd>
+    Method variant of <a href="../modules/number_ops.complex.html#Normalize">Normalize</a>.
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">Complex</span></span>
+        Normalized result.
     </ol>
 
 
@@ -1403,6 +1738,51 @@
 
 
 </dd>
+    <dt>
+    <a name = "ComplexMT:Reciprocal"></a>
+    <strong>ComplexMT:Reciprocal ()</strong>
+    </dt>
+    <dd>
+    Alias of <a href="../modules/number_ops.complex.html#ComplexMT:Inverse">ComplexMT:Inverse</a>.
+
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "New"></a>
+    <strong>New ([a=0[, b=0]])</strong>
+    </dt>
+    <dd>
+    Creates a new uncached complex number.
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">a</span>
+            <span class="types"><span class="type">number</span></span>
+         Real component...
+         (<em>default</em> 0)
+        </li>
+        <li><span class="parameter">b</span>
+            <span class="types"><span class="type">number</span></span>
+         ...and imaginary component.
+         (<em>default</em> 0)
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">Complex</span></span>
+        Complex number.
+    </ol>
+
+
+
+
+</dd>
 </dl>
     <h2><a name="Fields"></a>Fields</h2>
     <dl class="function">
@@ -1420,103 +1800,26 @@
 
 </dd>
     <dt>
-    <a name = "CacheFactory"></a>
-    <strong>CacheFactory</strong>
-    </dt>
-    <dd>
-    DOCME
-
-
-
-
-
-
-</dd>
-    <dt>
-    <a name = "ComplexMT.Abs"></a>
-    <strong>ComplexMT.Abs</strong>
-    </dt>
-    <dd>
-    DOCME
-
-
-
-
-
-
-</dd>
-    <dt>
     <a name = "ComplexMT.__add"></a>
     <strong>ComplexMT.__add</strong>
     </dt>
     <dd>
-    DOCME
+    Metamethod.
+
+    <ul>
+        <li><span class="parameter">Augend.</span>
+            <span class="types"><span class="type">Complex</span></span>
 
 
 
+        </li>
+        <li><span class="parameter">Addend.</span>
+            <span class="types"><span class="type">Complex</span></span>
 
 
 
-</dd>
-    <dt>
-    <a name = "ComplexMT.Area"></a>
-    <strong>ComplexMT.Area</strong>
-    </dt>
-    <dd>
-    DOCME
-
-
-
-
-
-
-</dd>
-    <dt>
-    <a name = "ComplexMT.Arg"></a>
-    <strong>ComplexMT.Arg</strong>
-    </dt>
-    <dd>
-    DOCME
-
-
-
-
-
-
-</dd>
-    <dt>
-    <a name = "ComplexMT.Atan"></a>
-    <strong>ComplexMT.Atan</strong>
-    </dt>
-    <dd>
-    DOCME
-
-
-
-
-
-
-</dd>
-    <dt>
-    <a name = "ComplexMT.Conjugate"></a>
-    <strong>ComplexMT.Conjugate</strong>
-    </dt>
-    <dd>
-    DOCME
-
-
-
-
-
-
-</dd>
-    <dt>
-    <a name = "ComplexMT.Distance"></a>
-    <strong>ComplexMT.Distance</strong>
-    </dt>
-    <dd>
-    DOCME
-
+        </li>
+    </ul>
 
 
 
@@ -1528,73 +1831,22 @@
     <strong>ComplexMT.__div</strong>
     </dt>
     <dd>
-    DOCME
+    Metamethod.
+
+    <ul>
+        <li><span class="parameter">Dividend.</span>
+            <span class="types"><span class="type">Complex</span></span>
 
 
 
+        </li>
+        <li><span class="parameter">Divisor.</span>
+            <span class="types"><span class="type">Complex</span></span>
 
 
 
-</dd>
-    <dt>
-    <a name = "ComplexMT.Dup"></a>
-    <strong>ComplexMT.Dup</strong>
-    </dt>
-    <dd>
-    DOCME
-
-
-
-
-
-
-</dd>
-    <dt>
-    <a name = "ComplexMT.Dup_Raw"></a>
-    <strong>ComplexMT.Dup_Raw</strong>
-    </dt>
-    <dd>
-    DOCME
-
-
-
-
-
-
-</dd>
-    <dt>
-    <a name = "ComplexMT.Exp"></a>
-    <strong>ComplexMT.Exp</strong>
-    </dt>
-    <dd>
-    DOCME
-
-
-
-
-
-
-</dd>
-    <dt>
-    <a name = "ComplexMT.Inner"></a>
-    <strong>ComplexMT.Inner</strong>
-    </dt>
-    <dd>
-    DOCME
-
-
-
-
-
-
-</dd>
-    <dt>
-    <a name = "ComplexMT.Inverse"></a>
-    <strong>ComplexMT.Inverse</strong>
-    </dt>
-    <dd>
-    DOCME
-
+        </li>
+    </ul>
 
 
 
@@ -1615,77 +1867,26 @@
 
 </dd>
     <dt>
-    <a name = "ComplexMT.Log"></a>
-    <strong>ComplexMT.Log</strong>
-    </dt>
-    <dd>
-    DOCME
-
-
-
-
-
-
-</dd>
-    <dt>
     <a name = "ComplexMT.__mul"></a>
     <strong>ComplexMT.__mul</strong>
     </dt>
     <dd>
-    DOCME
+    Metamethod.
+
+    <ul>
+        <li><span class="parameter">Multiplicand.</span>
+            <span class="types"><span class="type">Complex</span></span>
 
 
 
+        </li>
+        <li><span class="parameter">Multiplier.</span>
+            <span class="types"><span class="type">Complex</span></span>
 
 
 
-</dd>
-    <dt>
-    <a name = "ComplexMT.Mul_I"></a>
-    <strong>ComplexMT.Mul_I</strong>
-    </dt>
-    <dd>
-    DOCME
-
-
-
-
-
-
-</dd>
-    <dt>
-    <a name = "ComplexMT.Mul_NegI"></a>
-    <strong>ComplexMT.Mul_NegI</strong>
-    </dt>
-    <dd>
-    DOCME
-
-
-
-
-
-
-</dd>
-    <dt>
-    <a name = "ComplexMT.Norm"></a>
-    <strong>ComplexMT.Norm</strong>
-    </dt>
-    <dd>
-    DOCME
-
-
-
-
-
-
-</dd>
-    <dt>
-    <a name = "ComplexMT.Normalize"></a>
-    <strong>ComplexMT.Normalize</strong>
-    </dt>
-    <dd>
-    DOCME
-
+        </li>
+    </ul>
 
 
 
@@ -1697,21 +1898,22 @@
     <strong>ComplexMT.__pow</strong>
     </dt>
     <dd>
-    DOCME
+    Metamethod.
+
+    <ul>
+        <li><span class="parameter">Base.</span>
+            <span class="types"><span class="type">Complex</span></span>
 
 
 
+        </li>
+        <li><span class="parameter">Exponent.</span>
+            <span class="types"><span class="type">Complex</span></span>
 
 
 
-</dd>
-    <dt>
-    <a name = "ComplexMT.Reciprocal"></a>
-    <strong>ComplexMT.Reciprocal</strong>
-    </dt>
-    <dd>
-    DOCME
-
+        </li>
+    </ul>
 
 
 
@@ -1723,8 +1925,22 @@
     <strong>ComplexMT.__sub</strong>
     </dt>
     <dd>
-    DOCME
+    Metamethod.
 
+    <ul>
+        <li><span class="parameter">Minuend.</span>
+            <span class="types"><span class="type">Complex</span></span>
+
+
+
+        </li>
+        <li><span class="parameter">Subtrahend.</span>
+            <span class="types"><span class="type">Complex</span></span>
+
+
+
+        </li>
+    </ul>
 
 
 
@@ -1736,21 +1952,14 @@
     <strong>ComplexMT.__unm</strong>
     </dt>
     <dd>
-    DOCME
+    Metamethod.
 
-
-
-
-
-
-</dd>
-    <dt>
-    <a name = "New"></a>
-    <strong>New</strong>
-    </dt>
-    <dd>
-    DOCME
-
+    <ul>
+        <li><span class="parameter">Number</span>
+            <span class="types"><span class="type">Complex</span></span>
+         to negate, as per <a href="../modules/number_ops.complex.html#Negate">Negate</a>.
+        </li>
+    </ul>
 
 
 

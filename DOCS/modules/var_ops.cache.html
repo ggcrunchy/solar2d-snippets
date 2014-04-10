@@ -161,6 +161,7 @@
   <li><a href="../modules/number_ops.morton.html">morton</a></li>
   <li><a href="../modules/number_ops.mwc_rng.html">mwc_rng</a></li>
   <li><a href="../modules/number_ops.range.html">range</a></li>
+  <li><a href="../modules/number_ops.robust.html">robust</a></li>
   <li><a href="../modules/number_ops.simplex_noise.html">simplex_noise</a></li>
   <li><a href="../modules/number_ops.summed_area.html">summed_area</a></li>
   <li><a href="../modules/number_ops.to_string.html">to_string</a></li>
@@ -168,6 +169,7 @@
   <li><a href="../modules/overlay.Help.html">Help</a></li>
   <li><a href="../modules/overlay.Link.html">Link</a></li>
   <li><a href="../modules/quaternion_ops.html">quaternion_ops</a></li>
+  <li><a href="../modules/samples.ColoredCorners.html">ColoredCorners</a></li>
   <li><a href="../modules/samples.Delaunay.html">Delaunay</a></li>
   <li><a href="../modules/samples.Fire.html">Fire</a></li>
   <li><a href="../modules/samples.Hilbert.html">Hilbert</a></li>
@@ -178,6 +180,7 @@
   <li><a href="../modules/samples.OrbitsAndLattices.html">OrbitsAndLattices</a></li>
   <li><a href="../modules/samples.Pixels.html">Pixels</a></li>
   <li><a href="../modules/samples.Plasma.html">Plasma</a></li>
+  <li><a href="../modules/samples.Seams.html">Seams</a></li>
   <li><a href="../modules/samples.SlowMo.html">SlowMo</a></li>
   <li><a href="../modules/samples.Snowfall.html">Snowfall</a></li>
   <li><a href="../modules/samples.Superformulae.html">Superformulae</a></li>
@@ -264,15 +267,15 @@
 	<td class="summary">Builds a simple cache.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#UnpackWipeAndRecache">UnpackWipeAndRecache (cache, array, count, wipe)</a></td>
+	<td class="name" nowrap><a href="#UnpackWipeAndRecache">UnpackWipeAndRecache (cache, array[, count=#array], wipe)</a></td>
 	<td class="summary">Wipes an array and puts it into a cache, returning the cleared values.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#WipeAndRecache">WipeAndRecache (cache, array, count, wipe)</a></td>
+	<td class="name" nowrap><a href="#WipeAndRecache">WipeAndRecache (cache, array[, count=#array], wipe)</a></td>
 	<td class="summary">Wipes an array and puts it into a cache.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#TableCache">TableCache (on_restore)</a></td>
+	<td class="name" nowrap><a href="#TableCache">TableCache ([on_restore])</a></td>
 	<td class="summary">Builds a table-based cache.</td>
 	</tr>
 </table>
@@ -333,7 +336,7 @@
 </dd>
     <dt>
     <a name = "UnpackWipeAndRecache"></a>
-    <strong>UnpackWipeAndRecache (cache, array, count, wipe)</strong>
+    <strong>UnpackWipeAndRecache (cache, array[, count=#array], wipe)</strong>
     </dt>
     <dd>
     Wipes an array and puts it into a cache, returning the cleared values.
@@ -345,11 +348,13 @@
          Cache of used arrays.
         </li>
         <li><span class="parameter">array</span>
+            <span class="types"><span class="type">array</span></span>
          Array to clear.
         </li>
         <li><span class="parameter">count</span>
             <span class="types"><span class="type">uint</span></span>
-         Size of array; if absent, <code>#array</code>.
+         Size of array.
+         (<em>default</em> #array)
         </li>
         <li><span class="parameter">wipe</span>
          Value used to wipe cleared entries.
@@ -372,7 +377,7 @@
 </dd>
     <dt>
     <a name = "WipeAndRecache"></a>
-    <strong>WipeAndRecache (cache, array, count, wipe)</strong>
+    <strong>WipeAndRecache (cache, array[, count=#array], wipe)</strong>
     </dt>
     <dd>
     Wipes an array and puts it into a cache.
@@ -384,11 +389,13 @@
          Cache of used arrays.
         </li>
         <li><span class="parameter">array</span>
+            <span class="types"><span class="type">array</span></span>
          Array to clear.
         </li>
         <li><span class="parameter">count</span>
             <span class="types"><span class="type">uint</span></span>
-         Size of array; if absent, <code>#array</code>.
+         Size of array.
+         (<em>default</em> #array)
         </li>
         <li><span class="parameter">wipe</span>
          Value used to wipe cleared entries.
@@ -411,7 +418,7 @@
 </dd>
     <dt>
     <a name = "TableCache"></a>
-    <strong>TableCache (on_restore)</strong>
+    <strong>TableCache ([on_restore])</strong>
     </dt>
     <dd>
     Builds a table-based cache.
@@ -419,9 +426,9 @@
     <h3>Parameters:</h3>
     <ul>
         <li><span class="parameter">on_restore</span>
-         Logic to call on returning the table to the cache; the table is its
- first argument, followed by any other arguments passed to the cache function. If <strong>nil</strong>,
- this is a no-op.</p>
+         Logic to call on returning the table to the cache; the table is
+ its first argument, followed by any other arguments passed to the cache function. If
+ <strong>nil</strong>, this is a no-op.</p>
 
 <p> If this is <strong>"unpack_and_wipe"</strong> or <strong>"wipe_range"</strong>, then that operation from <a href="../modules/array_ops.wipe.html#">array_ops.wipe</a>
  is used as the restore logic. In this case, the operation's results are returned by the
@@ -441,7 +448,7 @@
 <p> If instead the argument is <strong>"peek"</strong>, that table is returned, but without being removed.
  If the cache is empty, <strong>nil</strong> is returned.</p>
 
-<p> Otherwise, the first argument must be table (though it need not have belonged to the
+<p> Otherwise, the first argument must be a table (though it need not have belonged to the
  cache). Any restore logic will be called, passing this table and any additional arguments.
  The table will then be restored to the cache.
     </ol>

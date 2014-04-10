@@ -105,7 +105,7 @@
   <li><a href="../modules/effect.Stars.html">Stars</a></li>
   <li><a href="../modules/effect.Stash.html">Stash</a></li>
   <li><a href="../modules/event_block.Maze.html">Maze</a></li>
-  <li><strong>CellularAutomata</strong></li>
+  <li><a href="../modules/fill.CellularAutomata.html">CellularAutomata</a></li>
   <li><a href="../modules/fill.Circle.html">Circle</a></li>
   <li><a href="../modules/FIXES.html">FIXES</a></li>
   <li><a href="../modules/game.AI.html">AI</a></li>
@@ -161,7 +161,7 @@
   <li><a href="../modules/number_ops.morton.html">morton</a></li>
   <li><a href="../modules/number_ops.mwc_rng.html">mwc_rng</a></li>
   <li><a href="../modules/number_ops.range.html">range</a></li>
-  <li><a href="../modules/number_ops.robust.html">robust</a></li>
+  <li><strong>robust</strong></li>
   <li><a href="../modules/number_ops.simplex_noise.html">simplex_noise</a></li>
   <li><a href="../modules/number_ops.summed_area.html">summed_area</a></li>
   <li><a href="../modules/number_ops.to_string.html">to_string</a></li>
@@ -249,21 +249,23 @@
 
 <div id="content">
 
-<h1>Module <code>fill.CellularAutomata</code></h1>
-<p>Cellular automata operations.</p>
-<p>
-
-</p>
+<h1>Module <code>number_ops.robust</code></h1>
+<p>Numerical options that require special care, e.g.</p>
+<p> see <a href="http://www.plunk.org/~hatch/rightway.php">The Right Way to Calculate Stuff</a>.</p>
 
 
 <h2><a href="#Functions">Functions</a></h2>
 <table class="function_list">
 	<tr>
-	<td class="name" nowrap><a href="#GosperGliderGun">GosperGliderGun (left, right, above, below, func, arg)</a></td>
+	<td class="name" nowrap><a href="#AngleBetween_OutParam">AngleBetween_OutParam (dot, len, add, negate)</a></td>
 	<td class="summary">DOCME</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#New">New (w, h, func, rule)</a></td>
+	<td class="name" nowrap><a href="#SinOverX">SinOverX (x)</a></td>
+	<td class="summary">DOCME</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Slerp">Slerp (t, theta, denom)</a></td>
 	<td class="summary">DOCME</td>
 	</tr>
 </table>
@@ -275,40 +277,30 @@
     <h2><a name="Functions"></a>Functions</h2>
     <dl class="function">
     <dt>
-    <a name = "GosperGliderGun"></a>
-    <strong>GosperGliderGun (left, right, above, below, func, arg)</strong>
+    <a name = "AngleBetween_OutParam"></a>
+    <strong>AngleBetween_OutParam (dot, len, add, negate)</strong>
     </dt>
     <dd>
     DOCME
 
     <h3>Parameters:</h3>
     <ul>
-        <li><span class="parameter">left</span>
+        <li><span class="parameter">dot</span>
 
 
 
         </li>
-        <li><span class="parameter">right</span>
+        <li><span class="parameter">len</span>
 
 
 
         </li>
-        <li><span class="parameter">above</span>
+        <li><span class="parameter">add</span>
 
 
 
         </li>
-        <li><span class="parameter">below</span>
-
-
-
-        </li>
-        <li><span class="parameter">func</span>
-
-
-
-        </li>
-        <li><span class="parameter">arg</span>
+        <li><span class="parameter">negate</span>
 
 
 
@@ -321,30 +313,46 @@
 
 </dd>
     <dt>
-    <a name = "New"></a>
-    <strong>New (w, h, func, rule)</strong>
+    <a name = "SinOverX"></a>
+    <strong>SinOverX (x)</strong>
     </dt>
     <dd>
     DOCME
 
     <h3>Parameters:</h3>
     <ul>
-        <li><span class="parameter">w</span>
+        <li><span class="parameter">x</span>
 
 
 
         </li>
-        <li><span class="parameter">h</span>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Slerp"></a>
+    <strong>Slerp (t, theta, denom)</strong>
+    </dt>
+    <dd>
+    DOCME
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">t</span>
 
 
 
         </li>
-        <li><span class="parameter">func</span>
+        <li><span class="parameter">theta</span>
 
 
 
         </li>
-        <li><span class="parameter">rule</span>
+        <li><span class="parameter">denom</span>
 
 
 

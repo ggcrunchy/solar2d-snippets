@@ -161,6 +161,7 @@
   <li><a href="../modules/number_ops.morton.html">morton</a></li>
   <li><a href="../modules/number_ops.mwc_rng.html">mwc_rng</a></li>
   <li><a href="../modules/number_ops.range.html">range</a></li>
+  <li><a href="../modules/number_ops.robust.html">robust</a></li>
   <li><a href="../modules/number_ops.simplex_noise.html">simplex_noise</a></li>
   <li><a href="../modules/number_ops.summed_area.html">summed_area</a></li>
   <li><a href="../modules/number_ops.to_string.html">to_string</a></li>
@@ -168,6 +169,7 @@
   <li><a href="../modules/overlay.Help.html">Help</a></li>
   <li><a href="../modules/overlay.Link.html">Link</a></li>
   <li><a href="../modules/quaternion_ops.html">quaternion_ops</a></li>
+  <li><a href="../modules/samples.ColoredCorners.html">ColoredCorners</a></li>
   <li><a href="../modules/samples.Delaunay.html">Delaunay</a></li>
   <li><a href="../modules/samples.Fire.html">Fire</a></li>
   <li><a href="../modules/samples.Hilbert.html">Hilbert</a></li>
@@ -178,6 +180,7 @@
   <li><a href="../modules/samples.OrbitsAndLattices.html">OrbitsAndLattices</a></li>
   <li><a href="../modules/samples.Pixels.html">Pixels</a></li>
   <li><a href="../modules/samples.Plasma.html">Plasma</a></li>
+  <li><a href="../modules/samples.Seams.html">Seams</a></li>
   <li><a href="../modules/samples.SlowMo.html">SlowMo</a></li>
   <li><a href="../modules/samples.Snowfall.html">Snowfall</a></li>
   <li><a href="../modules/samples.Superformulae.html">Superformulae</a></li>
@@ -268,15 +271,15 @@
 	<td class="summary">One-dimensional linear convolution.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#Convolve_2D">Convolve_2D (signal, kernel, scols, kcols, shape)</a></td>
+	<td class="name" nowrap><a href="#Convolve_2D">Convolve_2D (signal, kernel, scols, kcols[, shape="full"])</a></td>
 	<td class="summary">Two-dimensional linear convolution.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#Convolve_FFT1D">Convolve_FFT1D (signal, kernel, opts)</a></td>
+	<td class="name" nowrap><a href="#ConvolveFFT_1D">ConvolveFFT_1D (signal, kernel[, opts])</a></td>
 	<td class="summary">One-dimensional linear convolution using fast Fourier transforms.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#Convolve_FFT2D">Convolve_FFT2D (signal, kernel, scols, kcols, opts)</a></td>
+	<td class="name" nowrap><a href="#ConvolveFFT_2D">ConvolveFFT_2D (signal, kernel, scols, kcols[, opts])</a></td>
 	<td class="summary">Two-dimensional linear convolution using fast Fourier transforms.</td>
 	</tr>
 </table>
@@ -387,7 +390,7 @@
 </dd>
     <dt>
     <a name = "Convolve_2D"></a>
-    <strong>Convolve_2D (signal, kernel, scols, kcols, shape)</strong>
+    <strong>Convolve_2D (signal, kernel, scols, kcols[, shape="full"])</strong>
     </dt>
     <dd>
     Two-dimensional linear convolution.
@@ -412,8 +415,9 @@
         </li>
         <li><span class="parameter">shape</span>
             <span class="types"><a class="type" href="http://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
-         One of <strong>"compact"</strong>, <strong>"full"</strong>, or <strong>"same"</strong>, which determines how much
- of the convolution is returned (emanating from the center). If absent, <strong>"full"</strong>.
+         One of <strong>"compact"</strong>, <strong>"full"</strong>, or <strong>"same"</strong>, which describes
+ how much of the convolution is returned (emanating from the center).
+         (<em>default</em> "full")
         </li>
     </ul>
 
@@ -424,10 +428,15 @@
         Convolution.</li>
         <li>
            <span class="types"><span class="type">uint</span></span>
-         Number of columns in the convolution, given <em>shape</em>:
- * For <strong>"compact"</strong>: <em>scols</em> - <em>kcols</em> + 1.
- * For <strong>"full"</strong>: <em>scols</em> + <em>kcols</em> - 1.
- * For <strong>"same"</strong>: <em>scols</em>.</li>
+
+<p> Number of columns in the convolution, given <em>shape</em>:</p>
+
+<ul>
+    <li>For <strong>"compact"</strong>: <em>scols</em> - <em>kcols</em> + 1.</li>
+    <li>For <strong>"full"</strong>: <em>scols</em> + <em>kcols</em> - 1.</li>
+    <li>For <strong>"same"</strong>: <em>scols</em>.</li>
+</ul>
+</li>
     </ol>
 
 
@@ -435,8 +444,8 @@
 
 </dd>
     <dt>
-    <a name = "Convolve_FFT1D"></a>
-    <strong>Convolve_FFT1D (signal, kernel, opts)</strong>
+    <a name = "ConvolveFFT_1D"></a>
+    <strong>ConvolveFFT_1D (signal, kernel[, opts])</strong>
     </dt>
     <dd>
     One-dimensional linear convolution using fast Fourier transforms.  For certain <em>signal</em>
@@ -455,12 +464,13 @@
         <li><span class="parameter">opts</span>
             <span class="types"><a class="type" href="http://www.lua.org/manual/5.1/manual.html#5.5">table</a></span>
 
-<p> Optional convolve options. Fields:</p>
+<p> Convolve options. Fields:</p>
 
 <ul>
+    <li><strong>into</strong>: If provided, this table will receive the convolution.</li>
     <li><strong>method</strong>: If this is <strong>"goertzel"</strong>, the transforms are done using the <a href="http://en.wikipedia.org/wiki/Goertzel_algorithm">Goertzel algorithm</a>,
-    which may offer better performance in some cases. Otherwise, the two real FFT's are
-    computed as one stock complex FFT.
+    which may offer better performance in some cases. If it is <strong>"separate"</strong>, two FFT's are
+    computed separately. Otherwise, the two real FFT's are computed as one complex FFT.
     is used to perform the </li>
 </ul>
 
@@ -479,8 +489,8 @@
 
 </dd>
     <dt>
-    <a name = "Convolve_FFT2D"></a>
-    <strong>Convolve_FFT2D (signal, kernel, scols, kcols, opts)</strong>
+    <a name = "ConvolveFFT_2D"></a>
+    <strong>ConvolveFFT_2D (signal, kernel, scols, kcols[, opts])</strong>
     </dt>
     <dd>
     Two-dimensional linear convolution using fast Fourier transforms.  For certain <em>signal</em>
@@ -507,12 +517,11 @@
         <li><span class="parameter">opts</span>
             <span class="types"><a class="type" href="http://www.lua.org/manual/5.1/manual.html#5.5">table</a></span>
 
-<p> Optional convolve options. Fields:</p>
+<p> Convolve options. Fields:</p>
 
 <ul>
-    <li><strong>method</strong>: If this is <strong>"goertzel"</strong>, the transforms are done using the <a href="http://en.wikipedia.org/wiki/Goertzel_algorithm">Goertzel algorithm</a>,
-    which may offer better performance in some cases. If it is <strong>"two_ffts"</strong>, the two real
-    FFT's are computed as one stock complex FFT. Otherwise, two FFT's are computed separately.</li>
+    <li><strong>into</strong>: If provided, this table will receive the convolution.</li>
+    <li><strong>method</strong>: As per <a href="../modules/number_ops.convolve.html#ConvolveFFT_1D">ConvolveFFT_1D</a>, but with 2D variants.</li>
 </ul>
 
         </li>

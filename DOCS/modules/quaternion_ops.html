@@ -161,6 +161,7 @@
   <li><a href="../modules/number_ops.morton.html">morton</a></li>
   <li><a href="../modules/number_ops.mwc_rng.html">mwc_rng</a></li>
   <li><a href="../modules/number_ops.range.html">range</a></li>
+  <li><a href="../modules/number_ops.robust.html">robust</a></li>
   <li><a href="../modules/number_ops.simplex_noise.html">simplex_noise</a></li>
   <li><a href="../modules/number_ops.summed_area.html">summed_area</a></li>
   <li><a href="../modules/number_ops.to_string.html">to_string</a></li>
@@ -168,6 +169,7 @@
   <li><a href="../modules/overlay.Help.html">Help</a></li>
   <li><a href="../modules/overlay.Link.html">Link</a></li>
   <li><strong>quaternion_ops</strong></li>
+  <li><a href="../modules/samples.ColoredCorners.html">ColoredCorners</a></li>
   <li><a href="../modules/samples.Delaunay.html">Delaunay</a></li>
   <li><a href="../modules/samples.Fire.html">Fire</a></li>
   <li><a href="../modules/samples.Hilbert.html">Hilbert</a></li>
@@ -178,6 +180,7 @@
   <li><a href="../modules/samples.OrbitsAndLattices.html">OrbitsAndLattices</a></li>
   <li><a href="../modules/samples.Pixels.html">Pixels</a></li>
   <li><a href="../modules/samples.Plasma.html">Plasma</a></li>
+  <li><a href="../modules/samples.Seams.html">Seams</a></li>
   <li><a href="../modules/samples.SlowMo.html">SlowMo</a></li>
   <li><a href="../modules/samples.Snowfall.html">Snowfall</a></li>
   <li><a href="../modules/samples.Superformulae.html">Superformulae</a></li>
@@ -277,6 +280,14 @@
 	<td class="summary">DOCME</td>
 	</tr>
 	<tr>
+	<td class="name" nowrap><a href="#Add_Scaled">Add_Scaled (qout, q1, q2, k)</a></td>
+	<td class="summary">DOCME</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#AngleBetween">AngleBetween (q1, q2)</a></td>
+	<td class="summary">DOCME</td>
+	</tr>
+	<tr>
 	<td class="name" nowrap><a href="#Conjugate">Conjugate (qout, q)</a></td>
 	<td class="summary">DOCME</td>
 	</tr>
@@ -287,7 +298,7 @@
 	<tr>
 	<td class="name" nowrap><a href="#Exp">Exp (qout, q)</a></td>
 	<td class="summary">DOCME
- q = [0, theta * v] -> [cos(theta), sin(theta) * v]</td>
+ q = [a, theta * v], len(v) = 1 -> [e^a<em>cos(theta), e^a</em>sin(theta) * v]</td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#Inverse">Inverse (qout, q)</a></td>
@@ -300,10 +311,14 @@
 	<tr>
 	<td class="name" nowrap><a href="#Log">Log (qout, q)</a></td>
 	<td class="summary">DOCME
- q = [cos(theta), sin(theta) * v] -> [0, theta * v]</td>
+ q = [len(q) * cos(theta), len(q) * sin(theta) * v] -> [ln(len(q)), acos(w / len(q)) * v], len(v) = 1</td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#Multiply">Multiply (qout, q1, q2)</a></td>
+	<td class="summary">DOCME</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Negate">Negate (qout, q)</a></td>
 	<td class="summary">DOCME</td>
 	</tr>
 	<tr>
@@ -330,6 +345,10 @@
 	<td class="name" nowrap><a href="#SquadQ4">SquadQ4 (qout, q1, q2, q3, q4, t)</a></td>
 	<td class="summary">DOCME</td>
 	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Sub">Sub (qout, q1, q2)</a></td>
+	<td class="summary">DOCME</td>
+	</tr>
 </table>
 
 <br/>
@@ -352,6 +371,68 @@
 
 
         </li>
+        <li><span class="parameter">q1</span>
+
+
+
+        </li>
+        <li><span class="parameter">q2</span>
+
+
+
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Add_Scaled"></a>
+    <strong>Add_Scaled (qout, q1, q2, k)</strong>
+    </dt>
+    <dd>
+    DOCME
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">qout</span>
+
+
+
+        </li>
+        <li><span class="parameter">q1</span>
+
+
+
+        </li>
+        <li><span class="parameter">q2</span>
+
+
+
+        </li>
+        <li><span class="parameter">k</span>
+
+
+
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "AngleBetween"></a>
+    <strong>AngleBetween (q1, q2)</strong>
+    </dt>
+    <dd>
+    DOCME
+
+    <h3>Parameters:</h3>
+    <ul>
         <li><span class="parameter">q1</span>
 
 
@@ -427,19 +508,18 @@
     </dt>
     <dd>
     DOCME
- q = [0, theta * v] -> [cos(theta), sin(theta) * v]
+ q = [a, theta * v], len(v) = 1 -> [e^a<em>cos(theta), e^a</em>sin(theta) * v]
 
     <h3>Parameters:</h3>
     <ul>
         <li><span class="parameter">qout</span>
+            <span class="types"><span class="type">Adapted from</span></span>
 
 
 
         </li>
         <li><span class="parameter">q</span>
-
-
-
+         https://github.com/numpy/numpy-dtypes/blob/76da931005a088f9e5f75d8ea2d58428cad2a975/npytypes/quaternion/quaternion.c#L135
         </li>
     </ul>
 
@@ -501,19 +581,18 @@
     </dt>
     <dd>
     DOCME
- q = [cos(theta), sin(theta) * v] -> [0, theta * v]
+ q = [len(q) * cos(theta), len(q) * sin(theta) * v] -> [ln(len(q)), acos(w / len(q)) * v], len(v) = 1
 
     <h3>Parameters:</h3>
     <ul>
         <li><span class="parameter">qout</span>
+            <span class="types"><span class="type">Adapted from</span></span>
 
 
 
         </li>
         <li><span class="parameter">q</span>
-
-
-
+         https://github.com/numpy/numpy-dtypes/blob/76da931005a088f9e5f75d8ea2d58428cad2a975/npytypes/quaternion/quaternion.c#L121
         </li>
     </ul>
 
@@ -542,6 +621,32 @@
 
         </li>
         <li><span class="parameter">q2</span>
+
+
+
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Negate"></a>
+    <strong>Negate (qout, q)</strong>
+    </dt>
+    <dd>
+    DOCME
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">qout</span>
+
+
+
+        </li>
+        <li><span class="parameter">q</span>
 
 
 
@@ -763,6 +868,37 @@
 
         </li>
         <li><span class="parameter">t</span>
+
+
+
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Sub"></a>
+    <strong>Sub (qout, q1, q2)</strong>
+    </dt>
+    <dd>
+    DOCME
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">qout</span>
+
+
+
+        </li>
+        <li><span class="parameter">q1</span>
+
+
+
+        </li>
+        <li><span class="parameter">q2</span>
 
 
 
