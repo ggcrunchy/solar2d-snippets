@@ -349,6 +349,8 @@ function AuxMethod1D.goertzel (n, signal, sn, kernel, kn)
 	fft.TwoGoertzelsThenMultiply_1D(B, C, n)
 end
 
+--- TODO: Precomputed kernel (already FFT'd)
+
 -- Separate FFT's method
 function AuxMethod1D.separate (n, signal, sn, kernel, kn)
 	fft_utils.PrepareSeparateFFTs_1D(B, C, n, signal, sn, kernel, kn)
@@ -409,6 +411,8 @@ function AuxMethod2D.goertzel (m, n, signal, scols, kernel, kcols, sn, kn)
 	fft_utils.PrepareTwoGoertzels_2D(B, C, m, n, signal, scols, kernel, kcols, sn, kn)
 	fft.TwoGoertzelsThenMultiply_2D(B, C, m, n)
 end
+
+--- TODO: Precomputed kernel (already FFT'd)
 
 -- Separate FFT's method
 function AuxMethod2D.separate (m, n, signal, scols, kernel, kcols, sn, kn)
@@ -510,7 +514,6 @@ Algorithm 2 (OA for circular convolution)
    y(1:M-1) = y(1:M-1) + y(Nx+1:Nx+M-1)
    y = y(1:Nx)
    end   
-
 ]]
 
 -- Export the module.

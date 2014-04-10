@@ -1,4 +1,4 @@
---- Colored corners demo.
+--- Implementation of minimum cut operations on a graph.
 
 --
 -- Permission is hereby granted, free of charge, to any person obtaining
@@ -23,47 +23,10 @@
 -- [ MIT license: http://www.opensource.org/licenses/mit-license.php ]
 --
 
--- Modules --
-local buttons = require("ui.Button")
-local convolve = require("numbers_ops.convolve")
-local fft_utils = require("number_ops.fft_utils")
-local min_cut = require("graph_ops.min_cut")
-local png = require("loader_ops.png")
-local scenes = require("utils.Scenes")
-local summed_area = require("number_ops.summed_area")
+-- Exports --
+local M = {}
 
--- Corona modules --
-local composer = require("composer")
+-- Karger?
 
--- Colored corners demo scene --
-local Scene = composer.newScene()
-
---
-function Scene:create ()
-	buttons.Button(self.view, nil, 120, 75, 200, 50, scenes.Opener{ name = "scene.Choices" }, "Go Back")
-end
-
-Scene:addEventListener("create")
-
---
-function Scene:show (event)
-	if event.phase == "did" then
-		-- Something to load pictures
-		-- Choice of algorithms: random, sub-patch, whole patch
-		-- Way to tune the randomness (k = .001 to 1, as in the GC paper, say)
-		-- Way to fire off the algorithm
-	end
-end
-
-Scene:addEventListener("show")
-
---
-function Scene:hide (event)
-	if event.phase == "did" then
-		--
-	end
-end
-
-Scene:addEventListener("hide")
-
-return Scene
+-- Export the module.
+return M

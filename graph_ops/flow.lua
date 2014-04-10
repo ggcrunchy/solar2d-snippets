@@ -228,7 +228,6 @@ function M.MaxFlow_Labels (graph, ks, kt, opts)
 		assert(k ~= kt, "Outflow from sink")
 
 		if k == ks then
-			print(k, ks, s, ui)
 			s = ui
 		end
 
