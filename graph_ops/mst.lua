@@ -1,4 +1,4 @@
---- Implementation of minimum cut operations on a graph.
+--- Implementation of minimum spanning trees.
 
 --
 -- Permission is hereby granted, free of charge, to any person obtaining
@@ -23,27 +23,31 @@
 -- [ MIT license: http://www.opensource.org/licenses/mit-license.php ]
 --
 
+-- Modules --
+local disjoint_set = require("graph_ops.disjoint_set")
+
 -- Exports --
 local M = {}
 
--- Karger-Stein...
-
+--- DOCME
+local function Kruskal (edges_weight, verts)
 --[[
- procedure contract(G=(V,E), t):
-   while | V | > t
-       choose e in E uniformly at random
-       G = G/e
-   return G
-   
-procedure fastmincut(G= (V,E)):
-   if | V | < 6:
-       return mincut(V)
-   else:
-       t = ceil(1 + | V |/ sqrt(2))
-       G_1 = contract(G, t)
-       G_2 = contract(G, t)
-       return min {fastmincut(G_1), fastmincut(G_2)}
+KRUSKAL(G):
+	A = null
+	foreach v in G.V:
+		MAKE-SET(v)
+	foreach (u, v) ordered by weight(u, v), increasing:
+		if FIND-SET(u) ≠ FIND-SET(v):
+			A = A union {(u, v)}
+			UNION(u, v)
+	return A
 ]]
+end
+
+--- DOCME
+function M.MST (edges, verts, weights)
+	return Kruskal()
+end
 
 -- Export the module.
 return M

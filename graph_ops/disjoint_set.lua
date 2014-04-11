@@ -1,4 +1,4 @@
---- Implementation of minimum cut operations on a graph.
+--- Implementation of disjoint set data structure.
 
 --
 -- Permission is hereby granted, free of charge, to any person obtaining
@@ -26,24 +26,59 @@
 -- Exports --
 local M = {}
 
--- Karger-Stein...
+--- DOCME
+function M.GetElement (node)
+	return node.elem
+end
 
---[[
- procedure contract(G=(V,E), t):
-   while | V | > t
-       choose e in E uniformly at random
-       G = G/e
-   return G
-   
-procedure fastmincut(G= (V,E)):
-   if | V | < 6:
-       return mincut(V)
-   else:
-       t = ceil(1 + | V |/ sqrt(2))
-       G_1 = contract(G, t)
-       G_2 = contract(G, t)
-       return min {fastmincut(G_1), fastmincut(G_2)}
-]]
+--
+local function AuxFind (node)
+	local parent = node.parent
+
+	node.parent = parent and AuxFind(parent)
+end
+
+--- DOCME
+function M.Find (node)
+	AuxFind(node)
+
+    return node.parent or node
+end
+
+--- DOCME
+function M.NewNode (elem, node)
+	node = node or {}
+
+	node.elem = elem
+	node.parent = false
+	node.rank = 0
+
+	return node
+end
+
+--- DOCME
+function M.SetElement (node, elem)
+	node.elem = elem
+end
+
+--- DOCME
+function M.Union (node1, node2)
+	AuxFind(node1)
+	AuxFind(node2)
+
+	local root1 = node1.parent or node1
+    local root2 = node2.parent or node2
+
+	if root1 ~= root2 then
+		if root1.rank < root2.rank then
+			root1.parent = root2
+		elseif root2.rank < root1.rank then
+			root2.parent = root1
+		else
+			root2.parent, root1.rank = root1, root1.rank + 1
+		end
+	end
+end
 
 -- Export the module.
 return M
