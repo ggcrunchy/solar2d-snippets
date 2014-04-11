@@ -23,6 +23,9 @@
 -- [ MIT license: http://www.opensource.org/licenses/mit-license.php ]
 --
 
+-- Cached module references --
+local _Find_
+
 -- Exports --
 local M = {}
 
@@ -35,7 +38,11 @@ end
 local function AuxFind (node)
 	local parent = node.parent
 
-	node.parent = parent and AuxFind(parent)
+	if parent then
+		AuxFind(parent)
+
+		node.parent = parent.parent or parent
+	end
 end
 
 --- DOCME
@@ -63,11 +70,8 @@ end
 
 --- DOCME
 function M.Union (node1, node2)
-	AuxFind(node1)
-	AuxFind(node2)
-
-	local root1 = node1.parent or node1
-    local root2 = node2.parent or node2
+	local root1 = _Find_(node1)
+    local root2 = _Find_(node2)
 
 	if root1 ~= root2 then
 		if root1.rank < root2.rank then
@@ -79,6 +83,9 @@ function M.Union (node1, node2)
 		end
 	end
 end
+
+-- Cache module members.
+_Find_ = M.Find
 
 -- Export the module.
 return M
