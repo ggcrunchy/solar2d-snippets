@@ -33,6 +33,40 @@
 -- Exports --
 local M = {}
 
+--- DOCME
+function M.PrepareRealFFT_1D (out, size, arr, n)
+	n = n or #arr
+
+	for i = 1, n do
+		out[i] = arr[i]
+	end
+
+	for i = n + 1, size do
+		out[i] = 0
+	end
+end
+
+--- DOCME
+function M.PrepareRealFFT_2D (out, size, arr, cols, ncols, na)
+	na = na or #arr
+
+	local oi, ai = 1, 1
+
+	while ai <= na do
+		for i = 1, cols do
+			out[oi], oi, ai = arr[ai], oi + 1, ai + 1
+		end
+
+		for i = cols + 1, ncols do
+			out[oi], oi = 0, oi + 1
+		end
+	end
+
+	for i = oi, size do
+		out[i] = 0
+	end
+end
+
 --- Prepares two real vectors to be consumed by separate (but ostensibly related) FFT's.
 -- @array out1 Complex output vector, which will be populated from _arr1_ and padded with
 -- zeroes as needed...

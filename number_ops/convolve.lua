@@ -382,11 +382,12 @@ local DefMethod1D = AuxMethod1D.two_ffts
 -- @treturn array Convolution.
 function M.ConvolveFFT_1D (signal, kernel, opts)
 	-- Determine how much padding is needed to have matching power-of-2 sizes.
-	local sn, kn = #signal, #kernel
+	local method = opts and opts.method
+	local sn, kn = #signal, #kernel * (method ~= "precomputed_kernel" and 1 or .5)
 	local clen, n = LenPower(sn, kn)
 
 	-- Perform an FFT on the signal and kernel (both at once). Multiply the (complex) results...
-	local method = AuxMethod1D[opts and opts.method] or DefMethod1D
+	method = AuxMethod1D[method] or DefMethod1D
 
 	method(n, signal, sn, kernel, kn)
 
@@ -412,7 +413,12 @@ function AuxMethod2D.goertzel (m, n, signal, scols, kernel, kcols, sn, kn)
 	fft.TwoGoertzelsThenMultiply_2D(B, C, m, n)
 end
 
---- TODO: Precomputed kernel (already FFT'd)
+-- Precomputed kernel method
+function AuxMethod2D.precomputed_kernel (m, n, signal, scols, kernel, _, sn, _, area)
+	fft_utils.PrepareRealFFT_2D(B, area, signal, scols, m, sn)
+	fft.FFT_2D(B, m, n)
+	fft.Multiply_2D(B, kernel, m, n)
+end
 
 -- Separate FFT's method
 function AuxMethod2D.separate (m, n, signal, scols, kernel, kcols, sn, kn)
@@ -443,17 +449,18 @@ local DefMethod2D = AuxMethod2D.two_ffts
 -- * **method**: As per @{ConvolveFFT_1D}, but with 2D variants.
 -- @treturn array Convolution.
 -- @treturn uint Number of columns in the convolution. Currently, only the **"full"** shape
--- is supported, i.e. #_scols_ + #_kcols_ - 1.
+-- is supported, i.e. _scols_ + _kcols_ - 1.
 function M.ConvolveFFT_2D (signal, kernel, scols, kcols, opts)
 	-- Determine how much padding each dimension needs, to have matching power-of-2 sizes.
-	local sn, kn = #signal, #kernel
+	local method = opts and opts.method
+	local sn, kn = #signal, #kernel * (method ~= "precomputed_kernel" and 1 or .5)
 	local srows = sn / scols
 	local krows = kn / kcols
 	local w, m = LenPower(scols, kcols)
 	local h, n = LenPower(srows, krows)
 
 	-- Perform an FFT on the signal and kernel (both at once). Multiply the (complex) results...
-	local method = AuxMethod2D[opts and opts.method] or DefMethod2D
+	method = AuxMethod2D[method] or DefMethod2D
 
 	method(m, n, signal, scols, kernel, kcols, sn, kn, m * n)
 
