@@ -58,21 +58,21 @@ end
 
 -- Helper to build cached cosine / sine wave functions
 local function WaveFunc (get, init)
-	local ai, bi, da, cur, s1, s2, wt = 0, 1, -2
+	local ai, bi, da, cur, s1, s2, wt
 
 	return function()
 		-- A negative index access will populate the corresponding positive index in the wavetable,
 		-- together with the next positive index, whereas positive indices will access already-
 		-- loaded wavetable values.
-		ai, bi = ai + da, bi + 2
-
 		local a = wt[ai]
+
+		ai, bi = ai + da, bi + 2
 
 		return a, wt[bi]
 	end, function(id)
 		if id ~= cur then
 			-- Dirty: initialize the state and walk one index in the negative direction.
-			cur, da = id, -2
+			cur, ai, bi, da = id, -1, 0, -2
 			s1, s2 = init(id)
 
 			-- On the first preparation, generate a wavetable and bind a metatable to populate it
@@ -93,7 +93,7 @@ local function WaveFunc (get, init)
 		end
 	end, function()
 		-- Reset the indices, walking both in the positive direction.
-		ai, bi, da = 0, 1, 2
+		ai, bi, da = 1, 0, 2
 	end
 end
 
@@ -459,6 +459,7 @@ function M.RealFFT_2D (m, w, h)
 	until ro < 0
 
 	-- Transform the matrix's left half plus the middle column. Build the rest from symmetry.
+	BeginSines(-h)
 	TransformColumns(m, w2, h, area, w + 2)
 	Reflect(m, w, w2, area)
 end

@@ -383,7 +383,7 @@ local DefMethod1D = AuxMethod1D.two_ffts
 function M.ConvolveFFT_1D (signal, kernel, opts)
 	-- Determine how much padding is needed to have matching power-of-2 sizes.
 	local method = opts and opts.method
-	local sn, kn = #signal, #kernel * (method ~= "precomputed_kernel" and 1 or .5)
+	local sn, kn = #signal, #kernel
 	local clen, n = LenPower(sn, kn)
 
 	-- Perform an FFT on the signal and kernel (both at once). Multiply the (complex) results...
@@ -416,7 +416,7 @@ end
 -- Precomputed kernel method
 function AuxMethod2D.precomputed_kernel (m, n, signal, scols, kernel, _, sn, _, area)
 	fft_utils.PrepareRealFFT_2D(B, area, signal, scols, m, sn)
-	fft.FFT_2D(B, m, n)
+	fft.RealFFT_2D(B, m, n)
 	fft.Multiply_2D(B, kernel, m, n)
 end
 
@@ -453,7 +453,7 @@ local DefMethod2D = AuxMethod2D.two_ffts
 function M.ConvolveFFT_2D (signal, kernel, scols, kcols, opts)
 	-- Determine how much padding each dimension needs, to have matching power-of-2 sizes.
 	local method = opts and opts.method
-	local sn, kn = #signal, #kernel * (method ~= "precomputed_kernel" and 1 or .5)
+	local sn, kn = #signal, #kernel
 	local srows = sn / scols
 	local krows = kn / kcols
 	local w, m = LenPower(scols, kcols)

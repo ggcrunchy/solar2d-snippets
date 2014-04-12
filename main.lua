@@ -158,25 +158,9 @@ fft_utils.PrepareRealFFT_2D(out2, 16, { 0, 1, 2,
 									  2, 3, 4,
 									  3, 3, 3,
 									  2, 4, 2 }, 3, 4)
-vdump(out2)  
 fft.RealFFT_2D(out2, 4, 4)
 
 vdump(out2)
-
-local c = { 0, 0, 1, 0, 2, 0, 0, 0,
-			2, 0, 3, 0, 4, 0, 0, 0,
-			3, 0, 3, 0, 3, 0, 0, 0,
-			2, 0, 4, 0, 2, 0, 0, 0 }
-fft.FFT_2D(c, 4, 4)
-
-vdump(c)
-
-local d = { 0, 3, 4, 4, 4, 8, 2, 3,
-	        1, 4, 0, 4, 2, 1, 0, 2 }
-
-fft.FFT_2D(d, 4, 2)
-
-vdump(d)
-]]
+--]]
 -- Kick off the app.
 scenes.GoToScene{ name = "scene.Intro" }
