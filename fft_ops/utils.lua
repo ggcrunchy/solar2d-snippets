@@ -3,9 +3,9 @@
 -- Each of the setup operations are out-of-place, i.e. their corresponding input and
 -- output arrays must be distinct.
 --
--- **N.B.** output results consist of complex numbers. Output widths and matrix sizes are
--- based on number of complex elements (and so should be doubled when dealing with raw
--- numbers). Heights require no special care.
+-- **N.B.** many output results consist of complex numbers. Output widths and matrix sizes
+-- are based on number of complex elements (and so should be doubled when dealing with
+-- raw numbers). Heights require no special care.
 
 --
 -- Permission is hereby granted, free of charge, to any person obtaining
@@ -32,6 +32,37 @@
 
 -- Exports --
 local M = {}
+
+--- Performs element-wise multiplication on two complex vectors.
+-- @array v1 Vector #1 of complex value pairs...
+-- @array v2 ...and vector #2.
+-- @uint n Power-of-2 count of elements in _v1_ and _v2_.
+-- @array[opt=v1] out Vector of (_n_) complex results.
+function M.Multiply_1D (v1, v2, n, out)
+	out = out or v1
+
+	for i = 1, 2 * n, 2 do
+		local a, b, c, d = v1[i], v1[i + 1], v2[i], v2[i + 1]
+
+		out[i], out[i + 1] = a * c - b * d, b * c + a * d
+	end
+end
+
+--- Performs element-wise multiplication on two complex matrices.
+-- @array m1 Matrix #1 of complex value pairs...
+-- @array m2 ...and matrix #2.
+-- @uint w Power-of-2 width of _m1_ and _m2_...
+-- @uint h ...and height.
+-- @array[opt=m1] out Matrix of (_w_ * _h_) complex results.
+function M.Multiply_2D (m1, m2, w, h, out)
+	out = out or m1
+
+	for i = 1, 2 * w * h, 2 do
+		local a, b, c, d = m1[i], m1[i + 1], m2[i], m2[i + 1]
+
+		out[i], out[i + 1] = a * c - b * d, b * c + a * d
+	end
+end
 
 --- DOCME
 function M.PrepareRealFFT_1D (out, size, arr, n)

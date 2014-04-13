@@ -162,5 +162,6 @@ fft.RealFFT_2D(out2, 4, 4)
 
 vdump(out2)
 --]]
+
 -- Kick off the app.
 scenes.GoToScene{ name = "scene.Intro" }

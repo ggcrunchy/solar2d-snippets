@@ -29,8 +29,11 @@ local max = math.max
 local min = math.min
 
 -- Modules --
-local fft = require("number_ops.fft")
-local fft_utils = require("number_ops.fft_utils")
+local fft = require("fft_ops.fft")
+local fft_utils = require("fft_ops.utils")
+local goertzel = require("fft_ops.goertzel")
+local real_fft = require("fft_ops.real_fft")
+local two_ffts = require("fft_ops.two_ffts")
 
 -- Exports --
 local M = {}
@@ -346,7 +349,7 @@ local AuxMethod1D = {}
 -- Goertzel method
 function AuxMethod1D.goertzel (n, signal, sn, kernel, kn)
 	fft_utils.PrepareTwoGoertzels_1D(B, C, n, signal, sn, kernel, kn)
-	fft.TwoGoertzelsThenMultiply_1D(B, C, n)
+	goertzel.TwoGoertzelsThenMultiply_1D(B, C, n)
 end
 
 --- TODO: Precomputed kernel (already FFT'd)
@@ -356,13 +359,13 @@ function AuxMethod1D.separate (n, signal, sn, kernel, kn)
 	fft_utils.PrepareSeparateFFTs_1D(B, C, n, signal, sn, kernel, kn)
 	fft.FFT_1D(B, n)
 	fft.FFT_1D(C, n)
-	fft.Multiply_1D(B, C, n)
+	fft_utils.Multiply_1D(B, C, n)
 end
 
 -- Two FFT's method
 function AuxMethod1D.two_ffts (n, signal, sn, kernel, kn)
 	fft_utils.PrepareTwoFFTs_1D(B, n, signal, sn, kernel, kn)
-	fft.TwoFFTsThenMultiply_1D(B, n)
+	two_ffts.TwoFFTsThenMultiply_1D(B, n)
 end
 
 -- Default one-dimensional FFT-based convolution method
@@ -392,7 +395,7 @@ function M.ConvolveFFT_1D (signal, kernel, opts)
 	method(n, signal, sn, kernel, kn)
 
 	-- ...transform back to the time domain...
-	fft.RealIFFT_1D(B, .5 * n)
+	real_fft.RealIFFT_1D(B, .5 * n)
 
 	-- ...and get the convolution by scaling the real parts of the result.
 	local csignal = opts and opts.into or {}
@@ -410,14 +413,14 @@ local AuxMethod2D = {}
 -- Goertzel method
 function AuxMethod2D.goertzel (m, n, signal, scols, kernel, kcols, sn, kn)
 	fft_utils.PrepareTwoGoertzels_2D(B, C, m, n, signal, scols, kernel, kcols, sn, kn)
-	fft.TwoGoertzelsThenMultiply_2D(B, C, m, n)
+	goertzel.TwoGoertzelsThenMultiply_2D(B, C, m, n)
 end
 
 -- Precomputed kernel method
 function AuxMethod2D.precomputed_kernel (m, n, signal, scols, kernel, _, sn, _, area)
 	fft_utils.PrepareRealFFT_2D(B, area, signal, scols, m, sn)
-	fft.RealFFT_2D(B, m, n)
-	fft.Multiply_2D(B, kernel, m, n)
+	real_fft.RealFFT_2D(B, m, n)
+	fft_utils.Multiply_2D(B, kernel, m, n)
 end
 
 -- Separate FFT's method
@@ -425,13 +428,13 @@ function AuxMethod2D.separate (m, n, signal, scols, kernel, kcols, sn, kn)
 	fft_utils.PrepareSeparateFFTs_2D(B, C, m, n, signal, scols, kernel, kcols, sn, kn)
 	fft.FFT_2D(B, m, n)
 	fft.FFT_2D(C, m, n)
-	fft.Multiply_2D(B, C, m, n)
+	fft_utils.Multiply_2D(B, C, m, n)
 end
 
 -- Two FFT's method
 function AuxMethod2D.two_ffts (m, n, signal, scols, kernel, kcols, sn, kn, area)
 	fft_utils.PrepareTwoFFTs_2D(B, area, signal, scols, kernel, kcols, m, sn, kn)
-	fft.TwoFFTsThenMultiply_2D(B, m, n)
+	two_ffts.TwoFFTsThenMultiply_2D(B, m, n)
 end
 
 -- Default two-dimensional FFT-based convolution method
@@ -465,7 +468,7 @@ function M.ConvolveFFT_2D (signal, kernel, scols, kcols, opts)
 	method(m, n, signal, scols, kernel, kcols, sn, kn, m * n)
 
 	-- ...transform back to the time domain...
-	fft.RealIFFT_2D(B, .5 * m, n)
+	real_fft.RealIFFT_2D(B, .5 * m, n)
 
 	-- ...and get the convolution by scaling the real parts of the result.
 	local csignal, offset, index = opts and opts.into or {}, 0, 1
