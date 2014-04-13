@@ -101,9 +101,9 @@ end
 -- @array v Vector of pairs, as { ..., element from vector #1, element from vector #2, ... }.
 --
 -- Afterward, this will be the products.
--- @uint[opt=0] offset Offset in _v_ where data begins.
 -- @uint n Power-of-2 width of _v_ (i.e. count of elements in each real vector).
--- @see Multiply_1D, number_ops.fft_utils.PrepareTwoFFTs_1D
+-- @uint[opt=0] offset Offset in _v_ where data begins.
+-- @see fft_ops.utils.Multiply_1D, fft_ops.utils.PrepareTwoFFTs_1D
 function M.TwoFFTsThenMultiply_1D (v, n, offset)
 	BeginSines(-n)
 
@@ -120,7 +120,7 @@ end
 -- Afterward, this will be the products.
 -- @uint w Power-of-2 width of _m_ (i.e. width in each real matrix)...
 -- @uint h ...and height.
--- @see Multiply_2D, number_ops.fft_utils.PrepareTwoFFTs_2D
+-- @see fft_ops.utils.Multiply_2D, fft_ops.utils.PrepareTwoFFTs_2D
 function M.TwoFFTsThenMultiply_2D (m, w, h)
 	local w2 = 2 * w
 	local area, len = w2 * h, w2 + 2

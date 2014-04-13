@@ -1,11 +1,8 @@
---- Supplementary utilities for the Fast Fourier Transform module.
+--- Supplementary utilities for the Fast Fourier Transform modules.
 --
--- Each of the setup operations are out-of-place, i.e. their corresponding input and
--- output arrays must be distinct.
---
--- **N.B.** many output results consist of complex numbers. Output widths and matrix sizes
+-- **N.B.** Many output results consist of complex numbers. Output widths and matrix sizes
 -- are based on number of complex elements (and so should be doubled when dealing with
--- raw numbers). Heights require no special care.
+-- real number input). Heights require no special care.
 
 --
 -- Permission is hereby granted, free of charge, to any person obtaining
@@ -64,7 +61,14 @@ function M.Multiply_2D (m1, m2, w, h, out)
 	end
 end
 
---- DOCME
+--- Prepares a real vector for consumption, e.g. as setup for @{fft_ops.real_fft.RealFFT_1D}.
+--
+-- It is assumed that _out_ is distinct from _arr1_ and _arr2_.
+-- @array out Real output vector, which will be populated from _arr1_ and padded with zeroes
+-- as needed...
+-- @uint size Power-of-2 size of _out_.
+-- @array arr Vector of real values.
+-- @uint[opt=#arr] n Number of elements in _arr_.
 function M.PrepareRealFFT_1D (out, size, arr, n)
 	n = n or #arr
 
@@ -77,7 +81,17 @@ function M.PrepareRealFFT_1D (out, size, arr, n)
 	end
 end
 
---- DOCME
+--- Prepares a real matrix for consumption, e.g. as setup for @{fft_ops.real_fft.RealFFT_2D}.
+--
+-- It is assumed that _out_ is distinct from _arr1_ and _arr2_.
+-- @array out Real output matrix, which will be populated from _arr1_ and padded with zeroes
+-- as needed...
+-- @uint size Size of _out_, i.e. the product of its power-of-2 width and height.
+-- @array arr Matrix of real values.
+-- @uint cols Number of columns in _arr_.
+-- @uint ncols Number of columns in _out_.
+-- @uint[opt=#arr] na Number of elements in _arr_, i.e. the product of the number of rows
+-- and _cols_.
 function M.PrepareRealFFT_2D (out, size, arr, cols, ncols, na)
 	na = na or #arr
 
@@ -99,6 +113,8 @@ function M.PrepareRealFFT_2D (out, size, arr, cols, ncols, na)
 end
 
 --- Prepares two real vectors to be consumed by separate (but ostensibly related) FFT's.
+--
+-- Both _out1_ and _out2_ are assumed to be distinct from either _arr1_ or _arr2_.
 -- @array out1 Complex output vector, which will be populated from _arr1_ and padded with
 -- zeroes as needed...
 -- @array out2 ...the same, for _arr2_.
@@ -128,6 +144,8 @@ function M.PrepareSeparateFFTs_1D (out1, out2, size, arr1, m, arr2, n)
 end
 
 --- Prepares two real matrices to be consumed by separate (but ostensibly related) FFT's.
+--
+-- Both _out1_ and _out2_ are assumed to be distinct from either _arr1_ or _arr2_.
 -- @array out1 Complex output matrix, which will be populated from _arr1_ and padded with
 -- zeroes as needed...
 -- @array out2 ...the same, for _arr2_.
@@ -162,7 +180,9 @@ function M.PrepareSeparateFFTs_2D (out1, out2, m, n, arr1, cols1, arr2, cols2, n
 	end
 end
 
---- Prepares two real vectors to be processed in a single FFT, e.g. as setup for @{number_ops.fft.TwoFFTsThenMultiply_1D}.
+--- Prepares two real vectors to be processed in a single FFT, e.g. as setup for @{fft_ops.two_ffts.TwoFFTsThenMultiply_1D}.
+--
+-- It is assumed that _out_ is distinct from _arr1_ and _arr2_.
 -- @array out Complex output vector, which will be populated from _arr1_ and _arr2_ and
 -- padded with zeroes as needed.
 -- @uint size Power-of-2 size of _out_.
@@ -195,10 +215,12 @@ function M.PrepareTwoFFTs_1D (out, size, arr1, m, arr2, n)
 	return swapped
 end
 
---- Prepares two real matrices to be processed in a single FFT, e.g. as setup for @{number_ops.fft.TwoFFTsThenMultiply_2D}.
+--- Prepares two real matrices to be processed in a single FFT, e.g. as setup for @{fft_ops.two_ffts.TwoFFTsThenMultiply_2D}.
+--
+-- It is assumed that _out_ is distinct from _arr1_ and _arr2_.
 -- @array out Complex output matrix, which will be populated from _arr1_ and _arr2_ and
 -- padded with zeroes as needed.
--- @uint size Power-of-2 size of _out_.
+-- @uint size Size of _out_, i.e. the product of its power-of-2 width and height.
 -- @array arr1 Matrix #1 of real values.
 -- @uint cols1 Number of columns in _arr1_.
 -- @array arr2 Matrix #2 of real values.
@@ -269,7 +291,9 @@ end
 
 -- Stuff for rolling signals? (to facilitate overlap convolve methods)
 
---- Prepares two real vectors to be processed in a single FFT, e.g. as setup for @{number_ops.fft.TwoGoertzelsThenMultiply_1D}.
+--- Prepares two real vectors to be processed in a single FFT, e.g. as setup for @{fft_ops.goertzel.TwoGoertzelsThenMultiply_1D}.
+--
+-- Both _out1_ and _out2_ are assumed to be distinct from either _arr1_ or _arr2_.
 -- @array out1 Real output vector, which will be populated from _arr1_ and padded with
 -- zeroes as needed...
 -- @array out2 ...the same, for _arr2_.
@@ -296,7 +320,9 @@ function M.PrepareTwoGoertzels_1D (out1, out2, size, arr1, m, arr2, n)
 	end
 end
 
---- Prepares two real vectors to be processed in a single FFT, e.g. as setup for @{number_ops.fft.TwoGoertzelsThenMultiply_2D}.
+--- Prepares two real vectors to be processed in a single FFT, e.g. as setup for @{fft_ops.goertzel.TwoGoertzelsThenMultiply_2D}.
+--
+-- Both _out1_ and _out2_ are assumed to be distinct from either _arr1_ or _arr2_.
 -- @array out1 Real output matrix, which will be populated from _arr1_ and padded with
 -- zeroes as needed...
 -- @array out2 ...the same, for _arr2_.

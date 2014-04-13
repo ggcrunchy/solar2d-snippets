@@ -126,42 +126,6 @@ var_dump.SetDefaultOutf(printf)
 function vdump (var, name, limit)
 	var_dump.Print(var, name and { name = name, limit = limit })
 end
---[[
-local fft = require("number_ops.fft")
-local fft_utils = require("number_ops.fft_utils")
-
-local a = { 1, 2, 3, 0 }
-
-fft.RealFFT_1D(a, 4)
-
-vdump(a)
-
-local out1 = {}
-
-fft_utils.PrepareRealFFT_1D(out1, 4, { 1, 2, 3 })
-fft.RealFFT_1D(out1, 4)
-
-vdump(out1)
-
-local b = { 0, 1, 2, 0,
-			2, 3, 4, 0,
-			3, 3, 3, 0,
-			2, 4, 2, 0 }
-
-fft.RealFFT_2D(b, 4, 4)
-
-vdump(b)
-
-local out2 = {}
-
-fft_utils.PrepareRealFFT_2D(out2, 16, { 0, 1, 2,
-									  2, 3, 4,
-									  3, 3, 3,
-									  2, 4, 2 }, 3, 4)
-fft.RealFFT_2D(out2, 4, 4)
-
-vdump(out2)
---]]
 
 -- Kick off the app.
 scenes.GoToScene{ name = "scene.Intro" }

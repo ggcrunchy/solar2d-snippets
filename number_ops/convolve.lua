@@ -352,7 +352,12 @@ function AuxMethod1D.goertzel (n, signal, sn, kernel, kn)
 	goertzel.TwoGoertzelsThenMultiply_1D(B, C, n)
 end
 
---- TODO: Precomputed kernel (already FFT'd)
+-- Precomputed kernel method
+function AuxMethod1D.precomputed_kernel (n, signal, sn, kernel)
+	fft_utils.PrepareRealFFT_1D(B, n, signal, sn)
+	real_fft.RealFFT_1D(B, n)
+	fft_utils.Multiply_1D(B, kernel, n)
+end
 
 -- Separate FFT's method
 function AuxMethod1D.separate (n, signal, sn, kernel, kn)
@@ -379,14 +384,15 @@ local DefMethod1D = AuxMethod1D.two_ffts
 --
 -- * **into**: If provided, this table will receive the convolution.
 -- * **method**: If this is **"goertzel"**, the transforms are done using the [Goertzel algorithm](http://en.wikipedia.org/wiki/Goertzel_algorithm),
--- which may offer better performance in some cases. If it is **"separate"**, two FFT's are
+-- which may offer better performance in some cases. If it is **"precomputed_kernel"**, the
+-- _kernel_ argument is assumed to already be FFT'd. If it is **"separate"**, two FFT's are
 -- computed separately. Otherwise, the two real FFT's are computed as one complex FFT.
--- is used to perform the 
 -- @treturn array Convolution.
+-- @see PrecomputeKernel_1D
 function M.ConvolveFFT_1D (signal, kernel, opts)
 	-- Determine how much padding is needed to have matching power-of-2 sizes.
 	local method = opts and opts.method
-	local sn, kn = #signal, #kernel
+	local sn, kn = #signal, method ~= "precomputed_kernel" and #kernel or kernel.n
 	local clen, n = LenPower(sn, kn)
 
 	-- Perform an FFT on the signal and kernel (both at once). Multiply the (complex) results...
@@ -453,10 +459,11 @@ local DefMethod2D = AuxMethod2D.two_ffts
 -- @treturn array Convolution.
 -- @treturn uint Number of columns in the convolution. Currently, only the **"full"** shape
 -- is supported, i.e. _scols_ + _kcols_ - 1.
+-- @see PrecomputeKernel_2D
 function M.ConvolveFFT_2D (signal, kernel, scols, kcols, opts)
 	-- Determine how much padding each dimension needs, to have matching power-of-2 sizes.
 	local method = opts and opts.method
-	local sn, kn = #signal, #kernel
+	local sn, kn = #signal, method ~= "precomputed_kernel" and #kernel or kernel.n
 	local srows = sn / scols
 	local krows = kn / kcols
 	local w, m = LenPower(scols, kcols)
@@ -482,6 +489,42 @@ function M.ConvolveFFT_2D (signal, kernel, scols, kcols, opts)
 	end
 
 	return csignal
+end
+
+--- Precomputes a kernel, e.g. for consumption by the **"precomputed_kernel"** option of
+-- @{ConvolveFFT_1D}.
+-- @array out Computed kernel. Assumed to be distinct from _kernel_.
+-- @uint sn Size of corresponding real discrete signal.
+-- @array kernel Real discrete kernel.
+function M.PrecomputeKernel_1D (out, sn, kernel)
+	local kn = #kernel
+	local _, n = LenPower(sn, kn)
+
+	fft_utils.PrepareRealFFT_1D(out, n, kernel, kn)
+	real_fft.RealFFT_1D(out, n)
+
+	out.n = kn
+end
+
+--- Precomputes a kernel, e.g. for consumption by the **"precomputed_kernel"** option of
+-- @{ConvolveFFT_2D}.
+-- @array out Computed kernel. Assumed to be distinct from _kernel_.
+-- @uint sn Size of corresponding real discrete signal.
+-- @array kernel Real discrete kernel.
+-- @uint scols Number of columns in signal... 
+-- @uint kcols ... and in _kernel_.
+function M.PrecomputeKernel_2D (out, sn, kernel, scols, kcols)
+	local kn = #kernel
+	local srows = sn / scols
+	local krows = kn / kcols
+	local _, m = LenPower(scols, kcols)
+	local _, n = LenPower(srows, krows)
+	local area = m * n
+
+	fft_utils.PrepareRealFFT_2D(out, area, kernel, kcols, m, kn)
+	real_fft.RealFFT_2D(out, m, n)
+
+	out.n = kn
 end
 
 --[[
