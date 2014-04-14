@@ -42,7 +42,7 @@ end
 
 --- Rounds a number to the nearest multiple of some increment.
 -- @number n Number to round.
--- @number inc Increment; by default, 1.
+-- @number[opt=1] inc Increment.
 -- @treturn number Rounded result.
 function M.RoundTo (n, inc)
 	inc = inc or 1

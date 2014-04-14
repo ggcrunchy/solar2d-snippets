@@ -46,7 +46,7 @@ local M = {}
 
 --- Builds an instanced autocaching coroutine-based iterator.
 -- @callable func Iterator body.
--- @callable on_reset Function called on reset; if **nil**, this is a no-op.
+-- @callable[opt] on_reset Function called on reset; if **nil**, this is a no-op.
 -- @treturn iterator Instanced iterator.
 -- @see coroutine_ops.wrapper.Wrap, iterator_ops.utils.InstancedAutocacher
 function M.Iterator (func, on_reset)

@@ -81,8 +81,8 @@ end
 --- Generates a rectangular mask, for use with `graphics.setMask`.
 -- @uint w Mask width...
 -- @uint h ...and height.
--- @param name File name to assign to generated mask; if absent, one will be auto-generated.
--- @param base_dir Directory where mask is stored; if absent, `system.TemporaryDirectory`.
+-- @param[opt] name File name to assign to mask; if absent, one will be auto-generated.
+-- @param[opt=`system.TemporaryDirectory`] base_dir Directory where mask is stored.
 -- @treturn string Mask file name.
 -- @treturn number xscale Scale to apply to mask to fit _w_...
 -- @treturn number yscale ...and to fit _h_.

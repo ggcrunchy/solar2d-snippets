@@ -48,7 +48,7 @@ local Timeout = math.floor(1.8 * Period)
 -- @callable unload Called (without arguments) if cleanup occurs while the resource is
 -- stale. Generally, this should clean up at least the on-demand portion of the state.
 -- Furthermore, it should be safe to call _load_ again after this call.
--- @uint timeout How many milliseconds the resource can go idle without being removed.
+-- @uint[opt] timeout How many milliseconds the resource can go idle without being removed.
 --
 -- If absent, some reasonable default is used.
 --

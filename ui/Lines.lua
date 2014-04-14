@@ -154,7 +154,7 @@ end
 -- endpoints are somewhat separated.
 -- @pobject p1 Endpoint #1.
 -- @pobject p2 Endpoint #2.
--- @ptable options Optional line options. Fields:
+-- @ptable[opt] options Line options. Fields:
 --
 -- * **color**: Line color. If absent, white.
 -- * **keep**: **callable** If provided, called with _p1_, _p2_, and _options_.**node** as

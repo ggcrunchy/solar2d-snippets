@@ -38,7 +38,7 @@ local M = {}
 
 --- Converts an arc length into a curve parameter, given a lookup table.
 -- @bool add_01_wrapper Return wrapper function?
--- @array? lut The underlying lookup table. If absent, a table is supplied.
+-- @array[opt] lut The underlying lookup table. If absent, a table is supplied.
 --
 -- In a well-formed, populated table, each element  will have **number** members **s** and
 -- **t**. In the first element, both values will be 0. In the final elemnt, **t** will be
@@ -184,7 +184,7 @@ end
 -- @tparam Vector p1 Endpoint #1...
 -- @tparam Vector q ...control point...
 -- @tparam Vector p2 ...and endpoint #2.
--- @int? nsamples Number of samples to load into _lut_. If absent, a default is used.
+-- @int[opt] nsamples Number of samples to load into _lut_. If absent, a default is used.
 -- @treturn number Total arc length.
 function M.SetLUT_Bezier2 (lut, p1, q, p2, nsamples)
 	Bezier[1], Bezier[2], Bezier[3] = p1, q, p2
@@ -202,8 +202,8 @@ end
 -- @tparam Vector q1 ...control point #1...
 -- @tparam Vector q2 ...control point #2...
 -- @tparam Vector p2 ...and endpoint #2.
--- @int? nsamples Number of samples to load into _lut_. If absent, a default is used.
--- @number? tolerance "Close enough" tolerance, cf. @{spline_ops.bezier.Length3}.
+-- @int[opt] nsamples Number of samples to load into _lut_. If absent, a default is used.
+-- @number[opt] tolerance "Close enough" tolerance, cf. @{spline_ops.bezier.Length3}.
 -- If absent, a default is used.
 -- @treturn number Total arc length.
 function M.SetLUT_Bezier3 (lut, p1, q1, q2, p2, nsamples, tolerance)
@@ -221,8 +221,8 @@ end
 -- @string? how If this is **"gauss_legendre"**, @{number_ops.integrators.GaussLegendre} is used
 -- as the integration method. Otherwise, @{number_ops.integrators.Romberg} is used.
 -- @callable func Function to integrate, e.g. an integrand supplied by @{spline_ops.cubic.LineIntegrand}.
--- @int? nsamples Number of samples to load into _lut_. If absent, a default is used.
--- @number? tolerance Tolerance, as used by some integrators. If absent, a default is used.
+-- @int[opt] nsamples Number of samples to load into _lut_. If absent, a default is used.
+-- @number[opt] tolerance Tolerance, as used by some integrators. If absent, a default is used.
 -- @treturn number Total arc length.
 function M.SetLUT_Func (lut, how, func, nsamples, tolerance)
 	nsamples, tolerance = nsamples or 20, tolerance or 1e-3

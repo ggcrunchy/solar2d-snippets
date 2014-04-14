@@ -28,7 +28,7 @@ local M = {}
 
 --- Iterates from _i_ = 1 to _count_ and reports whether **all** `arr[i]` are true.
 -- @array arr Array to test.
--- @uint count Number of tests to perform. If absent, `#arr`.
+-- @uint[opt=#arr] count Number of tests to perform.
 -- @treturn boolean All tests passed?
 function M.All (arr, count)
 	for i = 1, count or #arr do
@@ -42,7 +42,7 @@ end
 
 --- Iterates from _i_ = 1 to _count_ and reports whether **any** `arr[i]` is true.
 -- @array arr Array to test.
--- @uint count Number of tests to perform. If absent, `#arr`.
+-- @uint[opt=#arr] count Number of tests to perform.
 -- @treturn boolean Any test passed?
 function M.Any (arr, count)
 	for i = 1, count or #arr do
@@ -77,7 +77,7 @@ end
 --- Iterates from _i_ = 1 to _count_ and reports whether **some** `arr[i]` are true, i.e.
 -- 0 < _n_ < _count_, where _n_ is the number of true `arr[i]`.
 -- @array arr Array to test.
--- @uint count Number of tests to perform. If absent, `#arr`.
+-- @uint[opt=#arr] count Number of tests to perform.
 -- @treturn boolean Some tests passed?
 function M.Some (arr, count)
 	count = count or #arr

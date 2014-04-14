@@ -48,6 +48,27 @@ function M.GetDims (T)
 	return T.m_w, T.m_h
 end
 
+--- Gets the value of a table cell, i.e. the pre-summed input as assigned in @{New_Grid},
+-- @{Set}, or @{Set_Multi}.
+-- @tparam SummedAreaTable T
+-- @uint col Column...
+-- @uint row ...and row.
+-- @treturn number|Value Value. If the coordinate is out-of-bounds, 0.
+function M.GetValue (T, col, row)
+	local w = T.m_w
+
+	if col >= 1 and row >= 1 and col <= w and row <= T.m_h then
+		local pitch = Pitch(w)
+		local index = Index(col, row, pitch)
+		local above = index - pitch
+
+		-- See note for Unravel()
+		return T[index] - T[index - 1] - T[above] + T[above - 1]
+	end
+
+	return 0
+end
+
 --- Creates a new summed area table, with all sums 0.
 -- @uint w Width...
 -- @uint h ...and height.
@@ -100,7 +121,7 @@ end
 --
 -- The elements are assumed to be consistent per the module summary.
 -- @uint ncols Number of table columns, &ge; 1...
--- @uint? nrows ...and number of rows; if absent, 1. If the product of _ncols_ and _nrows_ is
+-- @uint[opt=1] nrows ...and number of rows. If the product of _ncols_ and _nrows_ is
 -- insufficient to contain _values_, the actual row count will be the minimum needed.
 -- @treturn SummedAreaTable New table.
 function M.New_Grid (values, ncols, nrows)
@@ -233,8 +254,8 @@ end
 
 --- Getter.
 -- @tparam SummedAreaTable T
--- @uint? col Column at which to evaluate the sum (if absent, table width)...
--- @uint? row ...and row (if absent, table height).
+-- @uint[opt] col Column at which to evaluate the sum (if absent, table width)...
+-- @uint[opt] row ...and row (if absent, table height).
 -- @treturn number|Value Sum. If the coordinate is out-of-bounds, 0.
 function M.Sum (T, col, row)
 	local w, h = T.m_w, T.m_h
@@ -257,7 +278,7 @@ end
 -- @uint row1 ...and row.
 -- @uint col2 Another column...
 -- @uint row2 ...and row.
--- @treturn number|Value X Sum. If both coordinates are out-of-bounds or the area is
+-- @treturn number|Value Sum. If both coordinates are out-of-bounds or the area is
 -- degenerate, 0.
 function M.SumOverArea (T, col1, row1, col2, row2)
 	local lrc, lrr = max(col1, col2), max(row1, row2)
@@ -277,27 +298,6 @@ function M.SumOverArea (T, col1, row1, col2, row2)
 		local lr = Index(lrc, lrr, pitch)
 
 		return T[ul] + T[lr] - T[ul + dc] - T[lr - dc]
-	end
-
-	return 0
-end
-
---- Gets the value of a table cell, i.e. the pre-summed input as assigned in @{New_Grid},
--- @{Set}, or @{Set_Multi}.
--- @tparam SummedAreaTable T
--- @uint col Column...
--- @uint row ...and row.
--- @treturn number|Value Value. If the coordinate is out-of-bounds, 0.
-function M.Value (T, col, row)
-	local w = T.m_w
-
-	if col >= 1 and row >= 1 and col <= w and row <= T.m_h then
-		local pitch = Pitch(w)
-		local index = Index(col, row, pitch)
-		local above = index - pitch
-
-		-- See note for Unravel()
-		return T[index] - T[index - 1] - T[above] + T[above - 1]
 	end
 
 	return 0

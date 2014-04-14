@@ -373,7 +373,7 @@ return function(ops, BoolVars)
 	-- This must be called within a coroutine.
 	-- @function BoolVars:WaitUntilFalse
 	-- @param name Non-**nil** bool variable name.
-	-- @callable? update Optional update routine, as per @{coroutine_ops.flow.WaitWhile},
+	-- @callable[opt] update Optional update routine, as per @{coroutine_ops.flow.WaitWhile},
 	-- which receives _name_ as its argument.
 	-- @treturn boolean The wait completed?
 	-- @see BoolVars:WaitUntilTrue, BoolVars:IsFalse
@@ -382,7 +382,7 @@ return function(ops, BoolVars)
 	-- completes.
 	-- @function BoolVars:WaitUntilFalse_Flip
 	-- @param name Non-**nil** bool variable name.
-	-- @callable? update Optional update routine.
+	-- @callable[opt] update Optional update routine.
 	-- @treturn boolean The wait completed?
 	-- @see BoolVars:IsFalse, coroutine_ops.flow.WaitWhile
 
@@ -391,7 +391,7 @@ return function(ops, BoolVars)
 	-- This must be called within a coroutine.
 	-- @function BoolVars:WaitUntilTrue
 	-- @param name Non-**nil** bool variable name.
-	-- @callable? update Optional update routine, as per @{coroutine_ops.flow.WaitUntil},
+	-- @callable[opt] update Optional update routine, as per @{coroutine_ops.flow.WaitUntil},
 	-- which receives _name_ as its argument.
 	-- @treturn boolean The wait completed?
 	-- @see BoolVars:WaitUntilFalse, BoolVars:IsTrue
@@ -400,7 +400,7 @@ return function(ops, BoolVars)
 	-- completes.
 	-- @function BoolVars:WaitUntilTrue_Flip
 	-- @param name Non-**nil** bool variable name.
-	-- @callable? update Optional update routine.
+	-- @callable[opt] update Optional update routine.
 	-- @treturn boolean The wait completed?
 	-- @see BoolVars:IsTrue, coroutine_ops.flow.WaitUntil
 

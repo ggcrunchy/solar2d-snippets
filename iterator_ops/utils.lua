@@ -46,16 +46,16 @@ local function NoReclaim () end
 -- in the cache. It must return the following functions, in order:
 --
 -- * _body_: As with standard iterator functions, called as
---    var\_1, ..., var\_n = body(s, var)
+--    <pre>var\_1, ..., var\_n = body(s, var)</pre>
 -- where the _var_\* are loop variables, _s_ and _var_ are the state and iteration variable.
 -- * _done_: Called as
---    is\_done = done(s, var)
+--    <pre>is\_done = done(s, var)</pre>
 -- If _is\_done_ is true, the iterator terminates normally and calls `reclaim(s)`; otherwise
 -- the _body_ logic is performed.
 -- * _setup_: This takes any iterator arguments and returns _s_ and the initial value of
 -- _var_. Any complex iterator state should be set up here.
 -- * _reclaim_: May be absent, in which case it is a no-op. Called as
---    reclaim(s)
+--    <pre>reclaim(s)</pre>
 -- Any complex iterator state should be cleaned up here. If _reclaim_ must be paranoid that
 -- it terminated normally (namely, that the **for** loop terminated), preparation should be
 -- done in the false branch of _done_.

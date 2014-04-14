@@ -118,7 +118,7 @@ end
 
 --- Enumerates files in a given directory.
 -- @string path Directory path.
--- @ptable options Optional enumeration options. Fields:
+-- @ptable[opt] options Enumeration options. Fields:
 --
 -- * **ext**: Extensions filter. If this is a string, only files ending in the string are
 -- enumerated. If it is an array, only files ending in one of its strings (tried in order)
@@ -146,7 +146,7 @@ end
 
 --- DOCME
 -- @string name
--- @param base Directory base. If absent, **system.ResourceDirectory**.
+-- @param[opt=system.ResourceDirectory] base Directory base.
 -- @treturn boolean Does the file exist?
 -- ^^ TODO: Works for directories?
 function M.Exists (name, base)
@@ -167,7 +167,7 @@ end
 -- * **"created"**: File was created (or re-created) once watching was begun.
 -- * **"deleted"**: File was deleted once watching was begun.
 -- * **"modified"**: File was modified while being watched.
--- @param base Directory base. If absent, **system.ResourceDirectory**.
+-- @param[opt=system.ResourceDirectory] base Directory base.
 -- @treturn TimerHandle A timer, which may be cancelled.
 function M.WatchForFileModification (path, func, base)
 	local respath, modtime

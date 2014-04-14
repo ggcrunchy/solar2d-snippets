@@ -45,7 +45,7 @@ local function Collect (acc, i, count, v1, v2, v3, v4, v5, ...)
 end
 
 --- Collects arguments, including **nil**s, into an object.
--- @param acc Accumulator object; if false, a table is supplied.
+-- @param[opt] acc Accumulator object; if absent, a table is supplied.
 -- @param ... Arguments to collect.
 -- @treturn uint Argument count.
 -- @return Filled accumulator.
@@ -60,7 +60,7 @@ function M.CollectArgsInto (acc, ...)
 end
 
 --- Variant of @{CollectArgsInto} that is a no-op when given no arguments.
--- @param acc Accumulator object; if false and there are arguments, a table is supplied.
+-- @param[opt] acc Accumulator object; if absent and there are arguments, a table is supplied.
 -- @param ... Arguments to collect.
 -- @treturn uint Argument count.
 -- @return Filled accumulator, or _acc_ if no arguments were supplied.
@@ -78,7 +78,7 @@ end
 
 --- Resolves its input as a single result, packing it into a table when there are multiple
 -- arguments, useful when input may vary between single and multiple values.
--- @tparam table t Table to store multiple arguments; if **nil**, a fresh table is supplied.
+-- @ptable[opt] t Table to store multiple arguments; if **nil**, a fresh table is supplied.
 -- @param key Key under which to store the argument count in the table.
 -- @param ... Arguments.
 -- @return Given zero arguments, returns **nil**. Given one, returns the value. Otherwise,
@@ -102,7 +102,7 @@ end
 -- @param var Variable as returned by `UnpackOrGet`.
 -- @param key If _var_ is a table with this key, it is interpreted as a packed argument
 -- table, and the value as its argument count.
--- @string how Operation to request on _var_.
+-- @string[opt] how Operation to request on _var_.
 -- @return Returns as follows, in order of priority:
 --
 -- * _var_ is not a packed argument table: Returns _var_, or 1 if _how_ is **"count"**.

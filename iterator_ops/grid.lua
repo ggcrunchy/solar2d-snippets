@@ -144,8 +144,7 @@ end)
 -- @uint r2 Row index #2.
 -- @number dw Uniform cell width.
 -- @number dh Uniform cell height.
--- @uint ncols Number of columns in a grid row. If absent, this is assumed to be the
--- larger of _c1_ and _c2_.
+-- @uint[opt=max(c1, c2)] ncols Number of columns in a grid row.
 -- @treturn iterator Supplies the following, in order, at each iteration:
 --
 -- * Current iteration index.

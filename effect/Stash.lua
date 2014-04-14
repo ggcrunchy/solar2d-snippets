@@ -66,9 +66,9 @@ end
 --- If a circle has been stashed in a certain cache, it will be pulled out and recycled.
 -- Otherwise, a fresh circle is created with default properties.
 -- @param what Name of a cache which may contain circles deposited by @{PushCircle}.
--- @pgroup into Group into which the circle is pulled. If absent, the stage.
--- @callable new Optional circle constructor, which takes _into_ as argument and returns
--- a circle display object; if absent, a default is used.
+-- @pgroup[opt] into Group into which the circle is pulled. If absent, the stage.
+-- @callable[opt] new Circle constructor, which takes _into_ as argument and returns a
+-- circle display object; if absent, a default is used.
 -- @treturn DisplayCircle Circle display object.
 function M.PullCircle (what, into, new)
 	into = into or display.getCurrentStage()
@@ -86,9 +86,9 @@ end
 --- If a rect has been stashed in a certain cache, it will be pulled out and recycled.
 -- Otherwise, a fresh rect is created with default properties.
 -- @param what Name of a cache which may contain rects deposited by @{PushRect}.
--- @pgroup into Group into which the rect is pulled. If absent, the stage.
--- @callable new Optional rect constructor, which takes _into_ as argument and returns
--- a rect display object; if absent, a default is used.
+-- @pgroup[opt] into Group into which the rect is pulled. If absent, the stage.
+-- @callable[opt] new Rect constructor, which takes _into_ as argument and returns a rect
+-- display object; if absent, a default is used.
 -- @treturn DisplayRect Rect display object.
 function M.PullRect (what, into, new)
 	into = into or display.getCurrentStage()
@@ -156,8 +156,8 @@ end
 --- Stashes one or more rects for later retrieval by @{PullRect}.
 -- @param what Name of a cache (will be created if absent).
 -- @pobject rect A group or rect, pushed according to _how_.
--- @string how If this is **"is\_group"**, _rect_ must be a display group containing only
--- rects. All of its elements will be emptied into the cache.
+-- @string[opt] how If this is **"is\_group"**, _rect_ must be a display group containing
+-- only rects. All of its elements will be emptied into the cache.
 --
 -- If it is **"is\_dead\_group"**, _rect_ is also such a group. In this case, elements are
 -- gradually transferred to the cache, after which _rect_ will remove itself.

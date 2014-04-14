@@ -1,7 +1,6 @@
 --- Color picker UI element.
 --
 -- @todo Document skin...
--- TODO: Argh, apparently this was all the HSV scheme... incorporate this knowledge, perhaps into ui.Color?
 --
 -- Permission is hereby granted, free of charge, to any person obtaining
 -- a copy of this software and associated documentation files (the

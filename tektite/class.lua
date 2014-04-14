@@ -204,7 +204,7 @@ do
 	local function DefaultCons () end
 
 	--- Defines a new class.
-	-- @param members Members to add.
+	-- @tparam ?|table|function members Members to add.
 	--
 	-- This may be a table, in which case each (name, member) pair is read out directly.
 	--
@@ -224,7 +224,7 @@ do
 	-- This should be callable as
 	--    clone(I, ...),
 	-- where _I_ is the instance to clone and _..._ are any arguments passed to @{Clone}.
-	-- @tparam table params Configuration parameters table, or **nil** to use the defaults.
+	-- @tparam ?|table|nil params Configuration parameters table, or **nil** to use the defaults.
 	--
 	-- If the **base** key is present, its value should be a class type previously returned
 	-- by `Define`. This class will then inherit the base class members and metamethods.
@@ -242,7 +242,7 @@ do
 	-- userdata, using the defaults for **__index** and **__newindex**. A member may be
 	-- shadowed in an instance by assigning another value to its name, and restored by
 	-- setting it to **nil**.
-	-- @treturn callable Class type, which may be called as
+	-- @treturn function Class type, which may be called as
 	--    instance = ctype(...)
 	-- to instantiate the class.
 	-- @see GetMember

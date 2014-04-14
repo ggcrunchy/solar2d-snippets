@@ -104,7 +104,7 @@ end
 -- @string name Name of file to save.
 -- @array colors Color values, stored as { _red1_, _green1_, _blue1_, _alpha1_, _red2_, ... }
 -- @uint w Width of saved image. The height is computed automatically from this and #_colors_.
--- @ptable? opts Optional save options. Fields:
+-- @ptable[opt] opts Save options. Fields:
 --
 -- * **from_01**: If true, color values are interpreted as being &isin; [0, 1], instead of
 -- [0, 255] (the default).
@@ -123,7 +123,7 @@ end
 -- @array a ...and alpha values.
 -- @uint w Width of saved image. The height is computed automatically from this and the
 -- minimum of #_r_, #_g_, #_b_, #_a_ (typically, these will all be the same).
--- @ptable? opts As per @{Save_Interleaved}.
+-- @ptable[opt] opts As per @{Save_Interleaved}.
 -- @treturn boolean Was the file written?
 function M.Save_RGBA (name, r, g, b, a, w, opts)
 	return SaveStr(name, _ToString_RGBA_(r, g, b, a, w, opts))
@@ -275,7 +275,7 @@ end
 --- Variant of @{Save_Interleaved} that emits a raw byte stream, instead of saving to file.
 -- @array colors As per @{Save_Interleaved}.
 -- @uint w As per @{Save_Interleaved}.
--- @ptable? opts As per @{Save_Interleaved}.
+-- @ptable[opt] opts As per @{Save_Interleaved}.
 -- @treturn string Byte stream.
 function M.ToString_Interleaved (colors, w, opts)
 	local ncolors = floor(#colors / 4)
@@ -307,7 +307,7 @@ end
 -- @array b ...blue values...
 -- @array a ...and alpha values.
 -- @uint w As per @{Save_RGBA}.
--- @ptable? opts As per @{Save_RGBA}.
+-- @ptable[opt] opts As per @{Save_RGBA}.
 -- @treturn string Byte stream.
 function M.ToString_RGBA (r, g, b, a, w, opts)
 	local ncolors = min(#r, #g, #b, #a)

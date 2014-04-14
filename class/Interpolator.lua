@@ -81,7 +81,6 @@ return class.Define(function(Interpolator)
 	end
 
 	-- Oscillation reversal helper
-	-- count: Timeout count
 	local function DoAnyFlip (I, count)
 		if count % 2 == 1 then
 			I[_is_decreasing] = not I[_is_decreasing]
@@ -192,7 +191,7 @@ return class.Define(function(Interpolator)
 	--- Sets the time mapping, to be applied during interpolation.
 	--
 	-- When no map is assigned, the raw time and interpolation time are the same.
-	-- @callable map Map to assign, or **nil** to remove any mapping.
+	-- @tparam ?|callable|nil map Map to assign, or **nil** to remove any mapping.
 	--
 	-- A valid mapping function has signature
 	--    map(t, is_decreasing),
@@ -215,7 +214,7 @@ return class.Define(function(Interpolator)
 	--
 	-- The interpolator must have first been assigned a duration.
 	-- @string mode Interpolation mode, as per `Interpolator:GetMode`.
-	-- @string how Resume command.
+	-- @tparam ?|string|nil how Resume command.
 	--
 	-- If this is **nil**, the interpolator is reset, i.e. the interpolation time is
 	-- set to 0 and increasing.
@@ -279,11 +278,11 @@ return class.Define(function(Interpolator)
 	-- where _t_ is the current (mapped) interpolation time, &isin; [0, 1], and the remaining
 	-- parameters will take whatever has been assigned as the current targets and context.
 	--
-	-- @number duration Duration to interpolate from t = 0 to t = 1 (or vice versa),
-	-- or **nil** to forgo setting it.
-	-- @param target1 Optional user-defined interpolation target.
-	-- @param target2 Optional user-defined interpolation target.
-	-- @param context Optional user-defined context.
+	-- @tparam ?|number|nil duration Duration to interpolate from t = 0 to t = 1 (or vice
+	-- versa), or **nil** to forgo setting it.
+	-- @param[opt] target1 User-defined interpolation target.
+	-- @param[opt] target2 User-defined interpolation target.
+	-- @param[opt] context User-defined context.
 	-- @see Interpolator:SetContext, Interpolator:SetDuration, Interpolator:SetTargets
 	function Interpolator:__cons (interp, duration, target1, target2, context)
 		self[_interp] = interp

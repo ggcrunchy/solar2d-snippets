@@ -225,7 +225,7 @@ return class.Define(function(SectionGroup)
 	end
 
 	--- Sends a message to any section directly, called as
-	--    proc(what, ...)
+	--    return proc(what, ...)
 	-- The section need not be open.
 	-- @param name Section name.
 	-- @param what Message, which may be any non-**nil** value not used by another method.

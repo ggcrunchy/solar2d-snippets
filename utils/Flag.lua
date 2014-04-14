@@ -49,7 +49,7 @@ end
 
 --- Maps a list of names to a group of constants.
 -- @ptable names Array of names, used as keys.
--- @int first Starting value, or 1 if absent.
+-- @int[opt=1] first Starting value.
 -- @treturn table Table with each name from _names_ associated with a value:
 --
 -- _names_[1] : _first_, _names_[2] : _first_ + 1, etc.

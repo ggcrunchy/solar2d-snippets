@@ -35,7 +35,7 @@ local M = {}
 --- Iterator which traverses a table as per @{ipairs}, then supplies some item on the
 -- final iteration.
 -- @function IpairsThenItem
--- @tparam table t Table for array part.
+-- @ptable t Table for array part.
 -- @param item Post-table item.
 -- @treturn iterator Supplies index, value.
 --
@@ -87,7 +87,7 @@ end)
 -- @{ipairs}.
 -- @function ItemThenIpairs
 -- @param item Pre-table item.
--- @tparam table t Table for array part.
+-- @ptable t Table for array part.
 -- @treturn iterator Supplies index, value.
 --
 -- On the first iteration, this returns **false**, _item_.

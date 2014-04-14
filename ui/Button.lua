@@ -200,13 +200,13 @@ end
 
 --- Creates a new button.
 -- @pgroup group Group to which button will be inserted.
--- @param skin Name of button's skin.
+-- @param[opt] skin Name of button's skin.
 -- @number x Position in _group_.
 -- @number y Position in _group_.
 -- @number w Width. (Ignored for some types.)
 -- @number h Height. (Ignored for some types.)
 -- @callable func Logic for this button, called on drop or timeout.
--- @string text Optional text.
+-- @string[opt=""] text Button text.
 -- @treturn DisplayGroup Child #1: the button; Child #2: the text.
 -- @see ui.Skin.GetSkin
 function M.Button (group, skin, x, y, w, h, func, text)
@@ -244,8 +244,8 @@ function M.Button (group, skin, x, y, w, h, func, text)
 
 	--- Setter.
 	-- @function bgroup:SetTimeout
-	-- @number timeout A value &gt; 0. When the button is held, its function is called
-	-- each time this duration passes. If absent, any such timeout is removed.
+	-- @tparam ?|number|nil timeout A value &gt; 0. When the button is held, its function is
+	-- called each time this duration passes. If absent, any such timeout is removed.
 	bgroup.SetTimeout = SetTimeout
 
 	-- Provide the button.

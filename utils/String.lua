@@ -35,7 +35,7 @@ local M = {}
 
 --- Predicate.
 -- @string str Source string.
--- @string patt Prefix pattern. (n.b. only supports exact "patterns")
+-- @string patt Prefix pattern. (**n.b.** only supports exact "patterns")
 -- @bool get_suffix Get the rest of the string as well?
 -- @treturn boolean _str_ begins with _patt_?
 -- @treturn string If _patt_ was found and _get\_suffix_ is true, the rest of the string;
@@ -49,7 +49,7 @@ end
 
 --- Predicate.
 -- @string str Source string.
--- @string patt Suffix pattern. (n.b. only supports exact "patterns")
+-- @string patt Suffix pattern. (**n.b.** only supports exact "patterns")
 -- @bool get_prefix Get the rest of the string as well?
 -- @treturn boolean _str_ ends with _patt_?
 -- @treturn string If _patt_ was found and _get\_prefix_ is true, the rest of the string;

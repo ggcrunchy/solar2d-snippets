@@ -83,8 +83,8 @@ end
 --- Resets a coroutine made by @{Wrap}.
 --
 -- If the coroutine is already reset, this is a no-op.
--- @tparam function coro Optional wrapper for coroutine to reset; if absent, uses the
--- running coroutine.
+-- @tparam[opt] function coro Wrapper for coroutine to reset; if absent, uses the running
+-- coroutine.
 -- @param ... Reset arguments.
 function M.Reset (coro, ...)
 	-- Figure out how to perform the reset. If the wrapper was specified or it corresponds
@@ -122,7 +122,7 @@ local function DefaultReset () end
 
 --- Creates an extended coroutine, exposed by a wrapper function.
 -- @callable func Coroutine body.
--- @callable on_reset Function called on reset; if **nil**, this is a no-op.
+-- @callable[opt] on_reset Function called on reset; if **nil**, this is a no-op.
 --
 -- Note that this will be executed in a protected call, within the context of the resetter.
 -- @treturn function Wrapper function.

@@ -52,11 +52,13 @@ do
 	--
 	-- Built on top of @{coroutine_ops.flow_bodies.Body_Timed}.
 	-- @number duration Time to wait.
-	-- @callable update Optional update logic, called as
+	-- @tparam ?|callable|nil update Update logic, called as
 	--    update(time_state, duration, arg)
 	-- with _time\_state_ as per @{coroutine_ops.flow_bodies.Body_Timed}.
+	--
+	-- If absent, this is a no-op.
 	-- @param arg Argument.
-	-- @param yvalue Optional value to yield.
+	-- @param[opt] yvalue Value to yield.
 	-- @treturn boolean The wait completed?
 	function M.Wait (duration, update, arg, yvalue)
 		Config.yvalue = yvalue
@@ -112,7 +114,7 @@ do
 	-- @callable update Optional update logic, called as
 	--    update(signals, count, arg)
 	-- @param arg Argument.
-	-- @param yvalue Optional value to yield.
+	-- @param[opt] yvalue Value to yield.
 	-- @treturn The signals satisfied the predicate?
 	-- @see array_ops.predicates.All, array_ops.predicates.Any
 	function M.WaitForMultipleSignals (signals, count, pred, update, arg, yvalue)
@@ -129,7 +131,7 @@ do
 	--    update(time_state, signals, count, arg)
 	-- with _time\_state_ as per @{coroutine_ops.flow_bodies.Body_Timed}.
 	-- @param arg Argument.
-	-- @param yvalue Optional value to yield.
+	-- @param[opt] yvalue Value to yield.
 	-- @treturn boolean The signals satisfied the predicate?
 	function M.WaitForMultipleSignals_Timed (signals, count, pred, update, arg, yvalue)
 		local pred_op = Setup(Config, pred)
@@ -156,7 +158,7 @@ do
 	-- @callable update Optional update logic, called as
 	--    update(signals, what, arg)
 	-- @param arg Argument.
-	-- @param yvalue Optional value to yield.
+	-- @param[opt] yvalue Value to yield.
 	-- @treturn boolean The signal fired?
 	function M.WaitForSignal (signals, what, update, arg, yvalue)
 		Config.yvalue = yvalue
@@ -171,7 +173,7 @@ do
 	--    update(time_state, signals, what, arg)
 	-- with _time\_state_ as per @{coroutine_ops.flow_bodies.Body_Timed}.
 	-- @param arg Argument.
-	-- @param yvalue Optional value to yield.
+	-- @param[opt] yvalue Value to yield.
 	-- @treturn boolean The signal fired?
 	function M.WaitForSignal_Timed (signals, what, update, arg, yvalue)
 		Config.yvalue = yvalue
@@ -203,22 +205,22 @@ do
 	-- @function WaitUntil
 	-- @callable test Test function, with the same signature as _update_. If it returns
 	-- true, the wait terminates.
-	-- @callable update Optional update logic, called as
+	-- @tparam ?|callable|nil update Optional update logic, called as
 	--    update(arg)
 	-- @param arg Argument.
-	-- @param yvalue Optional value to yield.
+	-- @param[opt] yvalue Value to yield.
 	-- @treturn boolean The test passed?
 
 	--- Timed variant of @{WaitUntil}, built on top of @{coroutine_ops.flow_bodies.Body_Timed}.
 	-- @function WaitUntil_Timed
 	-- @callable test Test function. If it returns true, the wait terminates.
-	-- @callable update Optional update logic, called as
+	-- @tparam ?|callable|nil update Optional update logic, called as
 	--    update(time_state, arg)
 	-- with _time\_state_ as per @{coroutine_ops.flow_bodies.Body_Timed}.
 	-- @param arg Argument.
 	-- @bool use_time _test_ has the same signature as _update_? Otherwise, the _time\_state_
 	-- argument is omitted.
-	-- @param yvalue Optional value to yield.
+	-- @param[opt] yvalue Value to yield.
 	-- @treturn boolean The test passed?
 
 	WaitPair("Until", {})
@@ -229,22 +231,22 @@ do
 	-- @function WaitWhile
 	-- @callable test Test function, with the same signature as _update_. If it returns
 	-- false, the wait terminates.
-	-- @callable update Optional update logic, called as
+	-- @tparam ?|callable|nil update Optional update logic, called as
 	--    update(arg)
 	-- @param arg Argument.
-	-- @param yvalue Optional value to yield.
+	-- @param[opt] yvalue Value to yield.
 	-- @treturn boolean The test failed?
 
 	--- Timed variant of @{WaitWhile}, built on top of @{coroutine_ops.flow_bodies.Body_Timed}.
 	-- @function WaitWhile_Timed
 	-- @callable test Test function. If it returns false, the wait terminates.
-	-- @callable update Optional update logic, called as
+	-- @tparam ?|callable|nil update Optional update logic, called as
 	--    update(time_state, arg)
 	-- with _time\_state_ as per @{coroutine_ops.flow_bodies.Body_Timed}.
 	-- @param arg Argument.
 	-- @bool use_time _test_ has the same signature as _update_? Otherwise, the _time\_state_
 	-- argument is omitted.
-	-- @param yvalue Optional value to yield.
+	-- @param[opt] yvalue Value to yield.
 	-- @treturn boolean The test failed?
 
 	WaitPair("While", { negate_done = true })

@@ -41,7 +41,7 @@ end
 -- @number dx Displacement x-component...
 -- @number dy ...and y-component.
 -- @number len Distance per unit.
--- @number bias Amount added to the pre-rounded result. If absent, 0.
+-- @number[opt=0] bias Amount added to the pre-rounded result.
 -- @treturn integer Quantized distance, i.e. _bin_.
 function M.ToBin (dx, dy, len, bias)
 	return AuxQuantize(floor, dx, dy, len, bias)
@@ -51,8 +51,8 @@ end
 -- @number dx Displacement x-component...
 -- @number dy ...and y-component.
 -- @number len Distance per unit.
--- @number base Minimum value of rounded result. If absent, 0.
--- @number bias Amount added to the pre-rounded result. If absent, 0.
+-- @number[opt=0] base Minimum value of rounded result.
+-- @number[opt=0] bias Amount added to the pre-rounded result.
 -- @treturn number Quantized distance, i.e. `max(base, bin)`.
 function M.ToBin_Min (dx, dy, len, base, bias)
 	return max(base or 0, AuxQuantize(floor, dx, dy, len, bias))
@@ -62,7 +62,7 @@ end
 -- @number dx Displacement x-component...
 -- @number dy ...and y-component.
 -- @number len Distance per unit.
--- @number bias Amount added to the pre-rounded result. If absent, 0.
+-- @number[opt=0] bias Amount added to the pre-rounded result.
 -- @treturn integer Quantized distance, i.e. _bin_.
 function M.ToBin_RoundUp (dx, dy, len, bias)
 	return AuxQuantize(ceil, dx, dy, len, bias)
@@ -72,8 +72,8 @@ end
 -- @number dx Displacement x-component...
 -- @number dy ...and y-component.
 -- @number len Distance per unit.
--- @number base Minimum value of rounded result. If absent, 0.
--- @number bias Amount added to the pre-rounded result. If absent, 0.
+-- @number[opt=0] base Minimum value of rounded result.
+-- @number[opt=0] bias Amount added to the pre-rounded result.
 -- @treturn number Quantized distance, i.e. `max(base, bin)`.
 function M.ToBin_RoundUpMin (dx, dy, len, base, bias)
 	return max(base or 0, AuxQuantize(ceil, dx, dy, len, bias))

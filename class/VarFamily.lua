@@ -237,7 +237,7 @@ return class.Define(function(VarFamily)
 	--- Getter.
 	-- @string what Variable type, one of **"bools"**, **"nums"**, **"raw"**,
 	-- **"timers"**, **"timelines"**, **"delegates"**.
-	-- @return Fresh table with variables as (name, value) pairs.
+	-- @treturn ptable Fresh table with variables as (name, value) pairs.
 	--
 	-- Variables that only exist implicitly are not added.
 	--
@@ -271,14 +271,14 @@ return class.Define(function(VarFamily)
 ]]
 
 	--- Updates all current timelines and timers.
-	-- @param dt Time step.
+	-- @number dt Time step.
 	-- @param arg Argument to timelines.
 	function VarFamily:Update (dt, arg)
 --			func_ops.Try(Update, UpdateDone, self, dt, arg)
 	end
 
 	--- Class constructor.
-	-- @uint tier_count Number of variable tiers to maintain, which must be at least 1.
+	-- @uint tier_count Number of variable tiers to maintain, &ge; 1.
 	function VarFamily:__cons (tier_count)
 		assert(var_preds.IsInteger(tier_count) and count > 0, "Invalid tier count")
 

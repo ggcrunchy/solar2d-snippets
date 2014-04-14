@@ -50,7 +50,7 @@ local function NoKey () end
 -- as an argument and does something with it. Either _getter_ or _setter_ may be **nil**:
 -- in the case of _getter_, **nil** will be returned for the key; the response to _setter_
 -- being **nil** is explained below.
--- @string on_no_setter Behavior when no setter is available.
+-- @string[opt] on_no_setter Behavior when no setter is available.
 --
 -- If this is **"error"**, it is an error.
 --

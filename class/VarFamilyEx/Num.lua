@@ -34,7 +34,7 @@ return function(ops, NumVars)
 
 	--- Getter.
 	-- @param name Number variable name.
-	-- @return Value of number, 0 by default.
+	-- @treturn number Value of number, 0 by default.
 	-- @see NumVars:SetNumber
 	function NumVars:GetNumber (name)
 		return Nums(self)[name]
@@ -42,7 +42,7 @@ return function(ops, NumVars)
 
 	--- Setter.
 	-- @param name Non-**nil** number variable name.
-	-- @param value Value to assign.
+	-- @number value Value to assign.
 	-- @see NumVars:GetNumber
 	function NumVars:SetNumber (name, value)
 		Nums(self)[name] = value
@@ -55,8 +55,8 @@ return function(ops, NumVars)
 
 	--- Gets a number variable and adds to it.
 	-- @param name Non-**nil** number variable name.
-	-- @param amount Amount to add.
-	-- @param ubound If present, sum is clamped to this amount.
+	-- @number amount Amount to add.
+	-- @number[opt] ubound If present, sum is clamped to this amount.
 	-- @see NumVars:GetNumber, NumVars:SubNumber
 	function NumVars:AddNumber (name, amount, ubound)
 		local nums = Nums(self)
@@ -66,7 +66,7 @@ return function(ops, NumVars)
 
 	--- Gets a number variable and increments it by 1.
 	-- @param name Non-**nil** number variable name.
-	-- @param ubound If present, sum is clamped to this amount.
+	-- @number[opt] ubound If present, sum is clamped to this amount.
 	-- @see NumVars:DecNumber, NumVars:GetNumber
 	function NumVars:IncNumber (name, ubound)
 		local nums = Nums(self)
@@ -81,8 +81,8 @@ return function(ops, NumVars)
 
 	--- Gets a number variable and subtracts from it.
 	-- @param name Non-**nil** number variable name.
-	-- @param amount Amount to subtract.
-	-- @param lbound If present, sum is clamped to this amount.
+	-- @number amount Amount to subtract.
+	-- @number[opt] lbound If present, sum is clamped to this amount.
 	-- @see NumVars:AddNumber, NumVars:GetNumber
 	function NumVars:SubNumber (name, amount, lbound)
 		local nums = Nums(self)
@@ -92,7 +92,7 @@ return function(ops, NumVars)
 
 	--- Gets a number variable and decrements it by 1.
 	-- @param name Non-**nil** number variable name.
-	-- @param lbound If present, sum is clamped to this amount.
+	-- @number[opt] lbound If present, sum is clamped to this amount.
 	-- @see NumVars:GetNumber, NumVars:IncNumber
 	function NumVars:DecNumber (name, lbound)
 		local nums = Nums(self)
@@ -112,7 +112,7 @@ return function(ops, NumVars)
 
 	--- Gets a number variable and multiplies it.
 	-- @param name Non-**nil** number variable name.
-	-- @param amount Amount by which number is multiplied.
+	-- @number amount Amount by which number is multiplied.
 	-- @see NumVars:GetNumber
 	function NumVars:MulNumber (name, amount)
 		local nums = Nums(self)
@@ -123,14 +123,14 @@ return function(ops, NumVars)
 	--- Gets several number variables and multiplies them together.
 	-- @function NumVars:Product_Array
 	-- @param array Array of non-**nil** number variable names.
-	-- @return Product of all numbers (or 0 if the array is empty). Given a single
+	-- @treturn number Product of all numbers (or 0 if the array is empty). Given a single
 	-- number, returns its value.
 	-- @see NumVars:GetNumber
 
 	--- Vararg variant of @{NumVars:Product_Array}.
 	-- @function NumVars:Product_Varargs
 	-- @param ... Non-**nil** number variable names.
-	-- @return Product of all numbers (or 0 if the argument list is empty). Given a
+	-- @treturn number Product of all numbers (or 0 if the argument list is empty). Given a
 	-- single number, returns its value.
 	-- @see NumVars:GetNumber
 
@@ -147,14 +147,14 @@ return function(ops, NumVars)
 	--- Gets several number variables and sums them together.
 	-- @function NumVars:Sum_Array
 	-- @param array Array of non-**nil** number variable names.
-	-- @return Sum of all numbers (or 0 if the array is empty). Given a single number,
+	-- @treturn number Sum of all numbers (or 0 if the array is empty). Given a single number,
 	-- returns its value.
 	-- @see NumVars:GetNumber
 
 	--- Vararg variant of @{NumVars:Sum_Array}.
 	-- @function NumVars:Sum_Varargs
 	-- @param ... Non-<b>nil</b> number variable names.
-	-- @return Sum of all numbers (or 0 if the argument list is empty). Given a single
+	-- @treturn number Sum of all numbers (or 0 if the argument list is empty). Given a single
 	-- number, returns its value.
 	-- @see NumVars:GetNumber
 

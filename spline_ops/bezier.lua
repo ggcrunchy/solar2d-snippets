@@ -104,7 +104,7 @@ end
 -- @number too_close If the difference (rather, its absolute value) between the x- or
 -- y-coordinates of _p1_ and _p2_ is less than this amount, the points are considered
 -- as lined up, and the corner is abandoned.
--- @string? how If a corner can be found, the control point "below" the segment is chosen
+-- @string[opt] how If a corner can be found, the control point "below" the segment is chosen
 -- if _how_ is **"below"** or **"below\_else\_middle"**, or the one "above" otherwise.
 --
 -- Failing that, the midpoint is chosen as a fallback if _how_ is **"above\_else\_middle"**
@@ -320,8 +320,8 @@ do
 	-- _t_ and **Vector** elements 1, 2, ..., _deg_ are populated with the results (tables
 	-- being created if necessary).
 	-- @array dst2 As per _dst1_, the "right" subdivision, evaluated from _t_ to 1.
-	-- @number? t Parameter at which to split the spline; if absent, .5.
-	-- @int? deg Degree of the spline; if absent, assumed to be #_bezier_ - 1.
+	-- @number[opt=.5] t Parameter at which to split the spline.
+	-- @int[opt=#bezier - 1] deg Degree of the spline.
 	function M.Subdivide (bezier, dst1, dst2, t, deg)
 		t = t or .5
 

@@ -47,7 +47,7 @@ return class.Define(function(Timer)
 	-- The counter is divided by the timeout duration. The integer part of this is the
 	-- timeout count, and the fraction is the new counter. If the count is greater than
 	-- 0, the timer will respond according to the _how_ parameter.
-	-- @string how Timeout response.
+	-- @string[opt] how Timeout response.
 	--
 	-- If this is **"continue"**, all timeouts are reported and the timer continues to
 	-- run.
@@ -147,7 +147,7 @@ return class.Define(function(Timer)
 
 	--- Starts the timer.
 	-- @number duration Timeout duration.
-	-- @number t Start counter, or 0 if absent.
+	-- @number[opt=0] t Start counter.
 	-- @see Timer:Stop
 	function Timer:Start (duration, t)
 		assert(type(duration) == "number" and duration > 0, "Invalid duration")

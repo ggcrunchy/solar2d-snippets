@@ -183,10 +183,10 @@ end
 -- @string name Image filename.
 -- @uint ncols How many columns will the image be tiled into, left to right?
 -- @uint nrows How many rows will the image be tile into, top to bottom?
--- @int x1 Upper-left corner of sub-image to tile, x-coordinate. If absent, 0.
--- @int y1 ...and y-coordinate.
--- @int x2 Lower-right corner of sub-image to tile, x-coordinate. If absent, image width - 1.
--- @int y2 ...and y-coordinate. If absent, image height - 1
+-- @int[opt=0] x1 Upper-left corner of sub-image to tile, x-coordinate.
+-- @int[opt=0] y1 ...and y-coordinate.
+-- @int[opt] x2 Lower-right corner of sub-image to tile, x-coordinate. If absent, image width - 1.
+-- @int[opt] y2 ...and y-coordinate. If absent, image height - 1
 -- @treturn ImageSheet Tiled image sheet, with _ncols_ * _nrows_ frames.
 function M.TileImage (name, ncols, nrows, x1, y1, x2, y2)
 	x1, y1 = x1 or 0, y1 or 0

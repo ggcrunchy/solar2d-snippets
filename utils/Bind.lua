@@ -125,7 +125,7 @@ end
 --- Variant of @{BroadcastBuilder} that supplies a helper object to facilitate certain
 -- common broadcast use cases.
 -- @param name Name of waiting list.
--- @param what As per @{BroadcastBuilder}. If absent, a default is generated.
+-- @param[opt] what As per @{BroadcastBuilder}. If absent, a default is generated.
 -- @treturn broadcast_helper Object with some useful functions.
 -- @return _what_.
 function M.BroadcastBuilder_Helper (name, what)
@@ -133,7 +133,7 @@ function M.BroadcastBuilder_Helper (name, what)
 
 	local builder, broadcast_helper = _BroadcastBuilder_(what), {}
 
-	--- Calls _object_'s broadcast function, i.e. performs `object[what](...)`.
+	--- Calls _object_'s broadcast function, i.e. performs `object&#91;what&#93;(...)`.
 	--
 	-- If the function absent, this is a no-op.
 	-- @param object Object in which the broadcast function is stored.
@@ -186,7 +186,7 @@ end
 --
 -- **N.B.** In the single event case, if called with **"n"** as its first argument, _event_
 -- is expected to be a no-op.
--- @callable? event The compound event stored under the _what_ key in the object performing
+-- @callable[opt] event The compound event stored under the _what_ key in the object performing
 -- the broadcast, cf. @{BroadcastBuilder}. If **nil** (interpreted as the object in question
 -- not having subscribed to the event), this is a no-op.
 -- @treturn iterator Supplies index, event.
@@ -209,7 +209,7 @@ end
 -- @string osub Name of other element's sublink.
 -- @ptable events Valid events. 
 -- @ptable actions Valid actions.
--- @string akey Key under which the actions set is stored, in _elem_. If absent, the set
+-- @string[opt] akey Key under which the actions set is stored, in _elem_. If absent, the set
 -- will be created on demand.
 function M.LinkActionsAndEvents (elem, other, esub, osub, events, actions, akey)
 	if events[esub] then
@@ -233,7 +233,7 @@ local Deferred = lazy.SubTablesOnDemand()
 -- is deferred until resolution occurs, cf. @{Resolve}.
 -- @param name Name of waiting list.
 -- @callable event The event to publish.
--- @int? id ID of object to which the event belongs, e.g. its target or a dummy singleton.
+-- @int[opt] id ID of object to which the event belongs, e.g. its target or a dummy singleton.
 --
 -- If absent, this is a no-op.
 --

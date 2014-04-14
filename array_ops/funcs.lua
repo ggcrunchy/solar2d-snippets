@@ -46,7 +46,7 @@ local GetTable
 --
 -- When called in a bound table context, the binding is used as the destination array.
 -- @uint count
--- @treturn table Array.
+-- @treturn array Array.
 -- @see var_ops.bound_args.WithBoundTable
 function M.ArrayOfTables (count)
 	local dt = GetTable()
@@ -112,7 +112,7 @@ end
 -- Gets multiple table fields
 -- ...: Fields to get
 -- Returns: Values, in order
-------------------------------
+------------------------------ DOCMEMORE
 function M.GetFields (t, ...)
 	local count, dt = CollectArgsInto(GetTable(), ...)
 
@@ -145,7 +145,7 @@ end
 
 --- Reverses array elements in-place, in the range [1, _count_].
 -- @array arr Array to reverse.
--- @uint count Range to reverse; if **nil**, `#arr` is used.
+-- @uint[opt=#arr] count Range to reverse.
 function M.Reverse (arr, count)
 	local i, j = 1, count or #arr
 

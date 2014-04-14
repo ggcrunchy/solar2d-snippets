@@ -63,8 +63,8 @@ end
 -- @number x Center x-coordinate.
 -- @number y As per _x_.
 -- @number radius Distance from center to each endpoint.
--- @number angle Initial angle; if absent, 0. An angle of 0 has two points on the "ground",
--- two points out to left and right, and one point centered at the top.
+-- @number[opt=0] angle Initial angle. An angle of 0 has two points on the "ground", two
+-- points out to left and right, and one point centered at the top.
 -- @treturn DisplayObject The star object: a closed, centered polyline.
 function M.Star (group, x, y, radius, angle)
 	angle = -Angle / 4 + (angle or 0)
@@ -105,7 +105,7 @@ local StarFuncs = {
 -- @number y
 -- @number dx
 -- @number dy
--- @ptable? options
+-- @ptable[opt] options
 -- @treturn DisplayGroup X
 -- @treturn DisplayGroup Y
 function M.RingOfStars (group, nstars, x, y, dx, dy, options)

@@ -45,7 +45,7 @@ function M.DiffTime ()
 end
 
 --- Getter.
--- @return Current frame ID.
+-- @treturn uint Current frame ID.
 function M.GetFrameID ()
 	if FrameID <= 0 then
 		FrameID = abs(FrameID) + 1

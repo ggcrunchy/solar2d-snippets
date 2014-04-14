@@ -99,7 +99,7 @@ end
 --
 -- Calling @{SetColor} or @{SetImage} will not affect a fill already in progress.
 -- @pgroup group Group into which fill graphics are loaded.
--- @string how The fill process, which currently may be **"circle"**.
+-- @string[opt="circle"] how The fill process, which currently may be **"circle"**.
 -- @number ulx Upper-left x-coordinate...
 -- @number uly ...and y-coordinate.
 -- @number lrx Lower-right x-coordinate...

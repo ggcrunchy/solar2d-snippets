@@ -55,7 +55,7 @@ function M.GetLastTraceback (clear)
 end
 
 --- Sets the traceback function.
--- @callable func Function to assign, or **nil** for default.
+-- @tparam ?|callable|nil func Function to assign, or **nil** for default.
 --
 -- The function should return either the traceback string or **nil**.
 function M.SetTracebackFunc (func)

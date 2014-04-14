@@ -1,8 +1,10 @@
 --- Functionality for table members which may adapt among three forms:
 --
--- * **nil**. (0 elements)
--- * A non-table value. (1 element)
--- * A table of non-table elements. (0 or more elements)
+-- <ul>
+-- <li> **nil**. (0 elements)</li>
+-- <li> A non-table value. (1 element)</li>
+-- <li> A table of non-table elements. (0 or more elements)</li>
+-- </ul>
 --
 -- Members are assumed to be either an array or set (potential or actual), but not both.
 --
@@ -42,7 +44,7 @@ local type = type
 -- Exports --
 local M = {}
 
---- Adds an element to _t_[ _k_ ] (treated as a set).
+--- Adds an element to _t_&#91;_k_&#93; (treated as a set).
 -- @ptable t Target table.
 -- @param k Member key.
 -- @param v Non-**nil** element to add.
@@ -67,7 +69,7 @@ function M.AddToSet (t, k, v)
 	end
 end
 
---- Appends an element to _t_[ _k_ ] (treated as an array).
+--- Appends an element to _t_&#91;_k_&#93; (treated as an array).
 -- @ptable t Target table.
 -- @param k Member key.
 -- @param v Non-**nil** element to add.
@@ -93,7 +95,7 @@ function M.Append (t, k, v)
 end
 
 --- Predicate.
--- @param set Set-mode table member, i.e. _t_[ _k_ ] after some combination of @{AddToSet}
+-- @param set Set-mode table member, i.e. _t_&#91;_k_&#93; after some combination of @{AddToSet}
 -- and @{RemoveFromSet}.
 -- @param v Value to find.
 -- @treturn boolean _v_ is in _set_?
@@ -113,7 +115,7 @@ local function Single_Array (arr, i)
 end
 
 --- Iterates over the (0 or more) elements in the array.
--- @param arr Array-mode table member, i.e. _t_[ _k_ ] after some combination of @{Append}
+-- @param arr Array-mode table member, i.e. _t_&#91;_k_&#93; after some combination of @{Append}
 -- and @{RemoveFromArray} operations.
 -- @treturn iterator Supplies index, value. If the value is a singleton, **true** is also
 -- supplied as a third result.
@@ -133,7 +135,7 @@ local function Single_Set (set, guard)
 end
 
 --- Iterates over the (0 or more) elements in the set.
--- @param set Set-mode table member, i.e. _t_[ _k_ ] after some combination of @{AddToSet}
+-- @param set Set-mode table member, i.e. _t_&#91;_k_&#93; after some combination of @{AddToSet}
 -- and @{RemoveFromSet} operations.
 -- @treturn iterator Supplies value, boolean (if **true**, the set is in table form;
 -- otherwise, the value is a singleton).
@@ -173,7 +175,7 @@ local function ArrayRemove (arr, v)
 	return arr[1]
 end
 
---- Removes an element from _t_[ _k_ ] (treated as an array).
+--- Removes an element from _t_&#91;_k_&#93; (treated as an array).
 --
 -- If either the element or array does not exist, this is a no-op.
 -- @ptable t Source table.
@@ -190,7 +192,7 @@ local function SetRemove (set, v)
 	return next(set)
 end
 
---- Removes an element from _t_[ _k_ ] (treated as a set).
+--- Removes an element from _t_&#91;_k_&#93; (treated as a set).
 --
 -- If either the element or set does not exist, this is a no-op.
 -- @ptable t Source table.

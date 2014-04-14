@@ -47,7 +47,7 @@ end
 --
 -- Once invoked, this will spin on a test / update loop until told to terminate. On each
 -- iteration, if it did not terminate, it will yield.
--- @callable update Update logic, called as
+-- @tparam ?|callable|nil update Update logic, called as
 --    result = update(arg1, arg2, arg3)
 -- after _done_. If **nil**, this is a no-op.
 --
@@ -115,7 +115,7 @@ end
 --
 -- On each iteration, the final value of _lapse_ will also be deducted from the "time bank",
 -- before yielding or returning.
--- @callable update As per @{Body}, but called as
+-- @tparam ?|callable|nil update As per @{Body}, but called as
 --    result, true_lapse = update(time_state, arg1, arg2, arg3)
 -- If _result_ is **"done"**, _true\_lapse_ is also considered. If present, it indicates how
 -- much time actually passed before the update terminated, and will replace the current time
@@ -214,10 +214,11 @@ end
 -- lapse reporting first 100 and then 90 milliseconds).
 --
 -- No unit of time is enforced: users are responsible for ensuring consistency.
--- @callable lapse Lapse function to assign, which returns a time lapse as a non-negative
--- number; or **nil** to restore the default (which returns 0).
--- @callable deduct Deduct function to assign, which accepts a non-negative lapse amount
--- and deducts it from the "time bank"; or **nil** to restore the default (a no-op).
+-- @tparam ?|callable|nil lapse Lapse function to assign, which returns a time lapse as a
+-- non-negative number; or **nil** to restore the default (which returns 0).
+-- @tparam ?|callable|nil deduct Deduct function to assign, which accepts a non-negative
+-- lapse amount and deducts it from the "time bank"; or **nil** to restore the default (a
+-- no-op).
 function M.SetTimeLapseFuncs (lapse, deduct)
 	assert(lapse == nil or IsCallable(lapse), "Uncallable lapse function")
 	assert(deduct == nil or IsCallable(deduct), "Uncallable deduct function")

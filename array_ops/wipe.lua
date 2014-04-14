@@ -45,7 +45,7 @@ end
 
 --- Wipes an array, returning the overwritten values.
 -- @param array Array to wipe. May be **nil**, though _count_ must then be 0.
--- @uint count Size of array; by default, `#array`.
+-- @uint[opt=#array] count Size of array.
 -- @param wipe Value used to wipe over entries.
 -- @return Array values (number of return values = _count_).
 function M.UnpackAndWipe (array, count, wipe)
@@ -54,8 +54,8 @@ end
 
 --- Wipes a range in an array, returning the overwritten values.
 -- @param array Array to wipe. May be **nil**, though _last_ must resolve to 0.
--- @uint first Index of first entry; by default, 1.
--- @uint last Index of last entry; by default, `#array`.
+-- @uint[opt=1] first Index of first entry.
+-- @uint[opt=#array] last Index of last entry.
 -- @param wipe Value used to wipe over entries.
 -- @return Array values (number of return values = _last_ - _first_ + 1).
 function M.UnpackAndWipeRange (array, first, last, wipe)
@@ -64,8 +64,8 @@ end
 
 --- Wipes a range in an array.
 -- @param array Array to wipe. May be **nil**, though _last_ must resolve to 0.
--- @uint first Index of first entry; by default, 1.
--- @uint last Index of last entry; by default, `#array`.
+-- @uint[opt=1] first Index of first entry.
+-- @uint[opt=#array] last Index of last entry.
 -- @param wipe Value used to wipe over entries.
 -- @return _array_.
 function M.WipeRange (array, first, last, wipe)

@@ -127,14 +127,14 @@ function M.NewSoundGroup (sounds)
 
 	--- Utility.
 	-- @param name Name of sound to play.
-	-- @uint delay Optional delay, in milliseconds, before playing.
+	-- @uint[opt] delay Optional delay, in milliseconds, before playing.
 	-- @treturn TimerHandle A timer that may be cancelled, or **nil** if _delay_ was absent.
 	function group:PlaySound (name, delay)
 		return Play(self, assert(self.m_handles, "Sound group not loaded"), name, delay)
 	end
 
 	--- If the group has an array part, plays one of its sounds.
-	-- @uint delay Optional delay, in milliseconds, before playing.
+	-- @uint[opt] delay Optional delay, in milliseconds, before playing.
 	-- @treturn TimerHandle A timer that may be cancelled, or **nil** if _delay_ was absent.
 	function group:RandomSound (delay)
 		local handles = assert(self.m_handles, "Sound group not loaded")

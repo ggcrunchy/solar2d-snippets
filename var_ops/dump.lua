@@ -169,19 +169,21 @@ local function DefTableFunc () end
 -- Otherwise, some "pretty" behavior is applied to it; if the variable is a table, it will
 -- do a member-wise print, recursing on subtables (with cycle guards).
 -- @param var Variable to print.
--- @ptable? opts Optional print options. Fields:
+-- @ptable[opt] opts Print options. Fields:
 --
 -- * **indent**: Initial indent string; if absent, the empty string.
 --
 -- If _var_ is a table, this is prepended to each line of the printout.
--- * **outf**: Formatted output routine, i.e. with an interface like @{string.format};
--- if absent, the default output function is used.
--- * **table_func**: Table function. When a new table _t_ is encountered during the print,
+--
+-- <ul>
+-- <li> **outf**: Formatted output routine, i.e. with an interface like @{string.format};
+-- if absent, the default output function is used.</li>
+-- <li> **table_func**: Table function. When a new table _t_ is encountered during the print,
 -- the call `table_func(t, "new_table")` is performed; if the same table is found again
--- later, each such time the call `table_func(t, "cycle")` is made.
--- * **name** When provided, an early-out check will see if a printout has been performed
--- with _name_; if so, and if _limit_ has been reached, the printout is a no-op.
--- * **limit** Maximum number of times to allow a printout with _name_; if absent, 1.
+-- later, each such time the call `table_func(t, "cycle")` is made.</li>
+-- <li> **name** When provided, an early-out check will see if a printout has been performed
+-- with _name_; if so, and if _limit_ has been reached, the printout is a no-op.</li>
+-- <li> **limit** Maximum number of times to allow a printout with _name_; if absent, 1.</li>
 --
 -- Ignored if _name_ is absent.
 -- @see SetDefaultOutf
@@ -201,9 +203,7 @@ function M.Print (var, opts)
 	indent = indent or ""
 	outf = outf or DefaultOutf
 	tfunc = tfunc or DefTableFunc
--- @param name If provided, the dump will check if it has been called with this name
--- before; if _limit_ has been reached, dumps will be ignored.
--- @uint limit Maximum number of times to allow a dump with _name_; if absent, 1.
+
 	assert(IsCallable(outf), "Invalid output function")
 	assert(IsCallable(tfunc), "Invalid table function")
 
@@ -229,7 +229,7 @@ function M.Print (var, opts)
 end
 
 --- Sets the default output function used by @{Print}.
--- @callable outf Output function to assign, or **nil** to clear the default.
+-- @tparam ?|callable|nil outf Output function to assign, or **nil** to clear the default.
 function M.SetDefaultOutf (outf)
 	assert(outf == nil or IsCallable(outf), "Invalid output function")
 

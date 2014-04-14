@@ -78,8 +78,8 @@ end
 -- the **"eq"** metamethod of non-table elements.
 --
 -- @todo Account for cycles
--- @tparam table t1 Table to compare.
--- @tparam table t2 Table to compare.
+-- @ptable t1 Table #1 to compare...
+-- @ptable t2 ...and table #2.
 -- @treturn boolean Are the tables equal?
 function M.Equal (t1, t2)
 	assert(type(t1) == "table", "t1 not a table")

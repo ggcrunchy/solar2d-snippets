@@ -105,7 +105,7 @@ function M.Send (what, ...)
 end
 
 --- Setter.
--- @callable func Scene listener to install, or **nil** to clear the listener.
+-- @tparam ?|callable|nil func Scene listener to install, or **nil** to clear the listener.
 function M.SetListenFunc (func)
 	ListenFunc = func
 end
@@ -122,7 +122,7 @@ do
 	--- Variant of @{SetListenFunc} for the common case of only handling "go back to the
 	-- previous scene" behavior.
 	-- @string name Name of return scene; if absent, uses `composer.getSceneName("previous")`.
-	-- @string effect Effect to play on going back; if absent, uses **"fade"**.
+	-- @string[opt="fade"] effect Effect to play on going back.
 	function M.SetListenFunc_GoBack (name, effect)
 		Name = name or composer.getSceneName("previous")
 		Effect = effect or "fade"

@@ -149,14 +149,14 @@ do
 	-- The table's metatable is fixed.
 	--
 	-- When called in a bound table context, the binding is used as the destination table.
-	-- @string choice If **nil**, subtables will be normal tables.
+	-- @string[opt] choice If **nil**, subtables will be normal tables.
 	--
 	-- Otherwise, the weak option, as per @{table_ops.funcs.Weak}, to assign a new subtable.
-	-- @string weakness The weak option, as per @{table_ops.funcs.Weak}, to apply to the table
-	-- itself.
+	-- @string[opt] weakness The weak option, as per @{table_ops.funcs.Weak}, to apply to the
+	-- table itself.
 	--
 	-- If **nil**, it will be a normal table.
-	-- @callable cache Optional cache from which to pull subtables.
+	-- @callable[opt] cache Optional cache from which to pull subtables.
 	--
 	-- If **nil**, fresh tables will always be supplied.
 	-- @treturn table Table.

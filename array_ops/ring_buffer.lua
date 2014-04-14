@@ -33,15 +33,15 @@ local M = {}
 local Full = -1
 
 --- Predicate.
--- @uint? head Index of ring buffer head, or **nil** if absent (i.e. buffer not initialized).
--- @uint? tail Index of ring buffer tail, or **nil** if absent (cf. _head_).
+-- @uint[opt] head Index of ring buffer head, or **nil** if absent (i.e. buffer not initialized).
+-- @uint[opt] tail Index of ring buffer tail, or **nil** if absent (cf. _head_).
 -- @treturn boolean The ring buffer is empty?
 function M.IsEmpty (head, tail)
 	return head == tail
 end
 
 --- Predicate.
--- @uint? head Index of ring buffer head, or **nil** if absent (i.e. buffer not initialized).
+-- @uint[opt] head Index of ring buffer head, or **nil** if absent (i.e. buffer not initialized).
 -- @treturn boolean The ring buffer is full?
 function M.IsFull (head)
 	return head == Full
@@ -58,9 +58,9 @@ end
 
 --- Pops the tail element.
 -- @array arr Ring buffer.
--- @uint? head Index of ring buffer head, or **nil** if absent (i.e. buffer not initialized).
--- @uint? tail Index of ring buffer tail, or **nil** if absent (cf. _head_).
--- @uint? len Array length; if absent, #_arr_. Assumed to be &gt; 0.
+-- @uint[opt] head Index of ring buffer head, or **nil** if absent (i.e. buffer not initialized).
+-- @uint[opt] tail Index of ring buffer tail, or **nil** if absent (cf. _head_).
+-- @uint[opt=#arr] len Array length, assumed to be &gt; 0.
 -- @return elem Popped element, or **nil** if array is empty.
 -- @treturn uint Updated _head_.
 -- @treturn uint Updated _tail_.
@@ -83,9 +83,9 @@ end
 --- Pushes an element, if the ring buffer is not full.
 -- @array arr Ring buffer.
 -- @param elem Non-**nil** element to push.
--- @uint? head Index of ring buffer head. If absent (i.e. buffer not initialized), 1.
--- @uint? tail Index of ring buffer tail. If absent (cf. _head_), 1.
--- @uint? len Array length; if absent, #_arr_. Assumed to be &gt; 0.
+-- @uint[opt=1] head Index of ring buffer head. May be absent, if buffer is not initialized.
+-- @uint[opt=1] tail Index of ring buffer tail. May be absent, cf. _head_.
+-- @uint[opt=#arr] len Array length, assumed to be &gt; 0.
 -- @treturn uint Updated _head_.
 -- @treturn uint Updated _tail_.
 -- @see IsFull
@@ -105,9 +105,9 @@ end
 --- Variant of @{Push} that reports whether the push was possible.
 -- @array arr Ring buffer.
 -- @param elem Non-**nil** element to push.
--- @uint? head Index of ring buffer head. If absent (i.e. buffer not initialized), 1.
--- @uint? tail Index of ring buffer tail. If absent (cf. _head_), 1.
--- @uint? len Array length; if absent, #_arr_. Assumed to be &gt; 0.
+-- @uint[opt=1] head Index of ring buffer head. May be absent, if buffer is not initialized.
+-- @uint[opt=1] tail Index of ring buffer tail. May be absent, cf. _head_).
+-- @uint[opt=#arr] len Array length, assumed to be &gt; 0.
 -- @treturn boolean The push succeeded?
 -- @treturn uint Updated _head_.
 -- @treturn uint Updated _tail_.

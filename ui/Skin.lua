@@ -103,7 +103,7 @@ end
 local CurSkin = "default"
 
 --- Getter.
--- @param name Skin name, or **nil** for current skin.
+-- @param[opt] name Skin name, or **nil** for current skin.
 -- @return (Read-only) Skin.
 function M.GetSkin (name)
 	if name == nil then
@@ -132,7 +132,7 @@ local SkinsMeta = {
 -- If **\_prefix\_** is **nil**-valued, _prefix_ will be _name_. If it is **"PARENT"**,
 -- the parent's prefix is inherited (n.b. the default skin has no prefix). Any other
 -- string is used as the prefix directly.
--- @param parent Name of parent skin, or **nil** to use **"default"**.
+-- @param[opt="default"] parent Name of parent skin.
 function M.RegisterSkin (name, data, parent)
 	assert(not Skins[name], "Skin already registered")
 

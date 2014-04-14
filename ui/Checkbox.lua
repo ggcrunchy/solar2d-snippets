@@ -62,12 +62,12 @@ end
 
 --- Creates a new checkbox.
 -- @pgroup group Group to which the checkbox will be inserted.
--- @param skin Name of checkbox's skin.
+-- @param[opt] skin Name of checkbox's skin.
 -- @number x Position in _group_.
 -- @number y Position in _group_.
 -- @number w Width.
 -- @number h Height.
--- @callable func If present, called as `func(is_checked)`, after a check or uncheck.
+-- @callable[opt] func If present, called as `func(is_checked)`, after a check or uncheck.
 -- @treturn DisplayGroup Child #1: the box; Child #2: the check mark.
 -- @see ui.Skin.GetSkin
 function M.Checkbox (group, skin, x, y, w, h, func)

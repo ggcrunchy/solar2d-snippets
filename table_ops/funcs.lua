@@ -67,7 +67,7 @@ end
 --- Shallow-copies a table.
 --
 -- @todo Account for cycles, table as key; link to Map
--- @tparam table t Table to copy.
+-- @ptable t Table to copy.
 -- @param how Copy behavior, as per `Map`.
 -- @param how_arg Copy behavior, as per `Map`.
 -- @treturn table Copy.
@@ -76,8 +76,8 @@ function M.Copy (t, how, how_arg)
 end
 
 --- Copies all values with the given keys into a second table with those keys.
--- @tparam table t Table to copy.
--- @tparam table keys Key array.
+-- @ptable t Table to copy.
+-- @ptable keys Key array.
 -- @treturn table Copy.
 function M.CopyK (t, keys)
     local dt = GetTable()
@@ -124,7 +124,7 @@ do
 	-- This will also copy metatables, and thus assumes these are accessible.
 	--
 	-- @todo Account for cycles, table as key
-	-- @tparam table t Table to copy.
+	-- @ptable t Table to copy.
 	-- @treturn table Copy.
 	function M.DeepCopy (t)
 		local dt = GetTable()
@@ -141,7 +141,7 @@ end
 
 --- Finds a match for a value in the table. The **"eq"** metamethod is respected by
 -- the search.
--- @tparam table t Table to search.
+-- @ptable t Table to search.
 -- @param value Value to find.
 -- @bool is_array Search only the array part (up to a **nil**, in order)?
 -- @return Key belonging to a match, or **nil** if the value was not found.
@@ -155,7 +155,7 @@ end
 
 --- Array variant of @{Find}, which searches each entry up to the first **nil**,
 -- quitting if the index exceeds _n_.
--- @tparam table t Table to search.
+-- @ptable t Table to search.
 -- @param value Value to find.
 -- @uint n Limiting size.
 -- @treturn uint Index of first match, or **nil** if the value was not found in the range.
@@ -171,7 +171,7 @@ end
 
 --- Finds a non-match for a value in the table. The **"eq"** metamethod is respected
 -- by the search.
--- @tparam table t Table to search.
+-- @ptable t Table to search.
 -- @param value_not Value to reject.
 -- @bool is_array Search only the array part (up to a **nil**, in order)?
 -- @return Key belonging to a non-match, or **nil** if only matches were found.
@@ -185,7 +185,7 @@ function M.FindNot (t, value_not, is_array)
 end
 
 --- Performs an action on each item of the table.
--- @tparam table t Table to iterate.
+-- @ptable t Table to iterate.
 -- @callable func Visitor function, called as
 --    func(v, arg)
 -- where _v_ is the current value and _arg_ is the parameter. If the return value
@@ -204,7 +204,7 @@ function M.ForEach (t, func, is_array, arg)
 end
 
 --- Key-value variant of @{ForEach}.
--- @tparam table t Table to iterate.
+-- @ptable t Table to iterate.
 -- @callable func Visitor function, called as
 --    func(k, v, arg)
 -- where _k_ is the current key, _v_ is the current value, and _arg_ is the
@@ -226,7 +226,7 @@ end
 --
 -- Where the same value maps to many keys, no guarantee is provided about which key becomes
 -- the new value.
--- @tparam table t Table to invert.
+-- @ptable t Table to invert.
 -- @treturn table Inverse table.
 function M.Invert (t)
 	local dt = GetTable()
@@ -242,7 +242,7 @@ end
 
 --- Makes a set, i.e. a table where each element has value **true**. For each value in
 -- _t_, an element is added to the set, with the value instead as the key.
--- @tparam table t Key array.
+-- @ptable t Key array.
 -- @treturn table Set constructed from array.
 function M.MakeSet (t)
 	local dt = GetTable()
@@ -276,7 +276,7 @@ end
 -- arg: Mapping argument
 -- how_arg: Argument specific to mapping behavior
 -- Returns: Mapped table
---------------------------------------------------
+-------------------------------------------------- DOCMEMORE
 function M.Map (t, map, how, arg, how_arg)
 	local dt = GetTable()
 
@@ -305,7 +305,7 @@ end
 -- map: Mapping function
 -- arg: Mapping argument
 -- Returns: Mapped table
--------------------------
+------------------------- DOCMEMORE
 function M.MapK (ka, map, arg)
 	local dt = GetTable()
 
@@ -322,7 +322,7 @@ end
 -- arg: Mapping argument
 -- how_arg: Argument specific to mapping behavior
 -- Returns: Mapped table
---------------------------------------------------
+-------------------------------------------------- DOCMEMORE
 function M.MapKV (t, map, how, arg, how_arg)
 	local dt = GetTable()
 
@@ -349,7 +349,7 @@ end
 -- Moves items into a second table
 -- how, how_arg: Move behavior, argument
 -- Returns: Destination table
------------------------------------------
+----------------------------------------- DOCMEMORE
 function M.Move (t, how, how_arg)
 	local dt = GetTable()
 

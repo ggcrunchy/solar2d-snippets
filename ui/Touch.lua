@@ -40,9 +40,9 @@ local M = {}
 -- the screen edges.
 --
 -- The **m\_dragx** and **m\_dragy** fields are intrusively assigned to in the event target.
--- @number hscale Height scale, &ge; 1 (if absent, 1). The parent may be taller than the
--- touched object, e.g. in the case of a title bar, which affects vertical clamping. The
--- final metric is: parent height = _hscale_ * object height.
+-- @number[opt=1] hscale Height scale, &ge; 1. The parent may be taller than the touched
+-- object, e.g. in the case of a title bar, which affects vertical clamping. The final
+-- metric is: parent height = _hscale_ * object height.
 -- @treturn function Listener function.
 --
 -- **CONSIDER**: More automagic than hscale? Varieties of clamping?
@@ -115,8 +115,8 @@ end
 -- _event_ is the normal touch listener parameter, and _target_ is provided as a convenience
 -- for _event_.**target**.
 -- @callable began Called when the target has begun to be touched.
--- @callable moved Optional. Called if the target's touch moved.
--- @callable ended Optional. Called if the target's touch has ended or been cancelled.
+-- @callable[opt] moved If provided, called if the target's touch moved.
+-- @callable[opt] ended If provided, called if the target's touch has ended or been cancelled.
 -- @treturn function Listener function, which always returns **true**.
 --
 -- You may simulate a touch by feeding an **id** of **"ignore_me"** through _event_, all

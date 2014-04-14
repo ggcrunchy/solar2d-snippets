@@ -59,7 +59,7 @@ class.Define(function(Timeline)
 	--- Adds an event to the timeline.
 	--
 	-- Events are placed in a fetch list, and thus will not take effect during an update.
-	-- @number when Time when event occurs.
+	-- @number when Time when event occurs, &ge; 0.
 	-- @callable event Event function, which is called as
 	--    event(when)
 	-- @see Timeline:__call

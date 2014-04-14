@@ -105,7 +105,8 @@ return class.Define(function(TaskQueue)
 
 	--- Adds a wrapped coroutine task to the queue.
 	-- @callable task Task to wrap and add.
-	-- @param extended_ If false, the task uses @{coroutine.wrap}; otherwise, @{coroutine_ops.wrapper.Wrap}.
+	-- @tparam ?|callable|nil extended_ If false, the task uses @{coroutine.wrap}; otherwise,
+	-- @{coroutine_ops.wrapper.Wrap}.
 	--
 	-- In the latter case, if callable, _extended\__ is passed as the _on\_reset_ parameter.
 	function TaskQueue:AddWrapped (task, extended_)

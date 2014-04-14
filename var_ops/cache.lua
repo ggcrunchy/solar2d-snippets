@@ -59,7 +59,7 @@ local M = {}
 --
 -- Often one will want some of these instances at the end of the computation. To this end, an
 -- instance can be evicted from the cache. Alternatively, its values could be copied into a
--- second (probably uncached) instance. Relevant details infra.
+-- second (probably uncached) instance. Relevant details _infra_.
 --
 -- **N.B.** The factory instantiates caches, i.e. in the general case there is not one single
 -- cache for any given type. A couple implications are:
@@ -89,7 +89,7 @@ local M = {}
 -- advantage of the cache will use _make_ to obtain instances.
 -- @treturn function Factory function, called as `func = factory(how)`.
 --
--- If _how_ is **"get_uncached_maker"**, _func_ will be _make_ (this will always be the same
+-- If _how_ is **"get\_uncached\_maker"**, _func_ will be _make_ (this will always be the same
 -- function for a given factory, corresponding to the same metatable). Each _instance_
 -- produced by it will be a new empty table: this table neither comes from nor is placed
 -- in a cache. (This behavior is effected via a _new_ that completely ignores the cache.)
@@ -103,26 +103,29 @@ local M = {}
 --    result1, result2 = func(what, arg)
 -- where _what_ is one of the following:
 --
--- * **"begin"**: Begins caching mode; if already underway, this is a no-op.
--- &br;LDOCTODO!
--- _result1_ = _make_.
--- * **"end"**: Ends caching mode and resets the count to 0.
--- &br;LDOCTODO!
+-- <ul>
+-- <li> **"begin"**: Begins caching mode; if already underway, this is a no-op.
+--
+-- _result1_ = _make_.</li>
+-- <li> **"end"**: Ends caching mode and resets the count to 0.
+--
 -- Items will be evicted from the cache until its size is no more than _arg_. If _arg_ is
--- absent, this step is skipped.
--- * **"in"**: Calls `result1[, result2] = pcall(arg, make)` in caching mode, cf. @{pcall}.
--- &br;LDOCTODO!
--- The caching mode is restored afterward to its previous state.
--- * **"has_begun"**: _result1_ is **true** if caching has begun, otherwise **false**.
--- * **"remove"**: If present, the item at index _arg_ is evicted from the cache (slots are
--- allocated in order, from 1 to the size). The count and size are updated accordingly.
--- &br;LDOCTODO!
+-- absent, this step is skipped.</li>
+-- <li> **"in"**: Calls `result1[, result2] = pcall(arg, make)` in caching mode, cf. @{pcall}.
+--
+-- The caching mode is restored afterward to its previous state.</li>
+-- <li> **"has_begun"**: _result1_ is **true** if caching has begun, otherwise **false**.</li>
+-- <li> **"remove"**: If present, the item at index _arg_ is evicted from the cache (slots
+-- are allocated in order, from 1 to the size). The count and size are updated accordingly.
+--
 -- Indices &gt; _arg_ must be decremented by 1 to remain valid. Apart from being removed
--- from the cache, the item itself is left intact.
--- * **"get_count"**: _result1_ = number of cache slots currently allocated. This may be
--- interpreted as the index of the item just allocated (**N.B.** the note for "**remove"**).
--- * **"get_size"**: _result1_ = number of available cache slots, &ge; the count.
--- Once all cache slots are allocated, this will track the count.
+-- from the cache, the item itself is left intact.</li>
+-- <li> **"get_count"**: _result1_ = number of cache slots currently allocated. This may be
+-- interpreted as the index of the item just allocated (**N.B.** the note for "**remove"**).</li>
+-- <li> **"get_size"**: _result1_ = number of available cache slots, &ge; the count.
+--
+-- Once all cache slots are allocated, this will track the count.</li>
+-- </ul>
 function M.Factory (create_mt)
 	local uncached_make
 
