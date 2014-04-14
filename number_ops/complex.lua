@@ -316,11 +316,15 @@ end
 -- different caches, the result belongs to the cache of the invoked method's **self**. In
 -- the case of metamethods this will follow the standard Lua rules, but is brought up as a
 -- reminder since one of the inputs may be a number.
+--
+-- A given cache's _make_ routine can be called as `z = make(a, b, uncached)`, where _a_ and
+-- _b_ are the real and imaginary components of **Complex** z, respectively. If _uncached_
+-- is true, _z_ is not placed in the cache.
 -- @function CacheFactory
 -- @string[opt] how Factory argument.
 -- @treturn function Factory function, as per @{var_ops.cache.Factory}.
 M.CacheFactory = cache.Factory(function(ComplexMT, new)
-	local Complex, call, get2 = tuple.PairMethods_NewGet(new, "m_r", "m_i")
+	local Complex, call, get2 = tuple.PairMethods_ConsGet(new, "m_r", "m_i")
 	local uf, uf_scalar = tuple.PairMethods_Unary(Complex, call)
 	local bf, bf_scalar = tuple.PairMethods_Binary(Complex, get2)
 
