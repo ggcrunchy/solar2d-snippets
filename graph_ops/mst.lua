@@ -89,6 +89,9 @@ local function SortEdges (edges_weight, nindices)
 end
 
 --- DOCME
+-- @array edges_weight
+-- @ptable[opt] opts
+-- @treturn array MST
 function M.MST (edges_weight, opts)
 	--
 	local nindices, nverts = 0, 0
@@ -115,6 +118,9 @@ local LabelToIndex, IndexToLabel, CleanUp = labels.NewLabelGroup()
 local Buf, MST = {}, {}
 
 --- DOCME
+-- @ptable graph
+-- @ptable[opt] opts
+-- @treturn table MST
 function M.MST_Labels (graph, opts)
 	-- Convert the graph into a form amenable to the MST algorithm.
 	local n, nindices, nverts = 0, 0, 0

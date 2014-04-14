@@ -286,7 +286,7 @@ local Buf = {}
 --
 -- Each _label1_, _label2_ pair is assumed to be unique, with no _label2_, _label1_ pairs.
 -- One edge must have _ks_ in the _label1_ position, and _kt_ must be found at least once in
--- some _label2_ position; _ks_ is not permitted in the _label2_ position.
+-- some _label2_ position.
 -- @param ks Label belonging to source...
 -- @param kt ...and sink.
 -- @ptable? opts As per @{MaxFlow}.
@@ -318,35 +318,37 @@ function M.MaxFlow_Labels (graph, ks, kt, opts)
 		end
 	end
 
-	assert(s, "Missing source")
-	assert(t, "Missing sink")
-
 	-- Compute the flow and build the flow network (and any mincut), then restore labels.
-	local rn, flow, cut = {}, DriveFlow(Buf, n, s, t, opts and opts.compute_mincut)
-	local _, count = BuildMatrix(Buf, opts)
+	if s and t then
+		local rn, flow, cut = {}, DriveFlow(Buf, n, s, t, opts and opts.compute_mincut)
+		local _, count = BuildMatrix(Buf, opts)
 
-	for i = 1, count, 3 do
-		local u, v, eflow = IndexToLabel[Buf[i]], IndexToLabel[Buf[i + 1]], Buf[i + 2]
-		local to = rn[u] or {}
+		for i = 1, count, 3 do
+			local u, v, eflow = IndexToLabel[Buf[i]], IndexToLabel[Buf[i + 1]], Buf[i + 2]
+			local to = rn[u] or {}
 
-		rn[u], to[v] = to, eflow
-	end
-
-	if cut then
-		cut = Mincut(Buf, cut, count)
-
-		local s, t = cut.s, cut.t
-
-		for i = 1, #s do
-			s[i] = IndexToLabel[s[i]]
+			rn[u], to[v] = to, eflow
 		end
 
-		for i = 1, #t do
-			t[i] = IndexToLabel[t[i]]
+		if cut then
+			cut = Mincut(Buf, cut, count)
+
+			local s, t = cut.s, cut.t
+
+			for i = 1, #s do
+				s[i] = IndexToLabel[s[i]]
+			end
+
+			for i = 1, #t do
+				t[i] = IndexToLabel[t[i]]
+			end
 		end
 	end
 
 	CleanUp()
+
+	assert(s, "Missing source")
+	assert(t, "Missing sink")
 
 	return flow, rn, cut
 end

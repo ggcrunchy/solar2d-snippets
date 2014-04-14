@@ -311,9 +311,14 @@ function M.Sub (a, b, c, d)
 end
 
 --- Factory for building complex number caches, as per @{var_ops.cache.Factory}.
+--
+-- Where an operation produces a new complex number, if the complex number inputs belong to
+-- different caches, the result belongs to the cache of the invoked method's **self**. In
+-- the case of metamethods this will follow the standard Lua rules, but is brought up as a
+-- reminder since one of the inputs may be a number.
 -- @function CacheFactory
 -- @string[opt] how Factory argument.
--- @treturn function Cache function, as per @{var_ops.cache.Factory}.
+-- @treturn function Factory function, as per @{var_ops.cache.Factory}.
 M.CacheFactory = cache.Factory(function(ComplexMT, new)
 	local Complex, call, get2 = tuple.PairMethods_NewGet(new, "m_r", "m_i")
 	local uf, uf_scalar = tuple.PairMethods_Unary(Complex, call)
@@ -484,11 +489,7 @@ local Make = M.CacheFactory("get_uncached_maker")
 -- @number[opt=0] b ...and imaginary component.
 -- @treturn Complex Complex number.
 function M.New (a, b)
-	local z = Make()
-
-	z.m_r, z.m_i = a or 0, b or 0
-
-	return z
+	return Make(a or 0, b or 0)
 end
 
 -- Export the module.

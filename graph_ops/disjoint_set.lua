@@ -29,12 +29,14 @@ local _Find_
 -- Exports --
 local M = {}
 
---- DOCME
+--- Getter.
+-- @tparam Node node Node to query.
+-- @return Element, or **nil** if unassigned.
 function M.GetElement (node)
 	return node.elem
 end
 
---
+-- Union-find helper, which performs path compression
 local function AuxFind (node)
 	local parent = node.parent
 
@@ -45,14 +47,22 @@ local function AuxFind (node)
 	end
 end
 
---- DOCME
+--- Finds the root of the node.
+--
+-- Finds will gradually flatten the data structure (which becomes "bumpy" on account of
+-- @{Union} operations), so successive calls become almost optimal.
+-- @tparam Node node Node to query.
+-- @treturn Node Root. If this is a singleton, _node_.
 function M.Find (node)
 	AuxFind(node)
 
     return node.parent or node
 end
 
---- DOCME
+--- Initializes a singleton (cf. @{Find}) disjoint set node.
+-- @param[opt] elem Element to assign.
+-- @tparam Node[opt] node Node to populate. If absent, one is supplied.
+-- @treturn Node _node_.
 function M.NewNode (elem, node)
 	node = node or {}
 
@@ -63,12 +73,24 @@ function M.NewNode (elem, node)
 	return node
 end
 
---- DOCME
+--- Setter.
+-- @tparam Node node Node to receive element.
+-- @param elem Element to assign.
+-- @return Previous element, from a previous call or @{NewNode}. If unassigned, **nil**.
 function M.SetElement (node, elem)
+	local old = node.elem
+
 	node.elem = elem
+
+	return old
 end
 
---- DOCME
+--- Unites the subsets of _node1_ and _node2_, i.e. a @{Find} performed on either node, or
+-- any other member of their respective subsets, will afterward return the same root.
+--
+-- This is an irreversible operation (@{Find} exploits this for great efficiency).
+--
+-- This is a no-op if the nodes already share a root.
 function M.Union (node1, node2)
 	local root1 = _Find_(node1)
     local root2 = _Find_(node2)

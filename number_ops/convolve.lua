@@ -530,6 +530,8 @@ end
 --[[
 	TODO:
 
+	Separable filters support for 2D?
+
 	http://en.wikipedia.org/wiki/Overlap-save_method
 
 (Overlap–save algorithm for linear convolution)

@@ -1,4 +1,5 @@
---- This module defines some common caching operations.
+--- This module defines some common caching operations, e.g. as a means of mitigating
+-- garbage collection spikes.
 
 --
 -- Permission is hereby granted, free of charge, to any person obtaining
@@ -42,7 +43,86 @@ local WipeRange = wipe.WipeRange
 -- Exports --
 local M = {}
 
---- DOCME
+--- Building block for cached types.
+--
+-- The principal motivation behind this mechanism is that for certain types, some of the
+-- given type's methods and metamethods will result in new instances of itself, e.g. in
+-- `object2 = object1:Func()` and `object3 = object1 + object2` as return values, but also
+-- frequently as intermediate values. Under heavy loads, garbage can build up very quickly.
+--
+-- While operating in caching mode, these new instances will be allocated out of a pool, if
+-- available. Once processing is complete, all such instances, as well as new ones, are added
+-- back to the pool instead of becoming garbage.
+--
+-- At first the pool will be empty, but under similar workloads it will tend toward a steady
+-- state, which has the secondary effect that few (or no) new instances are generated.
+--
+-- Often one will want some of these instances at the end of the computation. To this end, an
+-- instance can be evicted from the cache. Alternatively, its values could be copied into a
+-- second (probably uncached) instance. Relevant details infra.
+--
+-- **N.B.** The factory instantiates caches, i.e. in the general case there is not one single
+-- cache for any given type. A couple implications are:
+--
+-- * Disparate code segments can be designed to work with cached operations without stomping
+-- on one another's caching mode states.
+-- * Pool sizes may better reflect workloads.
+-- @callable create_mt Called as `make = create_mt(mt, new)` when creating a new cache, in
+-- order to populate its metatable, _mt_ (in addition to metamethods, with conventional
+-- methods and any other values).
+--
+-- Items are constructed as `item = new(uncached)`; _item_ will be table with metatable _mt_.
+--
+-- When caching mode is off, or if _uncached_ is true, _item_ is a new empty table.
+--
+-- Otherwise, _item_ may be recycled from the cache. If there are slots available in the
+-- cache, the table stored at one such slot is allocated (**n.b.** said table's contents will
+-- be in whatever state the user left them in; the cache itself never touches its contents);
+-- otherwise, a new empty table is appended to the cache and immediately supplied, and the
+-- size updated. In either case, the allocation count is incremented.
+--
+-- Both _mt_ and _new_ are factory-generated and unique to the new cache, whereas _make_ is
+-- supplied by the user.
+--
+-- The latter is called as `instance = make(...)`. A conforming _make_ will call _new_, do
+-- any initialization on _item,_ and return it as _instance_. Any logic meant to take
+-- advantage of the cache will use _make_ to obtain instances.
+-- @treturn function Factory function, called as `func = factory(how)`.
+--
+-- If _how_ is **"get_uncached_maker"**, _func_ will be _make_ (this will always be the same
+-- function for a given factory, corresponding to the same metatable). Each _instance_
+-- produced by it will be a new empty table: this table neither comes from nor is placed
+-- in a cache. (This behavior is effected via a _new_ that completely ignores the cache.)
+--
+-- This can be used, say, to provide users a way to make objects, with all the expected
+-- behavior, even when they do not need all the caching apparatus. In particular, it can
+-- be used to create objects to receive the final result of some operation.
+--
+-- For any other _how_, _func_ will be a new multi-purpose function (associated with its
+-- own cache), called as
+--    result1, result2 = func(what, arg)
+-- where _what_ is one of the following:
+--
+-- * **"begin"**: Begins caching mode; if already underway, this is a no-op.
+-- &br;LDOCTODO!
+-- _result1_ = _make_.
+-- * **"end"**: Ends caching mode and resets the count to 0.
+-- &br;LDOCTODO!
+-- Items will be evicted from the cache until its size is no more than _arg_. If _arg_ is
+-- absent, this step is skipped.
+-- * **"in"**: Calls `result1[, result2] = pcall(arg, make)` in caching mode, cf. @{pcall}.
+-- &br;LDOCTODO!
+-- The caching mode is restored afterward to its previous state.
+-- * **"has_begun"**: _result1_ is **true** if caching has begun, otherwise **false**.
+-- * **"remove"**: If present, the item at index _arg_ is evicted from the cache (slots are
+-- allocated in order, from 1 to the size). The count and size are updated accordingly.
+-- &br;LDOCTODO!
+-- Indices &gt; _arg_ must be decremented by 1 to remain valid. Apart from being removed
+-- from the cache, the item itself is left intact.
+-- * **"get_count"**: _result1_ = number of cache slots currently allocated. This may be
+-- interpreted as the index of the item just allocated (**N.B.** the note for "**remove"**).
+-- * **"get_size"**: _result1_ = number of available cache slots, &ge; the count.
+-- Once all cache slots are allocated, this will track the count.
 function M.Factory (create_mt)
 	local uncached_make
 
@@ -51,27 +131,27 @@ function M.Factory (create_mt)
 			return uncached_make
 		end
 
-		--
+		-- Create a metatable for the new cache.
 		local mt = {}
 
 		mt.__index = mt
 
-		--
+		-- Provide the default constructor.
 		local function def ()
 			return setmetatable({}, mt)
 		end
 
-		--
+		-- If the uncached maker was requested but does not yet exist, create and return it.
 		if how == "get_uncached_maker" then
 			uncached_make = create_mt(mt, def)
 
 			return uncached_make
 
-		--
+		-- Otherwise, create a new cache and associated multi-purpose function.
 		else
 			local active, index, has_begun = {}, 0, false
 
-			--
+			-- Populate the metatable, providing it a constructor that 
 			local make = create_mt(mt, function(use_def)
 				if has_begun and not use_def then
 					index = index + 1
@@ -129,7 +209,7 @@ function M.Factory (create_mt)
 					local item = active[arg]
 
 					if item then
-						if arg >= index then
+						if arg <= index then
 							index = index - 1
 						end
 
@@ -139,8 +219,8 @@ function M.Factory (create_mt)
 						active[n] = nil
 					end
 
-				-- Get Index --
-				elseif what == "get_index" then
+				-- Get Count --
+				elseif what == "get_count" then
 					return index
 
 				-- Get Size --

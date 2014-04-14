@@ -276,6 +276,7 @@ function M.Run (costs, ncols)
 		end
 
 		ncols, nrows, from = nrows, ncols, Costs
+-- TODO: ^^^ Works? (Add resolve below, too...)
 	end
 
 	-- Kick off the algorithm with a first round of zeroes, starring as many as possible.
