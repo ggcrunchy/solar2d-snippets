@@ -35,6 +35,10 @@ local goertzel = require("fft_ops.goertzel")
 local real_fft = require("fft_ops.real_fft")
 local two_ffts = require("fft_ops.two_ffts")
 
+-- Cached module references --
+local _PrecomputeKernel_1D_
+local _PrecomputeKernel_2D_
+
 -- Exports --
 local M = {}
 
@@ -376,6 +380,20 @@ end
 -- Default one-dimensional FFT-based convolution method
 local DefMethod1D = AuxMethod1D.two_ffts
 
+-- Performs the steps of a 1D FFT-based convolve
+local function DoFFT_1D (out, clen, method, signal, sn, kernel, kn, halfn, n)
+	-- Multiply the (complex) results...
+	method(n, signal, sn, kernel, kn)
+
+	-- ...transform back to the time domain...
+	real_fft.RealIFFT_1D(B, halfn)
+
+	-- ...and get the requested part of the result.
+	for i = 1, clen do
+		out[i] = B[i]
+	end
+end
+
 --- One-dimensional linear convolution using fast Fourier transforms. For certain _signal_
 -- and _kernel_ combinations, this may be significantly faster than @{Convolve_1D}.
 -- @array signal Real discrete signal...
@@ -395,22 +413,49 @@ function M.ConvolveFFT_1D (signal, kernel, opts)
 	local sn, kn = #signal, method ~= "precomputed_kernel" and #kernel or kernel.n
 	local clen, n = LenPower(sn, kn)
 
-	-- Perform an FFT on the signal and kernel (both at once). Multiply the (complex) results...
-	method = AuxMethod1D[method] or DefMethod1D
-
-	method(n, signal, sn, kernel, kn)
-
-	-- ...transform back to the time domain...
-	real_fft.RealIFFT_1D(B, .5 * n)
-
-	-- ...and get the convolution by scaling the real parts of the result.
+	-- Perform some variant of IFFT(FFT(signal) * FFT(kernel)).
 	local csignal = opts and opts.into or {}
 
-	for i = 1, clen do
-		csignal[i] = B[i]
-	end
+	DoFFT_1D(csignal, clen, AuxMethod1D[method] or DefMethod1D, signal, sn, kernel, kn, .5 * n, n)
 
 	return csignal
+end
+
+--- DOCME
+function M.ConvolveMultipleFFTs_1D (sn, kernel, func, opts)
+	-- Determine how much padding is needed to have matching power-of-2 sizes, and perform
+	-- any other relevant setup.
+	local method, kn = opts and opts.method
+
+	if method ~= "compute_kernel" and method ~= "precomputed_kernel" then
+		kn = #kernel
+	else
+		if method == "compute_kernel" then
+			local precomp = opts.precomp or {}
+
+			_PrecomputeKernel_1D_(precomp, sn, kernel)
+
+			kernel = precomp
+		end
+
+		kn = kernel.n
+	end
+
+	local clen, n = LenPower(sn, kn)
+
+	-- Perform some variant of IFFT(FFT(signal) * FFT(kernel)) in a loop, where a new signal
+	-- and output vector are polled each iteration.
+	method = AuxMethod1D[method] or DefMethod1D
+
+	local into, halfn = opts and opts.into, .5 * n
+
+	repeat
+		local signal, out = func(into)
+
+		if signal then
+			DoFFT_1D(out, clen, method, signal, sn, kernel, kn, halfn, n)
+		end
+	until not signal
 end
 
 -- Two-dimensional FFT-based convolution methods --
@@ -446,6 +491,26 @@ end
 -- Default two-dimensional FFT-based convolution method
 local DefMethod2D = AuxMethod2D.two_ffts
 
+-- Performs the steps of a 2D FFT-based convolve
+local function DoFFT_2D (out, method, signal, scols, sn, kernel, kcols, kn, halfm, m, n, area, w, h)
+	-- Multiply the (complex) results...
+	method(m, n, signal, scols, kernel, kcols, sn, kn, area)
+
+	-- ...transform back to the time domain...
+	real_fft.RealIFFT_2D(B, halfm, n)
+
+	-- ...and get the requested part of the result.
+	local offset, index = 0, 1
+
+	for _ = 1, h do
+		for j = 1, w do
+			out[index], index = B[offset + j], index + 1
+		end
+
+		offset = offset + m
+	end
+end
+
 --- Two-dimensional linear convolution using fast Fourier transforms. For certain _signal_
 -- and _kernel_ combinations, this may be significantly faster than @{Convolve_2D}.
 -- @array signal Real discrete signal...
@@ -469,26 +534,52 @@ function M.ConvolveFFT_2D (signal, kernel, scols, kcols, opts)
 	local w, m = LenPower(scols, kcols)
 	local h, n = LenPower(srows, krows)
 
-	-- Perform an FFT on the signal and kernel (both at once). Multiply the (complex) results...
-	method = AuxMethod2D[method] or DefMethod2D
+	-- Perform some variant of IFFT(FFT(signal) * FFT(kernel)).
+	local csignal = opts and opts.into or {}
 
-	method(m, n, signal, scols, kernel, kcols, sn, kn, m * n)
-
-	-- ...transform back to the time domain...
-	real_fft.RealIFFT_2D(B, .5 * m, n)
-
-	-- ...and get the convolution by scaling the real parts of the result.
-	local csignal, offset, index = opts and opts.into or {}, 0, 1
-
-	for _ = 1, h do
-		for j = 1, w do
-			csignal[index], index = B[offset + j], index + 1
-		end
-
-		offset = offset + m
-	end
+	DoFFT_2D(csignal, AuxMethod2D[method] or DefMethod2D, signal, scols, sn, kernel, kcols, kn, .5 * m, m, n, m * n, w, h)
 
 	return csignal
+end
+
+--- DOCME
+function M.ConvolveMultipleFFTs_2D (sn, kernel, scols, kcols, func, opts)
+	-- Determine how much padding each dimension needs, to have matching power-of-2 sizes,
+	-- and perform any other relevant setup.
+	local method, kn = opts and opts.method
+
+	if method ~= "compute_kernel" and method ~= "precomputed_kernel" then
+		kn = #kernel
+	else
+		if method == "compute_kernel" then
+			local precomp = opts.precomp or {}
+
+			_PrecomputeKernel_2D_(precomp, sn, kernel)
+
+			kernel = precomp
+		end
+
+		kn = kernel.n
+	end
+
+	local srows = sn / scols
+	local krows = kn / kcols
+	local w, m = LenPower(scols, kcols)
+	local h, n = LenPower(srows, krows)
+
+	-- Perform some variant of IFFT(FFT(signal) * FFT(kernel)) in a loop, where a new signal
+	-- and output matrix are polled each iteration.
+	method = AuxMethod2D[method] or DefMethod2D
+
+	local into, halfm, area = opts and opts.into, .5 * m, m * n
+
+	repeat
+		local signal, out = func(into)
+
+		if signal then
+			DoFFT_2D(out, method, signal, scols, sn, kernel, kcols, kn, halfm, m, n, area, w, h)
+		end
+	until not signal
 end
 
 --- Precomputes a kernel, e.g. for consumption by the **"precomputed_kernel"** option of
@@ -570,6 +661,9 @@ Algorithm 2 (OA for circular convolution)
    y = y(1:Nx)
    end   
 ]]
+-- Cache module members.
+_PrecomputeKernel_1D_ = M.PrecomputeKernel_1D
+_PrecomputeKernel_2D_ = M.PrecomputeKernel_2D
 
 -- Export the module.
 return M

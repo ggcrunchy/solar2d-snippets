@@ -51,6 +51,7 @@ function Scene:show (event)
 		-- Way to fire off the algorithm
 		-- Way to pull a seam...
 		-- ...and put one back
+		-- State to hold indices on first pass, then use "id occupied" buffer on the second pass?
 		-- Extra credit: augmenting seams...
 	end
 end
