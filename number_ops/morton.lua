@@ -44,7 +44,12 @@ local function AuxTriple (mnum)
 	return mnum
 end
 
---- DOCME
+--- Decomposes a Morton number into its three parts.
+-- @uint mnum 30-bit Morton number.
+-- @treturn uint 10-bit number (i.e. &isin; [0, 1023]) from bits 2, 5, etc.
+-- @treturn uint ...from bits 1, 4, etc.
+-- @treturn uint ...and from bits 0, 3, etc.
+-- @see Morton3
 function M.MortonTriple (mnum)
 	return AuxTriple(lshift(mnum, 2)), AuxTriple(lshift(mnum, 1)), AuxTriple(mnum)
 end
@@ -60,7 +65,12 @@ local function AuxMorton (x)
 	return x
 end
 
---- DOCME
+--- Builds a Morton number out of three parts.
+-- @uint x 10-bit number (i.e. &isin; [0, 1023]), which will be spread across bits 2, 5, etc.
+-- @uint y ...across bits 1, 4, etc.
+-- @uint z ...and across bits 0, 3, etc.
+-- @treturn uint 30-bit Morton number.
+-- @see MortonTriple
 function M.Morton3 (x, y, z)
 	return rshift(AuxMorton(x), 2) + rshift(AuxMorton(y), 1) + AuxMorton(z)
 end

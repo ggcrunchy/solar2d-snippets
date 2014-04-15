@@ -32,7 +32,15 @@ local setmetatable = setmetatable
 -- Exports --
 local M = {}
 
---- DOCME
+--- Helper to require multiple modules at once.
+-- @string name Name of a list module.
+--
+-- The result of @{require}'ing this module is assumed to be a list of key-name pairs. If
+-- there is a **_prefix** key in the list, its value is prepended to each name, i.e.
+-- `name = prefix.name`. Otherwise, keys may be arbitrary, e.g. the list can be an array.
+--
+-- Each name is passed to @{require} and the result added to a key-module pairs list.
+-- @treturn table Key-module pairs; a module is found under the same key as was its name.
 function M.DoList (name)
 	local from = require(name)
 	local prefix, list = from._prefix, {}
@@ -48,20 +56,31 @@ function M.DoList (name)
 	return list
 end
 
---- DOCME
+--- Variant of @{DoList} that takes an list of names.
+-- @ptable names Key-name pairs, e.g. as collected by @{GetNames}. The names are passed to
+-- @{require}, and the results added to a name-module pairs list.
+-- @string[opt=""] prefix Prefix prepended to each name.
+--
+-- **N.B.** If not empty, this must include the trailing dot.
+-- @treturn table Name-module pairs.
 function M.DoList_Names (names, prefix)
 	prefix = prefix or ""
 
 	local list = {}
 
-	for _, name in ipairs(names) do
+	for _, name in pairs(names) do
 		list[name] = require(prefix .. name)
 	end
 
 	return list
 end
 
---- DOCME
+--- This performs half of the work of @{DoList}, namely getting the module names, which
+-- may be useful in their own right. What is said about keys in @{DoList} applies here.
+-- @string name Name of a list module.
+-- @treturn table Key-name pairs.
+-- @treturn string If a **_prefix** key was found in the list, its value (plus a trailing
+-- dot); otherwise, the empty string.
 function M.GetNames (name)
 	local from = require(name)
 	local prefix, list = from._prefix, {}
@@ -77,7 +96,7 @@ end
 
 --- Helper to deal with circular module require situations. Provided module access is not
 -- needed immediately (in particular, it can wait until the requiring module has loaded),
--- the lazy-required module looks and may be treated as a normal module.
+-- the lazy-required module looks like and may be treated as a normal module.
 -- @string name Module name, as passed to @{require}.
 -- @treturn table Module proxy, to be accessed like the module proper.
 function M.Lazy (name)

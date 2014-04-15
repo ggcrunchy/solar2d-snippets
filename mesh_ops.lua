@@ -53,7 +53,7 @@ end
 local function LineComp (x1, y1, x2, y2, x, y)
 	local ex, ey = x2 - x1, y2 - y1
 
-	return Dot(ex, ey, x - x1, y - y1) / (ex * ex + ey * ey)
+	return Dot(ex, ey, x - x1, y - y1) / (ex^2 + ey^2)
 end
 
 -- --
