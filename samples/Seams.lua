@@ -24,6 +24,9 @@
 --
 
 -- Standard library imports --
+local abs = math.abs
+local floor = math.floor
+local huge = math.huge
 local sort = table.sort
 local sqrt = math.sqrt
 local yield = coroutine.yield
@@ -223,6 +226,31 @@ local function InteriorRowEnergy (i, w)
 	Energy[i] = AuxInterior(r1, g1, b1, a1, r2, g2, b2, a2, j)
 end
 
+-- --
+local Seams
+
+--
+local function GetEnergyDiff (index, energy)
+	return abs(Energy[index] - energy)
+end
+
+--
+local function GetBestIndex (at, alt1, alt2, energy)
+	local best = GetEnergyDiff(at, energy)
+	local dalt1 = alt1 and GetEnergyDiff(alt1, energy) or huge
+	local dalt2 = alt2 and GetEnergyDiff(alt2, energy) or huge
+
+	if dalt1 < best then
+		at, best = alt1, dalt1
+	end
+
+	if dalt2 < best then
+		at = alt2
+	end
+
+	return at
+end
+
 --
 function Scene:show (event)
 	if event.phase == "did" then
@@ -279,58 +307,112 @@ function Scene:show (event)
 							Watch()
 
 							--
-							local inc, inc2, n, n2
+							local frac, frac2, inc, inc2, n, n2
 	
 							if Method == "horizontal" then
-								inc, inc2, n, n2 = 1, w, w, h
+								frac, frac2, inc, inc2, n, n2 = .2, .2, 1, w, w, h
 							else
-								inc, inc2, n, n2 = w, 1, h, w
+								frac, frac2, inc, inc2, n, n2 = .2, .2, w, 1, h, w
 							end
-							
+							-- ^^^ frac and frac2 should be configurable...
 							SortEnergy(inc, n)
 
-							-- Dimension 1:
-							-- Choose NSEAMS seams...
-							-- Mark them
-							
-							for i = 2, n2 do
-								-- for j = 1, NSEAMS do
---									local in_line = SEAM_INDEX[j] + inc
---									local diag1 = in_line - inc2
---									local diag2 = in_line + inc2
+							-- --
+							Seams = {}
 
+							-- Dimension 1: Choose lowest-energy positions and initialize the seam index state
+							-- with their indices. Add these to the seam data structure, as well.
+							local indices, nseams, assignment, costs = {}, floor(frac * n), TwoSeams and {}, TwoSeams and {}
+
+							for i = 1, nseams do
+								local index = Indices[i]
+
+								indices[i], Seams[index] = index, i
+							end
+
+							-- 
+							for _ = 2, n2 do
+								local offset = 0 -- works left-to-right?
+
+								for i = 1, nseams do
+									local index = indices[i]
+									local ahead, energy = index + inc, Energy[index]
+									local diag1, diag2 = ahead - inc2, ahead + inc2
+-- ^^^ TODO: Edge cases for diag1, diag2... (Wikipedia actually mentioned wrapping, no?)
+									--
 									if TwoSeams then
-										-- Add three into cost matrix under seam (index, cost)
+										for j = 1, n do
+											costs[j] = huge
+										end
+
+										costs[ahead - offset] = GetEnergyDiff(ahead, energy)
+										costs[diag1 - offset] = GetEnergyDiff(diag1, energy)
+										costs[diag2 - offset] = GetEnergyDiff(diag2, energy)
+
+									--
 									else
-										-- Choose best (make sure not already marked... diag1 might not be susceptible to this)
-										-- Mark them
+										local at = GetBestIndex(diag2, diag1, ahead, energy)
+
+										indices[i], Seams[at] = at, i
 									end
-								-- end
-								-- if TwoSeams then
-								--		Run Hungarian algorithm to find all next choices
-								--		Mark them
-								-- end
-								-- yield()
+								end
+
+								--
+								if TwoSeams then
+									hungarian.Run(costs, n, assignment)
+
+									for i = 1, nseams do
+										local index = offset + assignment[i]
+
+										indices[i], Seams[index] = index, i
+									end
+
+									offset = offset + inc2
+								end
+	
+								Watch()
 							end
 
 							--
 							SortEnergy(inc2, n2)
 
-							-- Dimension 2:
-							-- Choose NSEAMS2 seams...
-							-- Mark them; if in two seams, also add the SEAM1 index, if any
+							-- Dimension 2: Choose lowest-energy positions along the opposing dimension. Add
+							-- these to the seam data structure, as well.
+							nseams = floor(frac2 * n2)
 
-							for i = 2, n do
-								-- for j = 1, NSEAMS2 do
-									if TwoSeams then
---										local in_line = SEAM_INDEX2[j] + inc2
---										local diag1 = in_line - inc
---										local diag2 = in_line + inc
-										-- Filter if these seams have already crossed
-									else
-										-- Just advance by inc...
+							if TwoSeams then
+								local used = {}
+
+								for i = 1, nseams do
+									local index = Indices[i]
+
+									--
+									if Seams[index] then
+										used[Seams[index]] = i
 									end
-								-- end
+
+									for j = 2, n do
+										local ahead = index + inc2
+										local diag1 = ahead - inc
+										local diag2 = ahead + inc
+-- ^^^ TODO: Handle edge cases for diag1, diag2...
+										diag1 = used[Seams[diag1]] ~= i and diag1
+										diag2 = used[Seams[diag2]] ~= i and diag2
+										index = GetBestIndex(ahead, diag1, diag2, Energy[index])
+
+										indices[i], Seams[index] = index, i
+									end
+								end
+
+							--
+							else
+								for i = 1, nseams do
+									local index = Indices[i]
+
+									for j = 1, n2 do
+										indices[j], Seams[index], index = index, i, index + inc
+									end
+								end
 							end
 						end
 
@@ -379,6 +461,8 @@ function Scene:hide (event)
 		self.images:removeSelf()
 
 		self.busy = nil
+
+		Seams = nil
 	end
 end
 

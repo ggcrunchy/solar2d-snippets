@@ -260,9 +260,12 @@ end
 --- DOCME
 -- @array costs
 -- @uint ncols
+-- @ptable[opt] out
 -- @treturn array out
-function M.Run (costs, ncols)
-	local out, n, from = {}, #costs, costs
+function M.Run (costs, ncols, out)
+	out = out or {}
+
+	local n, from = #costs, costs
 	local dcols, nrows = ncols - 1, ceil(n / ncols)
 
 	--
