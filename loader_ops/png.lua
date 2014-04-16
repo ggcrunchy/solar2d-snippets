@@ -268,7 +268,13 @@ local function CopyToImageData (pixels, colors, has_alpha, palette, n, yfunc)
 end
 
 --
+local function DefRowFunc () end
+
+--
 local function DefYieldFunc () end
+
+--
+local ShouldDecode = { get_pixels = true, for_each = true, for_each_in_column = true, for_each_in_row = true }
 
 --
 local function AuxLoad (png, yfunc)
@@ -329,25 +335,71 @@ local function AuxLoad (png, yfunc)
 	--
 	local pixels
 
-	return function(what, arg)
-		-- Get Pixels --
-		if what == "get_pixels" then
+	return function(what, arg1, arg2, arg3)
+		-- Check first for any messages that rely on decoded data. If so, decode it on the first
+		-- such call, before processing the message proper.
+		local should_decode = ShouldDecode[what]
+
+		if should_decode then
 			if not pixels then
 				local decoded = DecodePixels(data, bit_len, w, h, yfunc)
 
 				pixels, data = pixels or CopyToImageData(decoded, colors, has_alpha, palette, w * h * 4, yfunc)
 			end
 
-			return pixels
+			-- Get Pixels --
+			if what == "get_pixels" then
+				return pixels
+
+			-- For Each --
+			-- arg1: Callback
+			-- arg2: Row callback (optional)
+			elseif what == "for_each" then
+				local i, on_row = 1, arg2 or DefRowFunc
+
+				for y = 1, h do
+					for x = 1, w do
+						arg1(i, x, y, data[i], data[i + 1], data[i + 2], data[i + 3])
+
+						i = i + 4
+					end
+
+					on_row(y)
+				end
+
+			-- For Each In Column --
+			-- arg1: Callback
+			-- arg2: Column index
+			elseif what == "for_each_in_column" then
+				local i, stride = (arg3 - 1) * 4 + 1, w * 4
+
+				for y = 1, h do
+					arg1(i, arg3, y, data[i], data[i + 1], data[i + 2], data[i + 3])
+
+					i = i + stride
+				end
+
+			-- For Each In Row --
+			-- arg1: Callback
+			-- arg2: Row index
+			elseif what == "for_each_in_row" then
+				local i = (arg3 - 1) * w * 4 + 1
+
+				for x = 1, w do
+					arg1(i, x, arg3, data[i], data[i + 1], data[i + 2], data[i + 3])
+
+					i = i + 4
+				end
+			end
 
 		-- Get Dimensions --
 		elseif what == "get_dims" then
 			return w, h
 
 		-- Set Yield Func --
-		-- arg: Yield function
+		-- arg1: Yield function
 		elseif what == "set_yield_func" then
-			yfunc = arg or DefYieldFunc
+			yfunc = arg1 or DefYieldFunc
 
 		-- NYI --
 		else
