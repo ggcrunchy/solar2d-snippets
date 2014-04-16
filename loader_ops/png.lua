@@ -359,7 +359,7 @@ local function AuxLoad (png, yfunc)
 
 				for y = 1, h do
 					for x = 1, w do
-						arg1(i, x, y, data[i], data[i + 1], data[i + 2], data[i + 3])
+						arg1(x, y, data[i], data[i + 1], data[i + 2], data[i + 3], i)
 
 						i = i + 4
 					end
@@ -374,7 +374,7 @@ local function AuxLoad (png, yfunc)
 				local i, stride = (arg3 - 1) * 4 + 1, w * 4
 
 				for y = 1, h do
-					arg1(i, arg3, y, data[i], data[i + 1], data[i + 2], data[i + 3])
+					arg1(arg3, y, data[i], data[i + 1], data[i + 2], data[i + 3], i)
 
 					i = i + stride
 				end
@@ -386,7 +386,7 @@ local function AuxLoad (png, yfunc)
 				local i = (arg3 - 1) * w * 4 + 1
 
 				for x = 1, w do
-					arg1(i, x, arg3, data[i], data[i + 1], data[i + 2], data[i + 3])
+					arg1(x, arg3, data[i], data[i + 1], data[i + 2], data[i + 3], i)
 
 					i = i + 4
 				end
