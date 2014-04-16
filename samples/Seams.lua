@@ -236,7 +236,7 @@ end
 
 --
 local function GetBestIndex (at, alt1, alt2, energy)
-	local best = GetEnergyDiff(at, energy)
+	local best = at and GetEnergyDiff(at, energy) or huge
 	local dalt1 = alt1 and GetEnergyDiff(alt1, energy) or huge
 	local dalt2 = alt2 and GetEnergyDiff(alt2, energy) or huge
 
@@ -331,14 +331,17 @@ function Scene:show (event)
 							end
 
 							-- 
+							local area = w * h
+
 							for _ = 2, n2 do
 								local offset = 0 -- works left-to-right?
 
 								for i = 1, nseams do
-									local index = indices[i]
+									local rel_index = indices[i]
+									local index = offset + rel_index
 									local ahead, energy = index + inc, Energy[index]
 									local diag1, diag2 = ahead - inc2, ahead + inc2
--- ^^^ TODO: Edge cases for diag1, diag2... (Wikipedia actually mentioned wrapping, no?)
+
 									--
 									if TwoSeams then
 										for j = 1, n do
@@ -346,14 +349,23 @@ function Scene:show (event)
 										end
 
 										costs[ahead - offset] = GetEnergyDiff(ahead, energy)
-										costs[diag1 - offset] = GetEnergyDiff(diag1, energy)
-										costs[diag2 - offset] = GetEnergyDiff(diag2, energy)
+
+										if rel_index > 1 then
+											costs[diag1 - offset] = GetEnergyDiff(diag1, energy)
+										end
+
+										if rel_index < n then
+											costs[diag2 - offset] = GetEnergyDiff(diag2, energy)
+										end
 
 									--
 									else
-										local at = GetBestIndex(diag2, diag1, ahead, energy)
+										diag1 = not Seams[diag1] and diag1
+										ahead = not Seams[ahead] and ahead
 
-										indices[i], Seams[at] = at, i
+										local at = GetBestIndex(ahead, rel_index > 1 and diag1, rel_index < n and diag2, energy)
+
+										indices[i], Seams[at] = at - offset, i
 									end
 								end
 
@@ -362,9 +374,9 @@ function Scene:show (event)
 									hungarian.Run(costs, n, assignment)
 
 									for i = 1, nseams do
-										local index = offset + assignment[i]
+										local at = assignment[i]
 
-										indices[i], Seams[index] = index, i
+										indices[i], Seams[at] = at, i
 									end
 
 									offset = offset + inc2
@@ -376,15 +388,15 @@ function Scene:show (event)
 							--
 							SortEnergy(inc2, n2)
 
-							-- Dimension 2: Choose lowest-energy positions along the opposing dimension. Add
-							-- these to the seam data structure, as well.
+							-- Dimension 2: Choose lowest-energy positions along the opposing dimension.
 							nseams = floor(frac2 * n2)
 
+							--
 							if TwoSeams then
 								local used = {}
 
 								for i = 1, nseams do
-									local index = Indices[i]
+									local offset, index = 0, Indices[i]
 
 									--
 									if Seams[index] then
@@ -393,14 +405,13 @@ function Scene:show (event)
 
 									for j = 2, n do
 										local ahead = index + inc2
-										local diag1 = ahead - inc
-										local diag2 = ahead + inc
--- ^^^ TODO: Handle edge cases for diag1, diag2...
+										local diag1, diag2 = ahead - inc, ahead + inc
+-- ^^^ TODO: Need to compute rel_index for this case...
 										diag1 = used[Seams[diag1]] ~= i and diag1
 										diag2 = used[Seams[diag2]] ~= i and diag2
 										index = GetBestIndex(ahead, diag1, diag2, Energy[index])
 
-										indices[i], Seams[index] = index, i
+										indices[i], Seams[index], offset = index, i, offset + inc
 									end
 								end
 
@@ -437,14 +448,13 @@ function Scene:show (event)
 			end
 		end
 
-		-- Something to load pictures
-		-- Some way to specify the number of seams to generate
-		-- Way to fire off the algorithm
-		-- Way to pull a seam...
-		-- ...and put one back
-		-- State to hold indices on first pass, then use "id occupied" buffer on the second pass?
-		-- Extra credit: augmenting seams...
-		--
+		-- Something to load pictures (maybe a preview, when picking from the listbox)
+		-- Some way to specify the number of seams to generate (a slider for portion of each dimension?)
+		-- Way to fire off the algorithm (button?)(grayable?)
+		-- Way to pull a seam... (button, grayable)
+		-- ...and put one back (ditto)
+		-- State to hold indices on first pass, then use "id occupied" buffer on the second pass? (getting there!)
+		-- Extra credit: augmenting seams... :(
 		self.tabs:setSelected(1, true)
 	end
 end
