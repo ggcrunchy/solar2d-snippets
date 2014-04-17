@@ -57,6 +57,18 @@ local CW, CH = display.contentWidth, display.contentHeight
 -- --
 local Method, TwoSeams
 
+-- --
+local Columns, Rows
+
+-- --
+local DoColumn, DoRow
+
+-- --
+local Pixels
+
+-- --
+local NCols, NRows
+
 --
 function Scene:create ()
 	buttons.Button(self.view, nil, 120, 75, 200, 50, scenes.Opener{ name = "scene.Choices" }, "Go Back")
@@ -226,29 +238,89 @@ local function InteriorRowEnergy (i, w)
 	Energy[i] = AuxInterior(r1, g1, b1, a1, r2, g2, b2, a2, j)
 end
 
--- --
-local Seams
-
 --
 local function GetEnergyDiff (index, energy)
 	return abs(Energy[index] - energy)
 end
 
 --
-local function GetBestIndex (at, alt1, alt2, energy)
-	local best = at and GetEnergyDiff(at, energy) or huge
+local function GetBestIndex (pref, alt1, alt2, energy)
+	local best = pref and GetEnergyDiff(pref, energy) or huge
 	local dalt1 = alt1 and GetEnergyDiff(alt1, energy) or huge
 	local dalt2 = alt2 and GetEnergyDiff(alt2, energy) or huge
 
 	if dalt1 < best then
-		at, best = alt1, dalt1
+		pref, best = alt1, dalt1
 	end
 
 	if dalt2 < best then
-		at = alt2
+		pref = alt2
 	end
 
-	return at
+	return pref
+end
+
+--
+local function GetEdgesEnergy (indices, i, inc1, inc2, n, offset)
+	local rel_index = indices[i]
+	local index = offset + rel_index
+	local ahead, energy = index + inc1, Energy[index]
+	local diag1 = rel_index > 1 and ahead - inc2
+	local diag2 = rel_index < n and ahead + inc2
+
+	return ahead, diag1, diag2, energy
+end
+
+--
+local function LoadCosts (costs, n, ahead, diag1, diag2, energy, ri, offset)
+	for j = 1, n do
+		costs[ri + j] = huge
+	end
+
+	offset = offset - ri
+
+	costs[ahead - offset] = GetEnergyDiff(ahead, energy)
+
+	if diag1 then
+		costs[diag1 - offset] = GetEnergyDiff(diag1, energy)
+	end
+
+	if diag2 then
+		costs[diag2 - offset] = GetEnergyDiff(diag2, energy)
+	end
+
+	return ri + n
+end
+
+--
+local function SolveAssignment (indices, costs, assignment, buf, nseams, n, offset)
+	hungarian.Run(costs, n, assignment)
+
+	for i = 1, nseams do
+		local at, into = assignment[i], buf[i]
+
+		indices[i], into[#into + 1] = at, offset + at
+	end
+end
+
+--
+local function DoPixelLine (buf, i, n, delta, remove)
+	local index, inc = buf[i], remove and 1 or -1
+
+	for _ = 1, n do
+		Pixels[index], index = (Pixels[index] or 0) + inc, index + delta
+	end
+end
+
+-- 
+local function DoPixelSeam (buf, i, remove)
+	local seam, inc = buf[i], remove and 1 or -1
+
+	for j = 1, #seam do
+		local index = seam[j]
+
+		Pixels[index] = (Pixels[index] or 0) + inc
+	end
 end
 
 --
@@ -306,78 +378,53 @@ function Scene:show (event)
 							TwoRowsEnergy(index, This, Prev, w)
 							Watch()
 
+							-- --
+							Columns, Rows = {}, {}
+
 							--
-							local frac, frac2, inc, inc2, n, n2
+							local frac, frac2, inc, inc2, n, n2, buf1, buf2
 	
 							if Method == "horizontal" then
-								frac, frac2, inc, inc2, n, n2 = .2, .2, 1, w, w, h
+								frac, frac2, inc, inc2, n, n2, buf1, buf2 = .2, .2, 1, w, w, h, Columns, Rows
 							else
-								frac, frac2, inc, inc2, n, n2 = .2, .2, w, 1, h, w
+								frac, frac2, inc, inc2, n, n2, buf1, buf2 = .2, .2, w, 1, h, w, Rows, Columns
 							end
 							-- ^^^ frac and frac2 should be configurable...
 							SortEnergy(inc, n)
 
-							-- --
-							Seams = {}
-
 							-- Dimension 1: Choose lowest-energy positions and initialize the seam index state
 							-- with their indices. Add these to the seam data structure, as well.
-							local indices, nseams, assignment, costs = {}, floor(frac * n), TwoSeams and {}, TwoSeams and {}
+							local indices, nseams, assignment, costs, used = {}, floor(frac * n), TwoSeams and {}, TwoSeams and {}, {}
 
 							for i = 1, nseams do
 								local index = Indices[i]
 
-								indices[i], Seams[index] = index, i
+								indices[i], buf1[i], used[index] = index, { index }, true
 							end
 
 							-- 
-							local area = w * h
-
 							for _ = 2, n2 do
-								local offset = 0 -- works left-to-right?
+								local row, offset = 0, 0 -- works left-to-right?
 
 								for i = 1, nseams do
-									local rel_index = indices[i]
-									local index = offset + rel_index
-									local ahead, energy = index + inc, Energy[index]
-									local diag1, diag2 = ahead - inc2, ahead + inc2
+									local ahead, diag1, diag2, energy = GetEdgesEnergy(indices, i, inc, inc2, n, offset)
 
 									--
 									if TwoSeams then
-										for j = 1, n do
-											costs[j] = huge
-										end
-
-										costs[ahead - offset] = GetEnergyDiff(ahead, energy)
-
-										if rel_index > 1 then
-											costs[diag1 - offset] = GetEnergyDiff(diag1, energy)
-										end
-
-										if rel_index < n then
-											costs[diag2 - offset] = GetEnergyDiff(diag2, energy)
-										end
-
-									--
+										row = LoadCosts(costs, n, ahead, diag1, diag2, energy, row, offset)
 									else
-										diag1 = not Seams[diag1] and diag1
-										ahead = not Seams[ahead] and ahead
+										diag1 = not used[diag1] and diag1
+										ahead = not used[ahead] and ahead
 
-										local at = GetBestIndex(ahead, rel_index > 1 and diag1, rel_index < n and diag2, energy)
+										local at, buf = GetBestIndex(ahead, diag1, diag2, energy), buf1[i]
 
-										indices[i], Seams[at] = at - offset, i
+										indices[i], buf[#buf + 1], used[at] = at - offset, at, true
 									end
 								end
 
 								--
 								if TwoSeams then
-									hungarian.Run(costs, n, assignment)
-
-									for i = 1, nseams do
-										local at = assignment[i]
-
-										indices[i], Seams[at] = at, i
-									end
+									SolveAssignment(indices, costs, assignment, buf2, nseams, n, offset)
 
 									offset = offset + inc2
 								end
@@ -393,26 +440,29 @@ function Scene:show (event)
 
 							--
 							if TwoSeams then
-								local used = {}
-
 								for i = 1, nseams do
-									local offset, index = 0, Indices[i]
+									local index = Indices[i]
 
-									--
-									if Seams[index] then
-										used[Seams[index]] = i
+									indices[i], buf2[i] = index, i, { index }
+								end
+
+								for _ = 2, n do
+									local row, offset = 0, 0
+
+									for i = 1, nseams do
+										local ahead, diag1, diag2, energy = GetEdgesEnergy(indices, i, inc2, inc, n2, offset)
+
+										--
+										diag1 = not used[diag1] and diag1
+										diag2 = not used[diag2] and diag2
+										row = LoadCosts(costs, n, ahead, diag1, diag2, energy, row, offset)
 									end
 
-									for j = 2, n do
-										local ahead = index + inc2
-										local diag1, diag2 = ahead - inc, ahead + inc
--- ^^^ TODO: Need to compute rel_index for this case...
-										diag1 = used[Seams[diag1]] ~= i and diag1
-										diag2 = used[Seams[diag2]] ~= i and diag2
-										index = GetBestIndex(ahead, diag1, diag2, Energy[index])
+									SolveAssignment(indices, costs, assignment, buf2, nseams, n2, offset)
 
-										indices[i], Seams[index], offset = index, i, offset + inc
-									end
+									offset = offset + inc
+
+									Watch()
 								end
 
 							--
@@ -420,10 +470,36 @@ function Scene:show (event)
 								for i = 1, nseams do
 									local index = Indices[i]
 
-									for j = 1, n2 do
-										indices[j], Seams[index], index = index, i, index + inc
+									for _ = 1, n2 do
+										buf2[#buf2 + 1], index = index, index + inc
 									end
 								end
+							end
+
+							--
+							Pixels = {}
+
+							local function DoBuf1 (i, remove)
+								DoPixelSeam(buf1, i, remove)
+							end
+
+							local DoBuf2
+
+							if TwoSeams then
+								function DoBuf2 (i, remove)
+									DoPixelSeam(buf2, i, remove)
+								end
+							else
+								function DoBuf2 (i, remove)
+									DoPixelLine(buf2, i, n2, inc2, remove)
+								end
+							end
+
+							--
+							if Method == "horizontal" then
+								DoColumn, DoRow, NCols, NRows = DoBuf1, DoBuf2, #buf1, #buf2
+							else
+								DoColumn, DoRow, NCols, NRows = DoBuf2, DoBuf1, #buf2, #buf1
 							end
 						end
 
@@ -472,7 +548,7 @@ function Scene:hide (event)
 
 		self.busy = nil
 
-		Seams = nil
+		Columns, Rows, DoColumn, DoRow, Pixels = nil
 	end
 end
 
