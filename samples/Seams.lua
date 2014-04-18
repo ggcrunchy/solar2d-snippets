@@ -1,4 +1,4 @@
---- Seam-carving demo.
+--- Seam-carving demo, following Avidan & Shamir's [paper](http://www.win.tue.nl/~wstahw/edu/2IV05/seamcarving.pdf).
 
 --
 -- Permission is hereby granted, free of charge, to any person obtaining
@@ -47,6 +47,7 @@ local timer = timer
 
 -- Corona modules --
 local composer = require("composer")
+local widget = require("widget")
 
 -- Seam-carving demo scene --
 local Scene = composer.newScene()
@@ -58,20 +59,24 @@ local CW, CH = display.contentWidth, display.contentHeight
 local Method, TwoSeams
 
 -- --
-local Columns, Rows
-
--- --
-local DoColumn, DoRow
-
--- --
 local Pixels
-
--- --
-local NCols, NRows
 
 --
 function Scene:create ()
 	buttons.Button(self.view, nil, 120, 75, 200, 50, scenes.Opener{ name = "scene.Choices" }, "Go Back")
+
+	--
+	self.col_seams = display.newText(self.view, "", 0, 130, native.systemFontBold, 20)
+
+	self.col_seams.anchorX, self.col_seams.x = 0, 20
+
+	self.m_cs_top = 150
+
+	self.row_seams = display.newText(self.view, "", 0, 210, native.systemFontBold, 20)
+
+	self.row_seams.anchorX, self.row_seams.x = 0, 20
+
+	self.m_rs_top = 230
 
 	--
 	self.about = display.newText(self.view, "", 0, 0, native.systemFontBold, 20)
@@ -112,6 +117,38 @@ end
 
 Scene:addEventListener("create")
 
+--
+local function AddStepper (scene, key, tkey, top, max, func)
+	if scene[key] then
+		scene[key]:removeSelf()
+	end
+
+	local count = max
+
+	scene[tkey].text = ("Seams remaining: %i"):format(count)
+
+	scene[key] = widget.newStepper{
+		left = 20, top = top,
+		initialValue = max, minimumValue = 0, maximumValue = max,
+
+		onPress = function(event)
+			local phase = event.phase
+
+			if phase == "increment" or phase == "decrement" then
+				local remove = phase == "decrement"
+
+				func(remove)
+
+				count = count + (remove and -1 or 1)
+
+				scene[tkey].text = ("Seams remaining: %i"):format(count)
+
+				-- Update image!
+			end
+		end
+	}
+end
+
 -- --
 local Base = system.DocumentsDirectory
 
@@ -147,7 +184,7 @@ local function EnergyComp (i1, i2)
 end
 
 --
-local function SortEnergy (inc, n)
+local function SortEnergy (frac, inc, n)
 	local index = 1
 
 	for i = 1, n do
@@ -159,6 +196,8 @@ local function SortEnergy (inc, n)
 	end
 
 	sort(Indices, EnergyComp)
+
+	return floor(frac * n)
 end
 
 -- Ping / pong buffers used to turn energy calculation into a dynamic programming problem --
@@ -244,7 +283,7 @@ local function GetEnergyDiff (index, energy)
 end
 
 --
-local function GetBestIndex (pref, alt1, alt2, energy)
+local function GetBestEdge (pref, alt1, alt2, energy)
 	local best = pref and GetEnergyDiff(pref, energy) or huge
 	local dalt1 = alt1 and GetEnergyDiff(alt1, energy) or huge
 	local dalt2 = alt2 and GetEnergyDiff(alt2, energy) or huge
@@ -261,8 +300,8 @@ local function GetBestIndex (pref, alt1, alt2, energy)
 end
 
 --
-local function GetEdgesEnergy (indices, i, inc1, inc2, n, offset)
-	local rel_index = indices[i]
+local function GetEdgesEnergy (i, inc1, inc2, n, offset)
+	local rel_index = Indices[i]
 	local index = offset + rel_index
 	local ahead, energy = index + inc1, Energy[index]
 	local diag1 = rel_index > 1 and ahead - inc2
@@ -293,13 +332,13 @@ local function LoadCosts (costs, n, ahead, diag1, diag2, energy, ri, offset)
 end
 
 --
-local function SolveAssignment (indices, costs, assignment, buf, nseams, n, offset)
+local function SolveAssignment (costs, assignment, buf, nseams, n, offset)
 	hungarian.Run(costs, n, assignment)
 
 	for i = 1, nseams do
 		local at, into = assignment[i], buf[i]
 
-		indices[i], into[#into + 1] = at, offset + at
+		Indices[i], into[#into + 1] = at, offset + at
 	end
 end
 
@@ -378,53 +417,52 @@ function Scene:show (event)
 							TwoRowsEnergy(index, This, Prev, w)
 							Watch()
 
-							-- --
-							Columns, Rows = {}, {}
-
 							--
-							local frac, frac2, inc, inc2, n, n2, buf1, buf2
+							local buf1, buf2, frac, frac2, inc, inc2, n, n2 = {}, {}
 	
 							if Method == "horizontal" then
-								frac, frac2, inc, inc2, n, n2, buf1, buf2 = .2, .2, 1, w, w, h, Columns, Rows
+								frac, frac2, inc, inc2, n, n2 = .2, .2, 1, w, w, h
 							else
-								frac, frac2, inc, inc2, n, n2, buf1, buf2 = .2, .2, w, 1, h, w, Rows, Columns
+								frac, frac2, inc, inc2, n, n2 = .2, .2, w, 1, h, w
 							end
 							-- ^^^ frac and frac2 should be configurable...
-							SortEnergy(inc, n)
 
 							-- Dimension 1: Choose lowest-energy positions and initialize the seam index state
-							-- with their indices. Add these to the seam data structure, as well.
-							local indices, nseams, assignment, costs, used = {}, floor(frac * n), TwoSeams and {}, TwoSeams and {}, {}
+							-- with their indices. Flag these indices as used.
+							local nseams, used = SortEnergy(frac, inc, n), {}
 
 							for i = 1, nseams do
 								local index = Indices[i]
 
-								indices[i], buf1[i], used[index] = index, { index }, true
+								buf1[i], used[index] = { index }, true
 							end
 
 							-- 
+							local assignment, costs = TwoSeams and {}, TwoSeams and {}
+
 							for _ = 2, n2 do
 								local row, offset = 0, 0 -- works left-to-right?
 
 								for i = 1, nseams do
-									local ahead, diag1, diag2, energy = GetEdgesEnergy(indices, i, inc, inc2, n, offset)
+									local ahead, diag1, diag2, energy = GetEdgesEnergy(i, inc, inc2, n, offset)
 
-									--
+									-- If doing a two-seams approach, load a row of the cost matrix. Otherwise, advance
+									-- each index to the best of its three edges in the next column or row.
 									if TwoSeams then
 										row = LoadCosts(costs, n, ahead, diag1, diag2, energy, row, offset)
 									else
 										diag1 = not used[diag1] and diag1
 										ahead = not used[ahead] and ahead
 
-										local at, buf = GetBestIndex(ahead, diag1, diag2, energy), buf1[i]
+										local at, buf = GetBestEdge(ahead, diag1, diag2, energy), buf1[i]
 
-										indices[i], buf[#buf + 1], used[at] = at - offset, at, true
+										Indices[i], buf[#buf + 1], used[at] = at - offset, at, true
 									end
 								end
 
-								--
+								-- With all the costs set up, solve the column or row.
 								if TwoSeams then
-									SolveAssignment(indices, costs, assignment, buf2, nseams, n, offset)
+									SolveAssignment(costs, assignment, buf2, nseams, n, offset)
 
 									offset = offset + inc2
 								end
@@ -432,40 +470,39 @@ function Scene:show (event)
 								Watch()
 							end
 
-							--
-							SortEnergy(inc2, n2)
-
 							-- Dimension 2: Choose lowest-energy positions along the opposing dimension.
-							nseams = floor(frac2 * n2)
+							nseams = SortEnergy(frac2, inc2, n2)
 
-							--
+							-- If doing a two-seams approach, initialize the seam index state with the indices
+							-- of the positions just found. Load costs as before and solve for this dimension.
 							if TwoSeams then
 								for i = 1, nseams do
-									local index = Indices[i]
-
-									indices[i], buf2[i] = index, i, { index }
+									buf2[i] = { Indices[i] }
 								end
 
 								for _ = 2, n do
 									local row, offset = 0, 0
 
 									for i = 1, nseams do
-										local ahead, diag1, diag2, energy = GetEdgesEnergy(indices, i, inc2, inc, n2, offset)
+										local ahead, diag1, diag2, energy = GetEdgesEnergy(i, inc2, inc, n2, offset)
 
-										--
+										-- Load the cost matrix as was done earlier, but omit any diagonal edges that
+										-- already came into use in the other dimension, as those can potentially lead
+										-- to seams crossing twice, and thus an inconsistent index map, q.v the appendix
+										-- in the Avidan & Shamir paper.
 										diag1 = not used[diag1] and diag1
 										diag2 = not used[diag2] and diag2
 										row = LoadCosts(costs, n, ahead, diag1, diag2, energy, row, offset)
 									end
 
-									SolveAssignment(indices, costs, assignment, buf2, nseams, n2, offset)
+									SolveAssignment(costs, assignment, buf2, nseams, n2, offset)
 
 									offset = offset + inc
 
 									Watch()
 								end
 
-							--
+							-- Otherwise, this dimension is just a row or column.
 							else
 								for i = 1, nseams do
 									local index = Indices[i]
@@ -495,12 +532,17 @@ function Scene:show (event)
 								end
 							end
 
-							--
+							-- Wire all the state up to some widgets.
+							local cfunc, rfunc, ncseams, nrseams
+
 							if Method == "horizontal" then
-								DoColumn, DoRow, NCols, NRows = DoBuf1, DoBuf2, #buf1, #buf2
+								cfunc, rfunc, ncseams, nrseams = DoBuf1, DoBuf2, #buf1, #buf2
 							else
-								DoColumn, DoRow, NCols, NRows = DoBuf2, DoBuf1, #buf2, #buf1
+								cfunc, rfunc, ncseams, nrseams = DoBuf2, DoBuf1, #buf2, #buf1
 							end
+
+							AddStepper(self, "cstep", "col_seams", self.m_cs_top, ncseams, cfunc)
+							AddStepper(self, "rstep", "row_seams", self.m_rs_top, nrseams, rfunc)
 						end
 
 						--
@@ -548,7 +590,7 @@ function Scene:hide (event)
 
 		self.busy = nil
 
-		Columns, Rows, DoColumn, DoRow, Pixels = nil
+		Pixels = nil
 	end
 end
 
