@@ -1,4 +1,4 @@
---- An implementation of the [Hungarian algorithm](.http://en.wikipedia.org/wiki/Hungarian_algorithm).
+--- An implementation of the [Hungarian algorithm](http://en.wikipedia.org/wiki/Hungarian_algorithm).
 --
 -- Adapted from [here](http://csclab.murraystate.edu/bob.pilgrim/445/munkres.html).
 

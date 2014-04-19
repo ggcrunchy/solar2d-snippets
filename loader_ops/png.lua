@@ -359,7 +359,7 @@ local function AuxLoad (png, yfunc)
 
 				for y = 1, h do
 					for x = 1, w do
-						arg1(x, y, data[i], data[i + 1], data[i + 2], data[i + 3], i)
+						arg1(x, y, pixels[i], pixels[i + 1], pixels[i + 2], pixels[i + 3], i)
 
 						i = i + 4
 					end
@@ -374,7 +374,7 @@ local function AuxLoad (png, yfunc)
 				local i, stride = (arg3 - 1) * 4 + 1, w * 4
 
 				for y = 1, h do
-					arg1(arg3, y, data[i], data[i + 1], data[i + 2], data[i + 3], i)
+					arg1(arg3, y, pixels[i], pixels[i + 1], pixels[i + 2], pixels[i + 3], i)
 
 					i = i + stride
 				end
@@ -383,10 +383,10 @@ local function AuxLoad (png, yfunc)
 			-- arg1: Callback
 			-- arg2: Row index
 			elseif what == "for_each_in_row" then
-				local i = (arg3 - 1) * w * 4 + 1
+				local i = (arg2 - 1) * w * 4 + 1
 
 				for x = 1, w do
-					arg1(x, arg3, data[i], data[i + 1], data[i + 2], data[i + 3], i)
+					arg1(x, arg2, pixels[i], pixels[i + 1], pixels[i + 2], pixels[i + 3], i)
 
 					i = i + 4
 				end

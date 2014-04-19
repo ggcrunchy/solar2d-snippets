@@ -38,6 +38,7 @@ local file = require("utils.File")
 local hungarian = require("graph_ops.hungarian")
 local png = require("loader_ops.png")
 local scenes = require("utils.Scenes")
+local timers = require("game.Timers")
 
 -- Corona globals --
 local display = display
@@ -144,16 +145,19 @@ local function AddStepper (scene, key, tkey, top, max, func)
 				scene[tkey].text = ("Seams remaining: %i"):format(count)
 
 				-- Update image!
+				-- Block stepper while update is in progress?
+				-- Could probably do a few rows at a time interspersed with captures
+				-- Actually, this should probably set a flag and let a timer do the rest...
 			end
 		end
 	}
 end
 
 -- --
-local Base = system.DocumentsDirectory
+local Base = system.ResourceDirectory
 
 -- --
-local Dir = ""--"Background_Assets"
+local Dir = "UI_Assets"
 
 -- --
 local Since
@@ -172,10 +176,10 @@ end
 -- --
 local X, Y = 4, 154
 
--- --
+-- Image energy --
 local Energy = {}
 
--- --
+-- Column or row indices of energy samples --
 local Indices = {}
 
 --
@@ -210,7 +214,7 @@ local function LoadRow (x, y, r, g, b, a)
 	Next[offset + 1], Next[offset + 2], Next[offset + 3], Next[offset + 4] = r, g, b, a
 end
 
---
+-- Common two-rows energy computation
 local function AuxTwoRows (r1, g1, b1, a1, r2, g2, b2, a2, other, i)
 	local ro, go, bo, ao = other[i], other[i + 1], other[i + 2], other[i + 3]
 	local hgrad = (r2 - r1)^2 + (g2 - g1)^2 + (b2 - b1)^2 + (a2 - a1)^2
@@ -219,7 +223,7 @@ local function AuxTwoRows (r1, g1, b1, a1, r2, g2, b2, a2, other, i)
 	return sqrt(hgrad + vgrad) / 255
 end
 
---
+-- One-sided energy computations, i.e. a current row and one other
 local function TwoRowsEnergy (i, cur, other, w)
 	-- Leftmost pixel.
 	local r1, g1, b1, a1 = cur[1], cur[2], cur[3], cur[4]
@@ -243,7 +247,7 @@ local function TwoRowsEnergy (i, cur, other, w)
 	Energy[i] = AuxTwoRows(r1, g1, b1, a1, r2, g2, b2, a2, other, j)
 end
 
---
+-- Common interior energy computation
 local function AuxInterior (r1, g1, b1, a1, r2, g2, b2, a2, i)
 	local rp, gp, bp, ap = Prev[i], Prev[i + 1], Prev[i + 2], Prev[i + 3]
 	local rn, gn, bn, an = Next[i], Next[i + 1], Next[i + 2], Next[i + 3]	
@@ -253,7 +257,7 @@ local function AuxInterior (r1, g1, b1, a1, r2, g2, b2, a2, i)
 	return sqrt(hgrad + vgrad) / 255
 end
 
---
+-- Two-sided energy computation, i.e. a previous, current, and next row
 local function InteriorRowEnergy (i, w)
 	-- Leftmost pixel.
 	local r1, g1, b1, a1 = This[1], This[2], This[3], This[4]
@@ -313,9 +317,10 @@ end
 --
 local function LoadCosts (costs, n, ahead, diag1, diag2, energy, ri, offset)
 	for j = 1, n do
-		costs[ri + j] = huge
+		costs[ri + j] = 1e12
 	end
-
+-- ^^ TODO: Seems kind of lame, though it ought to exceed any energy... probably only around 2*(2^8) max, I think
+-- math.huge makes it lock up
 	offset = offset - ri
 
 	costs[ahead - offset] = GetEnergyDiff(ahead, energy)
@@ -366,7 +371,7 @@ end
 function Scene:show (event)
 	if event.phase == "did" then
 		--
-		local images, dir, busy = file.EnumerateFiles(Dir, { base = Base, exts = "png" }), ""--Dir .. "/"
+		local images, dir, busy = file.EnumerateFiles(Dir, { base = Base, exts = "png" }), Dir .. "/"
 
 		self.images = common_ui.Listbox(self.view, 275, 20, {
 			height = 120,
@@ -389,7 +394,8 @@ function Scene:show (event)
 						if func then
 							local w, h = func("get_dims")
 
-							--
+							-- Calculate the first row (in the process getting the first interior row ready),
+							-- which has a one-sided (previous -> current) vertical gradient.
 							func("for_each_in_row", LoadRow, 1)
 
 							Prev, Next = Next, Prev
@@ -401,7 +407,7 @@ function Scene:show (event)
 							TwoRowsEnergy(1, Prev, This, w)
 							Watch()
 
-							--
+							-- Calculate the interior rows, with previous -> next gradients.
 							local index = w + 1
 
 							for row = 2, h - 1 do
@@ -413,7 +419,7 @@ function Scene:show (event)
 								Prev, This, Next, index = This, Next, Prev, index + w
 							end
 
-							--
+							-- Calculate the final row, again a one-sided (previous -> current) gradient.
 							TwoRowsEnergy(index, This, Prev, w)
 							Watch()
 
@@ -460,13 +466,13 @@ function Scene:show (event)
 									end
 								end
 
-								-- With all the costs set up, solve the column or row.
+								-- In the two-seams approach, having set all the costs up, solve the column or row.
 								if TwoSeams then
-									SolveAssignment(costs, assignment, buf2, nseams, n, offset)
+									SolveAssignment(costs, assignment, buf1, nseams, n, offset)
 
 									offset = offset + inc2
 								end
-	
+
 								Watch()
 							end
 
@@ -476,6 +482,7 @@ function Scene:show (event)
 							-- If doing a two-seams approach, initialize the seam index state with the indices
 							-- of the positions just found. Load costs as before and solve for this dimension.
 							if TwoSeams then
+
 								for i = 1, nseams do
 									buf2[i] = { Indices[i] }
 								end
