@@ -27,16 +27,18 @@
 local abs = math.abs
 local floor = math.floor
 local huge = math.huge
+local min = math.min
 local sort = table.sort
-local sqrt = math.sqrt
 local yield = coroutine.yield
 
 -- Modules --
+local bitmap = require("ui.Bitmap")
 local buttons = require("ui.Button")
 local common_ui = require("editor.CommonUI")
+local energy = require("image_ops.energy")
 local file = require("utils.File")
 local hungarian = require("graph_ops.hungarian")
-local png = require("loader_ops.png")
+local png = require("image_ops.png")
 local scenes = require("utils.Scenes")
 local timers = require("game.Timers")
 
@@ -78,6 +80,11 @@ function Scene:create ()
 	self.row_seams.anchorX, self.row_seams.x = 0, 20
 
 	self.m_rs_top = 230
+
+	--
+	self.m_bitmap = bitmap.Bitmap(self.view)
+
+	self.m_bitmap.x, self.m_bitmap.y = 5, 155
 
 	--
 	self.about = display.newText(self.view, "", 0, 0, native.systemFontBold, 20)
@@ -157,19 +164,21 @@ end
 local Base = system.ResourceDirectory
 
 -- --
-local Dir = "UI_Assets"
+local Dir = "Background_Assets"
 
 -- --
 local Since
 
 --
-local function Watch ()
+local function Watch (after)
 	local now = system.getTimer()
 
 	if now - Since > 100 then
 		Since = now
 
 		yield()
+	elseif after then
+		after()
 	end
 end
 
@@ -202,83 +211,6 @@ local function SortEnergy (frac, inc, n)
 	sort(Indices, EnergyComp)
 
 	return floor(frac * n)
-end
-
--- Ping / pong buffers used to turn energy calculation into a dynamic programming problem --
-local Prev, This, Next = {}, {}, {}
-
---
-local function LoadRow (x, y, r, g, b, a)
-	local offset = (x - 1) * 4
-
-	Next[offset + 1], Next[offset + 2], Next[offset + 3], Next[offset + 4] = r, g, b, a
-end
-
--- Common two-rows energy computation
-local function AuxTwoRows (r1, g1, b1, a1, r2, g2, b2, a2, other, i)
-	local ro, go, bo, ao = other[i], other[i + 1], other[i + 2], other[i + 3]
-	local hgrad = (r2 - r1)^2 + (g2 - g1)^2 + (b2 - b1)^2 + (a2 - a1)^2
-	local vgrad = (r1 - ro)^2 + (g1 - go)^2 + (b1 - bo)^2 + (a1 - ao)^2
-
-	return sqrt(hgrad + vgrad) / 255
-end
-
--- One-sided energy computations, i.e. a current row and one other
-local function TwoRowsEnergy (i, cur, other, w)
-	-- Leftmost pixel.
-	local r1, g1, b1, a1 = cur[1], cur[2], cur[3], cur[4]
-	local r2, g2, b2, a2 = cur[5], cur[6], cur[7], cur[8]
-
-	Energy[i], i = AuxTwoRows(r1, g1, b1, a1, r2, g2, b2, a2, other, 1), i + 1
-
-	-- Interior pixels.
-	local j, r3, g3, b3, a3 = 5
-
-	for _ = 2, w - 1 do
-		r3, g3, b3, a3 = cur[j + 4], cur[j + 5], cur[j + 6], cur[j + 7]
-
-		Energy[i], i, j = AuxTwoRows(r1, g1, b1, a1, r3, g3, b3, a3, other, j), i + 1, j + 4
-
-		r1, g1, b1, a1 = r2, g2, b2, a2
-		r2, g2, b2, a2 = r3, g3, b3, a3
-	end
-
-	-- Rightmost pixel.
-	Energy[i] = AuxTwoRows(r1, g1, b1, a1, r2, g2, b2, a2, other, j)
-end
-
--- Common interior energy computation
-local function AuxInterior (r1, g1, b1, a1, r2, g2, b2, a2, i)
-	local rp, gp, bp, ap = Prev[i], Prev[i + 1], Prev[i + 2], Prev[i + 3]
-	local rn, gn, bn, an = Next[i], Next[i + 1], Next[i + 2], Next[i + 3]	
-	local hgrad = (r2 - r1)^2 + (g2 - g1)^2 + (b2 - b1)^2 + (a2 - a1)^2
-	local vgrad = (rn - rp)^2 + (gn - gp)^2 + (bn - bp)^2 + (an - ap)^2
-
-	return sqrt(hgrad + vgrad) / 255
-end
-
--- Two-sided energy computation, i.e. a previous, current, and next row
-local function InteriorRowEnergy (i, w)
-	-- Leftmost pixel.
-	local r1, g1, b1, a1 = This[1], This[2], This[3], This[4]
-	local r2, g2, b2, a2 = This[5], This[6], This[7], This[8]
-
-	Energy[i], i = AuxInterior(r1, g1, b1, a1, r2, g2, b2, a2, 1), i + 1
-
-	-- Interior pixels.
-	local j, r3, g3, b3, a3 = 5
-
-	for _ = 2, w - 1 do
-		r3, g3, b3, a3 = This[j + 4], This[j + 5], This[j + 6], This[j + 7]
-
-		Energy[i], i, j = AuxInterior(r1, g1, b1, a1, r3, g3, b3, a3, j), i + 1, j + 4
-
-		r1, g1, b1, a1 = r2, g2, b2, a2
-		r2, g2, b2, a2 = r3, g3, b3, a3
-	end
-
-	-- Rightmost pixel.
-	Energy[i] = AuxInterior(r1, g1, b1, a1, r2, g2, b2, a2, j)
 end
 
 --
@@ -316,11 +248,11 @@ end
 
 --
 local function LoadCosts (costs, n, ahead, diag1, diag2, energy, ri, offset)
+	-- Initialize all costs to some improbably large (but finite) energy value.
 	for j = 1, n do
 		costs[ri + j] = 1e12
 	end
--- ^^ TODO: Seems kind of lame, though it ought to exceed any energy... probably only around 2*(2^8) max, I think
--- math.huge makes it lock up
+
 	offset = offset - ri
 
 	costs[ahead - offset] = GetEnergyDiff(ahead, energy)
@@ -367,6 +299,29 @@ local function DoPixelSeam (buf, i, remove)
 	end
 end
 
+-- --
+local Index
+
+--
+local function AddPixels ()
+	local bitmap, n = Scene.m_bitmap, #Energy
+	local w = bitmap:GetDims()
+
+	while Index < n do
+		local xoff = Index % w
+		local yoff = (Index - xoff) / w
+
+		Index = Index + 1
+
+		bitmap:SetPixel(xoff, yoff, Energy[Index])
+	end
+end
+
+--
+local function WatchAndAdd ()
+	Watch(AddPixels)
+end
+
 --
 function Scene:show (event)
 	if event.phase == "did" then
@@ -394,35 +349,31 @@ function Scene:show (event)
 						if func then
 							local w, h = func("get_dims")
 
-							-- Calculate the first row (in the process getting the first interior row ready),
-							-- which has a one-sided (previous -> current) vertical gradient.
-							func("for_each_in_row", LoadRow, 1)
+							--
+							Index = 0
 
-							Prev, Next = Next, Prev
+							self.m_bitmap:Resize(w, h)
 
-							func("for_each_in_row", LoadRow, 2)
+							--
+							energy.ComputeEnergy(Energy, func, w, h, WatchAndAdd)
+							--[[
+local ii,y=1,154
+							for Y = 1, h do
+								local x = 4
 
-							This, Next = Next, This
+								for X = 1, w do
+									local pixel = display.newRect(self.view, 0, 0, 1, 1)
+									pixel:setFillColor(Energy[ii])
 
-							TwoRowsEnergy(1, Prev, This, w)
-							Watch()
-
-							-- Calculate the interior rows, with previous -> next gradients.
-							local index = w + 1
-
-							for row = 2, h - 1 do
-								func("for_each_in_row", LoadRow, row + 1)
-
-								InteriorRowEnergy(index, w)
-								Watch()
-
-								Prev, This, Next, index = This, Next, Prev, index + w
-							end
-
-							-- Calculate the final row, again a one-sided (previous -> current) gradient.
-							TwoRowsEnergy(index, This, Prev, w)
-							Watch()
-
+									pixel.anchorX, pixel.x = 0, x+X
+									pixel.anchorY, pixel.y = 0, y+Y
+									Watch()
+									ii=ii+1
+								end
+							end]]
+while true do
+	yield()
+end
 							--
 							local buf1, buf2, frac, frac2, inc, inc2, n, n2 = {}, {}
 	

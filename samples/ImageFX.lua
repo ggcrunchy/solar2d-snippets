@@ -32,7 +32,7 @@ local yield = coroutine.yield
 local buttons = require("ui.Button")
 local common_ui = require("editor.CommonUI")
 local file = require("utils.File")
-local png = require("loader_ops.png")
+local png = require("image_ops.png")
 local scenes = require("utils.Scenes")
 local timers = require("game.Timers")
 
@@ -166,7 +166,7 @@ function Scene:show (event)
 
 								y = y + 1
 							end
-						--	require("loader_ops.png_encode").Save_Interleaved(system.pathForFile("Out2.png", system.DocumentsDirectory), cc, w, { --[[from_01 = true, ]]yfunc = Watch })
+						--	require("image_ops.png_encode").Save_Interleaved(system.pathForFile("Out2.png", system.DocumentsDirectory), cc, w, { --[[from_01 = true, ]]yfunc = Watch })
 						end
 
 						--

@@ -109,6 +109,12 @@ if OnDevice then
 	end)
 end
 
+-- Corona hack
+if not OnDevice then
+	native.setActivityIndicator(false)
+end
+-- /Corona hack
+
 --- Helper to print formatted argument.
 -- @string s Format string.
 -- @param ... Format arguments.

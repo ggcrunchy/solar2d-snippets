@@ -37,7 +37,7 @@ local sub = string.sub
 local unpack = unpack
 
 -- Modules --
-local zlib = require("loader_ops.zlib")
+local zlib = require("image_ops.zlib")
 
 -- Exports --
 local M = {}

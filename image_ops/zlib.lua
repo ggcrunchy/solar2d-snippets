@@ -43,7 +43,7 @@ local max = math.max
 local min = math.min
 
 -- Modules --
-local lut = require("loader_ops.zlib_lut")
+local lut = require("image_ops.zlib_lut")
 local operators = require("bitwise_ops.operators")
 
 -- Imports --

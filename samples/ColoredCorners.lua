@@ -26,9 +26,9 @@
 -- Modules --
 local buttons = require("ui.Button")
 local convolve = require("numbers_ops.convolve")
-local fft_utils = require("number_ops.fft_utils")
+local fft_utils = require("fft_ops.utils")
 local flow = require("graph_ops.flow")
-local png = require("loader_ops.png")
+local png = require("image_ops.png")
 local scenes = require("utils.Scenes")
 local summed_area = require("number_ops.summed_area")
 
