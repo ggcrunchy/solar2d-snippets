@@ -36,12 +36,13 @@ local color = require("ui.Color")
 
 -- Corona globals --
 local display = display
+local system = system
 local timer = timer
 
 -- Exports --
 local M = {}
 
---
+-- Adds (or updates) the canvas capture
 local function AddCapture (bitmap, capture)
 	bitmap:insert(capture)
 
@@ -51,19 +52,19 @@ local function AddCapture (bitmap, capture)
 	bitmap.m_capture = capture
 end
 
---
+-- Bitmap finalizer
 local function Cleanup (event)
 	local bitmap = event.target
 
-	bitmap.m_pending = nil
-
 	timer.cancel(bitmap.m_update)
+
+	bitmap.m_capture, bitmap.m_pending, bitmap.m_update = nil
 end
 
--- --
+-- Event to dispatch --
 local Event = {}
 
---
+-- Dispatch events to bitmap
 local function Dispatch (name, target)
 	Event.name = name
 	Event.target = target
@@ -73,12 +74,20 @@ local function Dispatch (name, target)
 	Event.target = nil
 end
 
---
-local function CanvasToStash (canvas, stash)
+-- Makes the canvas ready for reuse
+local function ResetCanvas (canvas, stash)
 	for i = canvas.numChildren, 1, -1 do
 		stash:insert(canvas[i])
 	end
+
+	canvas:toFront()
 end
+
+-- Multiplier used to build unique keys for (x, y) pairs --
+local MaxSize = system.getInfo("maxTextureSize")
+
+-- Default stash quota --
+local Quota = 150
 
 --- DOCME
 function M.Bitmap (group)
@@ -86,40 +95,32 @@ function M.Bitmap (group)
 
 	group:insert(bgroup)
 
-	--
-	local white = display.newRect(bgroup, 0, 0, 1, 1)
+	-- Use a white backdrop for uninitialized pixels.
+	local curw, curh = 1, 1
+	local white = display.newRect(bgroup, 0, 0, curw, curh)
 
 	white.anchorX, white.x = 0, 0
 	white.anchorY, white.y = 0, 0
 
-	--
+	-- Add a canvas to track dirty pixels.
 	local canvas = display.newGroup()
 
 	bgroup:insert(canvas)
 
-	--
+	-- Keep an invisible stash to recycle canvas pixels.
 	local stash = display.newGroup()
 
 	bgroup:insert(stash)
 
 	stash.isVisible = false
 
-	--
-	local cache, curw, curh = {}, 1, 1
-
 	--- DOCME
 	function bgroup:Clear ()
 		display.remove(self.m_capture)
 
-		self.m_capture = nil
+		self.m_pending, self.m_capture = {}
 
-		local pending = self.m_pending
-
-		for k, v in pairs(pending) do
-			cache[#cache + 1], pending[k] = v
-		end
-
-		CanvasToStash(canvas, stash)
+		ResetCanvas(canvas, stash)
 		Dispatch("clear", self)
 	end
 
@@ -128,34 +129,37 @@ function M.Bitmap (group)
 		return curw, curh
 	end
 
-	--
-	local quota = 150
+	-- Initialize the stash quota.
+	local quota = Quota
 
 	--- DOCME
 	function bgroup:Resize (w, h)
-		white.width, white.height = w, h
+		if w ~= curw or h ~= curh then
+			white.width, white.height = w, h
 
-		--
-		local old = self.m_capture
+			-- If at least one of the dimensions shrunk, capture the reduced contents and replace
+			-- the current capture (also evicting the canvas). If one dimension also grew, the white
+			-- backdrop will get captured, achieving the intended effect.
+			local old = self.m_capture
 
-		if old and (w < curw or h < curh) then
-			local new = display.captureBounds(white.contentBounds)
+			if old and (w < curw or h < curh) then
+				local new = display.captureBounds(white.contentBounds)
 
-			old:removeSelf()
+				old:removeSelf()
 
-			AddCapture(self, new)
-			CanvasToStash(canvas, stash)
+				AddCapture(self, new)
+				ResetCanvas(canvas, stash)
+			end
+
+			-- Update state and send an event.
+			curw, curh, quota = w, h, max(w, quota)
+
+			Event.w, Event.h = w, h
+
+			Dispatch("resize", self)
+
+			Event.w, Event.h = nil
 		end
-
-		--
-		curw, curh, quota = w, h, max(5 * w, quota)
-
-		--
-		Event.w, Event.h = w, h
-
-		Dispatch("resize", self)
-
-		Event.w, Event.h = nil
 	end
 
 	--- DOCME
@@ -163,6 +167,7 @@ function M.Bitmap (group)
 		if x < curw and y < curh then
 			local n = stash.numChildren
 
+			-- If the stash has pixels available, grab one and write it directly to the canvas.
 			if n > 0 then
 				local pixel = stash[n]
 
@@ -170,25 +175,22 @@ function M.Bitmap (group)
 				pixel:setFillColor(...)
 
 				pixel.x, pixel.y = x, y
+
+			-- Otherwise, add it to the waiting list.
 			else
-				local pending, key = self.m_pending, y * 2^16 + x
-				local pcolor = pending[key] or remove(cache) or {}
-
-				color.PackColor(pcolor, ...)
-
-				pending[key], pcolor.x, pcolor.y = pcolor, x, y
+				self.m_pending[y * MaxSize + x] = color.PackColor_Number(...)
 			end
 		end
 	end
 
-	--
+	-- Create a waiting list.
 	bgroup.m_pending = {}
 
-	--
+	-- Watch for dirty pixels.
 	local allocated = 0
 
 	bgroup.m_update = timer.performWithDelay(30, function(event)
-		--
+		-- Allocate some pixels, until a reasonable amount are available.
 		local extra = min(10, quota - allocated)
 
 		for i = 1, extra do
@@ -199,14 +201,16 @@ function M.Bitmap (group)
 
 		allocated = allocated + max(0, extra)
 
-		--
+		-- Service pending pixel set requests, until either the waiting list or the pixel stash is
+		-- empty. Ignore requests for pixels that have become invalid due to resizes.
 		local pending, nstash = bgroup.m_pending, stash.numChildren
 
 		for k, v in pairs(pending) do
 			if nstash == 0 then
 				break
 			else
-				local x, y = v.x, v.y
+				local x = k % MaxSize
+				local y = (k - x) / MaxSize
 
 				if x < curw and y < curh then
 					local pixel = stash[nstash]
@@ -215,30 +219,27 @@ function M.Bitmap (group)
 
 					pixel.x, pixel.y, nstash = x, y, nstash - 1
 
-					color.SetFillColor(pixel, v)
+					color.SetFillColor_Number(pixel, v)
 				end
 
-				cache[#cache + 1], pending[k] = v
+				pending[k] = nil
 			end
 		end
 
-		--
-		local ncanvas = canvas.numChildren
-
-		if ncanvas > 0 then
+		-- If the canvas is dirty, capture its contents (overwriting any old capture), and put the
+		-- canvas back in a clean state. Send an event.
+		if canvas.numChildren > 0 then
 			local new = display.captureBounds(white.contentBounds)
 
 			display.remove(bgroup.m_capture)
 
 			AddCapture(bgroup, new)
-			CanvasToStash(canvas, stash)
-
-			--
+			ResetCanvas(canvas, stash)
 			Dispatch("update", bgroup)
 		end
 	end, 0)
 
-	--
+	-- Handle cleanup on removal.
 	bgroup:addEventListener("finalize", Cleanup)
 
 	return bgroup

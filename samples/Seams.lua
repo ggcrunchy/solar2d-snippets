@@ -355,7 +355,20 @@ function Scene:show (event)
 							self.m_bitmap:Resize(w, h)
 
 							--
-							energy.ComputeEnergy(Energy, func, w, h, WatchAndAdd)
+							energy.ComputeEnergy(Energy, func, w, h)
+
+							local index = 1
+
+							for Y = 1, h do
+								for X = 1, w do
+									self.m_bitmap:SetPixel(X - 1, Y - 1, Energy[index])
+
+									Watch()
+
+									index = index + 1
+								end
+							end
+
 							--[[
 local ii,y=1,154
 							for Y = 1, h do

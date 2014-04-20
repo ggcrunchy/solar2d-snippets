@@ -25,6 +25,7 @@
 
 -- Standard library imports --
 local assert = assert
+local floor = math.floor
 local select = select
 local type = type
 local unpack = unpack
@@ -120,6 +121,30 @@ function M.PackColor_Custom (object, packer, ...)
 	(packer or DefPacker)(object, "pack", ...)
 end
 
+--
+local PackNumber = {
+	function(r)
+		return 1 + 4 * floor(r * 255)
+	end,
+
+	function(r, g)
+		return 2 + 4 * (floor(r * 255) + 2^8 * floor(g * 255))
+	end,
+
+	function(r, g, b)
+		return 3 + 4 * (floor(r * 255) + 2^8 * (floor(g * 255) + 2^8 * floor(b * 255)))
+	end,
+
+	function(r, g, b, a)
+		return 4 + 4 * (floor(r * 255) + 2^8 * (floor(g * 255) + 2^8 * (floor(b * 255) + 2^8 * floor(a * 255))))
+	end
+}
+
+--- DOCME
+function M.PackColor_Number (...)
+	return PackNumber[select("#", ...)](...)
+end
+
 --- WIP
 -- @param name
 -- @param color
@@ -129,6 +154,44 @@ function M.RegisterColor (name, color)
 	assert(type(color) == "table" or type(color) == "userdata", "Invalid color")
 
 	Colors[name] = color
+end
+
+--
+local UnpackNumber = {
+	function(r)
+		return r / 255
+	end,
+
+	function(rg)
+		local r = rg % 2^8
+
+		return r / 255, (rg - r) / (2^16 - 1)
+	end,
+
+	function(rgb)
+		local r = rgb % 2^8
+		local gb = rgb - r
+		local g = gb % 2^16
+
+		return r / 255, g / (2^16 - 1), (gb - g) / (2^24 - 1)
+	end,
+
+	function(rgba)
+		local r = rgba % 2^8
+		local gba = rgba - r
+		local g = gba % 2^16
+		local ba = gba - g
+		local b = ba % 2^24
+
+		return r / 255, g / (2^16 - 1), b / (2^24 - 1), (ba - b) / (2^32 - 1)
+	end
+}
+
+--
+local function Unpack (n)
+	local count = n % 4
+
+	return UnpackNumber[count]((n - count) / 4)
 end
 
 --- DOCME
@@ -142,6 +205,11 @@ function M.SetFillColor_Custom (object, packer, from)
 end
 
 --- DOCME
+function M.SetFillColor_Number (object, n)
+	object:setFillColor(Unpack(n))
+end
+
+--- DOCME
 function M.SetStrokeColor (object, from)
 	DefPacker(object, "stroke", from)
 end
@@ -149,6 +217,11 @@ end
 --- DOCME
 function M.SetStrokeColor_Custom (object, packer, from)
 	(packer or DefPacker)(object, "stroke", from)
+end
+
+--- DOCME
+function M.SetStrokeColor_Number (object, n)
+	object:setStrokeColor(Unpack(n))
 end
 
 -- Export the module.
