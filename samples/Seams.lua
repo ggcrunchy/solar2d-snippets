@@ -230,24 +230,25 @@ local function GetBestEdge (pref, alt1, alt2, energy)
 end
 
 --
-local function GetEdgesEnergy (i, inc1, inc2, n, offset)
+local function GetEdgesEnergy (i, finc, pinc, n, offset)
 	local rel_index = Indices[i]
 	local index = offset + rel_index
-	local ahead, energy = index + inc1, Energy[index]
-	local diag1 = rel_index > 1 and ahead - inc2
-	local diag2 = rel_index < n and ahead + inc2
+	local ahead, energy = index + finc, Energy[index]
+	local diag1 = rel_index > 1 and ahead - pinc
+	local diag2 = rel_index < n and ahead + pinc
 
 	return ahead, diag1, diag2, energy
 end
 
 --
+-- TODO: Compact this (since about 80% might be wasted...)
 local function LoadCosts (costs, n, ahead, diag1, diag2, energy, ri, offset)
 	-- Initialize all costs to some improbably large (but finite) energy value.
 	for j = 1, n do
 		costs[ri + j] = 1e12
 	end
 
-	offset = offset - ri
+	offset = offset + n - ri
 
 	costs[ahead - offset] = GetEnergyDiff(ahead, energy)
 
@@ -318,10 +319,8 @@ function Scene:show (event)
 						local func = png.Load(system.pathForFile(dir .. images[index], Base), Watch)
 
 						if func then
-							local w, h = func("get_dims")
-
 							--
-							Index = 0
+							local w, h = func("get_dims")
 
 							self.m_bitmap:Resize(w, h)
 
@@ -343,18 +342,18 @@ while self.m_bitmap:HasPending() do
 	yield()
 end
 							--
-							local buf1, buf2, frac, frac2, inc, inc2, n, n2 = {}, {}
+							local buf1, buf2 = {}, {}
+							local ffrac, finc, fn = .2, w, h
+							local pfrac, pinc, pn = .2, 1, w
 	
 							if Method == "horizontal" then
-								frac, frac2, inc, inc2, n, n2 = .2, .2, w, 1, h, w
-							else
-								frac, frac2, inc, inc2, n, n2 = .2, .2, 1, w, w, h
+								ffrac, pfrac, finc, pinc, fn, pn = pfrac, ffrac, pinc, finc, pn, fn
 							end
 							-- ^^^ frac and frac2 should be configurable...
 
-							-- Dimension 1: Choose lowest-energy positions and initialize the seam index state
-							-- with their indices. Flag these indices as used.
-							local nseams, used = SortEnergy(frac, inc, n), {}
+							-- Dimension 1: W.l.o.g. choose lowest-energy positions (1, x), initializing the
+							-- seam index state with their indices. Flag these indices as used.
+							local nseams, used = SortEnergy(pfrac, pinc, pn), {}
 AAA=true
 							for i = 1, nseams do
 								local index = Indices[i]
@@ -365,16 +364,16 @@ self.m_bitmap:SetPixel(index - 1, 0, 1, 0, 0)
 							-- 
 							local assignment, costs = TwoSeams and {}, TwoSeams and {}
 
-							for _ = 2, n2 do
+							for _ = 2, fn do
 								local row, offset = 0, 0 -- works left-to-right?
 
 								for i = 1, nseams do
-									local ahead, diag1, diag2, energy = GetEdgesEnergy(i, inc, inc2, n, offset)
+									local ahead, diag1, diag2, energy = GetEdgesEnergy(i, finc, pinc, fn, offset)
 
 									-- If doing a two-seams approach, load a row of the cost matrix. Otherwise, advance
 									-- each index to the best of its three edges in the next column or row.
 									if TwoSeams then
-										row = LoadCosts(costs, n, ahead, diag1, diag2, energy, row, offset)
+										row = LoadCosts(costs, pn, ahead, diag1, diag2, energy, row, offset)
 									else
 										diag1 = not used[diag1] and diag1
 										ahead = not used[ahead] and ahead
@@ -387,11 +386,11 @@ self.m_bitmap:SetPixel(index - 1, 0, 1, 0, 0)
 
 								-- In the two-seams approach, having set all the costs up, solve the column or row.
 								if TwoSeams then
-									SolveAssignment(costs, assignment, buf1, nseams, n, offset)
+									SolveAssignment(costs, assignment, buf1, nseams, pn, offset)
 for i = 1, nseams do
 	self.m_bitmap:SetPixel(assignment[i] - 1, _ - 1, 0, 0, 1)
 end
-									offset = offset + inc2
+									offset = offset + finc
 								end
 
 								Watch()

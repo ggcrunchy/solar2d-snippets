@@ -252,9 +252,11 @@ function M.Bitmap (group)
 			-- If the stash has pixels available, grab one and write it directly to the canvas.
 			if n > 0 then
 				local pixel = stash[n]
+				--[[
 if AAA then
 	pixel.width,pixel.height=3,3
 end
+]]
 				canvas:insert(pixel)
 				pixel:setFillColor(...)
 
@@ -312,9 +314,11 @@ end
 					canvas:insert(pixel)
 
 					pixel.x, pixel.y, nstash = x, y, nstash - 1
+--[[
 if AAA then
 	pixel.width,pixel.height=3,3
 end
+]]
 					color.SetFillColor_Number(pixel, v)
 				end
 
