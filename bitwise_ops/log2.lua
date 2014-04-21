@@ -27,6 +27,9 @@
 local ceil = math.ceil
 local frexp = math.frexp
 
+-- Exports --
+local M = {}
+
 --- Ceiling of binary logarithm of _n_.
 -- @uint n Positive integer.
 -- @treturn uint Ceilinged logarithm.

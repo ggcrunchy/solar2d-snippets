@@ -27,7 +27,6 @@
 local abs = math.abs
 local floor = math.floor
 local huge = math.huge
-local min = math.min
 local sort = table.sort
 local yield = coroutine.yield
 
@@ -170,20 +169,15 @@ local Dir = "Background_Assets"
 local Since
 
 --
-local function Watch (after)
+local function Watch ()
 	local now = system.getTimer()
 
 	if now - Since > 100 then
 		Since = now
 
 		yield()
-	elseif after then
-		after()
 	end
 end
-
--- --
-local X, Y = 4, 154
 
 -- Image energy --
 local Energy = {}
@@ -299,29 +293,6 @@ local function DoPixelSeam (buf, i, remove)
 	end
 end
 
--- --
-local Index
-
---
-local function AddPixels ()
-	local bitmap, n = Scene.m_bitmap, #Energy
-	local w = bitmap:GetDims()
-
-	while Index < n do
-		local xoff = Index % w
-		local yoff = (Index - xoff) / w
-
-		Index = Index + 1
-
-		bitmap:SetPixel(xoff, yoff, Energy[Index])
-	end
-end
-
---
-local function WatchAndAdd ()
-	Watch(AddPixels)
-end
-
 --
 function Scene:show (event)
 	if event.phase == "did" then
@@ -359,51 +330,35 @@ function Scene:show (event)
 
 							local index = 1
 
-							for Y = 1, h do
-								for X = 1, w do
-									self.m_bitmap:SetPixel(X - 1, Y - 1, Energy[index])
+							for y = 1, h do
+								for x = 1, w do
+									self.m_bitmap:SetPixel(x - 1, y - 1, Energy[index])
 
 									Watch()
 
 									index = index + 1
 								end
 							end
-
-							--[[
-local ii,y=1,154
-							for Y = 1, h do
-								local x = 4
-
-								for X = 1, w do
-									local pixel = display.newRect(self.view, 0, 0, 1, 1)
-									pixel:setFillColor(Energy[ii])
-
-									pixel.anchorX, pixel.x = 0, x+X
-									pixel.anchorY, pixel.y = 0, y+Y
-									Watch()
-									ii=ii+1
-								end
-							end]]
-while true do
+while self.m_bitmap:HasPending() do
 	yield()
 end
 							--
 							local buf1, buf2, frac, frac2, inc, inc2, n, n2 = {}, {}
 	
 							if Method == "horizontal" then
-								frac, frac2, inc, inc2, n, n2 = .2, .2, 1, w, w, h
-							else
 								frac, frac2, inc, inc2, n, n2 = .2, .2, w, 1, h, w
+							else
+								frac, frac2, inc, inc2, n, n2 = .2, .2, 1, w, w, h
 							end
 							-- ^^^ frac and frac2 should be configurable...
 
 							-- Dimension 1: Choose lowest-energy positions and initialize the seam index state
 							-- with their indices. Flag these indices as used.
 							local nseams, used = SortEnergy(frac, inc, n), {}
-
+AAA=true
 							for i = 1, nseams do
 								local index = Indices[i]
-
+self.m_bitmap:SetPixel(index - 1, 0, 1, 0, 0)
 								buf1[i], used[index] = { index }, true
 							end
 
@@ -433,13 +388,17 @@ end
 								-- In the two-seams approach, having set all the costs up, solve the column or row.
 								if TwoSeams then
 									SolveAssignment(costs, assignment, buf1, nseams, n, offset)
-
+for i = 1, nseams do
+	self.m_bitmap:SetPixel(assignment[i] - 1, _ - 1, 0, 0, 1)
+end
 									offset = offset + inc2
 								end
 
 								Watch()
 							end
-
+while true do
+	yield()
+end
 							-- Dimension 2: Choose lowest-energy positions along the opposing dimension.
 							nseams = SortEnergy(frac2, inc2, n2)
 

@@ -28,16 +28,21 @@
 -- Standard library imports --
 local max = math.max
 local min = math.min
+local next = next
 local pairs = pairs
 local remove = table.remove
 
 -- Modules --
 local color = require("ui.Color")
+local operators = require("bitwise_ops.operators")
 
 -- Corona globals --
 local display = display
 local system = system
 local timer = timer
+
+-- Corona modules --
+local composer = require("composer")
 
 -- Exports --
 local M = {}
@@ -58,7 +63,14 @@ local function Cleanup (event)
 
 	timer.cancel(bitmap.m_update)
 
-	bitmap.m_capture, bitmap.m_pending, bitmap.m_update = nil
+	if bitmap.m_scene then
+		local scene = composer.getScene(bitmap.m_name)
+
+		scene:removeEventListener("hide", bitmap.m_scene)
+		scene:removeEventListener("show", bitmap.m_scene)
+	end
+
+	bitmap.m_capture, bitmap.m_pending, bitmap.m_scene, bitmap.m_update = nil
 end
 
 -- Event to dispatch --
@@ -86,18 +98,63 @@ end
 -- Multiplier used to build unique keys for (x, y) pairs --
 local MaxSize = system.getInfo("maxTextureSize")
 
+-- Operation to decompose a key
+local FromKey
+
+if operators.HasBitLib() then
+	local band = operators.band
+	local rshift = operators.rshift
+	local nbits, power = 0, 1
+
+	while power < MaxSize do
+		nbits, power = nbits + 1, 2 * power
+	end
+
+	function FromKey (key)
+		return band(key, power - 1), rshift(key, nbits)
+	end
+
+	-- With or without a bit library available, the key is composed by a multiply-add. Since the
+	-- maximum size is no longer needed, hijack it to streamline the operation.
+	MaxSize = power
+else
+	function FromKey (key)
+		local x = key % MaxSize
+
+		return x, (key - x) / MaxSize
+	end
+end
+
+-- Operation to compose a key
+local function ToKey (x, y)
+	return y * MaxSize + x
+end
+
 -- Default stash quota --
 local Quota = 150
 
---- DOCME
+--- Creates a new 1-by-1 bitmap, with background enabled.
+--
+-- A bitmap will gradually incorporate changes to its pixels, while also striving to not
+-- starve VRAM.
+--
+-- As with any display object, certain events are exposed via the **addEventListener** and
+-- **removeEventListener** methods. Each of these provide the standard event **name** key,
+-- along with the bitmap itself under the **target** key.
+--
+-- If **composer** is being used, it is assumed that _group_ belongs to the current scene. If
+-- this is not so, the bitmap will not be able to idle between scene switches.
+-- @todo For correctness, the bitmap must currently be entirely on-screen and unobstructed
+-- @pgroup group Group to which bitmap will be inserted.
+-- @treturn DisplayObject Bitmap object.
 function M.Bitmap (group)
-	local bgroup = display.newGroup()
+	local Bitmap = display.newGroup()
 
-	group:insert(bgroup)
+	group:insert(Bitmap)
 
 	-- Use a white backdrop for uninitialized pixels.
 	local curw, curh = 1, 1
-	local white = display.newRect(bgroup, 0, 0, curw, curh)
+	local white = display.newRect(Bitmap, 0, 0, curw, curh)
 
 	white.anchorX, white.x = 0, 0
 	white.anchorY, white.y = 0, 0
@@ -105,17 +162,17 @@ function M.Bitmap (group)
 	-- Add a canvas to track dirty pixels.
 	local canvas = display.newGroup()
 
-	bgroup:insert(canvas)
+	Bitmap:insert(canvas)
 
 	-- Keep an invisible stash to recycle canvas pixels.
 	local stash = display.newGroup()
 
-	bgroup:insert(stash)
+	Bitmap:insert(stash)
 
 	stash.isVisible = false
 
-	--- DOCME
-	function bgroup:Clear ()
+	--- Clears all pixels, canceling any pending sets. Dispatches a **"clear"** event.
+	function Bitmap:Clear ()
 		display.remove(self.m_capture)
 
 		self.m_pending, self.m_capture = {}
@@ -124,16 +181,27 @@ function M.Bitmap (group)
 		Dispatch("clear", self)
 	end
 
-	--- DOCME
-	function bgroup:GetDims ()
+	--- Getter.
+	-- @treturn uint Bitmap width...
+	-- @treturn uint ...and height.
+	function Bitmap:GetDims ()
 		return curw, curh
+	end
+
+	--- Predicate.
+	-- @treturn boolean Set operations are pending?
+	function Bitmap:HasPending ()
+		return next(self.m_pending) ~= nil
 	end
 
 	-- Initialize the stash quota.
 	local quota = Quota
 
-	--- DOCME
-	function bgroup:Resize (w, h)
+	--- Resizes the bitmap. If the size actually changed, dispatches a **"resize"** event,
+	-- with the new width and height in keys **w** and **h**, respectively.
+	-- @uint w New width, &gt; 0...
+	-- @uint h ...and height.
+	function Bitmap:Resize (w, h)
 		if w ~= curw or h ~= curh then
 			white.width, white.height = w, h
 
@@ -162,15 +230,31 @@ function M.Bitmap (group)
 		end
 	end
 
-	--- DOCME
-	function bgroup:SetPixel (x, y, ...)
+	--- If possible, sets a pixel's color; otherwise, the assignment is put in a waiting list.
+	--
+	-- Each bitmap maintains a timer, which will periodically process some of the pending pixel
+	-- assignments. The order of these operations is arbitrary, although a **SetPixel** call
+	-- will replace any pending operation with the same _x_ and _y_.
+	--
+	-- If _x_ and _y_ refer to an out-of-bounds pixel, this is a no-op. A pending operation is
+	-- similarly discarded, if out-of-bounds when being serviced (on account of resizes).
+	--
+	-- If any pixels were assigned, immediately or from the waiting list, since the previous
+	-- timeout, an **"update"** event is dispatched at the end of the next / current timeout.
+	-- @uint x Pixel x-coordinate...
+	-- @uint y ...and y-coordinate.
+	-- @param ... One to four numbers, &isin; [0, 1], as per the arguments to a display object's
+	-- **setFillColor** or **setStrokeColor** methods. Gradients are not accepted.
+	function Bitmap:SetPixel (x, y, ...)
 		if x < curw and y < curh then
 			local n = stash.numChildren
 
 			-- If the stash has pixels available, grab one and write it directly to the canvas.
 			if n > 0 then
 				local pixel = stash[n]
-
+if AAA then
+	pixel.width,pixel.height=3,3
+end
 				canvas:insert(pixel)
 				pixel:setFillColor(...)
 
@@ -178,18 +262,29 @@ function M.Bitmap (group)
 
 			-- Otherwise, add it to the waiting list.
 			else
-				self.m_pending[y * MaxSize + x] = color.PackColor_Number(...)
+				self.m_pending[ToKey(x, y)] = color.PackColor_Number(...)
 			end
 		end
 	end
 
+	--- Enables or disables the background.
+	--
+	-- If enabled, unset pixels will be white, and transparent pixels will be partially white.
+	--
+	-- If disabled, the bitmap will capture the underlying background, which may have undesired
+	-- results if there are many unset pixels, e.g. when the rest of the scene is quite dynamic.
+	-- @bool show The background should be shown?
+	function Bitmap:ShowBackground (show)
+		white.isVisible = show
+	end
+
 	-- Create a waiting list.
-	bgroup.m_pending = {}
+	Bitmap.m_pending = {}
 
 	-- Watch for dirty pixels.
 	local allocated = 0
 
-	bgroup.m_update = timer.performWithDelay(30, function(event)
+	Bitmap.m_update = timer.performWithDelay(30, function(event)
 		-- Allocate some pixels, until a reasonable amount are available.
 		local extra = min(10, quota - allocated)
 
@@ -203,14 +298,13 @@ function M.Bitmap (group)
 
 		-- Service pending pixel set requests, until either the waiting list or the pixel stash is
 		-- empty. Ignore requests for pixels that have become invalid due to resizes.
-		local pending, nstash = bgroup.m_pending, stash.numChildren
+		local pending, nstash = Bitmap.m_pending, stash.numChildren
 
 		for k, v in pairs(pending) do
 			if nstash == 0 then
 				break
 			else
-				local x = k % MaxSize
-				local y = (k - x) / MaxSize
+				local x, y = FromKey(k)
 
 				if x < curw and y < curh then
 					local pixel = stash[nstash]
@@ -218,7 +312,9 @@ function M.Bitmap (group)
 					canvas:insert(pixel)
 
 					pixel.x, pixel.y, nstash = x, y, nstash - 1
-
+if AAA then
+	pixel.width,pixel.height=3,3
+end
 					color.SetFillColor_Number(pixel, v)
 				end
 
@@ -231,18 +327,49 @@ function M.Bitmap (group)
 		if canvas.numChildren > 0 then
 			local new = display.captureBounds(white.contentBounds)
 
-			display.remove(bgroup.m_capture)
+			display.remove(Bitmap.m_capture)
 
-			AddCapture(bgroup, new)
+			AddCapture(Bitmap, new)
 			ResetCanvas(canvas, stash)
-			Dispatch("update", bgroup)
+			Dispatch("update", Bitmap)
 		end
 	end, 0)
 
-	-- Handle cleanup on removal.
-	bgroup:addEventListener("finalize", Cleanup)
+	-- If the bitmap is being added to the current scene, hook into the hide and show machinery
+	-- to manage the timer on scene switches. Keep the scene name around for cleanup purposes.
+	-- There is no obvious way to hook into a non-current scene, so those are unsupported.
+	local name = composer.getSceneName("current")
+	local scene = name and composer.getScene(name)
 
-	return bgroup
+	if scene then
+		local stage, view = display.getCurrentStage(), scene.view
+
+		while group ~= stage and group ~= view do
+			group = group.parent
+		end
+
+		if group == view then
+			function Bitmap.m_scene (event)
+				if event.phase == "did" then
+					if event.name == "show" then
+						timer.resume(Bitmap.m_update)
+					else
+						timer.pause(Bitmap.m_update)
+					end
+				end
+			end
+
+			Bitmap.m_name = name
+
+			scene:addEventListener("hide", Bitmap.m_scene)
+			scene:addEventListener("show", Bitmap.m_scene)
+		end
+	end
+
+	-- Handle cleanup on removal.
+	Bitmap:addEventListener("finalize", Cleanup)
+
+	return Bitmap
 end
 
 -- Export the module.

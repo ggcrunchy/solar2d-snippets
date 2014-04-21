@@ -30,6 +30,9 @@ local select = select
 local type = type
 local unpack = unpack
 
+-- Modules --
+local operators = require("bitwise_ops.operators")
+
 -- Exports --
 local M = {}
 
@@ -121,28 +124,30 @@ function M.PackColor_Custom (object, packer, ...)
 	(packer or DefPacker)(object, "pack", ...)
 end
 
---
-local PackNumber = {
+-- --
+local PackNumberMethods = {
 	function(r)
-		return 1 + 4 * floor(r * 255)
+		return floor(r * 255)
 	end,
 
 	function(r, g)
-		return 2 + 4 * (floor(r * 255) + 2^8 * floor(g * 255))
+		return floor(r * 255) + 2^8 * floor(g * 255)
 	end,
 
 	function(r, g, b)
-		return 3 + 4 * (floor(r * 255) + 2^8 * (floor(g * 255) + 2^8 * floor(b * 255)))
+		return floor(r * 255) + 2^8 * (floor(g * 255) + 2^8 * floor(b * 255))
 	end,
 
 	function(r, g, b, a)
-		return 4 + 4 * (floor(r * 255) + 2^8 * (floor(g * 255) + 2^8 * (floor(b * 255) + 2^8 * floor(a * 255))))
+		return floor(r * 255) + 2^8 * (floor(g * 255) + 2^8 * (floor(b * 255) + 2^8 * floor(a * 255)))
 	end
 }
 
 --- DOCME
 function M.PackColor_Number (...)
-	return PackNumber[select("#", ...)](...)
+	local n = select("#", ...)
+
+	return 2^2 * PackNumberMethods[n](...) + n - 1
 end
 
 --- WIP
@@ -156,42 +161,70 @@ function M.RegisterColor (name, color)
 	Colors[name] = color
 end
 
---
-local UnpackNumber = {
+-- --
+local UnpackNumberMethods, UnpackNumber = {
 	function(r)
-		return r / 255
-	end,
+		return r / 0xFF
+	end
+}
+ 
+if operators.HasBitLib() then
+	local band = operators.band
+	local rshift = operators.rshift
 
-	function(rg)
+	UnpackNumberMethods[2] = function(rg)
+		local g = band(rg, 0xFF * 2^8)
+
+		return (rg - g) / 0xFF, g / (0xFF * 2^8)
+	end
+
+	UnpackNumberMethods[3] = function(rgb)
+		local g, b = band(rgb, 0xFF * 2^8), band(rgb, 0xFF * 2^16)
+
+		return (rgb - g - b) / 0xFF, g / (0xFF * 2^8), b / (0xFF * 2^16)
+	end
+
+	UnpackNumberMethods[4] = function(rgba)
+		local g, b, a = band(rgba, 0xFF * 2^8), band(rgba, 0xFF * 2^16), band(rgba, 0xFF * 2^24)
+
+		return (rgba - g - b - a) / 0xFF, g / (0xFF * 2^8), b / (0xFF * 2^16), a / (0xFF * 2^24)
+	end
+
+	--
+	function UnpackNumber (rgba)
+		return UnpackNumberMethods[band(rgba, 0x3) + 1](rshift(rgba, 2))
+	end
+else
+	UnpackNumberMethods[2] = function(rg)
 		local r = rg % 2^8
 
-		return r / 255, (rg - r) / (2^16 - 1)
-	end,
+		return r / 0xFF, (rg - r) / (0xFF * 2^8)
+	end
 
-	function(rgb)
+	UnpackNumberMethods[3] = function(rgb)
 		local r = rgb % 2^8
 		local gb = rgb - r
 		local g = gb % 2^16
 
-		return r / 255, g / (2^16 - 1), (gb - g) / (2^24 - 1)
-	end,
+		return r / 0xFF, g / (0xFF * 2^8), (rgb - r - g) / (0xFF * 2^16)
+	end
 
-	function(rgba)
+	UnpackNumberMethods[4] = function(rgba)
 		local r = rgba % 2^8
 		local gba = rgba - r
 		local g = gba % 2^16
 		local ba = gba - g
 		local b = ba % 2^24
 
-		return r / 255, g / (2^16 - 1), b / (2^24 - 1), (ba - b) / (2^32 - 1)
+		return r / 0xFF, g / (2^8 * 0xFF), b / (2^16 * 0xFF), (ba - b) / (2^24 * 0xFF)
 	end
-}
 
---
-local function Unpack (n)
-	local count = n % 4
+	--
+	function UnpackNumber (rgba)
+		local index = rgba % 4
 
-	return UnpackNumber[count]((n - count) / 4)
+		return UnpackNumberMethods[index + 1](.25 * (rgba - index))
+	end
 end
 
 --- DOCME
@@ -206,7 +239,7 @@ end
 
 --- DOCME
 function M.SetFillColor_Number (object, n)
-	object:setFillColor(Unpack(n))
+	object:setFillColor(UnpackNumber(n))
 end
 
 --- DOCME
@@ -221,8 +254,17 @@ end
 
 --- DOCME
 function M.SetStrokeColor_Number (object, n)
-	object:setStrokeColor(Unpack(n))
+	object:setStrokeColor(UnpackNumber(n))
 end
+
+--- DOCME
+-- @function UnpackNumber
+-- @uint rgba
+-- @treturn number R
+-- @treturn number G
+-- @treturn number B
+-- @treturn number A
+M.UnpackNumber = UnpackNumber
 
 -- Export the module.
 return M
