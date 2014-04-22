@@ -163,8 +163,8 @@ end
 local Base = system.ResourceDirectory
 
 -- --
-local Dir = --"UI_Assets"
-			"Background_Assets"
+local Dir = "UI_Assets"
+			--"Background_Assets"
 
 -- --
 local Since
@@ -400,7 +400,9 @@ end
 ]]
 									offset = offset + finc
 								end
-
+while false do--true do
+	yield()
+end
 								Watch()
 							end
 print("PICKING")
