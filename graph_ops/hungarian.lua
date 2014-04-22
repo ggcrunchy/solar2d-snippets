@@ -57,7 +57,10 @@ local function SubtractSmallestRowCosts (from, n, ncols, dcols)
 end
 
 -- --
-local ColCover, RowCover = {}, {}
+local Column, Row = {}, {}
+
+-- --
+local Covered = 0
 
 -- --
 local Star = 1
@@ -66,17 +69,16 @@ local Star = 1
 local function StarSomeZeroes (n, ncols, dcols)
 	for ri = 1, n, ncols do
 		for i = 0, dcols do
-			if Costs[ri + i] == 0 and not ColCover[i + 1] then
-				Mark[ri + i], ColCover[i + 1] = Star, true
+			if Costs[ri + i] == 0 and Column[i + 1] ~= Covered then
+				Mark[ri + i], Column[i + 1] = Star, Covered
 
 				break
 			end
 		end
 	end
 
-	for i = 1, ncols do
-		ColCover[i] = false
-	end
+	-- Clear covers.
+	Covered = Covered + 1
 end
 
 -- Counts how many columns contain a starred zero
@@ -86,7 +88,7 @@ local function CountCoverage (out, n, ncols, dcols)
 	for ri = 1, n, ncols do
 		for i = 0, dcols do
 			if Mark[ri + i] == Star then
-				ColCover[i + 1], out[row] = true, i + 1
+				Column[i + 1], out[row] = Covered, i + 1
 			end
 		end
 
@@ -96,7 +98,7 @@ local function CountCoverage (out, n, ncols, dcols)
 	local ncovered = 0
 
 	for i = 1, ncols do
-		if ColCover[i] then
+		if Column[i] == Covered then
 			ncovered = ncovered + 1
 		end
 	end
@@ -118,9 +120,9 @@ local function FindZero (ncols, n)
 	local row, dcols = 1, ncols - 1
 
 	for ri = 1, n, ncols do
-		if not RowCover[row] then
+		if Row[row] ~= Covered then
 			for i = 0, dcols do
-				if Costs[ri + i] == 0 and not ColCover[i + 1] then
+				if Costs[ri + i] == 0 and Column[i + 1] ~= Covered then
 					return row, i + 1, ri - 1
 				end
 			end
@@ -144,7 +146,7 @@ local function PrimeZeroes (n, ncols)
 			local scol = FindStarInRow(ri, ncols)
 
 			if scol then
-				RowCover[row], ColCover[scol] = true, false
+				Row[row], Column[scol] = Covered, false
 			else
 				return ri, col
 			end
@@ -204,21 +206,8 @@ local function BuildPath (prow0, pcol0, path, n, ncols, nrows)
 		Mark[ri + col] = Mark[ri + col] ~= Star and Star
 	end
 
-	-- Clear covers.
-	for i = 1, nrows do
-		ColCover[i], RowCover[i] = false, false
-	end
-
-	for i = nrows + 1, ncols do
-		ColCover[i] = false
-	end
-
-	-- Erase primes.
-	for i = 1, n do
-		if Mark[i] == Prime then
-			Mark[i] = false
-		end
-	end
+	-- Clear covers and erase primes.
+	Covered, Prime = Covered + 1, Prime + 1
 end
 
 -- Updates the cost matrix to reflect the new minimum
@@ -227,9 +216,9 @@ local function UpdateCosts (n, ncols, dcols)
 	local vmin, row = 1 / 0, 1
 
 	for ri = 1, n, ncols do
-		if not RowCover[row] then
+		if Row[row] ~= Covered then
 			for i = 0, dcols do
-				if not ColCover[i + 1] then
+				if Column[i + 1] ~= Covered then
 					vmin = min(vmin, Costs[ri + i])
 				end
 			end
@@ -243,10 +232,10 @@ local function UpdateCosts (n, ncols, dcols)
 	row = 1
 
 	for ri = 1, n, ncols do
-		local radd = RowCover[row] and vmin or 0
+		local radd = Row[row] == Covered and vmin or 0
 
 		for i = 0, dcols do
-			local add = radd + (ColCover[i + 1] and 0 or -vmin)
+			local add = radd + (Column[i + 1] == Covered and 0 or -vmin)
 
 			if add ~= 0 then
 				Costs[ri + i] = Costs[ri + i] + add

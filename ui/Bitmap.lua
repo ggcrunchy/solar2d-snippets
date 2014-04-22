@@ -256,7 +256,7 @@ function M.Bitmap (group)
 if AAA then
 	pixel.width,pixel.height=3,3
 end
-]]
+--]]
 				canvas:insert(pixel)
 				pixel:setFillColor(...)
 
@@ -318,7 +318,7 @@ end
 if AAA then
 	pixel.width,pixel.height=3,3
 end
-]]
+--]]
 					color.SetFillColor_Number(pixel, v)
 				end
 

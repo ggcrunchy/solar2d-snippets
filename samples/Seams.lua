@@ -163,7 +163,8 @@ end
 local Base = system.ResourceDirectory
 
 -- --
-local Dir = "Background_Assets"
+local Dir = --"UI_Assets"
+			"Background_Assets"
 
 -- --
 local Since
@@ -231,7 +232,7 @@ end
 
 --
 local function GetEdgesEnergy (i, finc, pinc, n, offset)
-	local rel_index = Indices[i]
+	local rel_index = i--Indices[i]
 	local index = offset + rel_index
 	local ahead, energy = index + finc, Energy[index]
 	local diag1 = rel_index > 1 and ahead - pinc
@@ -267,10 +268,13 @@ end
 local function SolveAssignment (costs, assignment, buf, nseams, n, offset)
 	hungarian.Run(costs, n, assignment)
 
-	for i = 1, nseams do
+	for i = 1, n do--nseams do
 		local at, into = assignment[i], buf[i]
 
 		Indices[i], into[#into + 1] = at, offset + at
+local energy = Energy[offset + at]
+
+into.cost, into.prev = into.cost + abs(energy - into.prev), energy
 	end
 end
 
@@ -353,21 +357,23 @@ end
 
 							-- Dimension 1: W.l.o.g. choose lowest-energy positions (1, x), initializing the
 							-- seam index state with their indices. Flag these indices as used.
-							local nseams, used = SortEnergy(pfrac, pinc, pn), {}
+						--	local nseams, used = SortEnergy(pfrac, pinc, pn), {}
+							local nseams, used = floor(pfrac * pn), {}
 AAA=true
-							for i = 1, nseams do
-								local index = Indices[i]
-self.m_bitmap:SetPixel(index - 1, 0, 1, 0, 0)
-								buf1[i], used[index] = { index }, true
+							for i = 1, pn do--nseams do
+								local index = i--Indices[i]
+--self.m_bitmap:SetPixel(index - 1, 0, 1, 0, 0)
+								buf1[i], used[index] = { index, cost = 0, prev = 0 }, true
 							end
 
 							-- 
-							local assignment, costs = TwoSeams and {}, TwoSeams and {}
+							local assignment, costs, offset = TwoSeams and {}, TwoSeams and {}, 0
 
 							for _ = 2, fn do
-								local row, offset = 0, 0 -- works left-to-right?
+print("ROW " .. _ .. " of " .. fn)
+								local row = 0 -- works left-to-right?
 
-								for i = 1, nseams do
+								for i = 1, pn do--nseams do
 									local ahead, diag1, diag2, energy = GetEdgesEnergy(i, finc, pinc, fn, offset)
 
 									-- If doing a two-seams approach, load a row of the cost matrix. Otherwise, advance
@@ -387,14 +393,34 @@ self.m_bitmap:SetPixel(index - 1, 0, 1, 0, 0)
 								-- In the two-seams approach, having set all the costs up, solve the column or row.
 								if TwoSeams then
 									SolveAssignment(costs, assignment, buf1, nseams, pn, offset)
+--[[
 for i = 1, nseams do
 	self.m_bitmap:SetPixel(assignment[i] - 1, _ - 1, 0, 0, 1)
 end
+]]
 									offset = offset + finc
 								end
 
 								Watch()
 							end
+print("PICKING")
+
+sort(buf1, function(a, b) return a.cost < b.cost end)
+print("NSEAMS", nseams)
+for i = 1, nseams do
+	local b=buf1[i]
+print("BUF", i, #b)
+	for j = 1, #b do
+		local ii = b[j]
+		local x = ii % w
+		local y = (ii - x) / w
+if i == 1 then
+	print(j, ii, x, y)
+end
+		self.m_bitmap:SetPixel(x, y, 0, 0, 1)
+	end
+end
+
 while true do
 	yield()
 end
@@ -404,7 +430,6 @@ end
 							-- If doing a two-seams approach, initialize the seam index state with the indices
 							-- of the positions just found. Load costs as before and solve for this dimension.
 							if TwoSeams then
-
 								for i = 1, nseams do
 									buf2[i] = { Indices[i] }
 								end
