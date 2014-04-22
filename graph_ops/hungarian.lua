@@ -65,18 +65,31 @@ local Covered = 0
 -- --
 local Star = 1
 
+-- --
+local ColStar = {}
+
+-- --
+local RowStar = {}
+
 -- Stars the first zero found in each uncovered row or column
 local function StarSomeZeroes (n, ncols, dcols)
 	for ri = 1, n, ncols do
+RowStar[ri] = ncols
 		for i = 0, dcols do
 			if Costs[ri + i] == 0 and Column[i + 1] ~= Covered then
 				Mark[ri + i], Column[i + 1] = Star, Covered
-
+ColStar[i + 1], RowStar[ri] = ri, i
 				break
 			end
 		end
 	end
-
+for i = 1, ncols do
+	if Column[i] ~= Covered then
+		ColStar[i] = n + 1
+	end
+end
+--vdump(RowStar)
+--vdump(ColStar)
 	-- Clear covers.
 	Covered = Covered + 1
 end
@@ -86,7 +99,7 @@ local function CountCoverage (out, n, ncols, dcols)
 	local row = 1
 
 	for ri = 1, n, ncols do
-		for i = 0, dcols do
+		for i = RowStar[ri]--[[0]], dcols do
 			if Mark[ri + i] == Star then
 				Column[i + 1], out[row] = Covered, i + 1
 			end
@@ -134,19 +147,28 @@ end
 
 -- --
 local Prime = 2
-
+local PP = {}
 -- Prime some uncovered zeroes
 local function PrimeZeroes (n, ncols)
+--print("PZ")
 	repeat
 		local row, col, ri = FindZero(ncols, n)
 
 		if row then
 			Mark[ri + col] = Prime
-
-			local scol = FindStarInRow(ri, ncols)
-
-			if scol then
-				Row[row], Column[scol] = Covered, false
+PP[ri]=col
+		--	local scol = FindStarInRow(ri, ncols)
+--local scol_true = FindStarInRow(ri, ncols)
+local scol = RowStar[ri + 1]
+--[[
+if scol_true then
+	print("scol TRUE", scol_true == scol + 1)
+else
+	print("scol FALSE", scol == ncols)
+end
+]]
+			if scol--[[ ]] < ncols then
+				Row[row], Column[scol--[[ ]] + 1] = Covered, false
 			else
 				return ri, col
 			end
@@ -176,17 +198,49 @@ local function BuildPath (prow0, pcol0, path, n, ncols, nrows)
 	-- column. Unstar each starred zero of the series, star each primed zero of the series,
 	-- erase all primes and uncover every line in the matrix.
 	path[1], path[2] = prow0, pcol0
-
+--print("RC", path[1], path[2])
 	local count = 2
+--[=[
+local j = 0
+if not AA then
+		local ri_true = FindStarInCol(path[count], ncols, nrows)
+local ri = ColStar[path[count]]
 
+		if ri_true then
+			print("ri TRUE", ri_true == ri - 1)
+		else
+			print("ri FALSE", ri, n, ri > n)
+	end
+end
+]=]
 	repeat
-		local ri = FindStarInCol(path[count], ncols, nrows)
+--j=j+1
+	--	local ri = FindStarInCol(path[count], ncols, nrows)
+	local ri_true = FindStarInCol(path[count], ncols, nrows)
+local ri = ColStar[path[count]]
+--[[
+if BB then
+		if ri_true then
+			print("ri TRUE", ri_true == ri - 1)
+		else
+			print("ri FALSE", ri, n, ri > n)
+	end
+end
 
-		if ri then
+--print(j, ri)
+if not ri then
+--	print("?", j, path[count], count)
+end
+]]
+local ok = ri <= n
+
+		if ok then--ri then
+			ri=ri-1
 			path[count + 1] = ri
 			path[count + 2] = path[count]
 			path[count + 3] = ri
-
+local i=0
+--[[
 			for i = 1, ncols do
 				if Mark[ri + i] == Prime then
 					path[count + 4] = i
@@ -194,16 +248,57 @@ local function BuildPath (prow0, pcol0, path, n, ncols, nrows)
 					break
 				end
 			end
-
+]]
+--[[
+			repeat
+				i = i + 1
+			until Mark[ri+i]==Prime
+				]]
+				path[count+4]=PP[ri]--i
 			count = count + 4
 		end
-	until not ri
-
+	until not ok --ri
+--AA=true
 	-- Augment path.
 	for i = 1, count, 2 do
 		local ri, col = path[i], path[i + 1]
 
-		Mark[ri + col] = Mark[ri + col] ~= Star and Star
+	--	Mark[ri + col] = Mark[ri + col] ~= Star and Star
+local index, colp1 = ri + col, col
+
+ri, col = ri + 1, col - 1
+
+if Mark[index] == Star then
+	if col == RowStar[ri] then
+		local c=col
+		repeat
+			c=c+1--col = col + 1
+		until c--[[col]] == ncols or Mark[ri + c--[[col]] ] == Star
+
+		RowStar[ri] = c--col
+	end
+
+	if ri == ColStar[colp1] then
+		repeat
+			ri = ri + ncols
+		until ri > n or Mark[ri + col] == Star
+
+		ColStar[colp1] = ri
+	end
+
+	Mark[index] = false
+else
+--	print(ri, col, colp1)
+	if col < RowStar[ri] then
+		RowStar[ri] = col
+	end
+
+	if ri < ColStar[colp1] then
+		ColStar[colp1] = ri
+	end
+
+	Mark[index] = Star
+end
 	end
 
 	-- Clear covers and erase primes.
@@ -287,7 +382,7 @@ function M.Run (costs, ncols, out)
 				if from == Costs then
 					-- Inverted, do something...
 				end
-
+Covered=Covered+1
 				return out
 			else
 				check_solution = false
