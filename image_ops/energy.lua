@@ -23,9 +23,6 @@
 -- [ MIT license: http://www.opensource.org/licenses/mit-license.php ]
 --
 
--- Standard library imports --
-local sqrt = math.sqrt
-
 -- Exports --
 local M = {}
 
@@ -45,7 +42,7 @@ local function AuxTwoRows (r1, g1, b1, a1, r2, g2, b2, a2, other, i)
 	local hgrad = (r2 - r1)^2 + (g2 - g1)^2 + (b2 - b1)^2 + (a2 - a1)^2
 	local vgrad = (r1 - ro)^2 + (g1 - go)^2 + (b1 - bo)^2 + (a1 - ao)^2
 
-	return hgrad + vgrad--sqrt(hgrad + vgrad) / 255
+	return hgrad + vgrad
 end
 
 -- One-sided energy computations, i.e. a current row and one other
@@ -79,7 +76,7 @@ local function AuxInterior (r1, g1, b1, a1, r2, g2, b2, a2, i)
 	local hgrad = (r2 - r1)^2 + (g2 - g1)^2 + (b2 - b1)^2 + (a2 - a1)^2
 	local vgrad = (rn - rp)^2 + (gn - gp)^2 + (bn - bp)^2 + (an - ap)^2
 
-	return hgrad + vgrad--sqrt(hgrad + vgrad) / 255
+	return hgrad + vgrad
 end
 
 -- Two-sided energy computation, i.e. a previous, current, and next row

@@ -132,7 +132,6 @@ var_dump.SetDefaultOutf(printf)
 function vdump (var, name, limit)
 	var_dump.Print(var, name and { name = name, limit = limit })
 end
---local aa=require("graph_ops.hungarian")
---vdump(aa.Run({1,2,3,2,4,6,3,6,9},3))
+
 -- Kick off the app.
 scenes.GoToScene{ name = "scene.Intro" }

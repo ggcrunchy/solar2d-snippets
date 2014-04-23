@@ -163,8 +163,8 @@ end
 local Base = system.ResourceDirectory
 
 -- --
-local Dir = --"UI_Assets"
-			"Background_Assets"
+local Dir = "UI_Assets"
+			--"Background_Assets"
 
 -- --
 local Since
