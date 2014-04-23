@@ -163,8 +163,8 @@ end
 local Base = system.ResourceDirectory
 
 -- --
-local Dir = "UI_Assets"
-			--"Background_Assets"
+local Dir = --"UI_Assets"
+			"Background_Assets"
 
 -- --
 local Since
@@ -335,7 +335,7 @@ function Scene:show (event)
 
 							for y = 1, h do
 								for x = 1, w do
-									self.m_bitmap:SetPixel(x - 1, y - 1, Energy[index])
+									self.m_bitmap:SetPixel(x - 1, y - 1, math.sqrt(Energy[index])/255)
 
 									Watch()
 
@@ -400,7 +400,7 @@ end
 ]]
 									offset = offset + finc
 								end
-while false do--true do
+while false do--_ == 3 do--true do
 	yield()
 end
 								Watch()
