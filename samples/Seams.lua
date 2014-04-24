@@ -163,8 +163,8 @@ end
 local Base = system.ResourceDirectory
 
 -- --
-local Dir = "UI_Assets"
-			--"Background_Assets"
+local Dir = --"UI_Assets"
+			"Background_Assets"
 
 -- --
 local Since
@@ -368,8 +368,12 @@ AAA=true
 
 							-- 
 							local assignment, costs, offset = TwoSeams and {}, TwoSeams and {}, 0
-
-							for _ = 2, fn do
+local ii=114
+for _ = 2, ii do
+	offset = offset + finc
+end
+-- Problem at 115...
+							for _ = ii+1, fn do
 print("ROW " .. _ .. " of " .. fn)
 								local row = 0 -- works left-to-right?
 
