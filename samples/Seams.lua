@@ -265,8 +265,10 @@ local function LoadCosts (costs, n, ahead, diag1, diag2, energy, ri, offset)
 end
 
 --
-local function SolveAssignment (costs, assignment, buf, nseams, n, offset)
-	hungarian.Run(costs, n, assignment)
+local function SolveAssignment (costs, opts, buf, nseams, n, offset)
+	hungarian.Run(costs, n, opts)--assignment)
+
+	local assignment = opts.into
 
 	for i = 1, n do--nseams do
 		local at, into = assignment[i], buf[i]
@@ -367,8 +369,8 @@ AAA=true
 							end
 
 							-- 
-							local assignment, costs, offset = TwoSeams and {}, TwoSeams and {}, 0
-local ii=114
+							local assignment, costs, offset = TwoSeams and { into = {}, yfunc = Watch }, TwoSeams and {}, 0
+local ii=1--114
 for _ = 2, ii do
 	offset = offset + finc
 end

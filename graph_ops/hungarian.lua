@@ -28,6 +28,7 @@
 -- Standard library imports --
 local ceil = math.ceil
 local min = math.min
+local pairs = pairs
 
 -- Modules --
 local labels = require("graph_ops.labels")
@@ -71,14 +72,17 @@ local function ClearCoverage (ncols, nrows)
 	CovCol.n, UncovCol.n = 0, ncols
 	CovRow.n, UncovRow.n = 0, nrows
 
-	for i = 1, ncols do
-		UncovCol[i], Column[i] = i - 1, i
-	end
-
+	--
 	local ri = 1
 
 	for i = 1, nrows do
+		UncovCol[i], Column[i] = i - 1, i
 		UncovRow[i], Row[i], ri = ri, i, ri + ncols
+	end
+
+	--
+	for i = nrows + 1, ncols do
+		UncovCol[i], Column[i] = i - 1, i
 	end
 end
 
@@ -86,19 +90,15 @@ end
 local Covered = 0
 
 -- --
-local Mark = {}
-
--- --
-local Star = 0
-
--- --
 local ColStar, RowStar = {}, {}
-local NSTARS=0
+--++++++++++
+local NSTARS
+--++++++++++
 -- Stars the first zero found in each uncovered row or column
 local function StarSomeZeroes (n, ncols)
-	--
-	Star = Star + 1
+--++++++
 NSTARS=0
+--++++++
 	--
 	local dcols = ncols - 1
 
@@ -107,9 +107,11 @@ NSTARS=0
 
 		for i = 0, dcols do
 			if Costs[ri + i] == 0 and Column[i + 1] ~= Covered then
-				Mark[ri + i], Column[i + 1] = Star, Covered
 				ColStar[i + 1], RowStar[ri] = ri, i
+				Column[i + 1] = Covered
+--+++++++++++++
 NSTARS=NSTARS+1
+--+++++++++++++
 				break
 			end
 		end
@@ -123,8 +125,19 @@ NSTARS=NSTARS+1
 	end
 end
 
--- --
-local Zeroes = {}
+--
+local function CoverColumn (col, scol)
+	local nucols = UncovCol.n
+	local at, ctop = CovCol.n + 1, UncovCol[nucols]
+--	local col, scol = cindex, col
+
+	CovCol[at] = UncovCol[col]
+	UncovCol[col] = ctop
+	Column[scol + 1] = -at
+	Column[ctop + 1] = col--cindex
+
+	UncovCol.n, CovCol.n = nucols - 1, at
+end
 
 -- Counts how many columns contain a starred zero
 local function CountCoverage (out, n, ncols)
@@ -138,16 +151,7 @@ local function CountCoverage (out, n, ncols)
 			local cindex = Column[col + 1]
 
 			if cindex > 0 then
-				local nucols = UncovCol.n
-				local at, ctop = CovCol.n + 1, UncovCol[nucols]
-				local col, scol = cindex, col
-
-				CovCol[at] = UncovCol[col]
-				UncovCol[col] = ctop
-				Column[scol + 1] = -at
-				Column[ctop + 1] = cindex
-
-				UncovCol.n, CovCol.n = nucols - 1, at
+				CoverColumn(cindex, col)
 			end
 
 			--
@@ -161,28 +165,66 @@ local function CountCoverage (out, n, ncols)
 end
 
 --
+local function CoverRow (row, rindex, ncols)
+	local nurows = UncovRow.n
+	local at, rtop = CovRow.n + 1, UncovRow[nurows]
+	local top = (rtop - 1) / ncols + 1
+
+	CovRow[at] = UncovRow[rindex]
+	UncovRow[rindex] = rtop
+	Row[row] = -at
+	Row[top] = rindex
+
+	UncovRow.n, CovRow.n = nurows - 1, at
+end
+
+--
 local function FindZero ()
-	local nuc = UncovCol.n
+	local nuc, vmin = UncovCol.n, 1 / 0
 
 	for i = 1, UncovRow.n do
 		local ri = UncovRow[i]
 
 		for j = 1, nuc do
 			local col = UncovCol[j]
+			local cost = Costs[ri + col]
 
-			if Costs[ri + col] == 0 then
-				return ri, col
+			if cost < vmin then
+				if cost == 0 then
+					return ri, col
+				else
+					vmin = cost
+				end
 			end
 		end
 	end
+
+	return vmin
+end
+
+--
+local function UncoverColumn (cindex, scol)
+	local nccols = CovCol.n
+	local at, ctop = UncovCol.n + 1, CovCol[nccols]
+	local col = -cindex
+
+	UncovCol[at] = CovCol[col]
+	CovCol[col] = ctop
+	Column[scol + 1] = at
+	Column[ctop + 1] = cindex
+
+	CovCol.n, UncovCol.n = nccols - 1, at
 end
 
 -- --
 local Primes = {}
 
+-- --
+local Zeroes = {}
+
 -- Prime some uncovered zeroes
 local function PrimeZeroes (ncols)
-	repeat
+	while true do
 		--
 		local zn, col, ri = Zeroes.n
 
@@ -198,92 +240,44 @@ local function PrimeZeroes (ncols)
 
 			local scol = RowStar[ri]
 
+			--
 			if scol < ncols then
 				local row = (ri - 1) / ncols + 1
 				local rindex, cindex = Row[row], Column[scol + 1]
 
 				--
 				if rindex > 0 then
-					local nurows = UncovRow.n
-					local at, rtop = CovRow.n + 1, UncovRow[nurows]
-					local top = (rtop - 1) / ncols + 1
-
-					CovRow[at] = UncovRow[rindex]
-					UncovRow[rindex] = rtop
-					Row[row] = -at
-					Row[top] = rindex
-
-					UncovRow.n, CovRow.n = nurows - 1, at
+					CoverRow(row, rindex, ncols)
 				end
-
+-- ^^^ THIS, at least, appears to be broken
 				--
 				if cindex < 0 then
-					local nccols = CovCol.n
-					local at, ctop = UncovCol.n + 1, CovCol[nccols]
-					local col = -cindex
-
-					UncovCol[at] = CovCol[col]
-					CovCol[col] = ctop
-					Column[scol + 1] = at
-					Column[ctop + 1] = cindex
-
-					CovCol.n, UncovCol.n = nccols - 1, at
+					UncoverColumn(cindex, scol)
 				end
--- rindex < 0, cindex > 0 both happen, but each relatively rarely
--- SHOULD they?
+-- ^^^ Not sure
+			--
 			else
 				return ri, col
 			end
+
+		--
+		else
+			return false, ri
 		end
-	until not col
+	end
 end
 
 --
 local function RemoveStar (n, ri, col, ncols)
-	local colp1 = col + 1
+	RowStar[ri] = ncols
 
-	if col == RowStar[ri] then
-	--	print("THIS ONE")
-		-- Does get here, just no-ops
-		local i = col
-
-		repeat
-			i = i + 1
-		until i == ncols or Mark[ri + i] == Star
-if i < ncols then
-	print("col!")
-end
--- ^^ Doesn't seem to happen
-		RowStar[ri] = i
-	else
-		print("OTHER, THAT's FINE TOO")
-		-- Never happens
-	end
-
-	if ri == ColStar[colp1] then
-		local RI=ri
-		repeat
-			RI=RI+ncols
-		until RI > n or RowStar[RI] < ncols
+	if ri == ColStar[col + 1] then
 		repeat
 			ri = ri + ncols
-		until ri > n or Mark[ri + col] == Star
-if ri <= n then
---	print("row!", ri, n)
-end
-if math.abs(ri-RI) ~= 0 then
---	print("CRAP!", ri, RI, math.abs(ri-RI))
-end
---- This is bizarre! The difference is either 0 or ncols...
--- And the RowStar[RI] - col difference swaps between -1 and 1
-		ColStar[colp1] = ri
-	else
-	--	print("Errr.. uh-oh")
-		-- DOES happen
+		until ri > n or RowStar[ri] == col
+
+		ColStar[col + 1] = ri
 	end
-	-- SO, one star per row, but multiple for columns
-	-- Given above, could search rows [col + 1, ncols - 1]...
-	-- ALMOST as is...
 end
 
 --
@@ -314,81 +308,51 @@ local function BuildPath (prow0, pcol0, path, n, ncols, nrows)
 	-- Augment path.
 	for i = 1, count, 2 do
 		local ri, col = path[i], path[i + 1]
-		local index, colp1 = ri + col, col + 1
 
 		--
-		if Mark[index] == Star then
+		if Primes[ri] ~= col then
 			RemoveStar(n, ri, col, ncols)
+--+++++++++++++
 NSTARS=NSTARS-1
-			Mark[index] = false
-if Primes[ri] == col then
-	print("!!!!!!!!!!!!!!!!")
-end
+--+++++++++++++
 		--
 		else
-			if col < RowStar[ri] then
-				RowStar[ri] = col
-			else
-				print("NOPE col")
-				-- ^^ Never happens
-			end
+			RowStar[ri] = col
+--+++++++++++++
 NSTARS=NSTARS+1
-			if ri < ColStar[colp1] then
-				ColStar[colp1] = ri
+--+++++++++++++
+			if ri < ColStar[col + 1] then
+				ColStar[col + 1] = ri
 			end
-if Primes[ri]~=col then
-	print("NUH-UH")
---^^^ Doesn't SEEM to happen...
-end
-			Mark[index] = Star
 		end
 	end
-print("<= cols", NSTARS <= ncols, NSTARS, ncols)
-for k in pairs(Primes) do
-	Primes[k]=nil
-end
-	-- Clear covers.
+--	print("<= cols", NSTARS <= ncols, NSTARS, ncols)
+	
+	-- Clear covers and primes.
 	ClearCoverage(ncols, nrows)
+
+	for k in pairs(Primes) do
+		Primes[k] = nil
+	end
 end
 
 --++++++++++++++
-local FM,FMN=0,0
 local AU,AUN=0,0
 --++++++++++++++
 
 -- Updates the cost matrix to reflect the new minimum
-local function UpdateCosts ()
+local function UpdateCosts (vmin)
 --+++++++++++
-local fm=oc()
---+++++++++++
-	-- Find the smallest uncovered value.
-	local nuc, vmin = UncovCol.n, 1 / 0
-
-	for i = 1, UncovRow.n do
-		local ri = UncovRow[i]
-
-		for j = 1, nuc do
-			local cost = Costs[ri + UncovCol[j]]
-
-			if cost < vmin then
-				vmin = cost
-			end
-		end
-	end
 if NSTARS==419 and not AA then
 	print("VMIN?", vmin)
-	print("NUR/C", UncovRow.n, nuc)
+	print("NUR/C", UncovRow.n, UncovCol.n)
 	AA=true
 end
---+++++++++++
 local au=oc()
-FM=FM+au-fm
-FMN=FMN+1
 --+++++++++++
 
-	-- Add the value to every element of each covered row, subtracting it from every element
-	-- of each uncovered column.
-	local ncc = CovCol.n
+	-- Add the minimum value to every element of each covered row...
+	local ncc, nuc = CovCol.n, UncovCol.n
 
 	for i = 1, CovRow.n do
 		local ri = CovRow[i]
@@ -400,6 +364,7 @@ FMN=FMN+1
 		end
 	end
 
+	-- ...subtracting it from every element of each uncovered column.
 	for i = 1, UncovRow.n do
 		local ri = UncovRow[i]
 
@@ -429,16 +394,22 @@ local LP,LPN=0,0
 local PZ,PZN=0,0
 --++++++++++++++
 
+--
+local function DefYieldFunc () end
+
 --- DOCME
 -- @array costs
 -- @uint ncols
--- @ptable[opt] out
+-- @ptable[opt] opts
 -- @treturn array out
-function M.Run (costs, ncols, out)
+function M.Run (costs, ncols, opts)
+	local out = (opts and opts.into) or {}
+	local yfunc = (opts and opts.yfunc) or DefYieldFunc
+
 --+++++++++++
-local t0=oc()
+local lp=oc()
+local sum=0
 --+++++++++++
-	out = out or {}
 
 	local n, from = #costs, costs
 	local nrows = ceil(n / ncols)
@@ -468,9 +439,13 @@ local t0=oc()
 	Zeroes.n = 0
 
 	while true do
---+++++++++++
-local lp=oc()
---+++++++++++
+--+++++++++++++
+sum=sum+oc()-lp
+--+++++++++++++
+		yfunc()
+--+++++
+lp=oc()
+--+++++
 		-- Check if the starred zeroes describe a complete set of unique assignments.
 		if check_solution then
 			local ncovered = CountCoverage(out, n, ncols)
@@ -480,17 +455,16 @@ local lp=oc()
 					-- Inverted, do something...
 				end
 --++++++++++++++++++++++++++++++++++++
-LP=LP+oc()-lp
+local left=oc()-lp
+LP=LP+left
 LPN=LPN+1
 
 print("Loop", LP / LPN, LP)
 print("  Prime zeroes", PZ / PZN, PZ)
-print("  Finding min", FM / FMN, FM)
 print("  Actual update", AU / AUN, AU)
-print("TOTAL", oc()-t0)
+print("TOTAL", sum+left)
 LP,LPN=0,0
 PZ,PZN=0,0
-FM,FMN=0,0
 AU,AUN=0,0
 --++++++++++++++++++++++++++++++++++++
 				return out
@@ -521,7 +495,7 @@ PZN=PZN+1
         -- altering any stars, primes, or covered lines.
 		else
 -- GETS STUCK HERE...
-			UpdateCosts(ncols)
+			UpdateCosts(pcol0)
 		end
 --+++++++++++
 LP=LP+oc()-lp
