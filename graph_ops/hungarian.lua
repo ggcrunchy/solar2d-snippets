@@ -240,13 +240,22 @@ local function PrimeZeroes (ncols)
 				--
 				if rindex > 0 then
 					CoverRow(row, rindex, ncols)
+
+					-- Evict any remaining zeroes in the row.
+					for i = zn, 1, -2 do
+						if Zeroes[i - 1] == ri then
+							Zeroes[i - 1], Zeroes[i], zn = Zeroes[zn - 1], Zeroes[zn], zn - 2
+						end
+
+						Zeroes.n = zn
+					end
 				end
--- ^^^ THIS, at least, appears to be broken
+
 				--
 				if cindex < 0 then
 					UncoverColumn(cindex, scol)
 				end
--- ^^^ Not sure
+
 			--
 			else
 				return ri, col
@@ -312,7 +321,51 @@ local function UpdateCosts (vmin)
 if NSTARS==419 and not AA then
 	print("VMIN?", vmin)
 	print("NUR/C", UncovRow.n, UncovCol.n)
+	local aa={}
+	local bb={}
+	for i = 1, 420 do
+		local row=ColStar[i]
+		if aa[row] then
+			print("REPEATED ROW", row, (row-1)/420+1)
+		end
+					aa[row]=true
+		local col=RowStar[(i-1)*420+1]
+		if bb[col] then
+			print("REPEATED COL", col)
+		end
+					bb[col]=true
+	end
+	local ri,col
+	for i = 1, 420^2, 420 do
+		if not aa[i] then
+			ri=i
+			print("ROW UNACCOUNTED FOR", i, (i-1)/420+1)
+		end
+	end
+	for i = 0, 419 do
+		if not bb[i] then
+			col=i
+			print("COLUMN UNACCOUNTED FOR", i)
+		end
+	end
+	if ri and col then
+		local rrr=(ri-1)/420+1
+		local ccc=col+1
+		print("ROW",Row[rrr])
+		print("COL",Column[ccc])
+		if Row[rrr]>0 then
+			print("RBACK",UncovRow[Row[rrr]])
+		end
+		if Column[ccc]>0 then
+			print("CBACK",UncovCol[Column[ccc]])
+		end
+		print("COST", Costs[ri+col])
+	end
+--	AA=true
+if 1/vmin==0 then
 	AA=true
+end
+	print("")
 end
 local au=oc()
 --+++++++++++
@@ -477,7 +530,6 @@ NSTARS=NSTARS+1
 		-- Otherwise, no uncovered zeroes remain. Update the matrix and do another pass, without
         -- altering any stars, primes, or covered lines.
 		else
--- GETS STUCK HERE...
 			UpdateCosts(pcol0)
 		end
 --+++++++++++

@@ -370,7 +370,7 @@ AAA=true
 
 							-- 
 							local assignment, costs, offset = TwoSeams and { into = {}, yfunc = Watch }, TwoSeams and {}, 0
-local ii=1--114
+local ii=114
 for _ = 2, ii do
 	offset = offset + finc
 end
@@ -423,7 +423,7 @@ print("BUF", i, #b)
 		local x = ii % w
 		local y = (ii - x) / w
 if i == 1 then
-	print(j, ii, x, y)
+--	print(j, ii, x, y)
 end
 		self.m_bitmap:SetPixel(x, y, 0, 0, 1)
 	end
