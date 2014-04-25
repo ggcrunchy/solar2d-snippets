@@ -33,16 +33,238 @@ local pairs = pairs
 
 -- Modules --
 local labels = require("graph_ops.labels")
+local operators = require("bitwise_ops.operators")
+
+-- Forward declarations --
+local ClearCoverage
+local CoverColumn
+local CoverRow
+local FindZero
+local GetCount
+local UncoverColumn
+local UpdateCosts
 
 -- Exports --
 local M = {}
 
 --+++++++++++++++
 local oc=os.clock
+local AU,AUN=0,0
 --+++++++++++++++
 
 -- --
 local Costs = {}
+
+-- --
+local Zeroes = {}
+
+--
+if operators.HasBitLib() then
+	local band = operators.band
+	local bnot = operators.bnot
+	local bor = operators.bor
+	local rshift = operators.rshift
+
+	-- --
+	local DeBruijnLg = {
+		0, 1, 28, 2, 29, 14, 24, 3, 30, 22, 20, 15, 25, 17, 4, 8,
+		31, 27, 13, 23, 21, 19, 16, 7, 26, 12, 18, 6, 11, 5, 10, 9
+	}
+	-- band(x,-x), Lg
+--[[
+r = MultiplyDeBruijnBitPosition2[(uint32_t)(v * 0x077CB531U) >> 27];
+]]
+	--
+	function ClearCoverage (ncols, nrows, is_first)
+		--
+	end
+
+	--
+	function CoverColumn (col)
+		--
+	end
+
+	--
+	function CoverRow (row, ncols)
+		--
+	end
+
+	--
+	function FindZero ()
+		--
+	end
+
+	--
+	function GetCount (ncols)
+		-- All bits 0 ? ncols : 0
+	end
+
+	--
+	function UncoverColumn (col)
+		--
+	end
+
+	--
+	function UpdateCosts (vmin)
+		--
+	end
+
+-- 
+else
+	-- --
+	local Column, Row = {}, {}
+
+	-- --
+	local CovCol, UncovCol = {}, {}
+	local CovRow, UncovRow = {}, {}
+
+	--
+	function ClearCoverage (ncols, nrows)
+		CovCol.n, UncovCol.n = 0, ncols
+		CovRow.n, UncovRow.n = 0, nrows
+
+		--
+		local ri = 1
+
+		for i = 1, nrows do
+			UncovCol[i], Column[i] = i - 1, i
+			UncovRow[i], Row[i], ri = ri, i, ri + ncols
+		end
+
+		--
+		for i = nrows + 1, ncols do
+			UncovCol[i], Column[i] = i - 1, i
+		end
+	end
+
+	--
+	function CoverColumn (col)
+		local cindex = Column[col + 1]
+
+		if cindex > 0 then
+			local nucols = UncovCol.n
+			local at, top = CovCol.n + 1, UncovCol[nucols]
+
+			CovCol[at] = UncovCol[cindex]
+			UncovCol[cindex] = top
+			Column[col + 1] = -at
+			Column[top + 1] = cindex
+
+			UncovCol.n, CovCol.n = nucols - 1, at
+		end
+	end
+
+	--
+	function CoverRow (row, ncols)
+		local rindex = Row[row]
+
+		if rindex > 0 then
+			local nurows = UncovRow.n
+			local at, rtop = CovRow.n + 1, UncovRow[nurows]
+			local top = (rtop - 1) / ncols + 1
+
+			CovRow[at] = UncovRow[rindex]
+			UncovRow[rindex] = rtop
+			Row[row] = -at
+			Row[top] = rindex
+
+			UncovRow.n, CovRow.n = nurows - 1, at
+
+			return true
+		end
+	end
+
+	--
+	function FindZero ()
+		local nuc, vmin = UncovCol.n, huge
+
+		for i = 1, UncovRow.n do
+			local ri = UncovRow[i]
+
+			for j = 1, nuc do
+				local col = UncovCol[j]
+				local cost = Costs[ri + col]
+
+				if cost < vmin then
+					if cost == 0 then
+						return ri, col
+					else
+						vmin = cost
+					end
+				end
+			end
+		end
+
+		return vmin
+	end
+
+	--
+	function GetCount ()
+		return CovCol.n
+	end
+
+	--
+	function UncoverColumn (col)
+		local cindex = Column[col + 1]
+
+		if cindex < 0 then	
+			local nccols = CovCol.n
+			local at, top = UncovCol.n + 1, CovCol[nccols]
+			local pcol = -cindex
+
+			UncovCol[at] = CovCol[pcol]
+			CovCol[pcol] = top
+			Column[col + 1] = at
+			Column[top + 1] = cindex
+
+			CovCol.n, UncovCol.n = nccols - 1, at
+		end
+	end
+
+	-- Updates the cost matrix to reflect the new minimum
+	function UpdateCosts (vmin)
+--+++++++++++
+local au=oc()
+--+++++++++++
+
+		-- Add the minimum value to every element of each covered row...
+		local ncc, nuc = CovCol.n, UncovCol.n
+
+		for i = 1, CovRow.n do
+			local ri = CovRow[i]
+
+			for j = 1, ncc do
+				local index = ri + CovCol[j]
+
+				Costs[index] = Costs[index] + vmin
+			end
+		end
+
+		-- ...subtracting it from every element of each uncovered column.
+		for i = 1, UncovRow.n do
+			local ri = UncovRow[i]
+
+			for j = 1, nuc do
+				local col = UncovCol[j]
+				local index = ri + col
+				local cost = Costs[index] - vmin
+
+				Costs[index] = cost
+
+				if cost == 0 then
+					local zn = Zeroes.n
+
+					Zeroes[zn + 1], Zeroes[zn + 2], Zeroes.n = ri, col, zn + 2
+				end
+			end
+		end
+
+--+++++++++++
+AU=AU+oc()-au
+AUN=AUN+1
+--+++++++++++
+	end
+end
 
 -- Finds the smallest element in each row and subtracts it from every row element
 local function SubtractSmallestRowCosts (from, n, ncols)
@@ -62,44 +284,17 @@ local function SubtractSmallestRowCosts (from, n, ncols)
 end
 
 -- --
-local Column, Row = {}, {}
-
--- --
-local CovCol, UncovCol = {}, {}
-local CovRow, UncovRow = {}, {}
-
---
-local function ClearCoverage (ncols, nrows)
-	CovCol.n, UncovCol.n = 0, ncols
-	CovRow.n, UncovRow.n = 0, nrows
-
-	--
-	local ri = 1
-
-	for i = 1, nrows do
-		UncovCol[i], Column[i] = i - 1, i
-		UncovRow[i], Row[i], ri = ri, i, ri + ncols
-	end
-
-	--
-	for i = nrows + 1, ncols do
-		UncovCol[i], Column[i] = i - 1, i
-	end
-end
-
--- --
-local Covered = 0
-
--- --
 local ColStar, RowStar = {}, {}
---++++++++++
-local NSTARS
---++++++++++
+
 -- Stars the first zero found in each uncovered row or column
 local function StarSomeZeroes (n, ncols)
---++++++
-NSTARS=0
---++++++
+	--
+	local np1 = n + 1
+
+	for i = 1, ncols do
+		ColStar[i] = np1
+	end
+
 	--
 	local dcols = ncols - 1
 
@@ -107,36 +302,13 @@ NSTARS=0
 		RowStar[ri] = ncols
 
 		for i = 0, dcols do
-			if Costs[ri + i] == 0 and Column[i + 1] ~= Covered then
+			if Costs[ri + i] == 0 and ColStar[i + 1] == np1 then
 				ColStar[i + 1], RowStar[ri] = ri, i
-				Column[i + 1] = Covered
---+++++++++++++
-NSTARS=NSTARS+1
---+++++++++++++
+
 				break
 			end
 		end
 	end
-
-	--
-	for i = 1, ncols do
-		if Column[i] ~= Covered then
-			ColStar[i] = n + 1
-		end
-	end
-end
-
---
-local function CoverColumn (col, scol)
-	local nucols = UncovCol.n
-	local at, ctop = CovCol.n + 1, UncovCol[nucols]
-
-	CovCol[at] = UncovCol[col]
-	UncovCol[col] = ctop
-	Column[scol + 1] = -at
-	Column[ctop + 1] = col
-
-	UncovCol.n, CovCol.n = nucols - 1, at
 end
 
 -- Counts how many columns contain a starred zero
@@ -145,74 +317,15 @@ local function CountCoverage (n, ncols)
 		local col = RowStar[ri]
 
 		if col < ncols then
-			local cindex = Column[col + 1]
-
-			if cindex > 0 then
-				CoverColumn(cindex, col)
-			end
+			CoverColumn(col)
 		end
 	end
 
-	return CovCol.n
-end
-
---
-local function CoverRow (row, rindex, ncols)
-	local nurows = UncovRow.n
-	local at, rtop = CovRow.n + 1, UncovRow[nurows]
-	local top = (rtop - 1) / ncols + 1
-
-	CovRow[at] = UncovRow[rindex]
-	UncovRow[rindex] = rtop
-	Row[row] = -at
-	Row[top] = rindex
-
-	UncovRow.n, CovRow.n = nurows - 1, at
-end
-
---
-local function FindZero ()
-	local nuc, vmin = UncovCol.n, huge
-
-	for i = 1, UncovRow.n do
-		local ri = UncovRow[i]
-
-		for j = 1, nuc do
-			local col = UncovCol[j]
-			local cost = Costs[ri + col]
-
-			if cost < vmin then
-				if cost == 0 then
-					return ri, col
-				else
-					vmin = cost
-				end
-			end
-		end
-	end
-
-	return vmin
-end
-
---
-local function UncoverColumn (cindex, scol)
-	local nccols = CovCol.n
-	local at, ctop = UncovCol.n + 1, CovCol[nccols]
-	local col = -cindex
-
-	UncovCol[at] = CovCol[col]
-	CovCol[col] = ctop
-	Column[scol + 1] = at
-	Column[ctop + 1] = cindex
-
-	CovCol.n, UncovCol.n = nccols - 1, at
+	return GetCount(ncols)
 end
 
 -- --
 local Primes = {}
-
--- --
-local Zeroes = {}
 
 -- Prime some uncovered zeroes
 local function PrimeZeroes (ncols)
@@ -235,12 +348,9 @@ local function PrimeZeroes (ncols)
 			--
 			if scol < ncols then
 				local row = (ri - 1) / ncols + 1
-				local rindex, cindex = Row[row], Column[scol + 1]
 
 				--
-				if rindex > 0 then
-					CoverRow(row, rindex, ncols)
-
+				if CoverRow(row, ncols) then
 					-- Evict any remaining zeroes in the row.
 					for i = zn, 1, -2 do
 						if Zeroes[i - 1] == ri then
@@ -251,10 +361,7 @@ local function PrimeZeroes (ncols)
 					end
 				end
 
-				--
-				if cindex < 0 then
-					UncoverColumn(cindex, scol)
-				end
+				UncoverColumn(scol)
 
 			--
 			else
@@ -312,103 +419,6 @@ local function BuildPath (ri, col, n, ncols, nrows)
 end
 
 --++++++++++++++
-local AU,AUN=0,0
---++++++++++++++
-
--- Updates the cost matrix to reflect the new minimum
-local function UpdateCosts (vmin)
---+++++++++++
-if NSTARS==419 and not AA then
-	print("VMIN?", vmin)
-	print("NUR/C", UncovRow.n, UncovCol.n)
-	local aa={}
-	local bb={}
-	for i = 1, 420 do
-		local row=ColStar[i]
-		if aa[row] then
-			print("REPEATED ROW", row, (row-1)/420+1)
-		end
-					aa[row]=true
-		local col=RowStar[(i-1)*420+1]
-		if bb[col] then
-			print("REPEATED COL", col)
-		end
-					bb[col]=true
-	end
-	local ri,col
-	for i = 1, 420^2, 420 do
-		if not aa[i] then
-			ri=i
-			print("ROW UNACCOUNTED FOR", i, (i-1)/420+1)
-		end
-	end
-	for i = 0, 419 do
-		if not bb[i] then
-			col=i
-			print("COLUMN UNACCOUNTED FOR", i)
-		end
-	end
-	if ri and col then
-		local rrr=(ri-1)/420+1
-		local ccc=col+1
-		print("ROW",Row[rrr])
-		print("COL",Column[ccc])
-		if Row[rrr]>0 then
-			print("RBACK",UncovRow[Row[rrr]])
-		end
-		if Column[ccc]>0 then
-			print("CBACK",UncovCol[Column[ccc]])
-		end
-		print("COST", Costs[ri+col])
-	end
---	AA=true
-if 1/vmin==0 then
-	AA=true
-end
-	print("")
-end
-local au=oc()
---+++++++++++
-
-	-- Add the minimum value to every element of each covered row...
-	local ncc, nuc = CovCol.n, UncovCol.n
-
-	for i = 1, CovRow.n do
-		local ri = CovRow[i]
-
-		for j = 1, ncc do
-			local index = ri + CovCol[j]
-
-			Costs[index] = Costs[index] + vmin
-		end
-	end
-
-	-- ...subtracting it from every element of each uncovered column.
-	for i = 1, UncovRow.n do
-		local ri = UncovRow[i]
-
-		for j = 1, nuc do
-			local col = UncovCol[j]
-			local index = ri + col
-			local cost = Costs[index] - vmin
-
-			Costs[index] = cost
-
-			if cost == 0 then
-				local zn = Zeroes.n
-
-				Zeroes[zn + 1], Zeroes[zn + 2], Zeroes.n = ri, col, zn + 2
-			end
-		end
-	end
-
---+++++++++++
-AU=AU+oc()-au
-AUN=AUN+1
---+++++++++++
-end
-
---++++++++++++++
 local LP,LPN=0,0
 local PZ,PZN=0,0
 --++++++++++++++
@@ -459,7 +469,7 @@ local sum=0
 	-- Kick off the algorithm with a first round of zeroes, starring as many as possible.
 	SubtractSmallestRowCosts(from, n, ncols)
 	StarSomeZeroes(n, ncols)
-	ClearCoverage(ncols, nrows)
+	ClearCoverage(ncols, nrows, true)
 
 	--
 	local do_check = true
@@ -524,9 +534,7 @@ PZN=PZN+1
 			do_check = true
 
 			BuildPath(prow0, pcol0, n, ncols, nrows)
---+++++++++++++
-NSTARS=NSTARS+1
---+++++++++++++
+
 		-- Otherwise, no uncovered zeroes remain. Update the matrix and do another pass, without
         -- altering any stars, primes, or covered lines.
 		else
