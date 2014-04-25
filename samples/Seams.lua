@@ -266,7 +266,7 @@ end
 
 --
 local function SolveAssignment (costs, opts, buf, nseams, n, offset)
-	hungarian.Run(costs, n, opts)--assignment)
+	hungarian.Run(costs, n, opts)
 
 	local assignment = opts.into
 

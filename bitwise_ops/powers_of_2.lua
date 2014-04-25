@@ -25,14 +25,13 @@
 
 -- Standard library imports --
 local frexp = math.frexp
-local ldexp = math.ldexp
 
 -- Modules --
 local operators = require("bitwise_ops.operators")
 
 -- Imports --
-local bor = operators.Bor
-local rshift = operators.Rshift
+local bor = operators.bor
+local rshift = operators.rshift
 
 -- Exports --
 local M = {}
@@ -85,7 +84,7 @@ local function AuxPowersOf2 (bits, removed)
 	if bits ~= removed then
 		local _, e = frexp(bits - removed)
 		local exp = e - 1
-		local bit = ldexp(1, exp)
+		local bit = 2^exp
 
 		return removed + bit, bit, exp
 	end

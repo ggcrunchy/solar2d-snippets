@@ -27,6 +27,7 @@
 
 -- Standard library imports --
 local ceil = math.ceil
+local huge = math.huge
 local min = math.min
 local pairs = pairs
 
@@ -129,36 +130,27 @@ end
 local function CoverColumn (col, scol)
 	local nucols = UncovCol.n
 	local at, ctop = CovCol.n + 1, UncovCol[nucols]
---	local col, scol = cindex, col
 
 	CovCol[at] = UncovCol[col]
 	UncovCol[col] = ctop
 	Column[scol + 1] = -at
-	Column[ctop + 1] = col--cindex
+	Column[ctop + 1] = col
 
 	UncovCol.n, CovCol.n = nucols - 1, at
 end
 
 -- Counts how many columns contain a starred zero
-local function CountCoverage (out, n, ncols)
-	local row = 1
-
+local function CountCoverage (n, ncols)
 	for ri = 1, n, ncols do
 		local col = RowStar[ri]
 
 		if col < ncols then
-			--
 			local cindex = Column[col + 1]
 
 			if cindex > 0 then
 				CoverColumn(cindex, col)
 			end
-
-			--
-			out[row] = col + 1
 		end
-
-		row = row + 1
 	end
 
 	return CovCol.n
@@ -180,7 +172,7 @@ end
 
 --
 local function FindZero ()
-	local nuc, vmin = UncovCol.n, 1 / 0
+	local nuc, vmin = UncovCol.n, huge
 
 	for i = 1, UncovRow.n do
 		local ri = UncovRow[i]
@@ -281,54 +273,28 @@ local function RemoveStar (n, ri, col, ncols)
 end
 
 --
-local function BuildPath (prow0, pcol0, path, n, ncols, nrows)
-	-- Construct a series of alternating primed and starred zeros as follows, given uncovered
-	-- primed zero Z0 produced in the previous step. Let Z1 denote the starred zero in the
-	-- column of Z0 (if any), Z2 the primed zero in the row of Z1 (there will always be one).
-	-- Continue until the series terminates at a primed zero that has no starred zero in its
-	-- column. Unstar each starred zero of the series, star each primed zero of the series,
-	-- erase all primes and uncover every line in the matrix.
-	path[1], path[2] = prow0, pcol0
-
-	local count = 2
-
+local function BuildPath (ri, col, n, ncols, nrows)
 	repeat
-		local ri = ColStar[path[count] + 1]
+		local rnext = ColStar[col + 1]
+
+		-- Star the current primed zero (on the first pass, this is the uncovered input).
+		RowStar[ri] = col
+
+		if ri < rnext then
+			ColStar[col + 1] = ri
+		end
+
+		-- If there is one, go to the starred zero in the column of the last primed zero. Unstar
+		-- it, then move to the primed zero in the same row.
+		ri = rnext
 
 		if ri <= n then
-			path[count + 1] = ri
-			path[count + 2] = path[count]
-			path[count + 3] = ri
-			path[count + 4] = Primes[ri]
+			RemoveStar(n, ri, col, ncols)
 
-			count = count + 4
+			col = Primes[ri]
 		end
 	until ri > n
 
-	-- Augment path.
-	for i = 1, count, 2 do
-		local ri, col = path[i], path[i + 1]
-
-		--
-		if Primes[ri] ~= col then
-			RemoveStar(n, ri, col, ncols)
---+++++++++++++
-NSTARS=NSTARS-1
---+++++++++++++
-		--
-		else
-			RowStar[ri] = col
---+++++++++++++
-NSTARS=NSTARS+1
---+++++++++++++
-			if ri < ColStar[col + 1] then
-				ColStar[col + 1] = ri
-			end
-		end
-	end
---	print("<= cols", NSTARS <= ncols, NSTARS, ncols)
-	
-	-- Clear covers and primes.
 	ClearCoverage(ncols, nrows)
 
 	for k in pairs(Primes) do
@@ -395,6 +361,15 @@ local PZ,PZN=0,0
 --++++++++++++++
 
 --
+local function BuildSolution_Square (out, n, ncols)
+	local row = 1
+
+	for ri = 1, n, ncols do
+		out[row], row = RowStar[ri] + 1, row + 1
+	end
+end
+
+--
 local function DefYieldFunc () end
 
 --- DOCME
@@ -434,7 +409,7 @@ local sum=0
 	ClearCoverage(ncols, nrows)
 
 	--
-	local check_solution, path = true
+	local do_check = true
 
 	Zeroes.n = 0
 
@@ -447,13 +422,19 @@ sum=sum+oc()-lp
 lp=oc()
 --+++++
 		-- Check if the starred zeroes describe a complete set of unique assignments.
-		if check_solution then
-			local ncovered = CountCoverage(out, n, ncols)
+		if do_check then
+			local ncovered = CountCoverage(n, ncols)
 
 			if ncovered >= ncols or ncovered >= nrows then
 				if from == Costs then
 					-- Inverted, do something...
 				end
+
+				--
+				if ncols == nrows then
+					BuildSolution_Square(out, n, ncols)
+				end
+
 --++++++++++++++++++++++++++++++++++++
 local left=oc()-lp
 LP=LP+left
@@ -469,7 +450,7 @@ AU,AUN=0,0
 --++++++++++++++++++++++++++++++++++++
 				return out
 			else
-				check_solution = false
+				do_check = false
 			end
 		end
 --+++++++++++
@@ -487,10 +468,12 @@ PZN=PZN+1
 		-- If there was no starred zero in the row containing the primed zero, try to build up a
 		-- solution. On the next pass, check if this has produced a valid assignment.
 		if prow0 then
-			path, check_solution = path or {}, true
+			do_check = true
 
-			BuildPath(prow0, pcol0, path, n, ncols, nrows)
-
+			BuildPath(prow0, pcol0, n, ncols, nrows)
+--+++++++++++++
+NSTARS=NSTARS+1
+--+++++++++++++
 		-- Otherwise, no uncovered zeroes remain. Update the matrix and do another pass, without
         -- altering any stars, primes, or covered lines.
 		else
