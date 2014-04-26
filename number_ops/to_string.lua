@@ -57,13 +57,13 @@ function M.Binary (n, block_size, pad)
 			end
 
 			--
-			local char = "0"
+			local char, next = "0", 2 * bit
 
-			if n % (bit + bit) >= bit then
+			if n % next >= bit then
 				char, n = "1", n - bit
 			end
 
-			Acc[pos], bit = char, 2 * bit
+			Acc[pos], bit = char, next
 		until n == 0
 
 		-- If desired, pad the result to the block size.

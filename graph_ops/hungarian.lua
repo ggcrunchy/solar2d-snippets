@@ -33,7 +33,12 @@ local pairs = pairs
 
 -- Modules --
 local labels = require("graph_ops.labels")
+local log2 = require("bitwise_ops.log2")
 local operators = require("bitwise_ops.operators")
+local powers_of_2 = require("bitwise_ops.powers_of_2")
+
+-- Imports --
+local Lg_PowerOf2 = log2.Lg_PowerOf2
 
 -- Forward declarations --
 local ClearCoverage
@@ -63,50 +68,192 @@ if operators.HasBitLib() then
 	local band = operators.band
 	local bnot = operators.bnot
 	local bor = operators.bor
+	local bxor = operators.bxor
+	local lshift = operators.lshift
 	local rshift = operators.rshift
 
 	-- --
-	local DeBruijnLg = {
-		0, 1, 28, 2, 29, 14, 24, 3, 30, 22, 20, 15, 25, 17, 4, 8,
-		31, 27, 13, 23, 21, 19, 16, 7, 26, 12, 18, 6, 11, 5, 10, 9
-	}
-	-- band(x,-x), Lg
---[[
-r = MultiplyDeBruijnBitPosition2[(uint32_t)(v * 0x077CB531U) >> 27];
-]]
+	local FreeCols, MaskCols = {}, {}
+	local FreeRows, MaskRows = {}, {}
+
+	-- --
+	local ColN, RowN
+
 	--
 	function ClearCoverage (ncols, nrows, is_first)
 		--
+		if is_first then
+			--
+			ColN = rshift(powers_of_2.CLP2(ncols), 5)
+
+			for i = 1, ColN do
+				if i < ColN then
+					MaskCols[i] = 0xFFFFFFFF
+				else
+					MaskCols[i] = lshift(1, ncols) - 1
+				end
+			end
+
+			--
+			RowN = rshift(powers_of_2.CLP2(nrows), 5)
+
+			for i = 1, RowN do
+				if i < RowN then
+					MaskRows[i] = 0xFFFFFFFF
+				else
+					MaskRows[i] = lshift(1, nrows) - 1
+				end
+			end
+		end
+
+		--
+		for i = 1, RowN do
+			FreeCols[i] = MaskCols[i]
+			FreeRows[i] = MaskRows[i]
+		end
+
+		for i = RowN + 1, ColN do
+			FreeCols[i] = MaskCols[i]
+		end
+	end
+
+	--
+	local function AuxCover (i)
+		return rshift(i, 5) + 1, lshift(1, i)
 	end
 
 	--
 	function CoverColumn (col)
-		--
+		local index, bit = AuxCover(col)
+
+		FreeCols[index] = band(FreeCols[index], bnot(bit))
 	end
 
 	--
-	function CoverRow (row, ncols)
-		--
+	function CoverRow (row)
+		local index, bit = AuxCover(row)
+		local old = FreeRows[index]
+		local new = band(old, bnot(bit))
+
+		FreeRows[index] = new
+
+		return old ~= new
 	end
 
 	--
-	function FindZero ()
-		--
+	local function AuxPowers (offset, bits)
+		if bits ~= 0 then
+			local bit = band(bits, -bits)
+
+			return bxor(bits, bit), (bit > 0 and Lg_PowerOf2(bit) or 0x1F) + offset
+		end
+	end
+
+	--
+	local function Powers (bits, offset)
+		return AuxPowers, offset, bits
+	end
+
+	--
+	function FindZero (ncols)
+		local roff, vmin = 0, huge
+
+		for i = 1, RowN do
+			for _, rpos in Powers(FreeRows[i], roff) do
+				local coff, ri = 0, rpos * ncols + 1
+
+				for j = 1, ColN do
+					for _, col in Powers(FreeCols[j], coff) do
+						local cost = Costs[ri + col]
+
+						if cost < vmin then
+							if cost == 0 then
+								return ri, col
+							else
+								vmin = cost
+							end
+						end
+					end
+
+					coff = coff + 32
+				end
+			end
+
+			roff = roff + 32
+		end
+print("NUTS")
+		return vmin
 	end
 
 	--
 	function GetCount (ncols)
-		-- All bits 0 ? ncols : 0
+		local bits = 0
+
+		for i = 1, ColN do
+			bits = bor(FreeCols[i], bits)
+		end
+
+		return bits == 0 and ncols or 0
 	end
 
 	--
 	function UncoverColumn (col)
-		--
+		local index, bit = AuxCover(col)
+
+		FreeCols[index] = bor(FreeCols[index], bit)
 	end
 
 	--
-	function UpdateCosts (vmin)
-		--
+	function UpdateCosts (vmin, ncols)
+		local roff = 0
+print("UPDATING")
+		for i = 1, RowN do
+			local rbits = band(bnot(FreeRows[i]), MaskRows[i])
+
+			for _, rpos in Powers(rbits, roff) do
+				local coff = rpos * ncols + 1
+
+				for j = 1, ColN do
+					local cbits = band(bnot(FreeCols[j]), MaskCols[j])
+
+					for _, index in Powers(cbits, coff) do
+						Costs[index] = Costs[index] + vmin
+					end
+
+					coff = coff + 32
+				end
+			end
+
+			roff = roff + 32
+		end
+print("ONE")
+		roff = 0
+
+		for i = 1, RowN do
+			for _, rpos in Powers(FreeRows[i], roff) do
+				local coff, ri = 0, rpos * ncols + 1
+
+				for j = 1, ColN do
+					for _, col in Powers(FreeCols[j], coff) do
+						local index = ri + col
+						local cost = Costs[index] - vmin
+
+						Costs[index] = cost
+
+						if cost == 0 then
+							local zn = Zeroes.n
+
+							Zeroes[zn + 1], Zeroes[zn + 2], Zeroes.n = ri, col, zn + 2
+						end
+					end
+
+					coff = coff + 32
+				end
+			end
+
+			roff = roff + 32
+		end
+print("TWO")
 	end
 
 -- 
@@ -156,17 +303,17 @@ else
 
 	--
 	function CoverRow (row, ncols)
-		local rindex = Row[row]
+		local rindex = Row[row + 1]
 
 		if rindex > 0 then
 			local nurows = UncovRow.n
 			local at, rtop = CovRow.n + 1, UncovRow[nurows]
-			local top = (rtop - 1) / ncols + 1
+			local top = (rtop - 1) / ncols
 
 			CovRow[at] = UncovRow[rindex]
 			UncovRow[rindex] = rtop
-			Row[row] = -at
-			Row[top] = rindex
+			Row[row + 1] = -at
+			Row[top + 1] = rindex
 
 			UncovRow.n, CovRow.n = nurows - 1, at
 
@@ -336,7 +483,7 @@ local function PrimeZeroes (ncols)
 		if zn > 0 then
 			ri, col, Zeroes.n = Zeroes[zn - 1], Zeroes[zn], zn - 2
 		else
-			ri, col = FindZero()
+			ri, col = FindZero(ncols)
 		end
 
 		--
@@ -347,10 +494,7 @@ local function PrimeZeroes (ncols)
 
 			--
 			if scol < ncols then
-				local row = (ri - 1) / ncols + 1
-
-				--
-				if CoverRow(row, ncols) then
+				if CoverRow((ri - 1) / ncols, ncols) then
 					-- Evict any remaining zeroes in the row.
 					for i = zn, 1, -2 do
 						if Zeroes[i - 1] == ri then
@@ -538,7 +682,7 @@ PZN=PZN+1
 		-- Otherwise, no uncovered zeroes remain. Update the matrix and do another pass, without
         -- altering any stars, primes, or covered lines.
 		else
-			UpdateCosts(pcol0)
+			UpdateCosts(pcol0, ncols)
 		end
 --+++++++++++
 LP=LP+oc()-lp
