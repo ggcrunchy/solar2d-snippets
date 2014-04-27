@@ -72,6 +72,8 @@ local Color = {}
 local DefPacker
 
 --- DOCME
+-- @ptable[opt] opts
+-- @treturn function F
 function M.MakePacker (opts)
 	if opts then
 		local kcomps = opts.comps or "m_ncomps"
@@ -115,16 +117,26 @@ end
 DefPacker = M.MakePacker{}
 
 --- DOCME
+-- @param object
+-- @param ...
 function M.PackColor (object, ...)
 	DefPacker(object, "pack", ...)
 end
 
 --- DOCME
+-- @param object
+-- @callable packer
+-- @param ...
 function M.PackColor_Custom (object, packer, ...)
 	(packer or DefPacker)(object, "pack", ...)
 end
 
--- --
+-- Packs one to four quantized (i.e. 0-255) color components into a number --
+-- Bits 0-1: Number of color components - 1
+-- Bits 2-9: Red component
+-- Bits 10-17: Green component
+-- Bits 18-25: Blue component
+-- Bits 26-33: Alpha component
 local PackNumberMethods = {
 	function(r)
 		return floor(r * 255)
@@ -144,6 +156,8 @@ local PackNumberMethods = {
 }
 
 --- DOCME
+-- @param ...
+-- @treturn uint X
 function M.PackColor_Number (...)
 	local n = select("#", ...)
 
@@ -152,7 +166,7 @@ end
 
 --- WIP
 -- @param name
--- @param color
+-- @tparam table|userdata color
 -- @see GetColor
 function M.RegisterColor (name, color)
 	assert(name ~= nil and not Colors[name], "Color already defined")
@@ -161,21 +175,20 @@ function M.RegisterColor (name, color)
 	Colors[name] = color
 end
 
--- --
+-- Methods to unpack a number into one to four components; complements PackNumberMethods --
 local UnpackNumberMethods, UnpackNumber = {
-	function(r)
+	function(r) -- Same whether bit library is present or not
 		return r / 0xFF
 	end
 }
  
 if operators.HasBitLib() then
 	local band = operators.band
-	local rshift = operators.rshift
 
 	UnpackNumberMethods[2] = function(rg)
-		local g = band(rg, 0xFF * 2^8)
+		local g = band(rg, 0xFF * 2^8) -- Mask shifted left (and constant-folded)
 
-		return (rg - g) / 0xFF, g / (0xFF * 2^8)
+		return (rg - g) / 0xFF, g / (0xFF * 2^8) -- Divide by 255 (right shifts also constant-folded)
 	end
 
 	UnpackNumberMethods[3] = function(rgb)
@@ -190,36 +203,30 @@ if operators.HasBitLib() then
 		return (rgba - g - b - a) / 0xFF, g / (0xFF * 2^8), b / (0xFF * 2^16), a / (0xFF * 2^24)
 	end
 
-	--
 	function UnpackNumber (rgba)
-		return UnpackNumberMethods[band(rgba, 0x3) + 1](rshift(rgba, 2))
+		local index = band(rgba, 0x3)
+
+		return UnpackNumberMethods[index + 1](.25 * (rgba - index)) -- n.b. 34-bit number; 32-bit rshift() assumed, thus use .25 * x
 	end
 else
 	UnpackNumberMethods[2] = function(rg)
 		local r = rg % 2^8
 
-		return r / 0xFF, (rg - r) / (0xFF * 2^8)
+		return r / 0xFF, (rg - r) / (0xFF * 2^8) -- As per bit library version, but numerator strategy differs, given what mod can mask
 	end
 
 	UnpackNumberMethods[3] = function(rgb)
-		local r = rgb % 2^8
-		local gb = rgb - r
-		local g = gb % 2^16
+		local r, rg = rgb % 2^8, rgb % 2^16
 
-		return r / 0xFF, g / (0xFF * 2^8), (rgb - r - g) / (0xFF * 2^16)
+		return r / 0xFF, (rg - r) / (0xFF * 2^8), (rgb - rg) / (0xFF * 2^16)
 	end
 
 	UnpackNumberMethods[4] = function(rgba)
-		local r = rgba % 2^8
-		local gba = rgba - r
-		local g = gba % 2^16
-		local ba = gba - g
-		local b = ba % 2^24
+		local r, rg, rgb = rgba % 2^8, rgba % 2^16, rgba % 2^24
 
-		return r / 0xFF, g / (2^8 * 0xFF), b / (2^16 * 0xFF), (ba - b) / (2^24 * 0xFF)
+		return r / 0xFF, (rg - r) / (2^8 * 0xFF), (rgb - rg) / (2^16 * 0xFF), (rgba - rgb) / (2^24 * 0xFF)
 	end
 
-	--
 	function UnpackNumber (rgba)
 		local index = rgba % 4
 
@@ -228,31 +235,45 @@ else
 end
 
 --- DOCME
+-- @param object
+-- @param from
 function M.SetFillColor (object, from)
 	DefPacker(object, "fill", from)
 end
 
 --- DOCME
+-- @param object
+-- @callable packer
+-- @param from
 function M.SetFillColor_Custom (object, packer, from)
 	(packer or DefPacker)(object, "fill", from)
 end
 
 --- DOCME
+-- @param object
+-- @uint n
 function M.SetFillColor_Number (object, n)
 	object:setFillColor(UnpackNumber(n))
 end
 
 --- DOCME
+-- @param object
+-- @param from
 function M.SetStrokeColor (object, from)
 	DefPacker(object, "stroke", from)
 end
 
 --- DOCME
+-- @param object
+-- @callable packer
+-- @param from
 function M.SetStrokeColor_Custom (object, packer, from)
 	(packer or DefPacker)(object, "stroke", from)
 end
 
 --- DOCME
+-- @param object
+-- @uint n
 function M.SetStrokeColor_Number (object, n)
 	object:setStrokeColor(UnpackNumber(n))
 end

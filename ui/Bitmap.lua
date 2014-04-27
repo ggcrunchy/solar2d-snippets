@@ -1,6 +1,4 @@
 --- Bitmap UI elements.
---
--- @todo Document skin...
 
 --
 -- Permission is hereby granted, free of charge, to any person obtaining
@@ -30,7 +28,9 @@ local max = math.max
 local min = math.min
 local next = next
 local pairs = pairs
-local remove = table.remove
+
+-- Extension imports --
+local indexOf = table.indexOf
 
 -- Modules --
 local color = require("ui.Color")
@@ -39,7 +39,6 @@ local operators = require("bitwise_ops.operators")
 -- Corona globals --
 local display = display
 local system = system
-local timer = timer
 
 -- Corona modules --
 local composer = require("composer")
@@ -57,11 +56,31 @@ local function AddCapture (bitmap, capture)
 	bitmap.m_capture = capture
 end
 
+-- List of active bitmaps --
+local UpdateList = {}
+
+-- Activates a bitmap
+local function AddToList (update)
+	if not indexOf(UpdateList, update) then
+		UpdateList[#UpdateList + 1] = update
+	end
+end
+
+-- Deactivates a bitmap
+local function RemoveFromList (update)
+	local i, n = indexOf(UpdateList, update), #UpdateList
+
+	if i then
+		UpdateList[i] = UpdateList[n]
+		UpdateList[n] = nil
+	end
+end
+
 -- Bitmap finalizer
 local function Cleanup (event)
 	local bitmap = event.target
 
-	timer.cancel(bitmap.m_update)
+	RemoveFromList(bitmap.m_update)
 
 	if bitmap.m_scene then
 		local scene = composer.getScene(bitmap.m_name)
@@ -114,8 +133,8 @@ if operators.HasBitLib() then
 		return band(key, power - 1), rshift(key, nbits)
 	end
 
-	-- With or without a bit library available, the key is composed by a multiply-add. Since the
-	-- maximum size is no longer needed, hijack it to streamline the operation.
+	-- With or without a bit library available, ToKey() involves a multiply-add. Since the
+	-- maximum size is needed no longer, hijack it to streamline the operation.
 	MaxSize = power
 else
 	function FromKey (key)
@@ -135,8 +154,8 @@ local Quota = 150
 
 --- Creates a new 1-by-1 bitmap, with background enabled.
 --
--- A bitmap will gradually incorporate changes to its pixels, while also striving to not
--- starve VRAM.
+-- A bitmap will gradually incorporate changes to its pixels, while striving also to not
+-- consume inordinate an amount of expensive (in time and / or space) per-pixel resources.
 --
 -- As with any display object, certain events are exposed via the **addEventListener** and
 -- **removeEventListener** methods. Each of these provide the standard event **name** key,
@@ -144,7 +163,11 @@ local Quota = 150
 --
 -- If **composer** is being used, it is assumed that _group_ belongs to the current scene. If
 -- this is not so, the bitmap will not be able to idle between scene switches.
--- @todo For correctness, the bitmap must currently be entirely on-screen and unobstructed
+-- @todo For correctness, the bitmap must currently be entirely on-screen and unobstructed.
+-- In theory this can all be obviated with snapshots; otherwise it should be possible, though
+-- quite a bit of effort, to work around this by building up the rest piece by piece, so long
+-- as SOME region can be assumed to satisfy the aforementioned constraint... then the "dirty"
+-- part of the image is updated here and patched in to its proper place once complete.
 -- @pgroup group Group to which bitmap will be inserted.
 -- @treturn DisplayObject Bitmap object.
 function M.Bitmap (group)
@@ -232,9 +255,9 @@ function M.Bitmap (group)
 
 	--- If possible, sets a pixel's color; otherwise, the assignment is put in a waiting list.
 	--
-	-- Each bitmap maintains a timer, which will periodically process some of the pending pixel
-	-- assignments. The order of these operations is arbitrary, although a **SetPixel** call
-	-- will replace any pending operation with the same _x_ and _y_.
+	-- Each bitmap is periodically updated, during which some of the pending operations will be
+	-- processed. The order in which these occur is unspecified; however, given the same _x_ and
+	-- _y_, a **SetPixel** call will supercede any pending assignment.
 	--
 	-- If _x_ and _y_ refer to an out-of-bounds pixel, this is a no-op. A pending operation is
 	-- similarly discarded, if out-of-bounds when being serviced (on account of resizes).
@@ -252,11 +275,7 @@ function M.Bitmap (group)
 			-- If the stash has pixels available, grab one and write it directly to the canvas.
 			if n > 0 then
 				local pixel = stash[n]
-				--[[
-if AAA then
-	pixel.width,pixel.height=3,3
-end
---]]
+
 				canvas:insert(pixel)
 				pixel:setFillColor(...)
 
@@ -286,11 +305,11 @@ end
 	-- Watch for dirty pixels.
 	local allocated = 0
 
-	Bitmap.m_update = timer.performWithDelay(30, function(event)
+	function Bitmap.m_update ()
 		-- Allocate some pixels, until a reasonable amount are available.
 		local extra = min(10, quota - allocated)
 
-		for i = 1, extra do
+		for _ = 1, extra do
 			local pixel = display.newRect(stash, 0, 0, 1, 1)
 
 			pixel.anchorX, pixel.anchorY = 0, 0
@@ -314,11 +333,7 @@ end
 					canvas:insert(pixel)
 
 					pixel.x, pixel.y, nstash = x, y, nstash - 1
---[[
-if AAA then
-	pixel.width,pixel.height=3,3
-end
---]]
+
 					color.SetFillColor_Number(pixel, v)
 				end
 
@@ -337,11 +352,11 @@ end
 			ResetCanvas(canvas, stash)
 			Dispatch("update", Bitmap)
 		end
-	end, 0)
+	end
 
 	-- If the bitmap is being added to the current scene, hook into the hide and show machinery
-	-- to manage the timer on scene switches. Keep the scene name around for cleanup purposes.
-	-- There is no obvious way to hook into a non-current scene, so those are unsupported.
+	-- to manage the update list on scene switches, keeping the scene name around for cleanup
+	-- purposes. It is not obvious how to connect a non-current scene, so this is unsupported.
 	local name = composer.getSceneName("current")
 	local scene = name and composer.getScene(name)
 
@@ -356,9 +371,9 @@ end
 			function Bitmap.m_scene (event)
 				if event.phase == "did" then
 					if event.name == "show" then
-						timer.resume(Bitmap.m_update)
+						AddToList(Bitmap.m_update)
 					else
-						timer.pause(Bitmap.m_update)
+						RemoveFromList(Bitmap.m_update)
 					end
 				end
 			end
@@ -370,11 +385,23 @@ end
 		end
 	end
 
+	-- If the bitmap was not added to a scene, it still needs to be updated.
+	if not Bitmap.m_name then
+		AddToList(Bitmap.m_update)
+	end
+
 	-- Handle cleanup on removal.
 	Bitmap:addEventListener("finalize", Cleanup)
 
 	return Bitmap
 end
+
+-- "enterFrame" listener --
+Runtime:addEventListener("enterFrame", function()
+	for i = 1, #UpdateList do
+		UpdateList[i]()
+	end
+end)
 
 -- Export the module.
 return M
