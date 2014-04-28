@@ -132,6 +132,14 @@ var_dump.SetDefaultOutf(printf)
 function vdump (var, name, limit)
 	var_dump.Print(var, name and { name = name, limit = limit })
 end
+
+--- Helper to dump generic variable, with integer values in hex.
+-- @param var Variable to dump.
+-- @param name As per @{var_ops.dump.Print}.
+-- @uint limit As per @{var_ops.dump.Print}.
+function vdumpx (var, name, limit)
+	var_dump.Print(var, { hex_uints = true, name = name, limit = limit })
+end
 --package.loaded.bit = require("plugin.bit")
 -- Kick off the app.
 scenes.GoToScene{ name = "scene.Intro" }

@@ -31,6 +31,42 @@ local M = {}
 
 --- DOCME
 -- @array arr
+-- @treturn boolean All bits clear?
+function M.AllClear (arr)
+	for i = 1, arr.n do
+		if arr[i] ~= 0 then
+			return false
+		end
+	end
+
+	return true
+end
+
+--- DOCME
+-- @array arr
+-- @treturn boolean All bits set?
+function M.AllSet (arr)
+	local n, mask = arr.n, arr.mask
+
+	if mask ~= 0 then
+		if mask ~= arr[n] then
+			return false
+		end
+
+		n = n - 1
+	end
+
+	for i = 1, n do
+		if arr[i] ~= 2^53 - 1 then
+			return false
+		end
+	end
+
+	return true
+end
+
+--- DOCME
+-- @array arr
 -- @uint index
 -- @treturn boolean The bit changed?
 function M.Clear (arr, index)
@@ -49,30 +85,10 @@ end
 
 --- DOCME
 -- @array arr
--- @uint n
--- @bool[opt=false] clear
-function M.Init (arr, n, clear)
-	--
-	local tail, mask = n % 53, 0
-	local nblocks = (n - tail) / 53
-
-	if tail > 0 then
-		nblocks, mask = nblocks + 1, 2^tail - 1
+function M.ClearAll (arr)
+	for i = 1, arr.n do
+		arr[i] = 0
 	end
-
-	--
-	local fill = clear and 0 or 2^53 - 1
-
-	for i = 1, nblocks do
-		arr[i] = fill
-	end
-
-	if mask ~= 0 and not clear then
-		arr[nblocks] = mask
-	end
-
-	--
-	arr.n, arr.mask = nblocks, mask
 end
 
 --
@@ -111,13 +127,13 @@ function M.GetIndices_Clear (out, from)
 	end
 
 	for i = 1, n do
-		count, offset = AuxGet(out, 2^53 - from[i] - 1, offset, count), offset + 32
+		count, offset = AuxGet(out, 2^53 - from[i] - 1, offset, count), offset + 53
 	end
 
 	if mask ~= 0 then
 		local bits = (2^53 - from[n + 1] - 1) % (mask + 1)
 
-		count, offset = AuxGet(out, bits, offset, count)
+		count = AuxGet(out, bits, offset, count)
 	end
 
 	return count
@@ -131,10 +147,38 @@ function M.GetIndices_Set (out, from)
 	local count, offset = 0, 0
 
 	for i = 1, from.n do
-		count, offset = AuxGet(out, from[i], offset, count), offset + 32
+		count, offset = AuxGet(out, from[i], offset, count), offset + 53
 	end
 
 	return count
+end
+
+--- DOCME
+-- @array arr
+-- @uint n
+-- @bool[opt=false] clear
+function M.Init (arr, n, clear)
+	--
+	local tail, mask = n % 53, 0
+	local nblocks = (n - tail) / 53
+
+	if tail > 0 then
+		nblocks, mask = nblocks + 1, 2^tail - 1
+	end
+
+	--
+	local fill = clear and 0 or 2^53 - 1
+
+	for i = 1, nblocks do
+		arr[i] = fill
+	end
+
+	if mask ~= 0 and not clear then
+		arr[nblocks] = mask
+	end
+
+	--
+	arr.n, arr.mask = nblocks, mask
 end
 
 --- DOCME
@@ -152,6 +196,20 @@ function M.Set (arr, index)
 		arr[slot] = old + power
 
 		return true
+	end
+end
+
+--- DOCME
+-- @array arr
+function M.SetAll (arr)
+	local n, mask = arr.n, arr.mask
+
+	for i = 1, n do
+		arr[i] = 2^53 - 1
+	end
+
+	if mask ~= 0 then
+		arr[n] = mask
 	end
 end
 

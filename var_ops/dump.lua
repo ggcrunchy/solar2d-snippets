@@ -59,14 +59,29 @@ if pcall(require, "ffi") then
 end
 
 -- Key formats --
-local KeyFormats = { integer = "%s[%i] = %s", number = "%s[%f] = %s", string = "%s%s = %s" }
+local KeyFormats = { number = "%s[%f] = %s", string = "%s%s = %s" }
+
+-- Converts integers to strings, with support for (possibly large) hex integers
+local function IntegerToString (n, hex_uints)
+	if hex_uints then
+		if n >= 2^32 then
+			local low = n % 2^32
+
+			return format("0x%x%x", (n - low) / 2^32, low)
+		else
+			return format("0x%x", n)
+		end
+	else
+		return tostring(n)
+	end
+end
 
 -- Returns: Type name, pretty print form of value
-local function Pretty (v, guard, tfunc)
+local function Pretty (v, hex_uints, guard, tfunc)
 	local vtype = type(v)
 
 	if vtype == "number" and IsInteger(v) then
-		return "integer", format("%i", v)
+		return "integer", IntegerToString(v, hex_uints)
 	elseif vtype == "string" then
 		return "string", format("\"%s\"", v)
 	elseif vtype == "table" then
@@ -88,7 +103,7 @@ local function KeyComp (k1, k2)
 end
 
 -- Prints a table level
-local function PrintLevel (t, outf, tfunc, indent, guard)
+local function PrintLevel (t, outf, tfunc, indent, guard, hex_uints)
 	local lists = SubTablesOnDemand()
 	local member_indent = indent .. "   "
 
@@ -114,7 +129,7 @@ local function PrintLevel (t, outf, tfunc, indent, guard)
 		local kformat = KeyFormats[name]
 
 		if subt then
-			sort(subt, not kformat and KeyComp or nil)
+			sort(subt, (not kformat and name ~= "integer") and KeyComp or nil)
 
 			for _, k in ipairs(subt) do
 				local v = rawget(t, k)
@@ -126,13 +141,13 @@ local function PrintLevel (t, outf, tfunc, indent, guard)
 				if HasMeta(v, "__tostring") then
 					vstr = tostring(v)
 				else
-					vtype, vstr = Pretty(v, guard, tfunc)
+					vtype, vstr = Pretty(v, hex_uints, guard, tfunc)
 				end
 
 				outf(kformat or "%s[%s] = %s", member_indent, kformat and k or tostring(k), vstr)
 
 				if vtype == "table" then
-					PrintLevel(v, outf, tfunc, member_indent, guard)
+					PrintLevel(v, outf, tfunc, member_indent, guard, hex_uints)
 				end
 			end
 		end
@@ -176,25 +191,28 @@ local function DefTableFunc () end
 -- If _var_ is a table, this is prepended to each line of the printout.
 --
 -- <ul>
+-- <li> **hex_uints** If true, unsigned integer values are written in hexadecimal.</li>
+-- <li> **limit** Maximum number of times to allow a printout with _name_; if absent, 1.</li>
+-- <li> **name** When provided, an early-out check will see if a printout has been performed
+-- with _name_; if so, and if _limit_ has been reached, the printout is a no-op.</li>
 -- <li> **outf**: Formatted output routine, i.e. with an interface like @{string.format};
 -- if absent, the default output function is used.</li>
 -- <li> **table_func**: Table function. When a new table _t_ is encountered during the print,
 -- the call `table_func(t, "new_table")` is performed; if the same table is found again
 -- later, each such time the call `table_func(t, "cycle")` is made.</li>
--- <li> **name** When provided, an early-out check will see if a printout has been performed
--- with _name_; if so, and if _limit_ has been reached, the printout is a no-op.</li>
--- <li> **limit** Maximum number of times to allow a printout with _name_; if absent, 1.</li>
+-- </ul>
 --
 -- Ignored if _name_ is absent.
 -- @see SetDefaultOutf
 function M.Print (var, opts)
-	local indent, outf, tfunc
+	local hex_uints, indent, outf, tfunc
 
 	if opts then
 		if EarlyOut(opts.name, opts.limit) then
 			return
 		end
 
+		hex_uints = opts.hex_uints
 		indent = opts.indent
 		outf = opts.outf
 		tfunc = opts.table_func
@@ -213,10 +231,10 @@ function M.Print (var, opts)
 	elseif type(var) == "table" then
 		outf("%stable: {", indent)
 
-		PrintLevel(var, outf, tfunc, indent, {})
+		PrintLevel(var, outf, tfunc, indent, {}, hex_uints)
 
 	else
-		local vtype, vstr = Pretty(var)
+		local vtype, vstr = Pretty(var, hex_uints)
 
 		-- Output the pretty form of the variable. With some types, forgo prefacing them
 		-- with their type name, since prettying will make it redundant.
