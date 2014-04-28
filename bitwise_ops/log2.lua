@@ -31,7 +31,7 @@ local frexp = math.frexp
 local M = {}
 
 --- Ceiling of binary logarithm of _n_.
--- @uint n Positive integer.
+-- @uint n Integer, &isin; [1, 2^53].
 -- @treturn uint Ceilinged logarithm.
 function M.Lg_Ceil (n)
 	local frac, exp = frexp(n)
@@ -40,7 +40,7 @@ function M.Lg_Ceil (n)
 end
 
 --- Floor of binary logarithm of _n_.
--- @uint n Positive integer.
+-- @uint n Integer, &isin; [1, 2^53].
 -- @treturn uint Floored logarithm.
 function M.Lg_Floor (n)
 	local _, exp = frexp(n)
@@ -48,27 +48,55 @@ function M.Lg_Floor (n)
 	return exp - 1
 end
 
--- Binary logarithm lookup table --
-local Lg = {}
+--- Populates a perfect hash table for powers of 2: 2^_i_ | _i_ &isin; [0, 35].
+--
+-- Given a power of 2, the binary logarithm can be extracted as `i = t[power % 37]`.
+--
+-- For 32-bit _power_, one may compute `quot = math.floor(power * (0xDD67C8A7 * 2^-37))`,
+-- obtaining the logarithm by `i = t[power - quot * 37]`. (See e.g. the chapter "Integer
+-- Division By Constants", in Hacker's Delight. In particular, the "Simple Code in Python"
+-- section: the above constant is _m_ * 2^-_p_, where `m, p = magicgu(2^31, 37)`, which
+-- folds the (un-floored) shift part of the division into the multiplicand.)
+-- @ptable[opt] t Table to populate. If absent, one is provided.
+-- @treturn table _t_.
+function M.PopulateMod37 (t)
+	t = t or {}
 
--- Fill in the values and plug holes.
-do
+	-- Fill in the values, terminating at i = 36 where the first clash occurs; conveniently,
+	-- no slot remains unfilled, i.e. this is a minimal perfect hash.
 	local n = 1
 
-	for i = 0, 54 do
-		Lg[n % 59], n = i, 2 * n
+	for i = 0, 35 do
+		t[n % 37], n = i, 2 * n
 	end
 
-	Lg[15] = false
-	Lg[30] = false
-	Lg[37] = false
+	return t
 end
 
---- Binary logarithm for the special case that _n_ is known to be a power of 2.
--- @uint n Power of 2 integer &isin; [1, 2^54].
--- @treturn uint Binary logarithm of _n_.
-function M.Lg_PowerOf2 (n)
-	return Lg[n % 59]
+--- Populates a perfect hash table for powers of 2: 2^_i_ | _i_ &isin; [0, 54].
+--
+-- Given a power of 2, the binary logarithm can be extracted as `i = t[power % 59]`.
+--
+-- For 32-bit _power_, the same idea can be followed as in @{PopulateMod37}, substituting
+-- `quot = math.floor(power * (0x22B63CBF * 2^-35))` and `i = t[power - quot * 59]`.
+-- @ptable[opt] t Table to populate. If absent, one is provided.
+-- @treturn table _t_.
+function M.PopulateMod59 (t)
+	t = t or {}
+
+	-- Fill in the values...
+	local n = 1
+
+	for i = 0, 54 do -- n.b. integers still representable up to 2^53, evens up to 2^54
+		t[n % 59], n = i, 2 * n
+	end
+
+	-- ...and plug holes.
+	t[15] = false
+	t[30] = false
+	t[37] = false
+
+	return t
 end
 
 -- Export the module.

@@ -1,4 +1,4 @@
---- Operations dealing with powers of 2.
+--- Operations dealing with bit counts.
 
 --
 -- Permission is hereby granted, free of charge, to any person obtaining
@@ -23,78 +23,65 @@
 -- [ MIT license: http://www.opensource.org/licenses/mit-license.php ]
 --
 
--- Standard library imports --
-local frexp = math.frexp
-
 -- Modules --
 local operators = require("bitwise_ops.operators")
 
--- Imports --
-local bor = operators.bor
-local rshift = operators.rshift
+-- Forward references --
+local rshift
 
--- Exports --
+-- Imports --
+if operators.HasBitLib() then -- Bit library available
+	rshift = operators.rshift
+else -- Otherwise, make equivalents for count purposes
+	function rshift (n)
+		return n >= 0x80000000 and 1 or 0
+	end
+end
+
+-- Export --
 local M = {}
 
---- DOCME
-function M.CLP2 (x)
-	if x > 0 then
-		x = x - 1
-
-		x = bor(x, rshift(x, 1))
-		x = bor(x, rshift(x, 2))
-		x = bor(x, rshift(x, 4))
-		x = bor(x, rshift(x, 8))
-		x = bor(x, rshift(x, 16))
-
-		return x + 1
+--- Gets the number of leading zeroes for a given value.
+-- @uint n Value.
+-- @treturn uint Count.
+function M.NLZ (n)
+	if n == 0 then
+		return 32
 	else
-		return 0
-	end
-end
+		local count = 1
 
--- Increment to add to lowest bits (layed out like ticks on a ruler) --
-local Tick = { 0, 0, 0 }
-
---- Getter.
--- @uint n Integer.
--- @treturn uint If _n_ > 0, lowest power of 2 in _n_; otherwise, 0.
-function M.GetLowestPowerOf2 (n)
-	if n > 0 then
-		local bit = 1
-
-		while true do
-			local low2 = n % 4
-
-			if low2 > 0 then
-				Tick[2] = bit
-
-				return bit + Tick[low2]
-			else
-				n, bit = .25 * n, bit * 4
-			end
+		if n < 2^16 then
+			count, n = 17, n * 2^16
 		end
-	else
-		return 0
+
+		if n < 2^24 then
+			count, n = count + 8, n * 2^8
+		end
+
+		if n < 2^28 then
+			count, n = count + 4, n * 2^4
+		end
+
+		if n < 2^30 then
+			count, n = count + 2, n * 2^2
+		end
+
+		return count - rshift(n, 31)
 	end
 end
 
--- Helper to iterates powers of 2
-local function AuxPowersOf2 (bits, removed)
-	if bits ~= removed then
-		local _, e = frexp(bits - removed)
-		local exp = e - 1
-		local bit = 2^exp
-
-		return removed + bit, bit, exp
-	end
+--- Gets the number of trailing zeroes for a given value.
+-- @uint n Value.
+-- @treturn uint Count.
+function M.NTZ (n)
+	-- TODO! (number of trailing zeroes)
 end
 
---- Iterates over the set bits / powers of 2 in an integer.
--- @uint n Integer &isin; [0, 2^53] (0 being a no-op).
--- @treturn iterator Supplies removed bits, power of 2, bit index (0-based).
-function M.PowersOf2 (n)
-	return AuxPowersOf2, n, 0
+--- Gets the number of bits set in a given value.
+-- @uint n Value.
+-- @treturn uint Count.
+function M.Pop (n)
+	-- TODO!
 end
 
 -- Export the module.

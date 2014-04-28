@@ -133,6 +133,5 @@ function vdump (var, name, limit)
 	var_dump.Print(var, name and { name = name, limit = limit })
 end
 --package.loaded.bit = require("plugin.bit")
---local bb=package.loaded.bit
 -- Kick off the app.
 scenes.GoToScene{ name = "scene.Intro" }

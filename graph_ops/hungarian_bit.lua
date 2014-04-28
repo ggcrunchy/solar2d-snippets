@@ -29,6 +29,7 @@ local min = math.min
 local huge = math.huge
 
 -- Modules --
+local log2 = require("bitwise_ops.log2")
 local operators = require("bitwise_ops.operators")
 
 -- Imports --
@@ -116,9 +117,12 @@ function M.CoverRow (row)
 	end
 end
 
+-- --
+local Lg = log2.PopulateMod59()
+
 --
 local function Populate (arr, from, n, mask)
-	local count, offset = 0, 31
+	local count, offset = 0, 0
 
 	for i = 1, n do
 		local bits = from[i]
@@ -128,32 +132,12 @@ local function Populate (arr, from, n, mask)
 		end
 
 		while bits ~= 0 do
-			local bit, pos = band(bits, -bits), offset
+			local bit, pos = band(bits, -bits)
 
 			if bit > 0 then
-				bits = bits - bit
-
-				local nlz = 1
-
-				if bit < 2^16 then
-					nlz, bit = 17, bit * 2^16
-				end
-
-				if bit < 2^24 then
-					nlz, bit = nlz + 8, bit * 2^8
-				end
-
-				if bit < 2^28 then
-					nlz, bit = nlz + 4, bit * 2^4
-				end
-
-				if bit < 2^30 then
-					nlz, bit = nlz + 2, bit * 2^2
-				end
-
-				pos = pos - nlz + rshift(bit, 31)
+				bits, pos = bits - bit, offset + Lg[bit % 59]
 			else
-				bits = 0
+				bits, pos = 0, offset + 31
 			end
 
 			arr[count + 1], count = pos, count + 1
