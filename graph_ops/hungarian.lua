@@ -89,7 +89,7 @@ local function CountCoverage (n, ncols)
 		end
 	end
 
-	return vector.AllClear(FreeColBits) and ncols or 0
+	return vector.AllClear(FreeColBits)
 end
 
 -- --
@@ -184,7 +184,7 @@ local function BuildPath (ri, col, n, ncols, nrows)
 end
 
 --
-local function FindZero (costs, ucols, urows, ari)--ncols)
+local function FindZero (costs, ucols, urows, ncols)
 	local ucn = UncovColN or GetIndices_Set(ucols, FreeColBits)
 	local urn = UncovRowN or GetIndices_Set(urows, FreeRowBits)
 
@@ -194,7 +194,7 @@ local function FindZero (costs, ucols, urows, ari)--ncols)
 	local vmin = huge
 
 	for i = 1, urn do
-		local ri = ari[urows[i] + 1]-- * ncols + 1
+		local ri = urows[i] * ncols + 1
 
 		for j = 1, ucn do
 			local col = ucols[j]
@@ -214,7 +214,7 @@ local function FindZero (costs, ucols, urows, ari)--ncols)
 end
 
 -- Prime some uncovered zeroes
-local function PrimeZeroes (costs, zeroes, ucols, urows, ari, ncols)
+local function PrimeZeroes (costs, zeroes, ucols, urows, ncols)
 	while true do
 		--
 		local zn, col, ri = zeroes.n
@@ -222,7 +222,7 @@ local function PrimeZeroes (costs, zeroes, ucols, urows, ari, ncols)
 		if zn > 0 then
 			ri, col, zeroes.n = zeroes[zn - 1], zeroes[zn], zn - 2
 		else
-			ri, col = FindZero(costs, ucols, urows, ari)--ncols)
+			ri, col = FindZero(costs, ucols, urows, ncols)
 		end
 
 		--
@@ -263,7 +263,7 @@ local function PrimeZeroes (costs, zeroes, ucols, urows, ari, ncols)
 end
 
 -- Updates the cost matrix to reflect the new minimum
-local function UpdateCosts (vmin, costs, zeroes, ccols, crows, ucols, urows, ari)--ncols)
+local function UpdateCosts (vmin, costs, zeroes, ccols, crows, ucols, urows, ncols)
 	--
 	local ccn = CovColN or GetIndices_Clear(ccols, FreeColBits)
 	local crn = CovRowN or GetIndices_Clear(crows, FreeRowBits)
@@ -271,7 +271,7 @@ local function UpdateCosts (vmin, costs, zeroes, ccols, crows, ucols, urows, ari
 	CovColN, CovRowN = ccn, crn
 
 	for i = 1, crn do
-		local ri = ari[crows[i] + 1]-- * ncols + 1
+		local ri = crows[i] * ncols + 1
 
 		for j = 1, ccn do
 			local index = ri + ccols[j]
@@ -287,7 +287,7 @@ local function UpdateCosts (vmin, costs, zeroes, ccols, crows, ucols, urows, ari
 	UncovColN, UncovRowN = ucn, urn
 
 	for i = 1, urn do
-		local ri = ari[urows[i] + 1]-- * ncols + 1
+		local ri = urows[i] * ncols + 1
 
 		for j = 1, ucn do
 			local col = ucols[j]
@@ -320,9 +320,6 @@ local CovRows, UncovRows = {}, {}
 
 -- --
 local Zeroes = {}
-
--- --
-local RI = {}
 
 --- DOCME
 -- @array costs
@@ -361,12 +358,9 @@ local sum=0
 	ClearCoverage(ncols, nrows, true)
 
 	--
-	local cost_matrix, zeroes, ccols, crows, ucols, urows, ari = Costs, Zeroes, CovCols, CovRows, UncovCols, UncovRows, RI
+	local cost_matrix, zeroes, ccols, crows, ucols, urows = Costs, Zeroes, CovCols, CovRows, UncovCols, UncovRows
 	local do_check = true
-local ri=1
-for i = 1, nrows do
-	RI[i], ri = ri, ri + ncols
-end
+
 	zeroes.n = 0
 
 	while true do
@@ -379,9 +373,7 @@ lp=oc()
 --+++++
 		-- Check if the starred zeroes describe a complete set of unique assignments.
 		if do_check then
-			local ncovered = CountCoverage(n, ncols)
-
-			if ncovered >= ncols or ncovered >= nrows then
+			if CountCoverage(n, ncols) then
 				if from == Costs then
 					-- Inverted, do something...
 				end
@@ -413,7 +405,7 @@ AU,AUN=0,0
 local pz=oc()
 --+++++++++++
 		-- Find a noncovered zero and prime it.
-		local prow0, pcol0 = PrimeZeroes(cost_matrix, zeroes, ucols, urows, ari, ncols)--ncols)
+		local prow0, pcol0 = PrimeZeroes(cost_matrix, zeroes, ucols, urows, ncols)
 
 		zeroes.n = 0
 --+++++++++++
@@ -431,7 +423,7 @@ PZN=PZN+1
 		-- Otherwise, no uncovered zeroes remain. Update the matrix and do another pass, without
         -- altering any stars, primes, or covered lines.
 		else
-			UpdateCosts(pcol0, cost_matrix, zeroes, ccols, crows, ucols, urows, ari)--ncols)
+			UpdateCosts(pcol0, cost_matrix, zeroes, ccols, crows, ucols, urows, ncols)
 --++++++++
 AUN=AUN+1
 --++++++++
