@@ -27,19 +27,22 @@
 
 -- Standard library imports --
 local ceil = math.ceil
-local huge = math.huge
 local min = math.min
 local pairs = pairs
 
 -- Modules --
+local core = require("graph_ops.hungarian_core")
 local labels = require("graph_ops.labels")
 local vector = require("bitwise_ops.vector")
 
 -- Imports --
+local AddMin = core.AddMin
 local Clear = vector.Clear
+local FindZero = core.FindZero
 local GetIndices_Clear = vector.GetIndices_Clear
 local GetIndices_Set = vector.GetIndices_Set
 local Set = vector.Set
+local SubMin = core.SubMin
 
 -- Exports --
 local M = {}
@@ -80,14 +83,22 @@ local function ClearCoverage (ncols, nrows, is_first)
 end
 
 -- Counts how many columns contain a starred zero
-local function CountCoverage (n, ncols)
+local function CountCoverage (n, ccols, ncols)
+	local ccn = CovColN
+
 	for ri = 1, n, ncols do
 		local col = RowStar[ri]
 
 		if col < ncols and Clear(FreeColBits, col) then
-			CovColN, UncovColN = nil
+			if ccn then
+				ccols[ccn + 1], ccn = col, ccn + 1
+			end
+
+			UncovColN = nil
 		end
 	end
+
+	CovColN = ccn
 
 	return vector.AllClear(FreeColBits)
 end
@@ -183,46 +194,20 @@ local function BuildPath (ri, col, n, ncols, nrows)
 	end
 end
 
---
-local function FindZero (costs, ucols, urows, ncols)
-	local ucn = UncovColN or GetIndices_Set(ucols, FreeColBits)
-	local urn = UncovRowN or GetIndices_Set(urows, FreeRowBits)
-
-	UncovColN, UncovRowN = ucn, urn
-
-	--
-	local vmin = huge
-
-	for i = 1, urn do
-		local ri = urows[i] * ncols + 1
-
-		for j = 1, ucn do
-			local col = ucols[j]
-			local cost = costs[ri + col]
-
-			if cost < vmin then
-				if cost == 0 then
-					return ri, col
-				else
-					vmin = cost
-				end
-			end
-		end
-	end
-
-	return vmin
-end
-
 -- Prime some uncovered zeroes
 local function PrimeZeroes (costs, zeroes, ucols, urows, ncols)
+	local ucn, urn = UncovColN, UncovRowN
+
 	while true do
 		--
-		local zn, col, ri = zeroes.n
+		local zn, col, ri, at = zeroes.n
 
 		if zn > 0 then
 			ri, col, zeroes.n = zeroes[zn - 1], zeroes[zn], zn - 2
 		else
-			ri, col = FindZero(costs, ucols, urows, ncols)
+			ucn = ucn or GetIndices_Set(ucols, FreeColBits)
+			urn = urn or GetIndices_Set(urows, FreeRowBits)
+			ri, col, at = FindZero(costs, ucols, urows, ncols, ucn, urn)
 		end
 
 		--
@@ -233,8 +218,24 @@ local function PrimeZeroes (costs, zeroes, ucols, urows, ncols)
 
 			--
 			if scol < ncols then
-				if Clear(FreeRowBits, (ri - 1) / ncols) then
-					CovRowN, UncovRowN = nil
+				local row = (ri - 1) / ncols
+
+				if Clear(FreeRowBits, row) then
+					if urn then
+						if at then
+							urows[at], urn = urows[urn], urn - 1
+						else
+							local index = 0
+
+							repeat
+								index = index + 1
+							until urows[index] == row
+
+							urows[index], urn = urows[urn], urn - 1
+						end
+					end
+
+					CovColN = nil
 
 					-- Evict any remaining zeroes in the row.
 					for i = zn, 1, -2 do
@@ -247,66 +248,31 @@ local function PrimeZeroes (costs, zeroes, ucols, urows, ncols)
 				end
 
 				if Set(FreeColBits, col) then
-					CovRowN, UncovRowN = nil
+					if ucn then
+						ucols[ucn + 1], ucn = col, ucn + 1
+					end
+
+					CovRowN = nil
 				end
 
 			--
 			else
+				UncovColN, UncovRowN = ucn, urn
+
 				return ri, col
 			end
 
 		--
 		else
+			UncovColN, UncovRowN = ucn, urn
+
 			return false, ri
 		end
 	end
 end
 
--- Updates the cost matrix to reflect the new minimum
-local function UpdateCosts (vmin, costs, zeroes, ccols, crows, ucols, urows, ncols)
-	--
-	local ccn = CovColN or GetIndices_Clear(ccols, FreeColBits)
-	local crn = CovRowN or GetIndices_Clear(crows, FreeRowBits)
-
-	CovColN, CovRowN = ccn, crn
-
-	for i = 1, crn do
-		local ri = crows[i] * ncols + 1
-
-		for j = 1, ccn do
-			local index = ri + ccols[j]
-
-			costs[index] = costs[index] + vmin
-		end
-	end
-
-	--
-	local ucn = UncovColN or GetIndices_Set(ucols, FreeColBits)
-	local urn = UncovRowN or GetIndices_Set(urows, FreeRowBits)
-
-	UncovColN, UncovRowN = ucn, urn
-
-	for i = 1, urn do
-		local ri = urows[i] * ncols + 1
-
-		for j = 1, ucn do
-			local col = ucols[j]
-			local index = ri + col
-			local cost = costs[index] - vmin
-
-			costs[index] = cost
-
-			if cost == 0 then
-				local zn = zeroes.n
-
-				zeroes[zn + 1], zeroes[zn + 2], zeroes.n = ri, col, zn + 2
-			end
-		end
-	end
-end
-
 --++++++++++++++
-local AUN=0
+local AU,AUN=0,0
 local LP,LPN=0,0
 local PZ,PZN=0,0
 --++++++++++++++
@@ -373,7 +339,7 @@ lp=oc()
 --+++++
 		-- Check if the starred zeroes describe a complete set of unique assignments.
 		if do_check then
-			if CountCoverage(n, ncols) then
+			if CountCoverage(n, ccols, ncols) then
 				if from == Costs then
 					-- Inverted, do something...
 				end
@@ -390,7 +356,7 @@ LPN=LPN+1
 
 print("Loop", LP / LPN, LP)
 print("  Prime zeroes", PZ / PZN, PZ)
-print("  Actual update", (LP - PZ) / AUN, LP - PZ)
+print("  Actual update", AU / AUN, AU)
 print("TOTAL", sum+left)
 LP,LPN=0,0
 PZ,PZN=0,0
@@ -409,7 +375,8 @@ local pz=oc()
 
 		zeroes.n = 0
 --+++++++++++
-PZ=PZ+oc()-pz
+local au=oc()
+PZ=PZ+au-pz
 PZN=PZN+1
 --+++++++++++
 
@@ -423,10 +390,22 @@ PZN=PZN+1
 		-- Otherwise, no uncovered zeroes remain. Update the matrix and do another pass, without
         -- altering any stars, primes, or covered lines.
 		else
-			UpdateCosts(pcol0, cost_matrix, zeroes, ccols, crows, ucols, urows, ncols)
---++++++++
+			local ccn = CovColN or GetIndices_Clear(ccols, FreeColBits)
+			local crn = CovRowN or GetIndices_Clear(crows, FreeRowBits)
+
+			AddMin(pcol0, cost_matrix, ccols, crows, ccn, crn, ncols)
+
+			local ucn = UncovColN or GetIndices_Set(ucols, FreeColBits)
+			local urn = UncovRowN or GetIndices_Set(urows, FreeRowBits)
+
+			SubMin(pcol0, cost_matrix, zeroes, ucols, urows, ucn, urn, ncols)
+
+			CovColN, UncovColN = ccn, ucn
+			CovRowN, UncovRowN = crn, urn
+--+++++++++++
+AU=AU+oc()-au
 AUN=AUN+1
---++++++++
+--+++++++++++
 		end
 --+++++++++++
 LP=LP+oc()-lp

@@ -24,6 +24,7 @@
 --
 
 -- Standard library imports --
+local floor = math.floor
 local max = math.max
 local min = math.min
 
@@ -86,6 +87,16 @@ function M.MinMax_N (a, b, n)
 	a, b = _MinMax_(a, b)
 
 	return max(a, 1), min(b, n)
+end
+
+--- Rounds a number to the nearest multiple of some increment.
+-- @number n Number to round.
+-- @number[opt=1] inc Increment.
+-- @treturn number Rounded result.
+function M.RoundTo (n, inc)
+	inc = inc or 1
+
+	return floor(n / inc + .5) * inc
 end
 
 -- Cache module members.

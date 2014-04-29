@@ -24,9 +24,11 @@
 --
 
 -- Standard library imports --
+local floor = math.floor
 local frexp = math.frexp
 
 -- Modules --
+local divide = require("number_ops.divide")
 local operators = require("bitwise_ops.operators")
 
 -- Forward declarations --
@@ -76,7 +78,7 @@ if operators.HasBitLib() then
 
 		return bxor(bits, 0xFFFFFFFF) == 0
 	end
-else 
+else
 	function AuxAllSet (arr, n)
 		for i = 1, n do
 			if arr[i] ~= 2^53 - 1 then
@@ -122,8 +124,8 @@ if operators.HasBitLib() then
 	end
 else
 	function M.Clear (arr, index)
-		local pos = index % 53
-		local slot = (index - pos) / 53 + 1
+		local quot = floor(index * arr.magic)
+		local slot, pos = quot + 1, index - quot * 53
 		local old, power = arr[slot], 2^pos
 
 		if old % (2 * power) >= power then
@@ -263,9 +265,10 @@ if operators.HasBitLib() then
 	end
 else
 	function AuxInit (n, clear)
-		local tail = n % 53
+		local magic = divide.GenerateUnsignedConstants(n, 53, true)
+		local quot = floor(n * magic)
 
-		return (n - tail) / 53, tail, 53
+		return quot, n - quot * 53, 53, magic
 	end
 end
 
@@ -274,7 +277,7 @@ end
 -- @uint n
 -- @bool[opt=false] clear
 function M.Init (arr, n, clear)
-	local mask, nblocks, tail, power = 0, AuxInit(n, clear)
+	local mask, nblocks, tail, power, magic = 0, AuxInit(n, clear)
 
 	if tail > 0 then
 		nblocks, mask = nblocks + 1, 2^tail - 1
@@ -290,7 +293,7 @@ function M.Init (arr, n, clear)
 		arr[nblocks] = mask
 	end
 
-	arr.n, arr.mask = nblocks, mask
+	arr.n, arr.mask, arr.magic = nblocks, mask, magic
 end
 
 --- DOCME
@@ -310,8 +313,8 @@ if operators.HasBitLib() then
 	end
 else
 	function M.Set (arr, index)
-		local pos = index % 53
-		local slot = (index - pos) / 53 + 1
+		local quot = floor(index * arr.magic)
+		local slot, pos = quot + 1, index - quot * 53
 		local old, power = arr[slot], 2^pos
 
 		if old % (2 * power) >= power then

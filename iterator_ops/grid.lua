@@ -30,12 +30,12 @@ local max = math.max
 
 -- Modules --
 local array_index = require("array_ops.index")
+local divide = require("number_ops.divide")
 local iterator_utils = require("iterator_ops.utils")
-local number_funcs = require("number_ops.funcs")
 
 -- Imports --
 local CellToIndex = array_index.CellToIndex
-local DivRem = number_funcs.DivRem
+local DivRem = divide.DivRem
 
 -- Exports --
 local M = {}

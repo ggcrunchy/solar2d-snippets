@@ -26,12 +26,6 @@
 -- Standard library imports --
 local floor = math.floor
 
--- Modules --
-local number_funcs = require("number_ops.funcs")
-
--- Imports --
-local DivRem = number_funcs.DivRem
-
 -- Exports --
 local M = {}
 
@@ -51,9 +45,9 @@ end
 -- @treturn int Row index.
 -- @see CellToIndex
 function M.IndexToCell (index, w)
-	local row, col = DivRem(index - 1, w)
+	local quot = floor((index - 1) / w)
 
-	return col + 1, row + 1
+	return index - quot * w, quot + 1
 end
 
 --- Gets the index of a grid cell when that grid is considered as a flat array.

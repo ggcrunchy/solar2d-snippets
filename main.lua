@@ -140,8 +140,9 @@ end
 function vdumpx (var, name, limit)
 	var_dump.Print(var, { hex_uints = true, name = name, limit = limit })
 end
+
+--package.loaded.bit = require("plugin.bit")
 --[=[
-package.loaded.bit = require("plugin.bit")
 local bb=package.loaded.bit
 
 local band=bb.band
@@ -363,8 +364,8 @@ end
 local M, P = 1,0
 
 local list = {}
-
-for i = 1, 2048 do
+local N=1e7
+for i = 1, N do--2048 do
 	local m, p = MagicGU(i, 53)
 	if m ~= M or p ~= P then
 		print("As of", i - 1, m, p)
@@ -376,7 +377,7 @@ for i = 1, 2048 do
 end
 
 for i = 1, #list, 3 do
-	local m, p, start, next = list[i], list[i + 1], list[i + 2], list[i + 5] or 2048
+	local m, p, start, next = list[i], list[i + 1], list[i + 2], list[i + 5] or N--2048
 	local k = m * 2^-p
 	if i == 1 then
 		start = 0
@@ -390,6 +391,29 @@ for i = 1, #list, 3 do
 	end
 	print("YEAH!")
 end
-]=]
+--]=]
+--[=[
+local K = 39 * 2^-11
+print(57 % 53, 57 - math.floor(57 * K) * 53)
+print((57 - 4) * K)
+
+for i = 0, 105 do
+	local pos = i % 53
+	local slot = (i - pos) / 53 + 1
+	local jj = math.floor(i * K)
+	local SLOT = jj + 1
+	local POS = i - jj * 53
+	print(slot==SLOT, pos==POS)
+end
+--]=]
+--[[
+local div = require("number_ops.divide")
+local m = div.GenerateUnsignedConstants(105, 53, true)
+for i = 0, 105 do
+	local a, b = div.DivRem(i, 53)
+	local c, d = div.DivRem_Magic(i, 53, m)
+	print(a==c, b==d)
+end
+--]]
 -- Kick off the app.
 scenes.GoToScene{ name = "scene.Intro" }

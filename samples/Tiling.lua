@@ -35,10 +35,10 @@ local buttons = require("ui.Button")
 local ca = require("fill.CellularAutomata")
 local circle = require("fill.Circle")
 local curves = require("utils.Curves")
+local divide = require("number_ops.divide")
 local flow = require("coroutine_ops.flow")
 local grid_iterators = require("iterator_ops.grid")
 local ms = require("mask.MarchingSquares")
-local number_funcs = require("number_ops.funcs")
 local scenes = require("utils.Scenes")
 local sheet = require("ui.Sheet")
 local timers = require("game.Timers")
@@ -93,8 +93,8 @@ local TileDim = LogicalDim / 4
 
 -- Heh, not exactly the most efficient representation :P
 local function Index (col, row)
-	local qc, rc = number_funcs.DivRem(col - 1, 4)
-	local qr, rr = number_funcs.DivRem(row - 1, 4)
+	local qc, rc = divide.DivRem(col - 1, 4)
+	local qr, rr = divide.DivRem(row - 1, 4)
 
 	return 4 * (qr * Pitch + qc * 4 + rr) + rc + 1
 end

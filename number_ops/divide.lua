@@ -1,4 +1,4 @@
---- An assortment of useful numeric functions.
+--- Assorted division-based utilities.
 
 --
 -- Permission is hereby granted, free of charge, to any person obtaining
@@ -25,6 +25,7 @@
 
 -- Standard library imports --
 local floor = math.floor
+local log = math.log
 
 -- Exports --
 local M = {}
@@ -40,14 +41,43 @@ function M.DivRem (a, b)
 	return quot, a - quot * b
 end
 
---- Rounds a number to the nearest multiple of some increment.
--- @number n Number to round.
--- @number[opt=1] inc Increment.
--- @treturn number Rounded result.
-function M.RoundTo (n, inc)
-	inc = inc or 1
+--- DOCME
+-- @uint a
+-- @uint b
+-- @number magic
+function M.DivRem_Magic (a, b, magic)
+	local quot = floor(a * magic)
 
-	return floor(n / inc + .5) * inc
+	return quot, a - quot * b
+end
+
+--- DOCME
+-- "Simple code in Python" from Hacker's Delight, magicgu
+-- @uint nmax
+-- @uint d
+-- @bool[opt=false] compose
+-- @treturn[1] uint M
+-- @treturn[1] uint P
+-- @treturn[2] number COMP
+function M.GenerateUnsignedConstants (nmax, d, compose)
+	local nc, two_p = floor(nmax / d) * d - 1, 1
+	local nbits = floor(log(nmax) / log(2)) + 1
+
+	for p = 0, 2 * nbits + 1 do
+		local q = d - 1 - (two_p - 1) % d
+
+		if two_p > nc * q then
+			local m = floor((two_p + q) / d)
+
+			if compose then
+				return m * 2^-p
+			else
+				return m, p
+			end
+		end
+
+		two_p = 2 * two_p
+	end
 end
 
 -- Export the module.
