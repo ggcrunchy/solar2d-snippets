@@ -184,15 +184,17 @@ local function BuildPath (ri, col, n, ncols, nrows)
 end
 
 --
-local function FindZero (costs, ucols, urows, ncols)
+local function FindZero (costs, ucols, urows, ari)--ncols)
 	local ucn = UncovColN or GetIndices_Set(ucols, FreeColBits)
 	local urn = UncovRowN or GetIndices_Set(urows, FreeRowBits)
-	local vmin = huge
 
 	UncovColN, UncovRowN = ucn, urn
 
+	--
+	local vmin = huge
+
 	for i = 1, urn do
-		local ri = urows[i] * ncols + 1
+		local ri = ari[urows[i] + 1]-- * ncols + 1
 
 		for j = 1, ucn do
 			local col = ucols[j]
@@ -212,7 +214,7 @@ local function FindZero (costs, ucols, urows, ncols)
 end
 
 -- Prime some uncovered zeroes
-local function PrimeZeroes (zeroes, ucols, urows, ncols)
+local function PrimeZeroes (costs, zeroes, ucols, urows, ari, ncols)
 	while true do
 		--
 		local zn, col, ri = zeroes.n
@@ -220,7 +222,7 @@ local function PrimeZeroes (zeroes, ucols, urows, ncols)
 		if zn > 0 then
 			ri, col, zeroes.n = zeroes[zn - 1], zeroes[zn], zn - 2
 		else
-			ri, col = FindZero(Costs, ucols, urows, ncols)
+			ri, col = FindZero(costs, ucols, urows, ari)--ncols)
 		end
 
 		--
@@ -261,14 +263,15 @@ local function PrimeZeroes (zeroes, ucols, urows, ncols)
 end
 
 -- Updates the cost matrix to reflect the new minimum
-local function UpdateCovCosts (vmin, costs, ccols, crows, ncols)
+local function UpdateCosts (vmin, costs, zeroes, ccols, crows, ucols, urows, ari)--ncols)
+	--
 	local ccn = CovColN or GetIndices_Clear(ccols, FreeColBits)
 	local crn = CovRowN or GetIndices_Clear(crows, FreeRowBits)
 
 	CovColN, CovRowN = ccn, crn
 
 	for i = 1, crn do
-		local ri = crows[i] * ncols + 1
+		local ri = ari[crows[i] + 1]-- * ncols + 1
 
 		for j = 1, ccn do
 			local index = ri + ccols[j]
@@ -276,17 +279,15 @@ local function UpdateCovCosts (vmin, costs, ccols, crows, ncols)
 			costs[index] = costs[index] + vmin
 		end
 	end
-end
 
--- Updates the cost matrix to reflect the new minimum
-local function UpdateUncovCosts (vmin, costs, zeroes, ucols, urows, ncols)
+	--
 	local ucn = UncovColN or GetIndices_Set(ucols, FreeColBits)
 	local urn = UncovRowN or GetIndices_Set(urows, FreeRowBits)
 
 	UncovColN, UncovRowN = ucn, urn
 
 	for i = 1, urn do
-		local ri = urows[i] * ncols + 1
+		local ri = ari[urows[i] + 1]-- * ncols + 1
 
 		for j = 1, ucn do
 			local col = ucols[j]
@@ -305,7 +306,7 @@ local function UpdateUncovCosts (vmin, costs, zeroes, ucols, urows, ncols)
 end
 
 --++++++++++++++
-local AU,AUN=0,0
+local AUN=0
 local LP,LPN=0,0
 local PZ,PZN=0,0
 --++++++++++++++
@@ -319,6 +320,9 @@ local CovRows, UncovRows = {}, {}
 
 -- --
 local Zeroes = {}
+
+-- --
+local RI = {}
 
 --- DOCME
 -- @array costs
@@ -357,9 +361,13 @@ local sum=0
 	ClearCoverage(ncols, nrows, true)
 
 	--
+	local cost_matrix, zeroes, ccols, crows, ucols, urows, ari = Costs, Zeroes, CovCols, CovRows, UncovCols, UncovRows, RI
 	local do_check = true
-
-	Zeroes.n = 0
+local ri=1
+for i = 1, nrows do
+	RI[i], ri = ri, ri + ncols
+end
+	zeroes.n = 0
 
 	while true do
 --+++++++++++++
@@ -390,7 +398,7 @@ LPN=LPN+1
 
 print("Loop", LP / LPN, LP)
 print("  Prime zeroes", PZ / PZN, PZ)
-print("  Actual update", AU / AUN, AU)
+print("  Actual update", (LP - PZ) / AUN, LP - PZ)
 print("TOTAL", sum+left)
 LP,LPN=0,0
 PZ,PZN=0,0
@@ -405,9 +413,9 @@ AU,AUN=0,0
 local pz=oc()
 --+++++++++++
 		-- Find a noncovered zero and prime it.
-		local prow0, pcol0 = PrimeZeroes(Zeroes, UncovCols, UncovRows, ncols)
+		local prow0, pcol0 = PrimeZeroes(cost_matrix, zeroes, ucols, urows, ari, ncols)--ncols)
 
-		Zeroes.n = 0
+		zeroes.n = 0
 --+++++++++++
 PZ=PZ+oc()-pz
 PZN=PZN+1
@@ -423,16 +431,10 @@ PZN=PZN+1
 		-- Otherwise, no uncovered zeroes remain. Update the matrix and do another pass, without
         -- altering any stars, primes, or covered lines.
 		else
---+++++++++++
-local au=oc()
---+++++++++++
-		--	UpdateCosts(pcol0, Costs, Zeroes, CovCols, CovRows, UncovCols, UncovRows, ncols)
-			UpdateCovCosts(pcol0, Costs, CovCols, CovRows, ncols)
-			UpdateUncovCosts(pcol0, Costs, Zeroes, UncovCols, UncovRows, ncols)
---+++++++++++
-AU=AU+oc()-au
+			UpdateCosts(pcol0, cost_matrix, zeroes, ccols, crows, ucols, urows, ari)--ncols)
+--++++++++
 AUN=AUN+1
---+++++++++++
+--++++++++
 		end
 --+++++++++++
 LP=LP+oc()-lp
