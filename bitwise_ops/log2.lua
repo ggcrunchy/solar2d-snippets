@@ -52,11 +52,9 @@ end
 --
 -- Given a power of 2, the binary logarithm can be extracted as `i = t[power % 37]`.
 --
--- For 32-bit _power_, one may compute `quot = math.floor(power * (0xDD67C8A7 * 2^-37))`,
--- obtaining the logarithm by `i = t[power - quot * 37]`. (See e.g. the chapter "Integer
--- Division By Constants", in Hacker's Delight. In particular, the "Simple Code in Python"
--- section: the above constant is _m_ * 2^-_p_, where `m, p = magicgu(2^31, 37)`, which
--- folds the (un-floored) shift part of the division into the multiplicand.)
+-- For 32-bit _power_, one may compute `power % 37` according to one of the methods from
+-- @{number_ops.divide.GenerateUnsignedConstants}, with _x_ = _power_, _m_ = **0xDD67C8A7**,
+-- and _p_ = **37** (generated with _nmax_ = **2^31** and _d_ = **37**).
 -- @ptable[opt] t Table to populate. If absent, one is provided.
 -- @treturn table _t_.
 function M.PopulateMod37 (t)
@@ -77,8 +75,9 @@ end
 --
 -- Given a power of 2, the binary logarithm can be extracted as `i = t[power % 59]`.
 --
--- For 32-bit _power_, the same idea can be followed as in @{PopulateMod37}, substituting
--- `quot = math.floor(power * (0x22B63CBF * 2^-35))` and `i = t[power - quot * 59]`.
+-- For 32-bit _power_, one may compute `power % 59` according to one of the methods from
+-- @{number_ops.divide.GenerateUnsignedConstants}, with _x_ = _power_, _m_ = **0x22B63CBF**,
+-- and _p_ = **35** (generated with _nmax_ = **2^31** and _d_ = **59**).
 -- @ptable[opt] t Table to populate. If absent, one is provided.
 -- @treturn table _t_.
 function M.PopulateMod59 (t)

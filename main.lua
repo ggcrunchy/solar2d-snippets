@@ -141,7 +141,7 @@ function vdumpx (var, name, limit)
 	var_dump.Print(var, { hex_uints = true, name = name, limit = limit })
 end
 
---package.loaded.bit = require("plugin.bit")
+package.loaded.bit = require("plugin.bit")
 --[=[
 local bb=package.loaded.bit
 

@@ -147,27 +147,45 @@ function M.ClearAll (arr)
 end
 
 --
-local function AuxGet (out, bits, ri, wi)
-	--
-	local j = wi + 1
+local AuxGet
 
-	while bits ~= 0 do
-		local _, e = frexp(bits)
-		local pos = e - 1
+if operators.HasBitLib() then
+	function AuxGet (out, bits, offset, j)
+		local sbits = bxor(bits, 0x80000000)
 
-		out[j], j, bits = ri + pos, j + 1, bits - 2^pos
+		if sbits >= 0 then
+			bits, out[j], j = sbits, offset + 31, j + 1
+		end
+
+		while bits ~= 0 do
+			local _, e = frexp(bits)
+			local pos = e - 1
+
+			out[j], j, bits = offset + pos, j + 1, bits - 2^pos
+		end
+
+		return j
 	end
+else
+	function AuxGet (out, bits, ri, j)
+		while bits ~= 0 do
+			local _, e = frexp(bits)
+			local pos = e - 1
 
-	--
-	local l, r = wi + 1, j
+			out[j], j, bits = ri + pos, j + 1, bits - 2^pos
+		end
 
+		return j
+	end
+end
+
+--
+local function Reverse (arr, l, r)
 	while l < r do
 		r = r - 1
 
-		out[l], out[r], l = out[r], out[l], l + 1
+		arr[l], arr[r], l = arr[r], arr[l], l + 1
 	end
-
-	return j - 1
 end
 
 --- DOCME
@@ -178,93 +196,91 @@ end
 
 if operators.HasBitLib() then
 	function M.GetIndices_Clear (out, from)
-		local count, offset, n, mask = 0, 0, from.n, from.mask
+		local left, offset, n, mask = 1, 0, from.n, from.mask
 
 		if mask ~= 0 then
 			n = n - 1
 		end
 
 		for i = 1, n do
-			local bits = bnot(from[i])
+			local after = AuxGet(out, bnot(from[i]), offset, left)
 
-			if bits < 0 then
-				bits = bits + 2^32
-			end
+			Reverse(out, left, after)
 
-			count, offset = AuxGet(out, bits, offset, count), offset + 32
+			left, offset = after, offset + 32
 		end
 
 		if mask ~= 0 then
-			count = AuxGet(out, band(bnot(from[n + 1]), mask), offset, count)
-		end
+			local after = AuxGet(out, band(bnot(from[n + 1]), mask), offset, left)
 
-		return count
+			Reverse(out, left, after)
+
+			return after - 1
+		else
+			return left - 1
+		end
 	end
 else
 	function M.GetIndices_Clear (out, from)
-		local count, offset, n, mask = 0, 0, from.n, from.mask
+		local left, offset, n, mask = 1, 0, from.n, from.mask
 
 		if mask ~= 0 then
 			n = n - 1
 		end
 
 		for i = 1, n do
-			count, offset = AuxGet(out, 2^53 - from[i] - 1, offset, count), offset + 53
+			local after = AuxGet(out, 2^53 - from[i] - 1, offset, left)
+
+			Reverse(out, left, after)
+
+			left, offset = after, offset + 53
 		end
 
 		if mask ~= 0 then
 			local bits = (2^53 - from[n + 1] - 1) % (mask + 1)
+			local after = AuxGet(out, bits, offset, left)
 
-			count = AuxGet(out, bits, offset, count)
+			Reverse(out, left, after)
+
+			return after - 1
+		else
+			return left - 1
 		end
-
-		return count
 	end
 end
 
+-- --
+local OffsetInc = operators.HasBitLib() and 32 or 53
+
 --- DOCME
--- @function GetIndices_Set
 -- @array out
 -- @array from
 -- @treturn uint X
+function M.GetIndices_Set (out, from)
+	local left, offset = 1, 0
 
-if operators.HasBitLib() then
-	function M.GetIndices_Set (out, from)
-		local count, offset = 0, 0
+	for i = 1, from.n do
+		local after = AuxGet(out, from[i], offset, left)
 
-		for i = 1, from.n do
-			local bits = from[i]
+		Reverse(out, left, after)
 
-			if bits < 0 then
-				bits = bits + 2^32
-			end
-
-			count, offset = AuxGet(out, bits, offset, count), offset + 32
-		end
-
-		return count
+		left, offset = after, offset + OffsetInc
 	end
-else
-	function M.GetIndices_Set (out, from)
-		local count, offset = 0, 0
 
-		for i = 1, from.n do
-			count, offset = AuxGet(out, from[i], offset, count), offset + 53
-		end
-
-		return count
-	end
+	return left - 1
 end
+
+-- TODO: Efficient way to GetIndices_All? (more obvious for bitwise, where reverse order COULD be avoided...)
 
 --
 local AuxInit
 
 if operators.HasBitLib() then
-	function AuxInit (n, clear)
+	function AuxInit (n)
 		return rshift(n, 5), band(n, 0x1F), 32
 	end
 else
-	function AuxInit (n, clear)
+	function AuxInit (n)
 		local magic = divide.GenerateUnsignedConstants(n, 53, true)
 		local quot = floor(n * magic)
 
@@ -277,7 +293,7 @@ end
 -- @uint n
 -- @bool[opt=false] clear
 function M.Init (arr, n, clear)
-	local mask, nblocks, tail, power, magic = 0, AuxInit(n, clear)
+	local mask, nblocks, tail, power, magic = 0, AuxInit(n)
 
 	if tail > 0 then
 		nblocks, mask = nblocks + 1, 2^tail - 1

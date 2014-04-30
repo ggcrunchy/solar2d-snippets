@@ -178,7 +178,7 @@ end
 -- Methods to unpack a number into one to four components; complements PackNumberMethods --
 local UnpackNumberMethods, UnpackNumber = {
 	function(r) -- Same whether bit library is present or not
-		return r / 0xFF
+		return r * (1.0 / 0xFF)
 	end
 }
  
@@ -188,19 +188,19 @@ if operators.HasBitLib() then
 	UnpackNumberMethods[2] = function(rg)
 		local g = band(rg, 0xFF * 2^8) -- Mask shifted left (and constant-folded)
 
-		return (rg - g) / 0xFF, g / (0xFF * 2^8) -- Divide by 255 (right shifts also constant-folded)
+		return (rg - g) * (1.0 / 0xFF), g * (2^-8 / 0xFF) -- Divide by 255 (right shifts also constant-folded)
 	end
 
 	UnpackNumberMethods[3] = function(rgb)
 		local g, b = band(rgb, 0xFF * 2^8), band(rgb, 0xFF * 2^16)
 
-		return (rgb - g - b) / 0xFF, g / (0xFF * 2^8), b / (0xFF * 2^16)
+		return (rgb - g - b) * (1.0 / 0xFF), g * (2^-8 / 0xFF), b * (2^-16 / 0xFF)
 	end
 
 	UnpackNumberMethods[4] = function(rgba)
 		local g, b, a = band(rgba, 0xFF * 2^8), band(rgba, 0xFF * 2^16), band(rgba, 0xFF * 2^24)
 
-		return (rgba - g - b - a) / 0xFF, g / (0xFF * 2^8), b / (0xFF * 2^16), a / (0xFF * 2^24)
+		return (rgba - g - b - a) * (1.0 / 0xFF), g * (2^-8 / 0xFF), b * (2^-16 / 0xFF), a * (2^-24 / 0xFF)
 	end
 
 	function UnpackNumber (rgba)
@@ -212,19 +212,19 @@ else
 	UnpackNumberMethods[2] = function(rg)
 		local r = rg % 2^8
 
-		return r / 0xFF, (rg - r) / (0xFF * 2^8) -- As per bit library version, but numerator strategy differs, given what mod can mask
+		return r * (1.0 / 0xFF), (rg - r) * (2^-8 / 0xFF) -- Different numerator strategy than bitwise version, given what mod can mask
 	end
 
 	UnpackNumberMethods[3] = function(rgb)
 		local r, rg = rgb % 2^8, rgb % 2^16
 
-		return r / 0xFF, (rg - r) / (0xFF * 2^8), (rgb - rg) / (0xFF * 2^16)
+		return r * (1.0 / 0xFF), (rg - r) * (2^-8 / 0xFF), (rgb - rg) * (2^-16 / 0xFF)
 	end
 
 	UnpackNumberMethods[4] = function(rgba)
 		local r, rg, rgb = rgba % 2^8, rgba % 2^16, rgba % 2^24
 
-		return r / 0xFF, (rg - r) / (2^8 * 0xFF), (rgb - rg) / (2^16 * 0xFF), (rgba - rgb) / (2^24 * 0xFF)
+		return r * (1.0 / 0xFF), (rg - r) * (2^-8 / 0xFF), (rgb - rg) * (2^-16 / 0xFF), (rgba - rgb) * (2^-24 / 0xFF)
 	end
 
 	function UnpackNumber (rgba)

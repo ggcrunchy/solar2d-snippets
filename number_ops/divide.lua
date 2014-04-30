@@ -41,24 +41,32 @@ function M.DivRem (a, b)
 	return quot, a - quot * b
 end
 
---- DOCME
--- @uint a
--- @uint b
--- @number magic
+--- Variant of @{DivRem} that performs unsigned division of integers, using "magic numbers".
+-- @uint a Dividend.
+-- @uint b Divisor.
+-- @number magic Composed magic number (i.e. of form _m_ * 2^-_p_), as would be computed by
+-- @{GenerateUnsignedConstants}.
+-- @treturn uint Number of times that _b_ divides _a_.
+-- @treturn uint Remainder, i.e. _a_ % _b_.
 function M.DivRem_Magic (a, b, magic)
 	local quot = floor(a * magic)
 
 	return quot, a - quot * b
 end
 
---- DOCME
--- "Simple code in Python" from Hacker's Delight, magicgu
--- @uint nmax
--- @uint d
--- @bool[opt=false] compose
--- @treturn[1] uint M
--- @treturn[1] uint P
--- @treturn[2] number COMP
+--- Generates constants _m_ and _p_, such that unsigned integer division, as computed by
+-- `quot = math.floor(x / d)`, may be performed as `quot = math.floor(x * (m * 2^-p))` (while
+-- not strictly necessary, the inner parentheses facilitate constant folding if _m_ and _p_
+-- are constants) or `quot = bit.rshift(x * m, p)`; the remainder `x % d` is given by the
+-- usual `x - quot * d`.
+--
+-- Adapted from ["Simple code in Python"](http://www.hackersdelight.org/hdcodetxt/magicgu.py.txt) in Hacker's Delight.
+-- @uint nmax Maximum value taken on by dividend.
+-- @uint d Divisor.
+-- @bool[opt=false] compose Return the composed value?
+-- @treturn[1] uint Multiplicand (_m_).
+-- @treturn[1] uint Power / shift (_p_).
+-- @treturn[2] number Composed value, i.e. _m_ * 2^-_p_.
 function M.GenerateUnsignedConstants (nmax, d, compose)
 	local nc, two_p = floor(nmax / d) * d - 1, 1
 	local nbits = floor(log(nmax) / log(2)) + 1
