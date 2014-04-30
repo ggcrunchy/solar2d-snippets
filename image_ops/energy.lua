@@ -103,7 +103,7 @@ local function InteriorRowEnergy (energy, i, w)
 	energy[i] = AuxInterior(r1, g1, b1, a1, r2, g2, b2, a2, j)
 end
 
--- 
+-- Default yield function: no-op
 local DefYieldFunc = function() end
 
 --- DOCME

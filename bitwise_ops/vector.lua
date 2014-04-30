@@ -40,7 +40,9 @@ local lshift
 local rshift
 
 -- Imports --
-if operators.HasBitLib() then
+local HasBitLib = operators.HasBitLib()
+
+if HasBitLib then
 	band = operators.band
 	bnot = operators.bnot
 	bor = operators.bor
@@ -68,7 +70,7 @@ end
 --
 local AuxAllSet
  
-if operators.HasBitLib() then
+if HasBitLib then
 	function AuxAllSet (arr, n)
 		local bits = arr[1]
 
@@ -113,7 +115,7 @@ end
 -- @uint index
 -- @treturn boolean The bit changed?
 
-if operators.HasBitLib() then
+if HasBitLib then
 	function M.Clear (arr, index)
 		local slot, bit = rshift(index, 5) + 1, lshift(1, index)
 		local old = arr[slot]
@@ -149,7 +151,7 @@ end
 --
 local AuxGet
 
-if operators.HasBitLib() then
+if HasBitLib then
 	function AuxGet (out, bits, offset, j)
 		local sbits = bxor(bits, 0x80000000)
 
@@ -194,7 +196,7 @@ end
 -- @array from
 -- @treturn uint X
 
-if operators.HasBitLib() then
+if HasBitLib then
 	function M.GetIndices_Clear (out, from)
 		local left, offset, n, mask = 1, 0, from.n, from.mask
 
@@ -250,7 +252,7 @@ else
 end
 
 -- --
-local OffsetInc = operators.HasBitLib() and 32 or 53
+local OffsetInc = HasBitLib and 32 or 53
 
 --- DOCME
 -- @array out
@@ -275,7 +277,7 @@ end
 --
 local AuxInit
 
-if operators.HasBitLib() then
+if HasBitLib then
 	function AuxInit (n)
 		return rshift(n, 5), band(n, 0x1F), 32
 	end
@@ -318,7 +320,7 @@ end
 -- @uint index
 -- @treturn boolean The bit changed?
 
-if operators.HasBitLib() then
+if HasBitLib then
 	function M.Set (arr, index)
 		local slot, bit = rshift(index, 5) + 1, lshift(1, index)
 		local old = arr[slot]
@@ -344,7 +346,7 @@ else
 end
 
 -- --
-local SetFill = 2^(operators.HasBitLib() and 32 or 53) - 1
+local SetFill = 2^(HasBitLib and 32 or 53) - 1
 
 --- DOCME
 -- @array arr

@@ -1,4 +1,4 @@
---- DOCME
+--- Some core Hungarian algorithm logic, which seems to benefit slightly from separation.
 
 --
 -- Permission is hereby granted, free of charge, to any person obtaining
@@ -23,14 +23,17 @@
 -- [ MIT license: http://www.opensource.org/licenses/mit-license.php ]
 --
 
--- Standard library imports --
-local huge = math.huge
-
 -- Exports --
 local M = {}
 
---- DOCMEMORE
--- Updates the cost matrix to reflect the new minimum
+--- Adds the current minimum to (completely) covered elements' costs.
+-- @uint vmin Minimum value.
+-- @array costs Cost matrix.
+-- @array ccols Offsets of covered columns (0-based)...
+-- @array crows ...and covered rows (0-based).
+-- @uint ccn Number of columns in _ccols_...
+-- @uint crn ...and rows in _crows_.
+-- @uint ncols Number of columns in _costs_.
 function M.AddMin (vmin, costs, ccols, crows, ccn, crn, ncols)
 	for i = 1, crn do
 		local ri = crows[i] * ncols + 1
@@ -43,13 +46,23 @@ function M.AddMin (vmin, costs, ccols, crows, ccn, crn, ncols)
 	end
 end
 
---- DOCME
-function M.FindZero (costs, ucols, urows, ncols, ucn, urn)
-	--
-	local vmin = huge
-
-	for i = 1, urn do
-		local ri = urows[i] * ncols + 1
+--- Attempts to find a zero among uncovered elements' costs.
+-- @array costs Cost matrix.
+-- @array ucols Offsets of uncovered columns (0-based)...
+-- @array urows ...and uncovered rows (0-based).
+-- @uint ucn Number of columns in _ucols_...
+-- @uint urn ...and rows in _urows_.
+-- @uint ncols Number of columns in _costs_.
+-- @uint from Index of first row to search.
+-- @number vmin Current minimum value, initially @{math.huge}.
+-- @treturn uint Minimum value (as of the previous row, in the case a zero is found). 
+-- @treturn[1] uint Index of first element in row where zero was found (1-based)...
+-- @treturn[1] uint ...offset of column into that row (0-based)...
+-- @treturn[1] uint ...and the index of the row in _urows_.
+-- @treturn[2] uint If no zero was found, the minimum value.
+function M.FindZero (costs, ucols, urows, ucn, urn, ncols, from, vmin)
+	for i = from, urn do
+		local ri, vmin_cur = urows[i] * ncols + 1, vmin
 
 		for j = 1, ucn do
 			local col = ucols[j]
@@ -57,7 +70,7 @@ function M.FindZero (costs, ucols, urows, ncols, ucn, urn)
 
 			if cost < vmin then
 				if cost == 0 then
-					return ri, col, i
+					return vmin_cur, ri, col, i
 				else
 					vmin = cost
 				end
@@ -68,12 +81,23 @@ function M.FindZero (costs, ucols, urows, ncols, ucn, urn)
 	return vmin
 end
 
---- DOCMEMORE
--- Updates the cost matrix to reflect the new minimum
+--- Subtracts the current minimum from uncovered elements's costs.
+-- @uint vmin Minimum value.
+-- @array costs Cost matrix.
+-- @array zeroes Any zeroes found during execution are stored here as row index / column
+-- offset pairs (cf. @{FindZero}'s return values); key **n** is set to 2 * number of pairs.
+-- @array ucols Offsets of uncovered columns (0-based)...
+-- @array urows ...and uncovered rows (0-based).
+-- @uint ucn Number of columns in _ucols_...
+-- @uint urn ...and rows in _urows_.
+-- @uint ncols Number of columns in _costs_.
 function M.SubMin (vmin, costs, zeroes, ucols, urows, ucn, urn, ncols)
-	for i = 1, urn do
-		local ri = urows[i] * ncols + 1
+	local zn = 0
 
+	for i = 1, urn do
+		local ri, k = urows[i] * ncols + 1, ucn
+
+		-- Reduce costs, and save the first zero (if any) found in the row.
 		for j = 1, ucn do
 			local col = ucols[j]
 			local index = ri + col
@@ -82,12 +106,22 @@ function M.SubMin (vmin, costs, zeroes, ucols, urows, ucn, urn, ncols)
 			costs[index] = cost
 
 			if cost == 0 then
-				local zn = zeroes.n
+				zeroes[zn + 1], zeroes[zn + 2], zeroes[zn + 3], zn, k = ri, col, i, zn + 3, j
 
-				zeroes[zn + 1], zeroes[zn + 2], zeroes.n = ri, col, zn + 2
+				break
 			end
 		end
+
+		-- Once a row gets covered during the prime phase, any other zeroes in it go stale. Thus,
+		-- as cost reduction proceeds over the rest of the row, no further zeroes are added.
+		for j = k + 1, ucn do
+			local index = ri + ucols[j]
+
+			costs[index] = costs[index] - vmin
+		end
 	end
+
+	zeroes.n = zn
 end
 
 -- Export the module.

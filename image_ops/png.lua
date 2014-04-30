@@ -270,7 +270,7 @@ end
 --
 local function DefRowFunc () end
 
---
+-- Default yield function: no-op
 local function DefYieldFunc () end
 
 --

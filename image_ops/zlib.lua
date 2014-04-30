@@ -314,7 +314,7 @@ local function ReadBlock (FS, yfunc)
 	end
 end
 
---
+-- Default yield function: no-op
 local function DefYieldFunc () end
 
 --

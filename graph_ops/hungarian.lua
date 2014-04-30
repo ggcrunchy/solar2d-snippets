@@ -27,6 +27,7 @@
 
 -- Standard library imports --
 local ceil = math.ceil
+local huge = math.huge
 local min = math.min
 local pairs = pairs
 
@@ -51,10 +52,13 @@ local M = {}
 local oc=os.clock
 --+++++++++++++++
 
--- --
-local ColStar, RowStar = {}, {}
+-- Lowest (1-based) index of star in column, or n + 1 if empty --
+local ColStar = {}
 
---
+-- (0-based) index of star in row, or ncols if empty --
+local RowStar = {}
+
+-- Builds the solution in the square matrix case
 local function BuildSolution_Square (out, n, ncols)
 	local row = 1
 
@@ -63,11 +67,11 @@ local function BuildSolution_Square (out, n, ncols)
 	end
 end
 
--- --
+-- Bit vectors for rows and columns (bit set = uncovered); counts of covered / uncovered dimensions --
 local FreeColBits, CovColN, UncovColN = {}
 local FreeRowBits, CovRowN, UncovRowN = {}
 
---
+-- Initializes / resets the coverage state
 local function ClearCoverage (ncols, nrows, is_first)
 	if is_first then
 		vector.Init(FreeColBits, ncols)
@@ -77,45 +81,38 @@ local function ClearCoverage (ncols, nrows, is_first)
 		vector.SetAll(FreeRowBits)
 	end
 
-	--
+	-- Invalidate the covered / uncovered collections.
 	CovColN, UncovColN = nil
 	CovRowN, UncovRowN = nil
 end
 
--- Counts how many columns contain a starred zero
-local function CountCoverage (n, ccols, ncols)
-	local ccn = CovColN
-
+-- Do enough columns contain a starred zero?
+local function CountCoverage (n, ncols)
 	for ri = 1, n, ncols do
 		local col = RowStar[ri]
 
 		if col < ncols and Clear(FreeColBits, col) then
-			if ccn then
-				ccols[ccn + 1], ccn = col, ccn + 1
-			end
-
-			UncovColN = nil
+			CovColN, UncovColN = nil
 		end
 	end
-
-	CovColN = ccn
 
 	return vector.AllClear(FreeColBits)
 end
 
--- --
+-- Current costs matrix --
 local Costs = {}
 
 -- Stars the first zero found in each uncovered row or column
 local function StarSomeZeroes (n, ncols)
-	--
+	-- Begin with empty columns.
 	local np1 = n + 1
 
 	for i = 1, ncols do
 		ColStar[i] = np1
 	end
 
-	--
+	-- Go through each (initially empty) row, in order. If a zero is found in an empty column,
+	-- set it as the entry in that column and the current row, then move on to the next row.
 	local dcols = ncols - 1
 
 	for ri = 1, n, ncols do
@@ -148,7 +145,7 @@ local function SubtractSmallestRowCosts (from, n, ncols)
 	end
 end
 
---
+-- Removes a star from its row and updates the "first in column" entry, if necessary
 local function RemoveStar (n, ri, col, ncols)
 	RowStar[ri] = ncols
 
@@ -195,78 +192,61 @@ local function BuildPath (ri, col, n, ncols, nrows)
 end
 
 -- Prime some uncovered zeroes
-local function PrimeZeroes (costs, zeroes, ucols, urows, ncols)
-	local ucn, urn = UncovColN, UncovRowN
+local function PrimeZeroes (costs, zeroes, ucols, urows, ncols, yfunc)
+	local ucn, urn, zn, at, vmin = UncovColN, UncovRowN, zeroes.n, 0, huge
 
 	while true do
-		--
-		local zn, col, ri, at = zeroes.n
+		yfunc()
+
+		-- Find a zero, preferring a known one.
+		local col, ri
 
 		if zn > 0 then
-			ri, col, zeroes.n = zeroes[zn - 1], zeroes[zn], zn - 2
+			ri, col, zn = zeroes[zn - 2], zeroes[zn - 1], zn - 3
 		else
 			ucn = ucn or GetIndices_Set(ucols, FreeColBits)
 			urn = urn or GetIndices_Set(urows, FreeRowBits)
-			ri, col, at = FindZero(costs, ucols, urows, ncols, ucn, urn)
+			vmin, ri, col, at = FindZero(costs, ucols, urows, ucn, urn, ncols, at + 1, vmin)
 		end
 
 		--
-		if col then
+		if ri then
 			Primes[ri] = col
 
 			local scol = RowStar[ri]
 
 			--
 			if scol < ncols then
-				local row = (ri - 1) / ncols
-
-				if Clear(FreeRowBits, row) then
-					if urn then
-						if at then
-							urows[at], urn = urows[urn], urn - 1
-						else
-							local index = 0
-
-							repeat
-								index = index + 1
-							until urows[index] == row
-
-							urows[index], urn = urows[urn], urn - 1
-						end
+				if Clear(FreeRowBits, (ri - 1) / ncols) then
+					--
+					if at == 0 then
+						urows[zeroes[zn + 3]], urn = urows[urn], urn - 1
 					end
 
-					CovColN = nil
-
-					-- Evict any remaining zeroes in the row.
-					for i = zn, 1, -2 do
-						if zeroes[i - 1] == ri then
-							zeroes[i - 1], zeroes[i], zn = zeroes[zn - 1], zeroes[zn], zn - 2
-						end
-
-						zeroes.n = zn
-					end
+					CovRowN, UncovRowN = nil
 				end
 
 				if Set(FreeColBits, col) then
+					--
 					if ucn then
 						ucols[ucn + 1], ucn = col, ucn + 1
 					end
 
-					CovRowN = nil
+					CovColN, UncovColN = nil
 				end
 
 			--
 			else
-				UncovColN, UncovRowN = ucn, urn
+				zeroes.n = zn
 
 				return ri, col
 			end
 
 		--
 		else
-			UncovColN, UncovRowN = ucn, urn
+			zeroes.n = zn
 
-			return false, ri
+			return false, vmin
 		end
 	end
 end
@@ -277,14 +257,14 @@ local LP,LPN=0,0
 local PZ,PZN=0,0
 --++++++++++++++
 
---
+-- Default yield function: no-op
 local function DefYieldFunc () end
 
--- --
+-- Lists of covered and uncovered rows and columns (0-based) --
 local CovCols, UncovCols = {}, {}
 local CovRows, UncovRows = {}, {}
 
--- --
+-- Already-known zeroes, to avoid some expensive finds --
 local Zeroes = {}
 
 --- DOCME
@@ -304,7 +284,8 @@ local sum=0
 	local n, from = #costs, costs
 	local nrows = ceil(n / ncols)
 
-	--
+	-- If there are more assignees than choices, transpose the input and leave a reminder to
+	-- regularize the results once the algorithm completes.
 	if ncols < nrows then
 		local index = 1
 
@@ -323,8 +304,10 @@ local sum=0
 	StarSomeZeroes(n, ncols)
 	ClearCoverage(ncols, nrows, true)
 
-	--
+	-- Localize several upvalues to eke out some extra speed for huge input.
 	local cost_matrix, zeroes, ccols, crows, ucols, urows = Costs, Zeroes, CovCols, CovRows, UncovCols, UncovRows
+
+	-- Main loop. Begin by checking whether the already-starred zeroes form a solution. 
 	local do_check = true
 
 	zeroes.n = 0
@@ -339,14 +322,17 @@ lp=oc()
 --+++++
 		-- Check if the starred zeroes describe a complete set of unique assignments.
 		if do_check then
-			if CountCoverage(n, ccols, ncols) then
+			if CountCoverage(n, ncols) then
 				if from == Costs then
 					-- Inverted, do something...
 				end
 
-				--
+				-- Build the solution with the method appropriate to the input shape.
 				if ncols == nrows then
 					BuildSolution_Square(out, n, ncols)
+				else
+					-- ncols < nrows
+					-- ncols > nrows
 				end
 
 --++++++++++++++++++++++++++++++++++++
@@ -371,7 +357,7 @@ AU,AUN=0,0
 local pz=oc()
 --+++++++++++
 		-- Find a noncovered zero and prime it.
-		local prow0, pcol0 = PrimeZeroes(cost_matrix, zeroes, ucols, urows, ncols)
+		local prow0, pcol0 = PrimeZeroes(cost_matrix, zeroes, ucols, urows, ncols, yfunc)
 
 		zeroes.n = 0
 --+++++++++++
@@ -394,6 +380,8 @@ PZN=PZN+1
 			local crn = CovRowN or GetIndices_Clear(crows, FreeRowBits)
 
 			AddMin(pcol0, cost_matrix, ccols, crows, ccn, crn, ncols)
+
+			yfunc()
 
 			local ucn = UncovColN or GetIndices_Set(ucols, FreeColBits)
 			local urn = UncovRowN or GetIndices_Set(urows, FreeRowBits)
@@ -418,7 +406,7 @@ end
 -- @ptable t
 -- @treturn array out
 function M.Run_Labels (t)
-	-- Set up the and do Run()
+	-- Set up and do Run()
 end
 
 -- Export the module.
