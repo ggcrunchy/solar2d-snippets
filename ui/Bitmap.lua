@@ -177,7 +177,7 @@ function M.Bitmap (group)
 
 	-- Use a white backdrop for uninitialized pixels.
 	local curw, curh = 1, 1
-	local white = display.newRect(Bitmap, 0, 0, curw, curh)
+	local white = display.newRect(Bitmap, 0, 0, curw*4, curh*4)
 
 	white.anchorX, white.x = 0, 0
 	white.anchorY, white.y = 0, 0
@@ -226,7 +226,7 @@ function M.Bitmap (group)
 	-- @uint h ...and height.
 	function Bitmap:Resize (w, h)
 		if w ~= curw or h ~= curh then
-			white.width, white.height = w, h
+			white.width, white.height = w*4, h*4
 
 			-- If at least one of the dimensions shrunk, capture the reduced contents and replace
 			-- the current capture (also evicting the canvas). If one dimension also grew, the white
@@ -279,7 +279,7 @@ function M.Bitmap (group)
 				canvas:insert(pixel)
 				pixel:setFillColor(...)
 
-				pixel.x, pixel.y = x, y
+				pixel.x, pixel.y = x*4, y*4
 
 			-- Otherwise, add it to the waiting list.
 			else
@@ -310,7 +310,7 @@ function M.Bitmap (group)
 		local extra = min(10, quota - allocated)
 
 		for _ = 1, extra do
-			local pixel = display.newRect(stash, 0, 0, 1, 1)
+			local pixel = display.newRect(stash, 0, 0, 1*4, 1*4)
 
 			pixel.anchorX, pixel.anchorY = 0, 0
 		end
@@ -332,7 +332,7 @@ function M.Bitmap (group)
 
 					canvas:insert(pixel)
 
-					pixel.x, pixel.y, nstash = x, y, nstash - 1
+					pixel.x, pixel.y, nstash = x*4, y*4, nstash - 1
 
 					color.SetFillColor_Number(pixel, v)
 				end

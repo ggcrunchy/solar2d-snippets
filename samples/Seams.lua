@@ -163,8 +163,8 @@ end
 local Base = system.ResourceDirectory
 
 -- --
-local Dir = --"UI_Assets"
-			"Background_Assets"
+local Dir = "UI_Assets"
+			--"Background_Assets"
 
 -- --
 local Since
@@ -412,7 +412,10 @@ end
 								Watch()
 							end
 print("PICKING")
-
+local COLORS={}
+for i = 1, nseams do
+	COLORS[i]={math.random(),math.random(),math.random()}
+end
 sort(buf1, function(a, b) return a.cost < b.cost end)
 print("NSEAMS", nseams)
 for i = 1, nseams do
@@ -425,7 +428,7 @@ print("BUF", i, #b)
 if i == 1 then
 --	print(j, ii, x, y)
 end
-		self.m_bitmap:SetPixel(x, y, 0, 0, 1)
+		self.m_bitmap:SetPixel(x, y, unpack(COLORS[i]))
 	end
 end
 
