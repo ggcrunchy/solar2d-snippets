@@ -26,23 +26,24 @@
 --
 
 -- Standard library imports --
-local ceil = math.ceil
+local assert = assert
 local huge = math.huge
+local max = math.max
 local min = math.min
 local pairs = pairs
 
 -- Modules --
-local core = require("graph_ops.hungarian_core")
 local labels = require("graph_ops.labels")
 local vector = require("bitwise_ops.vector")
 
 -- Imports --
 local Clear = vector.Clear
-local FindZero = core.FindZero
 local GetIndices_Clear = vector.GetIndices_Clear
 local GetIndices_Set = vector.GetIndices_Set
 local Set = vector.Set
-local UpdateCosts = core.UpdateCosts
+
+-- Cached module references --
+local _Run_
 
 -- Exports --
 local M = {}
@@ -195,6 +196,28 @@ local SUM,LAST
 -- Lists of uncovered rows and columns (0-based) --
 local UncovCols, UncovRows = {}, {}
 
+-- Attempts to find a zero among uncovered elements' costs
+local function FindZero (costs, ucols, urows, ucn, urn, ncols, from, vmin)
+	for i = from, urn do
+		local ri, vmin_cur = urows[i] * ncols + 1, vmin
+
+		for j = 1, ucn do
+			local col = ucols[j]
+			local cost = costs[ri + col]
+
+			if cost < vmin then
+				if cost == 0 then
+					return vmin_cur, ri, col, i
+				else
+					vmin = cost
+				end
+			end
+		end
+	end
+
+	return vmin
+end
+
 -- Prime some uncovered zeroes
 local function PrimeZeroes (ncols, yfunc)
 	local ucn = UncovColN or GetIndices_Set(UncovCols, FreeColBits)
@@ -211,6 +234,8 @@ LAST=oc()
 --+++++++
 		-- Look for a zero (on successive passes, resume from after the last zero's row; this is
 		-- crucial for speed). If one is found, prime it and check for a star in the same row.
+		-- (Upvalues are passed as arguments for the slight speed gain as locals, since FindZero()
+		-- may grind through a huge number of iterations.)
 		vmin, ri, col, at = FindZero(Costs, UncovCols, UncovRows, ucn, urn, ncols, at + 1, vmin)
 
 		if ri then
@@ -249,6 +274,19 @@ LAST=oc()
 	end
 end
 
+-- Updates the cost of each element belonging to the cols x rows set
+local function UpdateCosts (costs, delta, ncols, cols, rows, cn, rn)
+	for i = 1, rn do
+		local ri = rows[i] * ncols + 1
+
+		for j = 1, cn do
+			local index = ri + cols[j]
+
+			costs[index] = costs[index] + delta
+		end
+	end
+end
+
 -- Default yield function: no-op
 local function DefYieldFunc () end
 
@@ -261,16 +299,20 @@ local CovCols, CovRows = {}, {}
 -- @ptable[opt] opts
 -- @treturn array out
 function M.Run (costs, ncols, opts)
-	local out = (opts and opts.into) or {}
-	local yfunc = (opts and opts.yfunc) or DefYieldFunc
+	local n, from = #costs, costs
+
+	assert(n % ncols == 0, "Size of `costs` is not a multiple of `ncols`")
 
 --+++++++++++++
 LAST,SUM=oc(),0
 --+++++++++++++
 
-	local n, from = #costs, costs
-	local nrows = ceil(n / ncols)
+	local nrows = n / ncols
+	local out = (opts and opts.into) or {}
+	local yfunc = (opts and opts.yfunc) or DefYieldFunc
 
+
+-- TODO: ^^^ If n ~= nrows * ncols
 	-- If there are more assignees than choices, transpose the input and leave a reminder to
 	-- regularize the results once the algorithm completes.
 	if ncols < nrows then
@@ -325,9 +367,7 @@ print("TOTAL", SUM+oc()-LAST)
 				do_check = false
 			end
 		end
---+++++++++++
-local pz=oc()
---+++++++++++
+
 		-- Find a noncovered zero and prime it.
 		local prow0, pcol0 = PrimeZeroes(ncols, yfunc)
 
@@ -339,7 +379,9 @@ local pz=oc()
 			BuildPath(prow0, pcol0, n, ncols, nrows)
 
 		-- Otherwise, no uncovered zeroes remain. Update the matrix and do another pass, without
-        -- altering any stars, primes, or covered lines.
+		-- altering any stars, primes, or covered lines. (Upvalues are fed through as arguments to
+		-- UpdateCosts() to take advantage of the speed gain as locals, since this will tend to
+		-- churn through a large swath of the cost matrix.)
 		else
 			CovColN = CovColN or GetIndices_Clear(CovCols, FreeColBits)
 			CovRowN = CovRowN or GetIndices_Clear(CovRows, FreeRowBits)
@@ -360,54 +402,54 @@ LAST=oc()
 	end
 end
 
+-- Current label state --
+local LabelToIndex, IndexToLabel, CleanUp = labels.NewLabelGroup()
+
 --- DOCME
--- @ptable t
+-- @ptable candidates
+-- @ptable[opt] opts As per @{Run}.
 -- @treturn array out
-function M.Run_Labels (t)
-	-- Count number of unique targets, find maximum utility among them
-	-- Then do columns for sources, fill gaps with... 2 * max?
-	-- Do Run()
-	-- Normal remapping
-	-- How it's done in MST:
---[=[
-	-- Convert the graph into a form amenable to the MST algorithm.
-	local n, nindices, nverts = 0, 0, 0
+function M.Run_Labels (candidates, opts)
+	-- Determine how many choices are available to assign.
+	local ncols, max_cost = -1, -1
 
-	for k, to in pairs(graph) do
-		local ui = LabelToIndex[k]
-
-		for v, weight in pairs(to) do
-			local vi = LabelToIndex[v]
-
-			nindices, nverts = nindices + 1, max(nverts, ui, vi)		
-
-			Indices[nindices] = n + 1
-			Buf[n + 1], Buf[n + 2], Buf[n + 3], n = ui, vi, weight, n + 3
+	for _, choices in pairs(candidates) do
+		for k, cost in pairs(choices) do
+			ncols, max_cost = max(ncols, LabelToIndex[k]), max(max_cost, cost)
 		end
 	end
 
 	--
-	SortEdges(Buf, nindices)
+	local costs, list, offset, big = {}, {}, 0, 2 * max_cost
 
-	--
-	local mst = nverts > 0 and {}
+	for cand, choices in pairs(candidates) do
+		list[#list + 1] = cand
 
-	if mst then
-		local _, n = Kruskal(nverts, Buf, MST)
-
-		for i = 1, n, 2 do
-			local u, v = IndexToLabel[MST[i]], IndexToLabel[MST[i + 1]]
-			local to = mst[u] or {}
-
-			mst[u], to[#to + 1] = to, v
+		for i = 1, ncols do
+			costs[offset + i] = big
 		end
+
+		for k, cost in pairs(choices) do
+			costs[offset + LabelToIndex[k]] = cost
+		end
+
+		offset = offset + ncols
 	end
 
-	CleanUp() 
+	--
+	local out = _Run_(costs, ncols, opts)
 
-	return assert(mst, "Invalid vertices")
-]=]
+	for i = #out, 1, -1 do
+		out[list[i]], out[i] = IndexToLabel[out[i]]
+	end
+
+	CleanUp()
+
+	return out
 end
+
+-- Cache module members.
+_Run_ = M.Run
 
 -- Export the module.
 return M
