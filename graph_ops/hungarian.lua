@@ -38,9 +38,10 @@ local vector = require("bitwise_ops.vector")
 
 -- Imports --
 local Clear = vector.Clear
+local Clear_Fast = vector.Clear_Fast
 local GetIndices_Clear = vector.GetIndices_Clear
 local GetIndices_Set = vector.GetIndices_Set
-local Set = vector.Set
+local Set_Fast = vector.Set_Fast
 
 -- Cached module references --
 local _Run_
@@ -243,24 +244,21 @@ LAST=oc()
 
 			local scol = RowStar[ri]
 
-			-- If a star was found, cover its row and uncover its column, as necessary.
+			-- If a star was found, cover its row and uncover its column.
 			if scol < ncols then
-				if Clear(FreeRowBits, (ri - 1) / ncols) then
-					-- Invalidate rows, if one became dirty. Since the rows are being traversed in order,
-					-- however, they need not be accumulated again (during priming).
-					CovRowN, UncovRowN = nil
-				end
+				Clear_Fast(FreeRowBits, (ri - 1) / ncols)
+				Set_Fast(FreeColBits, scol)
 
-				if Set(FreeColBits, col) then
-					-- Invalidate columns, if one became dirty. At the expense of some locality, a second
-					-- accumulation can be avoided (during priming) by appending the now-uncovered column
-					-- to the uncovered columns list.
-					if ucn then
-						UncovCols[ucn + 1], ucn = col, ucn + 1
-					end
+				-- Invalidate rows, since one became dirty. The rows are being traversed in order,
+				-- however, so they need not be accumulated again (during priming).
+				CovRowN, UncovRowN = nil
 
-					CovColN, UncovColN = nil
-				end
+				-- Invalidate columns, since one became dirty. At the expense of some locality, a second
+				-- accumulation can be avoided (during priming) by appending the now-uncovered column to
+				-- the uncovered columns list.
+				UncovCols[ucn + 1], ucn = scol, ucn + 1
+
+				CovColN, UncovColN = nil
 
 			-- No star: start building a path from the primed zero.
 			else
@@ -419,11 +417,13 @@ function M.Run_Labels (candidates, opts)
 		end
 	end
 
-	--
-	local costs, list, offset, big = {}, {}, 0, 2 * max_cost
+	-- Populate the cost matrix (pre-filling each row with a "large" cost to deal with invalid
+	-- pairings). Stash the candidate for each row in a separate list (the candidates are not
+	-- labeled, to accommodate the case where it would conflict with a target's label).
+	local costs, offset, n, big = {}, 0, 0, 2 * max_cost
 
 	for cand, choices in pairs(candidates) do
-		list[#list + 1] = cand
+		costs[-(n + 1)], n = cand, n + 1
 
 		for i = 1, ncols do
 			costs[offset + i] = big
@@ -436,11 +436,11 @@ function M.Run_Labels (candidates, opts)
 		offset = offset + ncols
 	end
 
-	--
+	-- Run the algorithm, then match candidates back up with their assignments.
 	local out = _Run_(costs, ncols, opts)
 
 	for i = #out, 1, -1 do
-		out[list[i]], out[i] = IndexToLabel[out[i]]
+		out[costs[-i]], out[i] = IndexToLabel[out[i]]
 	end
 
 	CleanUp()

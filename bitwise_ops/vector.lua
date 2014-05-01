@@ -1,7 +1,7 @@
 --- Bit vector operations.
 --
 -- If available, a bit library is used internally, which may offer speed advantages in some
--- circumstances. Functionally, the behavior is identical either way.
+-- circumstances. Unless otherwise noted, the behavior is functionally identical either way.
 
 --
 -- Permission is hereby granted, free of charge, to any person obtaining
@@ -119,6 +119,14 @@ end
 -- @uint index Bit index (0-based), &isin; [0, _n_), cf. @{Init}.
 -- @treturn boolean The bit changed?
 
+--- Variant of @{Clear} that does not check for change.
+--
+-- **N.B.** In bitwise mode, this merely shaves off some operations; when emulated, however,
+-- the result is undefined if the bit is already clear.
+-- @function Clear_Fast
+-- @tparam BitVector vector
+-- @uint index Bit index (0-based), &isin; [0, _n_), cf. @{Init}.
+
 if HasBitLib then
 	function M.Clear (vector, index)
 		local slot, bit = rshift(index, 5) + 1, lshift(1, index)
@@ -127,6 +135,12 @@ if HasBitLib then
 		vector[slot] = band(old, bnot(bit))
 
 		return band(old, bit) ~= 0
+	end
+
+	function M.Clear_Fast (vector, index)
+		local slot = rshift(index, 5) + 1
+
+		vector[slot] = band(vector[slot], bnot(lshift(1, index)))
 	end
 else
 	function M.Clear (vector, index)
@@ -141,6 +155,13 @@ else
 		else
 			return false
 		end
+	end
+
+	function M.Clear_Fast (vector, index)
+		local quot = floor(index * vector.magic)
+		local slot = quot + 1
+
+		vector[slot] = vector[slot] - 2^(index - quot * 53)
 	end
 end
 
@@ -194,10 +215,10 @@ end
 
 -- Puts block's offsets back in order (since high bits were pulled off)
 local function Reverse (vector, l, r)
-	while l < r do
-		r = r - 1
+	r = r - 1
 
-		vector[l], vector[r], l = vector[r], vector[l], l + 1
+	while l < r do
+		vector[l], vector[r], l, r = vector[r], vector[l], l + 1, r - 1
 	end
 end
 
@@ -328,11 +349,56 @@ function M.Init (vector, n, clear)
 	vector.n, vector.mask, vector.magic = nblocks, mask, magic
 end
 
+--- Predicate.
+-- @function IsBitClear
+-- @tparam BitVector vector
+-- @uint index Bit index(0-based) &isin; [0, _n_), cf. @{Init}.
+-- @treturn boolean Bit is clear?
+
+--- Predicate.
+-- @function IsBitSet
+-- @tparam BitVector vector
+-- @uint index Bit index(0-based) &isin; [0, _n_), cf. @{Init}.
+-- @treturn boolean Bit is set?
+
+--
+if HasBitLib then
+	function M.IsBitClear (vector, index)
+		return band(vector[rshift(index, 5) + 1], lshift(1, index)) == 0
+	end
+
+	function M.IsBitSet (vector, index)
+		return band(vector[rshift(index, 5) + 1], lshift(1, index)) ~= 0
+	end
+else
+	function M.IsBitClear (vector, index)
+		local quot = floor(index * vector.magic)
+		local power = 2^(index - quot * 53)
+
+		return vector[quot + 1] % (2 * power) < power
+	end
+
+	function M.IsBitSet (vector, index)
+		local quot = floor(index * vector.magic)
+		local power = 2^(index - quot * 53)
+
+		return vector[quot + 1] % (2 * power) >= power
+	end
+end
+
 --- Sets a bit.
 -- @function Set
 -- @tparam BitVector vector
 -- @uint index Bit index (0-based), &isin; [0, _n_), cf. @{Init}.
 -- @treturn boolean The bit changed?
+
+--- Variant of @{Set} that does not check for change.
+--
+-- **N.B.** In bitwise mode, this merely shaves off some operations; when emulated, however,
+-- the result is undefined if the bit is already set.
+-- @function Set_Fast
+-- @tparam BitVector vector
+-- @uint index Bit index (0-based), &isin; [0, _n_), cf. @{Init}.
 
 if HasBitLib then
 	function M.Set (vector, index)
@@ -343,19 +409,27 @@ if HasBitLib then
 
 		return band(old, bit) == 0
 	end
+
+	function M.Set_Fast (vector, index)
+		local slot = rshift(index, 5) + 1
+
+		vector[slot] = bor(vector[slot], lshift(1, index))
+	end
 else
 	function M.Set (vector, index)
+		local slot, bit = rshift(index, 5) + 1, lshift(1, index)
+		local old = vector[slot]
+
+		vector[slot] = bor(old, bit)
+
+		return band(old, bit) == 0
+	end
+
+	function M.Set_Fast (vector, index)
 		local quot = floor(index * vector.magic)
-		local slot, pos = quot + 1, index - quot * 53
-		local old, power = vector[slot], 2^pos
+		local slot = quot + 1
 
-		if old % (2 * power) >= power then
-			return false
-		else
-			vector[slot] = old + power
-
-			return true
-		end
+		vector[slot] = vector[slot] + 2^(index - quot * 53)
 	end
 end
 
