@@ -26,26 +26,6 @@
 -- Exports --
 local M = {}
 
---- Adds the current minimum to (completely) covered elements' costs.
--- @uint vmin Minimum value.
--- @array costs Cost matrix.
--- @array ccols Offsets of covered columns (0-based)...
--- @array crows ...and covered rows (0-based).
--- @uint ccn Number of columns in _ccols_...
--- @uint crn ...and rows in _crows_.
--- @uint ncols Number of columns in _costs_.
-function M.AddMin (vmin, costs, ccols, crows, ccn, crn, ncols)
-	for i = 1, crn do
-		local ri = crows[i] * ncols + 1
-
-		for j = 1, ccn do
-			local index = ri + ccols[j]
-
-			costs[index] = costs[index] + vmin
-		end
-	end
-end
-
 --- Attempts to find a zero among uncovered elements' costs.
 -- @array costs Cost matrix.
 -- @array ucols Offsets of uncovered columns (0-based)...
@@ -55,11 +35,10 @@ end
 -- @uint ncols Number of columns in _costs_.
 -- @uint from Index of first row to search.
 -- @number vmin Current minimum value, initially @{math.huge}.
--- @treturn uint Minimum value (as of the previous row, in the case a zero is found). 
--- @treturn[1] uint Index of first element in row where zero was found (1-based)...
--- @treturn[1] uint ...offset of column into that row (0-based)...
--- @treturn[1] uint ...and the index of the row in _urows_.
--- @treturn[2] uint If no zero was found, the minimum value.
+-- @treturn uint Minimum value (as of the previous row, in the case a zero is found).
+-- @treturn uint Index of first element in row where zero was found (1-based)...
+-- @treturn uint ...offset of column into that row (0-based)...
+-- @treturn uint ...and the index of the row in _urows_.
 function M.FindZero (costs, ucols, urows, ucn, urn, ncols, from, vmin)
 	for i = from, urn do
 		local ri, vmin_cur = urows[i] * ncols + 1, vmin
@@ -84,46 +63,41 @@ end
 --- Subtracts the current minimum from uncovered elements's costs.
 -- @uint vmin Minimum value.
 -- @array costs Cost matrix.
--- @array zeroes Any zeroes found during execution are stored here as row index / column
--- offset pairs (cf. @{FindZero}'s return values); key **n** is set to 2 * number of pairs.
 -- @array ucols Offsets of uncovered columns (0-based)...
 -- @array urows ...and uncovered rows (0-based).
 -- @uint ucn Number of columns in _ucols_...
 -- @uint urn ...and rows in _urows_.
 -- @uint ncols Number of columns in _costs_.
-function M.SubMin (vmin, costs, zeroes, ucols, urows, ucn, urn, ncols)
-	local zn = 0
-
+function M.SubMin (vmin, costs, ucols, urows, ucn, urn, ncols)
 	for i = 1, urn do
-		local ri, k = urows[i] * ncols + 1, ucn
+		local ri = urows[i] * ncols + 1
 
-		-- Reduce costs, and save the first zero (if any) found in the row.
 		for j = 1, ucn do
---			local col = ucols[j]
-			local index = ri + ucols[j]--col
-		--	local cost = costs[index] - vmin
-
-			costs[index] = costs[index] - vmin--cost
---[[
-			if cost == 0 then
-				zeroes[zn + 1], zeroes[zn + 2], zeroes[zn + 3], zn, k = ri, col, i, zn + 3, j
-
-				break
-			end
-			]]
-		end
---[[
-		-- Once a row gets covered during the prime phase, any other zeroes in it go stale. Thus,
-		-- as cost reduction proceeds over the rest of the row, no further zeroes are added.
-		for j = k + 1, ucn do
 			local index = ri + ucols[j]
 
 			costs[index] = costs[index] - vmin
 		end
-]]
 	end
+end
 
---	zeroes.n = zn
+--- Updates the cost of each element belonging to the set defined by _cols_ and _rows_.
+-- @array costs Cost matrix.
+-- @int delta Non-zero delta to apply to each cost.
+-- @uint ncols Number of columns in _costs_.
+-- @array cols Offsets of columns (0-based)...
+-- @array rows ...and rows (0-based).
+-- @uint cn Number of columns in _cols_...
+-- @uint rn ...and rows in _rows_.
+function M.UpdateCosts (costs, delta, ncols, cols, rows, cn, rn)
+	for i = 1, rn do
+		local ri = rows[i] * ncols + 1
+
+		for j = 1, cn do
+			local index = ri + cols[j]
+
+			costs[index] = costs[index] + delta
+		end
+	end
 end
 
 -- Export the module.

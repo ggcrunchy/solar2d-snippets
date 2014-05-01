@@ -37,13 +37,12 @@ local labels = require("graph_ops.labels")
 local vector = require("bitwise_ops.vector")
 
 -- Imports --
-local AddMin = core.AddMin
 local Clear = vector.Clear
 local FindZero = core.FindZero
 local GetIndices_Clear = vector.GetIndices_Clear
 local GetIndices_Set = vector.GetIndices_Set
 local Set = vector.Set
-local SubMin = core.SubMin
+local UpdateCosts = core.UpdateCosts
 
 -- Exports --
 local M = {}
@@ -190,51 +189,47 @@ local function BuildPath (ri, col, n, ncols, nrows)
 		Primes[k] = nil
 	end
 end
-
+--++++++++++++
+local SUM,LAST
+--++++++++++++
 -- Lists of uncovered rows and columns (0-based) --
 local UncovCols, UncovRows = {}, {}
 
--- Already-known zeroes, to avoid some expensive finds --
-local Zeroes = {}
-
 -- Prime some uncovered zeroes
 local function PrimeZeroes (ncols, yfunc)
-	local ucn, urn, zn, at, vmin = UncovColN, UncovRowN, Zeroes.n, 0, huge
+	local ucn = UncovColN or GetIndices_Set(UncovCols, FreeColBits)
+	local urn = UncovRowN or GetIndices_Set(UncovRows, FreeRowBits)
+	local at, vmin, ri, col = 0, huge
 
 	while true do
+--+++++++++++++++
+SUM=SUM+oc()-LAST
+--+++++++++++++++
 		yfunc()
+--+++++++
+LAST=oc()
+--+++++++
+		-- Look for a zero (on successive passes, resume from after the last zero's row; this is
+		-- crucial for speed). If one is found, prime it and check for a star in the same row.
+		vmin, ri, col, at = FindZero(Costs, UncovCols, UncovRows, ucn, urn, ncols, at + 1, vmin)
 
-		-- Find a zero, preferring known ones.
-		local col, ri
-
-	--	if zn > 0 then
-	--		ri, col, zn = Zeroes[zn - 2], Zeroes[zn - 1], zn - 3
-	--	else
-			ucn = ucn or GetIndices_Set(UncovCols, FreeColBits)
-			urn = urn or GetIndices_Set(UncovRows, FreeRowBits)
-
-			vmin, ri, col, at = FindZero(Costs, UncovCols, UncovRows, ucn, urn, ncols, at + 1, vmin)
-	--	end
-
-		--
 		if ri then
 			Primes[ri] = col
 
 			local scol = RowStar[ri]
 
-			--
+			-- If a star was found, cover its row and uncover its column, as necessary.
 			if scol < ncols then
 				if Clear(FreeRowBits, (ri - 1) / ncols) then
-					--
-				--	if at == 0 then
-				--		UncovRows[Zeroes[zn + 3]], urn = UncovRows[urn], urn - 1
-				--	end
-
+					-- Invalidate rows, if one became dirty. Since the rows are being traversed in order,
+					-- however, they need not be accumulated again (during priming).
 					CovRowN, UncovRowN = nil
 				end
 
 				if Set(FreeColBits, col) then
-					--
+					-- Invalidate columns, if one became dirty. At the expense of some locality, a second
+					-- accumulation can be avoided (during priming) by appending the now-uncovered column
+					-- to the uncovered columns list.
 					if ucn then
 						UncovCols[ucn + 1], ucn = col, ucn + 1
 					end
@@ -242,27 +237,17 @@ local function PrimeZeroes (ncols, yfunc)
 					CovColN, UncovColN = nil
 				end
 
-			--
+			-- No star: start building a path from the primed zero.
 			else
-		--		Zeroes.n = zn
-
 				return ri, col
 			end
 
-		-- No more zeroes: unable to make a path, but supply minimum value for cost updates.
+		-- No more zeroes: unable to make a path, but minimum value still used to update costs.
 		else
-		--	Zeroes.n = zn
-
 			return false, vmin
 		end
 	end
 end
-
---++++++++++++++
-local AU,AUN=0,0
-local LP,LPN=0,0
-local PZ,PZN=0,0
---++++++++++++++
 
 -- Default yield function: no-op
 local function DefYieldFunc () end
@@ -279,10 +264,9 @@ function M.Run (costs, ncols, opts)
 	local out = (opts and opts.into) or {}
 	local yfunc = (opts and opts.yfunc) or DefYieldFunc
 
---+++++++++++
-local lp=oc()
-local sum=0
---+++++++++++
+--+++++++++++++
+LAST,SUM=oc(),0
+--+++++++++++++
 
 	local n, from = #costs, costs
 	local nrows = ceil(n / ncols)
@@ -310,16 +294,14 @@ local sum=0
 	-- Main loop. Begin by checking whether the already-starred zeroes form a solution. 
 	local do_check = true
 
-	Zeroes.n = 0
-
 	while true do
---+++++++++++++
-sum=sum+oc()-lp
---+++++++++++++
+--+++++++++++++++
+SUM=SUM+oc()-LAST
+--+++++++++++++++
 		yfunc()
---+++++
-lp=oc()
---+++++
+--+++++++
+LAST=oc()
+--+++++++
 		-- Check if the starred zeroes describe a complete set of unique assignments.
 		if do_check then
 			if CountCoverage(n, ncols) then
@@ -335,19 +317,9 @@ lp=oc()
 					-- ncols > nrows
 				end
 
---++++++++++++++++++++++++++++++++++++
-local left=oc()-lp
-LP=LP+left
-LPN=LPN+1
-
-print("Loop", LP / LPN, LP)
-print("  Prime zeroes", PZ / PZN, PZ)
-print("  Actual update", AU / AUN, AU)
-print("TOTAL", sum+left)
-LP,LPN=0,0
-PZ,PZN=0,0
-AU,AUN=0,0
---++++++++++++++++++++++++++++++++++++
+--+++++++++++++++++++++++++++
+print("TOTAL", SUM+oc()-LAST)
+--+++++++++++++++++++++++++++
 				return out
 			else
 				do_check = false
@@ -358,13 +330,6 @@ local pz=oc()
 --+++++++++++
 		-- Find a noncovered zero and prime it.
 		local prow0, pcol0 = PrimeZeroes(ncols, yfunc)
-
-		Zeroes.n = 0
---+++++++++++
-local au=oc()
-PZ=PZ+au-pz
-PZN=PZN+1
---+++++++++++
 
 		-- If there was no starred zero in the row containing the primed zero, try to build up a
 		-- solution. On the next pass, check if this has produced a valid assignment.
@@ -379,23 +344,19 @@ PZN=PZN+1
 			CovColN = CovColN or GetIndices_Clear(CovCols, FreeColBits)
 			CovRowN = CovRowN or GetIndices_Clear(CovRows, FreeRowBits)
 
-			AddMin(pcol0, Costs, CovCols, CovRows, CovColN, CovRowN, ncols)
-
+			UpdateCosts(Costs, pcol0, ncols, CovCols, CovRows, CovColN, CovRowN)
+--+++++++++++++++
+SUM=SUM+oc()-LAST
+--+++++++++++++++
 			yfunc()
-
+--+++++++
+LAST=oc()
+--+++++++
 			UncovColN = UncovColN or GetIndices_Set(UncovCols, FreeColBits)
 			UncovRowN = UncovRowN or GetIndices_Set(UncovRows, FreeRowBits)
 
-			SubMin(pcol0, Costs, Zeroes, UncovCols, UncovRows, UncovColN, UncovRowN, ncols)
---+++++++++++
-AU=AU+oc()-au
-AUN=AUN+1
---+++++++++++
+			UpdateCosts(Costs, -pcol0, ncols, UncovCols, UncovRows, UncovColN, UncovRowN)
 		end
---+++++++++++
-LP=LP+oc()-lp
-LPN=LPN+1
---+++++++++++
 	end
 end
 
@@ -403,7 +364,49 @@ end
 -- @ptable t
 -- @treturn array out
 function M.Run_Labels (t)
-	-- Set up and do Run()
+	-- Count number of unique targets, find maximum utility among them
+	-- Then do columns for sources, fill gaps with... 2 * max?
+	-- Do Run()
+	-- Normal remapping
+	-- How it's done in MST:
+--[=[
+	-- Convert the graph into a form amenable to the MST algorithm.
+	local n, nindices, nverts = 0, 0, 0
+
+	for k, to in pairs(graph) do
+		local ui = LabelToIndex[k]
+
+		for v, weight in pairs(to) do
+			local vi = LabelToIndex[v]
+
+			nindices, nverts = nindices + 1, max(nverts, ui, vi)		
+
+			Indices[nindices] = n + 1
+			Buf[n + 1], Buf[n + 2], Buf[n + 3], n = ui, vi, weight, n + 3
+		end
+	end
+
+	--
+	SortEdges(Buf, nindices)
+
+	--
+	local mst = nverts > 0 and {}
+
+	if mst then
+		local _, n = Kruskal(nverts, Buf, MST)
+
+		for i = 1, n, 2 do
+			local u, v = IndexToLabel[MST[i]], IndexToLabel[MST[i + 1]]
+			local to = mst[u] or {}
+
+			mst[u], to[#to + 1] = to, v
+		end
+	end
+
+	CleanUp() 
+
+	return assert(mst, "Invalid vertices")
+]=]
 end
 
 -- Export the module.

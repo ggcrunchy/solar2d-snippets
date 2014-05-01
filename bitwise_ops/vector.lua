@@ -1,4 +1,7 @@
---- Operations dealing with binary logarithms.
+--- Bit vector operations.
+--
+-- If available, a bit library is used internally, which may offer speed advantages in some
+-- circumstances. Functionally, the behavior is identical either way.
 
 --
 -- Permission is hereby granted, free of charge, to any person obtaining
@@ -55,12 +58,12 @@ end
 -- Exports --
 local M = {}
 
---- DOCME
--- @array arr
+--- Predicate.
+-- @tparam BitVector vector
 -- @treturn boolean All bits clear?
-function M.AllClear (arr)
-	for i = 1, arr.n do
-		if arr[i] ~= 0 then
+function M.AllClear (vector)
+	for i = 1, vector.n do
+		if vector[i] ~= 0 then
 			return false
 		end
 	end
@@ -68,23 +71,23 @@ function M.AllClear (arr)
 	return true
 end
 
---
+-- Checks if all non-mask bits are set
 local AuxAllSet
  
 if HasBitLib then
-	function AuxAllSet (arr, n)
-		local bits = arr[1]
+	function AuxAllSet (vector, n)
+		local bits = vector[1]
 
 		for i = 2, n do
-			bits = band(arr[i], bits)
+			bits = band(vector[i], bits)
 		end
 
 		return bxor(bits, 0xFFFFFFFF) == 0
 	end
 else
-	function AuxAllSet (arr, n)
+	function AuxAllSet (vector, n)
 		for i = 1, n do
-			if arr[i] ~= 2^53 - 1 then
+			if vector[i] ~= 2^53 - 1 then
 				return false
 			end
 		end
@@ -93,46 +96,46 @@ else
 	end
 end
 
---- DOCME
--- @array arr
+--- Predicate.
+-- @tparam BitVector vector
 -- @treturn boolean All bits set?
-function M.AllSet (arr)
-	local n, mask = arr.n, arr.mask
+function M.AllSet (vector)
+	local n, mask = vector.n, vector.mask
 
 	if mask ~= 0 then
-		if mask ~= arr[n] then -- In bitwise version, mask less than 2^31
+		if mask ~= vector[n] then -- In bitwise version, mask less than 2^31
 			return false
 		end
 
 		n = n - 1
 	end
 
-	return AuxAllSet(arr, n)
+	return AuxAllSet(vector, n)
 end
 
---- DOCME
+--- Clears a bit.
 -- @function Clear
--- @array arr
--- @uint index
+-- @tparam BitVector vector
+-- @uint index Bit index (0-based), &isin; [0, _n_), cf. @{Init}.
 -- @treturn boolean The bit changed?
 
 if HasBitLib then
-	function M.Clear (arr, index)
+	function M.Clear (vector, index)
 		local slot, bit = rshift(index, 5) + 1, lshift(1, index)
-		local old = arr[slot]
+		local old = vector[slot]
 
-		arr[slot] = band(old, bnot(bit))
+		vector[slot] = band(old, bnot(bit))
 
 		return band(old, bit) ~= 0
 	end
 else
-	function M.Clear (arr, index)
-		local quot = floor(index * arr.magic)
+	function M.Clear (vector, index)
+		local quot = floor(index * vector.magic)
 		local slot, pos = quot + 1, index - quot * 53
-		local old, power = arr[slot], 2^pos
+		local old, power = vector[slot], 2^pos
 
 		if old % (2 * power) >= power then
-			arr[slot] = old - power
+			vector[slot] = old - power
 
 			return true
 		else
@@ -141,15 +144,22 @@ else
 	end
 end
 
---- DOCME
--- @array arr
-function M.ClearAll (arr)
-	for i = 1, arr.n do
-		arr[i] = 0
+--- Clears all bits.
+-- @tparam BitVector vector
+function M.ClearAll (vector)
+	for i = 1, vector.n do
+		vector[i] = 0
 	end
 end
 
---
+--- Getter.
+-- @tparam BitVector vector
+-- @treturn uint Number of bits, cf. @{Init}.
+function M.GetBitCount (vector)
+	return vector.n
+end
+
+-- Gets the offsets referenced by a bit block
 local AuxGet
 
 if HasBitLib then
@@ -182,20 +192,20 @@ else
 	end
 end
 
---
-local function Reverse (arr, l, r)
+-- Puts block's offsets back in order (since high bits were pulled off)
+local function Reverse (vector, l, r)
 	while l < r do
 		r = r - 1
 
-		arr[l], arr[r], l = arr[r], arr[l], l + 1
+		vector[l], vector[r], l = vector[r], vector[l], l + 1
 	end
 end
 
---- DOCME
+--- Gets the indices of all cleared bits.
 -- @function GetIndices_Clear
--- @array out
--- @array from
--- @treturn uint X
+-- @array out Receives the indices, in order.
+-- @tparam BitVector from
+-- @treturn uint Number of cleared bits (size of _out_).
 
 if HasBitLib then
 	function M.GetIndices_Clear (out, from)
@@ -252,13 +262,13 @@ else
 	end
 end
 
--- --
+-- Amount offset increases between bit blocks --
 local OffsetInc = HasBitLib and 32 or 53
 
---- DOCME
--- @array out
--- @array from
--- @treturn uint X
+--- Gets the indices of all set bits.
+-- @array out Receives the indices, in order.
+-- @tparam BitVector from
+-- @treturn uint Number of set bits (size of _out_).
 function M.GetIndices_Set (out, from)
 	local left, offset = 1, 0
 
@@ -275,7 +285,7 @@ end
 
 -- TODO: Efficient way to GetIndices_All? (more obvious for bitwise, where reverse order COULD be avoided...)
 
---
+-- Mode-specific initialization
 local AuxInit
 
 if HasBitLib then
@@ -291,11 +301,14 @@ else
 	end
 end
 
---- DOCME
--- @array arr
--- @uint n
--- @bool[opt=false] clear
-function M.Init (arr, n, clear)
+--- Initializes a bit vector.
+-- @ptable vector Storage for vector state.
+--
+-- Once initialized, this will be of type **BitVector**. It is also fine to later overwrite
+-- this with another **Init**.
+-- @uint n Number of bits, &gt; 0.
+-- @bool[opt=false] clear If true, all bits begin cleared; otherwise, all are set.
+function M.Init (vector, n, clear)
 	local mask, nblocks, tail, power, magic = 0, AuxInit(n)
 
 	if tail > 0 then
@@ -305,61 +318,61 @@ function M.Init (arr, n, clear)
 	local fill = clear and 0 or 2^power - 1
 
 	for i = 1, nblocks do
-		arr[i] = fill
+		vector[i] = fill
 	end
 
 	if mask ~= 0 and not clear then
-		arr[nblocks] = mask
+		vector[nblocks] = mask
 	end
 
-	arr.n, arr.mask, arr.magic = nblocks, mask, magic
+	vector.n, vector.mask, vector.magic = nblocks, mask, magic
 end
 
---- DOCME
+--- Sets a bit.
 -- @function Set
--- @array arr
--- @uint index
+-- @tparam BitVector vector
+-- @uint index Bit index (0-based), &isin; [0, _n_), cf. @{Init}.
 -- @treturn boolean The bit changed?
 
 if HasBitLib then
-	function M.Set (arr, index)
+	function M.Set (vector, index)
 		local slot, bit = rshift(index, 5) + 1, lshift(1, index)
-		local old = arr[slot]
+		local old = vector[slot]
 
-		arr[slot] = bor(old, bit)
+		vector[slot] = bor(old, bit)
 
 		return band(old, bit) == 0
 	end
 else
-	function M.Set (arr, index)
-		local quot = floor(index * arr.magic)
+	function M.Set (vector, index)
+		local quot = floor(index * vector.magic)
 		local slot, pos = quot + 1, index - quot * 53
-		local old, power = arr[slot], 2^pos
+		local old, power = vector[slot], 2^pos
 
 		if old % (2 * power) >= power then
 			return false
 		else
-			arr[slot] = old + power
+			vector[slot] = old + power
 
 			return true
 		end
 	end
 end
 
--- --
+-- Value used to fill non-mask blocks during a set --
 local SetFill = 2^(HasBitLib and 32 or 53) - 1
 
---- DOCME
--- @array arr
-function M.SetAll (arr)
-	local n, mask = arr.n, arr.mask
+--- Sets all bits.
+-- @tparam BitVector vector
+function M.SetAll (vector)
+	local n, mask = vector.n, vector.mask
 
 	for i = 1, n do
-		arr[i] = SetFill
+		vector[i] = SetFill
 	end
 
 	if mask ~= 0 then
-		arr[n] = mask
+		vector[n] = mask
 	end
 end
 
