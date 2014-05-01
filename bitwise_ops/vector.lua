@@ -26,6 +26,7 @@
 -- Standard library imports --
 local floor = math.floor
 local frexp = math.frexp
+local max = math.max
 
 -- Modules --
 local divide = require("number_ops.divide")
@@ -283,7 +284,7 @@ if HasBitLib then
 	end
 else
 	function AuxInit (n)
-		local magic = divide.GenerateUnsignedConstants(n, 53, true)
+		local magic = divide.GenerateUnsignedConstants(max(n, 53), 53, true)
 		local quot = floor(n * magic)
 
 		return quot, n - quot * 53, 53, magic

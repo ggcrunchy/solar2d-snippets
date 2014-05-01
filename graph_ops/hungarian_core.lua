@@ -99,19 +99,20 @@ function M.SubMin (vmin, costs, zeroes, ucols, urows, ucn, urn, ncols)
 
 		-- Reduce costs, and save the first zero (if any) found in the row.
 		for j = 1, ucn do
-			local col = ucols[j]
-			local index = ri + col
-			local cost = costs[index] - vmin
+--			local col = ucols[j]
+			local index = ri + ucols[j]--col
+		--	local cost = costs[index] - vmin
 
-			costs[index] = cost
-
+			costs[index] = costs[index] - vmin--cost
+--[[
 			if cost == 0 then
 				zeroes[zn + 1], zeroes[zn + 2], zeroes[zn + 3], zn, k = ri, col, i, zn + 3, j
 
 				break
 			end
+			]]
 		end
-
+--[[
 		-- Once a row gets covered during the prime phase, any other zeroes in it go stale. Thus,
 		-- as cost reduction proceeds over the rest of the row, no further zeroes are added.
 		for j = k + 1, ucn do
@@ -119,9 +120,10 @@ function M.SubMin (vmin, costs, zeroes, ucols, urows, ucn, urn, ncols)
 
 			costs[index] = costs[index] - vmin
 		end
+]]
 	end
 
-	zeroes.n = zn
+--	zeroes.n = zn
 end
 
 -- Export the module.

@@ -158,10 +158,10 @@ local function RemoveStar (n, ri, col, ncols)
 	end
 end
 
--- --
+-- Row index -> col offset mapping for primed zeroes --
 local Primes = {}
 
---
+-- Attempts to build a columns-covering path
 local function BuildPath (ri, col, n, ncols, nrows)
 	repeat
 		local rnext = ColStar[col + 1]
@@ -191,23 +191,30 @@ local function BuildPath (ri, col, n, ncols, nrows)
 	end
 end
 
+-- Lists of uncovered rows and columns (0-based) --
+local UncovCols, UncovRows = {}, {}
+
+-- Already-known zeroes, to avoid some expensive finds --
+local Zeroes = {}
+
 -- Prime some uncovered zeroes
-local function PrimeZeroes (costs, zeroes, ucols, urows, ncols, yfunc)
-	local ucn, urn, zn, at, vmin = UncovColN, UncovRowN, zeroes.n, 0, huge
+local function PrimeZeroes (ncols, yfunc)
+	local ucn, urn, zn, at, vmin = UncovColN, UncovRowN, Zeroes.n, 0, huge
 
 	while true do
 		yfunc()
 
-		-- Find a zero, preferring a known one.
+		-- Find a zero, preferring known ones.
 		local col, ri
 
-		if zn > 0 then
-			ri, col, zn = zeroes[zn - 2], zeroes[zn - 1], zn - 3
-		else
-			ucn = ucn or GetIndices_Set(ucols, FreeColBits)
-			urn = urn or GetIndices_Set(urows, FreeRowBits)
-			vmin, ri, col, at = FindZero(costs, ucols, urows, ucn, urn, ncols, at + 1, vmin)
-		end
+	--	if zn > 0 then
+	--		ri, col, zn = Zeroes[zn - 2], Zeroes[zn - 1], zn - 3
+	--	else
+			ucn = ucn or GetIndices_Set(UncovCols, FreeColBits)
+			urn = urn or GetIndices_Set(UncovRows, FreeRowBits)
+
+			vmin, ri, col, at = FindZero(Costs, UncovCols, UncovRows, ucn, urn, ncols, at + 1, vmin)
+	--	end
 
 		--
 		if ri then
@@ -219,9 +226,9 @@ local function PrimeZeroes (costs, zeroes, ucols, urows, ncols, yfunc)
 			if scol < ncols then
 				if Clear(FreeRowBits, (ri - 1) / ncols) then
 					--
-					if at == 0 then
-						urows[zeroes[zn + 3]], urn = urows[urn], urn - 1
-					end
+				--	if at == 0 then
+				--		UncovRows[Zeroes[zn + 3]], urn = UncovRows[urn], urn - 1
+				--	end
 
 					CovRowN, UncovRowN = nil
 				end
@@ -229,7 +236,7 @@ local function PrimeZeroes (costs, zeroes, ucols, urows, ncols, yfunc)
 				if Set(FreeColBits, col) then
 					--
 					if ucn then
-						ucols[ucn + 1], ucn = col, ucn + 1
+						UncovCols[ucn + 1], ucn = col, ucn + 1
 					end
 
 					CovColN, UncovColN = nil
@@ -237,14 +244,14 @@ local function PrimeZeroes (costs, zeroes, ucols, urows, ncols, yfunc)
 
 			--
 			else
-				zeroes.n = zn
+		--		Zeroes.n = zn
 
 				return ri, col
 			end
 
-		--
+		-- No more zeroes: unable to make a path, but supply minimum value for cost updates.
 		else
-			zeroes.n = zn
+		--	Zeroes.n = zn
 
 			return false, vmin
 		end
@@ -260,12 +267,8 @@ local PZ,PZN=0,0
 -- Default yield function: no-op
 local function DefYieldFunc () end
 
--- Lists of covered and uncovered rows and columns (0-based) --
-local CovCols, UncovCols = {}, {}
-local CovRows, UncovRows = {}, {}
-
--- Already-known zeroes, to avoid some expensive finds --
-local Zeroes = {}
+-- Lists of covered rows and columns (0-based) --
+local CovCols, CovRows = {}, {}
 
 --- DOCME
 -- @array costs
@@ -304,13 +307,10 @@ local sum=0
 	StarSomeZeroes(n, ncols)
 	ClearCoverage(ncols, nrows, true)
 
-	-- Localize several upvalues to eke out some extra speed for huge input.
-	local cost_matrix, zeroes, ccols, crows, ucols, urows = Costs, Zeroes, CovCols, CovRows, UncovCols, UncovRows
-
 	-- Main loop. Begin by checking whether the already-starred zeroes form a solution. 
 	local do_check = true
 
-	zeroes.n = 0
+	Zeroes.n = 0
 
 	while true do
 --+++++++++++++
@@ -357,9 +357,9 @@ AU,AUN=0,0
 local pz=oc()
 --+++++++++++
 		-- Find a noncovered zero and prime it.
-		local prow0, pcol0 = PrimeZeroes(cost_matrix, zeroes, ucols, urows, ncols, yfunc)
+		local prow0, pcol0 = PrimeZeroes(ncols, yfunc)
 
-		zeroes.n = 0
+		Zeroes.n = 0
 --+++++++++++
 local au=oc()
 PZ=PZ+au-pz
@@ -376,20 +376,17 @@ PZN=PZN+1
 		-- Otherwise, no uncovered zeroes remain. Update the matrix and do another pass, without
         -- altering any stars, primes, or covered lines.
 		else
-			local ccn = CovColN or GetIndices_Clear(ccols, FreeColBits)
-			local crn = CovRowN or GetIndices_Clear(crows, FreeRowBits)
+			CovColN = CovColN or GetIndices_Clear(CovCols, FreeColBits)
+			CovRowN = CovRowN or GetIndices_Clear(CovRows, FreeRowBits)
 
-			AddMin(pcol0, cost_matrix, ccols, crows, ccn, crn, ncols)
+			AddMin(pcol0, Costs, CovCols, CovRows, CovColN, CovRowN, ncols)
 
 			yfunc()
 
-			local ucn = UncovColN or GetIndices_Set(ucols, FreeColBits)
-			local urn = UncovRowN or GetIndices_Set(urows, FreeRowBits)
+			UncovColN = UncovColN or GetIndices_Set(UncovCols, FreeColBits)
+			UncovRowN = UncovRowN or GetIndices_Set(UncovRows, FreeRowBits)
 
-			SubMin(pcol0, cost_matrix, zeroes, ucols, urows, ucn, urn, ncols)
-
-			CovColN, UncovColN = ccn, ucn
-			CovRowN, UncovRowN = crn, urn
+			SubMin(pcol0, Costs, Zeroes, UncovCols, UncovRows, UncovColN, UncovRowN, ncols)
 --+++++++++++
 AU=AU+oc()-au
 AUN=AUN+1
