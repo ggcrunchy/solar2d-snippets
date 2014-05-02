@@ -326,11 +326,25 @@ end
 -- Default yield function: no-op
 local function DefYieldFunc () end
 
---- DOCME
--- @array costs
--- @uint ncols
--- @ptable[opt] opts
--- @treturn array out
+--- Performs an [assignment](http://en.wikipedia.org/wiki/Assignment_problem) using the [Hungarian algorithm](http://en.wikipedia.org/wiki/Hungarian_algorithm).
+-- @array costs Matrix, of size _ncols_ x _nrows_, of finite, non-negative integers.
+--
+-- Each row and column in _costs_ represent an agent and task, respectively, and any given
+-- row-column pair contains the cost of assigning that agent to the task in question.
+--
+-- If the matrix is sparse, i.e. not every agent-task pair has a valid matching, those pairs
+-- should be assigned a cost larger than any other in _costs_. Since assignment minimizes the
+-- total cost, it follows that these will not appear in the final result.
+--
+-- Currently, only square (i.e. _ncols_ = _nrows_) matrices are supported.
+-- @uint ncols Number of columns in _costs_.
+-- @ptable[opt] opts Assignment options. Fields:
+--
+-- * **into**: Output table, _assignment_, of size _nrows_, where _assignment[i]_ is the
+-- column index of task assigned to the agent in row _i_. If absent, one is provided.
+-- * **yfunc**:  Yield function, called periodically during the assignment (no arguments),
+-- e.g. to yield within a coroutine. If absent, a no-op.
+-- @treturn array _assignment_.
 function M.Run (costs, ncols, opts)
 	local n, from = #costs, costs
 
@@ -391,6 +405,7 @@ LAST=oc()
 				end
 
 --+++++++++++++++++++++++++++++++++++++++
+--[[
 local final=oc()
 print("TOTAL", SUM+final-LAST)
 print("  Find zero", FZ/FZN, FZ)
@@ -400,6 +415,7 @@ print("  Update costs (U)", UC2/UCN, UC2)
 FZ,FZN=0,0
 UM,UMN=0,0
 UC1,UC2,UCN=0,0,0
+--]]
 --+++++++++++++++++++++++++++++++++++++++
 				return out
 			else
@@ -453,27 +469,30 @@ end
 -- Current label state --
 local LabelToIndex, IndexToLabel, CleanUp = labels.NewLabelGroup()
 
---- DOCME
--- @ptable candidates
+--- Labeled variant of @{Run}.
+-- @ptable graph Agents and tasks, stored as { ..., _agent1_ = { _task1_ = _cost_, ... },
+-- ... }, where _cost_ is a finite integer &ge; 0.
 -- @ptable[opt] opts As per @{Run}.
--- @treturn array out
-function M.Run_Labels (candidates, opts)
-	-- Determine how many choices are available to assign.
+-- @treturn array Assignment, stored as { _agent1_ = __assignment1_, _agent2_ = _assignment2_,
+-- ... }, where the _agent?_ are as above and the _assignment?_ each corresponding to some
+-- _task?_ from _graph_.
+function M.Run_Labels (graph, opts)
+	-- Determine how many tasks are available to assign.
 	local ncols, max_cost = -1, -1
 
-	for _, choices in pairs(candidates) do
+	for _, choices in pairs(graph) do
 		for k, cost in pairs(choices) do
 			ncols, max_cost = max(ncols, LabelToIndex[k]), max(max_cost, cost)
 		end
 	end
 
-	-- Populate the cost matrix (pre-filling each row with a "large" cost to deal with invalid
-	-- pairings). Stash the candidate for each row in a separate list (the candidates are not
-	-- labeled, to accommodate the case where it would conflict with a target's label).
+	-- Populate the cost matrix (pre-populating each row with a "large" cost to accommodate
+	-- sparse assignments). Stash the agent for each row in a separate list (the agents are not
+	-- labeled, to allow for the case where it would conflict with a task's label).
 	local costs, offset, n, big = {}, 0, 0, 2 * max_cost
 
-	for cand, choices in pairs(candidates) do
-		costs[-(n + 1)], n = cand, n + 1
+	for agent, choices in pairs(graph) do
+		costs[-(n + 1)], n = agent, n + 1
 
 		for i = 1, ncols do
 			costs[offset + i] = big
@@ -486,7 +505,7 @@ function M.Run_Labels (candidates, opts)
 		offset = offset + ncols
 	end
 
-	-- Run the algorithm, then match candidates back up with their assignments.
+	-- Run the algorithm, then match agents back up with their assigned tasks.
 	local out = _Run_(costs, ncols, opts)
 
 	for i = #out, 1, -1 do

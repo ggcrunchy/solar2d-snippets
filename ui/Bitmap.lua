@@ -273,17 +273,19 @@ function M.Bitmap (group)
 			local n = stash.numChildren
 
 			-- If the stash has pixels available, grab one and write it directly to the canvas.
+			local key = ToKey(x, y)
+
 			if n > 0 then
 				local pixel = stash[n]
 
 				canvas:insert(pixel)
 				pixel:setFillColor(...)
 
-				pixel.x, pixel.y = x, y
+				pixel.x, pixel.y, self.m_pending[key] = x, y
 
 			-- Otherwise, add it to the waiting list.
 			else
-				self.m_pending[ToKey(x, y)] = color.PackColor_Number(...)
+				self.m_pending[key] = color.PackColor_Number(...)
 			end
 		end
 	end

@@ -256,7 +256,7 @@ end
 -- Each _vertex1_, _vertex2_ pair is assumed to be unique, with no _vertex2_, _vertex1_ pairs.
 -- @uint s Index of flow source, &isin; [1, _n_].
 -- @uint t Index of flow sink, &isin; [1, _n_], &ne; _s_.
--- @ptable? opts Optional flow options. Fields:
+-- @ptable[opt] opts Flow options. Fields:
 --
 -- * **compute_mincut**: If true, find the mincut corresponding to the maxflow.
 -- * **include_zero**: If true, edge flows of 0 are included in the network.
@@ -282,7 +282,7 @@ local Buf = {}
 
 --- Labeled variant of @{MaxFlow}.
 -- @ptable graph Edges and capacities, stored as { ..., _label1_ = { _label2_ = _capacity_,
--- ... }, ... }, where capacity_ is an integer &gt; 0.
+-- ... }, ... }, where _capacity_ is an integer &gt; 0.
 --
 -- Each _label1_, _label2_ pair is assumed to be unique, with no _label2_, _label1_ pairs.
 -- One edge must have _ks_ in the _label1_ position, and _kt_ must be found at least once in

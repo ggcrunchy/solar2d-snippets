@@ -27,7 +27,9 @@
 local abs = math.abs
 local floor = math.floor
 local huge = math.huge
+local random = math.random
 local sort = table.sort
+local sqrt = math.sqrt
 local yield = coroutine.yield
 
 -- Modules --
@@ -163,8 +165,8 @@ end
 local Base = system.ResourceDirectory
 
 -- --
-local Dir = --"UI_Assets"
-			"Background_Assets"
+local Dir = "UI_Assets"
+			--"Background_Assets"
 
 -- --
 local Since
@@ -185,28 +187,6 @@ local Energy = {}
 
 -- Column or row indices of energy samples --
 local Indices = {}
-
---
-local function EnergyComp (i1, i2)
-	return Energy[i1] < Energy[i2]
-end
-
---
-local function SortEnergy (frac, inc, n)
-	local index = 1
-
-	for i = 1, n do
-		Indices[i], index = index, index + inc
-	end
-
-	for i = #Indices, n + 1, -1 do
-		Indices[i] = nil
-	end
-
-	sort(Indices, EnergyComp)
-
-	return floor(frac * n)
-end
 
 --
 local function GetEnergyDiff (index, energy)
@@ -242,14 +222,14 @@ local function GetEdgesEnergy (i, finc, pinc, n, offset)
 end
 
 --
--- TODO: Compact this (since about 80% might be wasted...)
 local function LoadCosts (costs, n, ahead, diag1, diag2, energy, ri, offset)
 	-- Initialize all costs to some improbably large (but finite) energy value.
 	for j = 1, n do
 		costs[ri + j] = 1e12
 	end
 
-	offset = offset + n - ri
+	--
+	offset = offset - ri
 
 	costs[ahead - offset] = GetEnergyDiff(ahead, energy)
 
@@ -265,18 +245,20 @@ local function LoadCosts (costs, n, ahead, diag1, diag2, energy, ri, offset)
 end
 
 --
-local function SolveAssignment (costs, opts, buf, nseams, n, offset)
+local function SolveAssignment (costs, opts, buf, n, offset)
 	hungarian.Run(costs, n, opts)
 
 	local assignment = opts.into
 
-	for i = 1, n do--nseams do
-		local at, into = assignment[Indices[i] or i], buf[i]
+	for i = 1, n do
+		local at, into = assignment[Indices[i]], buf[i]
 
 		Indices[i], into[#into + 1] = at, offset + at
-local energy = Energy[offset + at]
 
-into.cost, into.prev = into.cost + abs(energy - into.prev), energy
+		local energy = Energy[offset + at]
+
+		into.cost, into.prev = into.cost + abs(energy - into.prev), energy
+-- ^^ Is this neglecting the first row???
 	end
 end
 
@@ -297,6 +279,18 @@ local function DoPixelSeam (buf, i, remove)
 		local index = seam[j]
 
 		Pixels[index] = (Pixels[index] or 0) + inc
+	end
+end
+
+--
+local function CostComp (a, b)
+	return a.cost < b.cost
+end
+
+--
+local function WaitForWrites (bitmap)
+	while bitmap:HasPending() do
+		yield()
 	end
 end
 
@@ -333,20 +327,22 @@ function Scene:show (event)
 							--
 							energy.ComputeEnergy(Energy, func, w, h)
 
-							local index = 1
+							do
+								local index = 1
 
-							for y = 1, h do
-								for x = 1, w do
-									self.m_bitmap:SetPixel(x - 1, y - 1, math.sqrt(Energy[index])/255)
+								for y = 1, h do
+									for x = 1, w do
+										self.m_bitmap:SetPixel(x - 1, y - 1, sqrt(Energy[index]) / 255)
 
-									Watch()
+										Watch()
 
-									index = index + 1
+										index = index + 1
+									end
 								end
 							end
-while self.m_bitmap:HasPending() do
-	yield()
-end
+
+							WaitForWrites(self.m_bitmap)
+
 							--
 							local buf1, buf2 = {}, {}
 							local ffrac, finc, fn = .2, w, h
@@ -357,35 +353,32 @@ end
 							end
 							-- ^^^ frac and frac2 should be configurable...
 
-							-- Dimension 1: W.l.o.g. choose lowest-energy positions (1, x), initializing the
-							-- seam index state with their indices. Flag these indices as used.
-						--	local nseams, used = SortEnergy(pfrac, pinc, pn), {}
+							-- Dimension 1: Begin a seam at each index along the first dimension, flagging each
+							-- such index as used. Choose a random color to plot the seam.
 							local nseams, used = floor(pfrac * pn), {}
-AAA=true
-							for i = 1, pn do--nseams do
-								local index = i--Indices[i]
---self.m_bitmap:SetPixel(index - 1, 0, 1, 0, 0)
-								buf1[i], used[index] = { index, cost = 0, prev = 0 }, true
+
+							for i = 1, pn do
+								local r, g, b = random(), random(), random()
+
+								Indices[i], buf1[i], used[i] = i, { i, cost = 0, prev = 0, r = r, g = g, b = b }, true
+
+								self.m_bitmap:SetPixel(i - 1, 0, r, g, b)
 							end
 
 							-- 
 							local assignment, costs, offset = TwoSeams and { into = {}, yfunc = Watch }, TwoSeams and {}, 0
-local ii=1--114
-for _ = 2, ii do
-	offset = offset + finc
-end
--- Problem at 115...
-							for _ = ii+1, fn do
-print("ROW " .. _ .. " of " .. fn)
-								local row = 0 -- works left-to-right?
 
-								for i = 1, pn do--nseams do
+							for row = 2, fn do
+print("ROW " .. row .. " of " .. fn)
+								local ri = 0 -- works left-to-right?
+
+								for i = 1, pn do
 									local ahead, diag1, diag2, energy = GetEdgesEnergy(i, finc, pinc, fn, offset)
-
+-- ^^^^^ Offset????
 									-- If doing a two-seams approach, load a row of the cost matrix. Otherwise, advance
 									-- each index to the best of its three edges in the next column or row.
 									if TwoSeams then
-										row = LoadCosts(costs, pn, ahead, diag1, diag2, energy, row, offset)
+										ri = LoadCosts(costs, pn, ahead, diag1, diag2, energy, ri, offset + finc)
 									else
 										diag1 = not used[diag1] and diag1
 										ahead = not used[ahead] and ahead
@@ -395,43 +388,41 @@ print("ROW " .. _ .. " of " .. fn)
 										Indices[i], buf[#buf + 1], used[at] = at - offset, at, true
 									end
 								end
-BAB=true
+
 								-- In the two-seams approach, having set all the costs up, solve the column or row.
 								if TwoSeams then
-									SolveAssignment(costs, assignment, buf1, nseams, pn, offset)
---[[
-for i = 1, nseams do
-	self.m_bitmap:SetPixel(assignment[i] - 1, _ - 1, 0, 0, 1)
-end
-]]
+									SolveAssignment(costs, assignment, buf1, pn, offset + finc)
+
+									for i = 1, pn do
+										local buf = buf1[i]
+		
+										used[buf[row]] = true
+
+										self.m_bitmap:SetPixel(Indices[i] - 1, row - 1, buf.r, buf.g, buf.b)
+									end
+
 									offset = offset + finc
 								end
-while false do--_ == 4 do--true do
-	yield()
-end
+
 								Watch()
 							end
-print("PICKING")
-local COLORS={}
-for i = 1, nseams do
-	COLORS[i]={math.random(),math.random(),math.random()}
-end
-sort(buf1, function(a, b) return a.cost < b.cost end)
-print("NSEAMS", nseams)
-for i = 1, nseams do
-	local b=buf1[i]
-print("BUF", i, #b)
-	for j = 1, #b do
-		local ii = b[j] - 1
-		local x = ii % w
-		local y = (ii - x) / w
-if i == 1 then
---	print(j, ii, x, y)
-end
-		self.m_bitmap:SetPixel(x, y, unpack(COLORS[i]))
-	end
-end
--- ^^ Forgot a row?
+
+							--
+							sort(buf1, CostComp)
+
+							for i = nseams + 1, pn do
+								local buf = buf1[i]
+
+								for j = 1, #buf do
+									local im1 = buf[j] - 1
+									local x = im1 % w
+
+									used[buf[j]] = false
+
+									self.m_bitmap:SetPixel(x, (im1 - x) / w, sqrt(Energy[buf[j]]) / 255)
+								end
+							end
+
 while true do
 	yield()
 end
@@ -537,6 +528,8 @@ end
 		-- Way to pull a seam... (button, grayable)
 		-- ...and put one back (ditto)
 		-- State to hold indices on first pass, then use "id occupied" buffer on the second pass? (getting there!)
+		-- Way to save and resume in-progress carving (these can go quite long, and I've still only done one dimension...)
+		-- Reentrance...
 		-- Extra credit: augmenting seams... :(
 		self.tabs:setSelected(1, true)
 	end
