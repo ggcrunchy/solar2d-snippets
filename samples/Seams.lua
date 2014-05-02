@@ -165,8 +165,8 @@ end
 local Base = system.ResourceDirectory
 
 -- --
-local Dir = "UI_Assets"
-			--"Background_Assets"
+local Dir = --"UI_Assets"
+			"Background_Assets"
 
 -- --
 local Since
@@ -369,11 +369,11 @@ function Scene:show (event)
 							local assignment, costs, offset = TwoSeams and { into = {}, yfunc = Watch }, TwoSeams and {}, 0
 
 							for row = 2, fn do
-print("ROW " .. row .. " of " .. fn)
+--print("ROW " .. row .. " of " .. fn)
 								local ri = 0 -- works left-to-right?
 
 								for i = 1, pn do
-									local ahead, diag1, diag2, energy = GetEdgesEnergy(i, finc, pinc, fn, offset)
+									local ahead, diag1, diag2, energy = GetEdgesEnergy(i, finc, pinc, pn, offset)
 -- ^^^^^ Offset????
 									-- If doing a two-seams approach, load a row of the cost matrix. Otherwise, advance
 									-- each index to the best of its three edges in the next column or row.
