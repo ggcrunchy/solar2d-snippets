@@ -163,8 +163,8 @@ end
 local Base = system.ResourceDirectory
 
 -- --
-local Dir = "UI_Assets"
-			--"Background_Assets"
+local Dir = --"UI_Assets"
+			"Background_Assets"
 
 -- --
 local Since
@@ -271,7 +271,7 @@ local function SolveAssignment (costs, opts, buf, nseams, n, offset)
 	local assignment = opts.into
 
 	for i = 1, n do--nseams do
-		local at, into = assignment[i], buf[i]
+		local at, into = assignment[Indices[i] or i], buf[i]
 
 		Indices[i], into[#into + 1] = at, offset + at
 local energy = Energy[offset + at]
@@ -395,7 +395,7 @@ print("ROW " .. _ .. " of " .. fn)
 										Indices[i], buf[#buf + 1], used[at] = at - offset, at, true
 									end
 								end
-
+BAB=true
 								-- In the two-seams approach, having set all the costs up, solve the column or row.
 								if TwoSeams then
 									SolveAssignment(costs, assignment, buf1, nseams, pn, offset)
@@ -406,7 +406,7 @@ end
 ]]
 									offset = offset + finc
 								end
-while false do--_ == 3 do--true do
+while false do--_ == 4 do--true do
 	yield()
 end
 								Watch()
@@ -422,7 +422,7 @@ for i = 1, nseams do
 	local b=buf1[i]
 print("BUF", i, #b)
 	for j = 1, #b do
-		local ii = b[j]
+		local ii = b[j] - 1
 		local x = ii % w
 		local y = (ii - x) / w
 if i == 1 then
@@ -431,7 +431,7 @@ end
 		self.m_bitmap:SetPixel(x, y, unpack(COLORS[i]))
 	end
 end
-
+-- ^^ Forgot a row?
 while true do
 	yield()
 end

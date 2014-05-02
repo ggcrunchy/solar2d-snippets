@@ -141,7 +141,7 @@ function vdumpx (var, name, limit)
 	var_dump.Print(var, { hex_uints = true, name = name, limit = limit })
 end
 
---package.loaded.bit = require("plugin.bit")
+package.loaded.bit = require("plugin.bit")
 --[[
 local aa=require("graph_ops.hungarian")
 local eat=aa.Run({1,2,3,2,4,6,3,6,9},3)

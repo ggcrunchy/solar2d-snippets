@@ -417,12 +417,17 @@ if HasBitLib then
 	end
 else
 	function M.Set (vector, index)
-		local slot, bit = rshift(index, 5) + 1, lshift(1, index)
-		local old = vector[slot]
+		local quot = floor(index * vector.magic)
+		local slot, pos = quot + 1, index - quot * 53
+		local old, power = vector[slot], 2^pos
 
-		vector[slot] = bor(old, bit)
+		if old % (2 * power) >= power then
+			return false
+		else
+			vector[slot] = old + power
 
-		return band(old, bit) == 0
+			return true
+		end
 	end
 
 	function M.Set_Fast (vector, index)

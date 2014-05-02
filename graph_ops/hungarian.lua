@@ -219,11 +219,18 @@ local function FindZero (costs, ucols, urows, ucn, urn, ncols, from, vmin)
 	return vmin
 end
 
+-- Lists of covered rows and columns (0-based) --
+local CovCols, CovRows = {}, {}
+--+++++++++++++++++++++
+local FZ,FZN=0,0
+local UM,UMN=0,0
+local UC1,UC2,UCN=0,0,0
+--+++++++++++++++++++++
 -- Prime some uncovered zeroes
 local function PrimeZeroes (ncols, yfunc)
 	local ucn = UncovColN or GetIndices_Set(UncovCols, FreeColBits)
 	local urn = UncovRowN or GetIndices_Set(UncovRows, FreeRowBits)
-	local at, vmin, ri, col = 0, huge
+	local at, rrows, first_row, vmin, ri, col = 0, 0, UncovRows[1] + 1, huge
 
 	while true do
 --+++++++++++++++
@@ -238,15 +245,19 @@ LAST=oc()
 		-- (Upvalues are passed as arguments for the slight speed gain as locals, since FindZero()
 		-- may grind through a huge number of iterations.)
 		vmin, ri, col, at = FindZero(Costs, UncovCols, UncovRows, ucn, urn, ncols, at + 1, vmin)
-
+--+++++++++++++++++++++++
+FZ,FZN=FZ+oc()-LAST,FZN+1
+--+++++++++++++++++++++++
 		if ri then
 			Primes[ri] = col
 
 			local scol = RowStar[ri]
 
 			-- If a star was found, cover its row and uncover its column.
+			local roff = (ri - 1) / ncols
+
 			if scol < ncols then
-				Clear_Fast(FreeRowBits, (ri - 1) / ncols)
+				Clear_Fast(FreeRowBits, roff)
 				Set_Fast(FreeColBits, scol)
 
 				-- Invalidate rows, since one became dirty. The rows are being traversed in order,
@@ -259,7 +270,34 @@ LAST=oc()
 				UncovCols[ucn + 1], ucn = scol, ucn + 1
 
 				CovColN, UncovColN = nil
+--+++++++++++
+local um=oc()
+--+++++++++++
+				-- Uncovering a column might have flushed out a new minimum value, so a search needs to
+				-- be done down to the column, up to the previous row. Since it has been invalidated
+				-- anyhow, the covered columns array is hijacked to filter out recently covered rows.
+				-- This can be mitigated slightly as the algorithm progresses by jumping past rows that
+				-- were already covered before priming.
+				local ci, rindex = scol + 1, 1
 
+				for row = first_row, at - 1 do
+					if rindex <= rrows and CovRows[rindex] == row then
+						rindex = rindex + 1
+					else
+						local cost = Costs[ci]
+
+						if cost < vmin then
+							vmin = cost
+						end
+					end
+
+					ci = ci + ncols
+				end
+
+				CovRows[rrows + 1], rrows = roff + 1, rrows + 1
+--+++++++++++++++++++++
+UM,UMN=UM+oc()-um,UMN+1
+--+++++++++++++++++++++
 			-- No star: start building a path from the primed zero.
 			else
 				return ri, col
@@ -288,9 +326,6 @@ end
 -- Default yield function: no-op
 local function DefYieldFunc () end
 
--- Lists of covered rows and columns (0-based) --
-local CovCols, CovRows = {}, {}
-
 --- DOCME
 -- @array costs
 -- @uint ncols
@@ -309,8 +344,6 @@ LAST,SUM=oc(),0
 	local out = (opts and opts.into) or {}
 	local yfunc = (opts and opts.yfunc) or DefYieldFunc
 
-
--- TODO: ^^^ If n ~= nrows * ncols
 	-- If there are more assignees than choices, transpose the input and leave a reminder to
 	-- regularize the results once the algorithm completes.
 	if ncols < nrows then
@@ -357,9 +390,17 @@ LAST=oc()
 					-- ncols > nrows
 				end
 
---+++++++++++++++++++++++++++
-print("TOTAL", SUM+oc()-LAST)
---+++++++++++++++++++++++++++
+--+++++++++++++++++++++++++++++++++++++++
+local final=oc()
+print("TOTAL", SUM+final-LAST)
+print("  Find zero", FZ/FZN, FZ)
+print("  Update min", UM/UMN, UM)
+print("  Update costs (C)", UC1/UCN, UC1)
+print("  Update costs (U)", UC2/UCN, UC2)
+FZ,FZN=0,0
+UM,UMN=0,0
+UC1,UC2,UCN=0,0,0
+--+++++++++++++++++++++++++++++++++++++++
 				return out
 			else
 				do_check = false
@@ -381,12 +422,17 @@ print("TOTAL", SUM+oc()-LAST)
 		-- UpdateCosts() to take advantage of the speed gain as locals, since this will tend to
 		-- churn through a large swath of the cost matrix.)
 		else
+--++++++++++++
+local uc0=oc()
+--++++++++++++
 			CovColN = CovColN or GetIndices_Clear(CovCols, FreeColBits)
 			CovRowN = CovRowN or GetIndices_Clear(CovRows, FreeRowBits)
 
 			UpdateCosts(Costs, pcol0, ncols, CovCols, CovRows, CovColN, CovRowN)
 --+++++++++++++++
-SUM=SUM+oc()-LAST
+local uc1=oc()
+UC1=UC1+uc1-uc0
+SUM=SUM+uc1-LAST
 --+++++++++++++++
 			yfunc()
 --+++++++
@@ -396,6 +442,10 @@ LAST=oc()
 			UncovRowN = UncovRowN or GetIndices_Set(UncovRows, FreeRowBits)
 
 			UpdateCosts(Costs, -pcol0, ncols, UncovCols, UncovRows, UncovColN, UncovRowN)
+--+++++++++++++++
+UC2=UC2+oc()-LAST
+UCN=UCN+1
+--+++++++++++++++
 		end
 	end
 end
