@@ -45,7 +45,7 @@ local CovColN, UncovColN]]
 local UncovCols = {}
 
 -- Count of uncovered columns --
-local UncovColN = {}
+local UncovColN
 
 --- DOCMEMORE
 -- Initializes / resets the coverage state
@@ -54,9 +54,7 @@ function M.ClearColumnsCoverage (ncols)--, is_first)
 		UncovCols[i] = true
 	end
 
-	UncovCols[ncols + 1] = false -- Guard for lower-right corner (upper-left is implicit)
-
-	UncovColN = ncols
+	UncovColN, UncovCols[ncols + 1] = ncols, false -- Guard for lower-right corner (upper-left is implicit)
 	--[[
 	if is_first then
 		vector.Init(FreeColBits, ncols)
@@ -74,9 +72,9 @@ function M.CorrectMin (costs, vmin, rows, col, _, rto, nrows)--, ncols)
 	local index = rto * 3 + col -- n.b. produces "incorrect" index in first row, but still short-circuits the loop
 
 	while index > 2 and rto >= col do
-		index, rto = index - 2, rto - 1
+		index = index - 2--, rto = index - 2, rto - 1
 
-		if nrows == 0 or rows[nrows] ~= rto then
+		if nrows == 0 or rows[nrows] ~= rto then -- <- skips???
 			local cost = costs[index]
 
 			if cost < vmin then
@@ -85,7 +83,10 @@ function M.CorrectMin (costs, vmin, rows, col, _, rto, nrows)--, ncols)
 		else
 			nrows = nrows - 1
 		end
+		rto=rto-1
 	end
+-- ^^^ Need to look at this some more (plot it all out on paper) :P
+	return vmin
 	--[[
 	local ci, rindex = col + 1, 1
 
@@ -113,12 +114,12 @@ function M.CountCoverage (row_star, n, ncols)
 	for ri = 1, n, ncols do
 		local col = row_star[ri]
 
-		if col < ncols and not UncovCols[col + 1] then--Clear(FreeColBits, col) then
-			UncovCols[col + 1], UncovColN = true, UncovColN + 1--CovColN, UncovColN = nil
+		if col < ncols and UncovCols[col + 1] then--Clear(FreeColBits, col) then
+			UncovCols[col + 1], UncovColN = false, UncovColN - 1--CovColN, UncovColN = nil
 		end
 	end
 
-	return UncovColN == ncols-- vector.AllClear(FreeColBits)
+	return UncovColN == 0-- vector.AllClear(FreeColBits)
 end
 
 --- DOCMEMORE
@@ -129,15 +130,13 @@ function M.FindZero (costs, urows, _, urn, ncols, from, vmin)
 		local ri, index = row * ncols + 1, max(row * 3, 1)
 
 		for j = row, row + 2 do
-			if UncovCols[j] then
-				local cost = costs[index]
+			local cost = costs[index]
 
-				if cost < vmin then
-					if cost == 0 then
-						return vmin_cur, ri, j - 1, i
-					else
-						vmin = cost
-					end
+			if cost < vmin and UncovCols[j] then
+				if cost == 0 then
+					return vmin_cur, ri, j - 1, i
+				else
+					vmin = cost
 				end
 			end
 
@@ -176,7 +175,7 @@ function M.FindZeroInRow (costs, col_star, ri, ncols, np1)
 	local index = max(row * 3, 1)
 
 	for j = row, row + 2 do
-		if UncovCols[j] and costs[index] == 0 and col_star[j] == np1 then
+		if costs[index] == 0 and col_star[j] == np1 then
 			return j - 1
 		end
 

@@ -42,9 +42,6 @@ local Clear_Fast = vector.Clear_Fast
 local GetIndices_Clear = vector.GetIndices_Clear
 local GetIndices_Set = vector.GetIndices_Set
 
--- Cached module references --
-local _Run_
-
 -- Exports --
 local M = {}
 
@@ -236,35 +233,12 @@ end
 -- Default yield function: no-op
 local function DefYieldFunc () end
 
---- Performs an [assignment](http://en.wikipedia.org/wiki/Assignment_problem) using the [Hungarian algorithm](http://en.wikipedia.org/wiki/Hungarian_algorithm).
--- @array costs Matrix, of size _ncols_ x _nrows_, of finite, non-negative integers.
 --
--- Each row and column in _costs_ represent an agent and task, respectively, and any given
--- row-column pair contains the cost of assigning that agent to the task in question.
---
--- If the matrix is sparse, i.e. not every agent-task pair has a valid matching, those pairs
--- should be assigned a cost larger than any other in _costs_. Since assignment minimizes the
--- total cost, it follows that these will not appear in the final result.
---
--- Currently, only square (i.e. _ncols_ = _nrows_) matrices are supported.
--- @uint ncols Number of columns in _costs_.
--- @ptable[opt] opts Assignment options. Fields:
---
--- * **into**: Output table, _assignment_, of size _nrows_, where _assignment[i]_ is the
--- column index of task assigned to the agent in row _i_. If absent, one is provided.
--- * **yfunc**:  Yield function, called periodically during the assignment (no arguments),
--- e.g. to yield within a coroutine. If absent, a no-op.
--- @treturn array _assignment_.
-function M.Run (costs, ncols, opts)
-	local n, from = #costs, costs
-
-	assert(n % ncols == 0, "Size of `costs` is not a multiple of `ncols`")
-
+local function AuxRun (core, costs, n, ncols, nrows, opts)
 --+++++++++++++
 LAST,SUM=oc(),0
 --+++++++++++++
-local core = dense
-	local nrows = n / ncols
+	local from = costs
 	local out = (opts and opts.into) or {}
 	local yfunc = (opts and opts.yfunc) or DefYieldFunc
 
@@ -286,7 +260,7 @@ local core = dense
 	-- Kick off the algorithm with a first round of zeroes, starring as many as possible.
 	core.SubtractSmallestRowCosts(Costs, from, n, ncols)
 
-	StarSomeZeroes(core--[[Costs, ColStar, RowStar]], n, ncols)
+	StarSomeZeroes(core, n, ncols)
 	ClearCoverage(core, ncols, nrows, true)
 
 	-- Main loop. Begin by checking whether the already-starred zeroes form a solution. 
@@ -375,6 +349,44 @@ UCN=UCN+1
 	end
 end
 
+--- Performs an [assignment](http://en.wikipedia.org/wiki/Assignment_problem) using the [Hungarian algorithm](http://en.wikipedia.org/wiki/Hungarian_algorithm).
+-- @array costs Matrix, of size _ncols_ x _nrows_, of finite, non-negative integers.
+--
+-- Each row and column in _costs_ represent an agent and task, respectively, and any given
+-- row-column pair contains the cost of assigning that agent to the task in question.
+--
+-- If the matrix is sparse, i.e. not every agent-task pair has a valid matching, those pairs
+-- should be assigned a cost larger than any other in _costs_. Since assignment minimizes the
+-- total cost, it follows that these will not appear in the final result.
+--
+-- Currently, only square (i.e. _ncols_ = _nrows_) matrices are supported.
+-- @uint ncols Number of columns in _costs_.
+-- @ptable[opt] opts Assignment options. Fields:
+--
+-- * **into**: Output table, _assignment_, of size _nrows_, where _assignment[i]_ is the
+-- column index of task assigned to the agent in row _i_. If absent, one is provided.
+-- * **yfunc**:  Yield function, called periodically during the assignment (no arguments),
+-- e.g. to yield within a coroutine. If absent, a no-op.
+-- @treturn array _assignment_.
+function M.Run (costs, ncols, opts)
+	local n = #costs
+
+	assert(n % ncols == 0, "Size of `costs` is not a multiple of `ncols`")
+
+	return AuxRun(dense, costs, n, ncols, n / ncols, opts)
+end
+
+--- DOCME
+function M.Run_Diagonal (costs, opts)
+	local n = #costs
+
+	assert(n % 3 == 1, "Invalid size of `costs`")
+
+	local nrows = (n - 4) / 3 + 2
+
+	return AuxRun(diagonal, costs, nrows^2, nrows, nrows, opts)
+end
+
 -- Current label state --
 local LabelToIndex, IndexToLabel, CleanUp = labels.NewLabelGroup()
 
@@ -415,7 +427,7 @@ function M.Run_Labels (graph, opts)
 	end
 
 	-- Run the algorithm, then match agents back up with their assigned tasks.
-	local out = _Run_(costs, ncols, opts)
+	local out = AuxRun(dense, costs, n * ncols, ncols, n, opts)--_Run_(costs, ncols, opts)
 
 	for i = #out, 1, -1 do
 		out[costs[-i]], out[i] = IndexToLabel[out[i]]
@@ -425,9 +437,6 @@ function M.Run_Labels (graph, opts)
 
 	return out
 end
-
--- Cache module members.
-_Run_ = M.Run
 
 -- Export the module.
 return M
