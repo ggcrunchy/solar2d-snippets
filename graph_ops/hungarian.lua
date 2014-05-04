@@ -29,19 +29,18 @@
 local assert = assert
 local huge = math.huge
 local max = math.max
-local min = math.min
 local pairs = pairs
 
 -- Modules --
+local dense = require("graph_ops.hungarian_dense")
+local diagonal = require("graph_ops.hungarian_diagonal")
 local labels = require("graph_ops.labels")
 local vector = require("bitwise_ops.vector")
 
 -- Imports --
-local Clear = vector.Clear
 local Clear_Fast = vector.Clear_Fast
 local GetIndices_Clear = vector.GetIndices_Clear
 local GetIndices_Set = vector.GetIndices_Set
-local Set_Fast = vector.Set_Fast
 
 -- Cached module references --
 local _Run_
@@ -68,82 +67,27 @@ local function BuildSolution_Square (out, n, ncols)
 	end
 end
 
--- Bit vectors for rows and columns (bit set = uncovered); counts of covered / uncovered dimensions --
-local FreeColBits, CovColN, UncovColN = {}
-local FreeRowBits, CovRowN, UncovRowN = {}
+-- Bit vector for rows (bit set = uncovered) --
+local FreeRowBits = {}
+
+-- Lists of covered / uncovered rows (0-based) --
+local CovRows, UncovRows = {}, {}
+
+-- Counts of covered / uncovered dimensions --
+local CovRowN, UncovRowN
 
 -- Initializes / resets the coverage state
-local function ClearCoverage (ncols, nrows, is_first)
+local function ClearCoverage (core, ncols, nrows, is_first)
+	core.ClearColumnsCoverage(ncols, is_first)
+
 	if is_first then
-		vector.Init(FreeColBits, ncols)
 		vector.Init(FreeRowBits, nrows)
 	else
-		vector.SetAll(FreeColBits)
 		vector.SetAll(FreeRowBits)
 	end
 
-	-- Invalidate the covered / uncovered collections.
-	CovColN, UncovColN = nil
+	-- Invalidate the covered / uncovered rows.
 	CovRowN, UncovRowN = nil
-end
-
--- Do enough columns contain a starred zero?
-local function CountCoverage (n, ncols)
-	for ri = 1, n, ncols do
-		local col = RowStar[ri]
-
-		if col < ncols and Clear(FreeColBits, col) then
-			CovColN, UncovColN = nil
-		end
-	end
-
-	return vector.AllClear(FreeColBits)
-end
-
--- Current costs matrix --
-local Costs = {}
-
--- Stars the first zero found in each uncovered row or column
-local function StarSomeZeroes (n, ncols)
-	-- Begin with empty columns.
-	local np1 = n + 1
-
-	for i = 1, ncols do
-		ColStar[i] = np1
-	end
-
-	-- Go through each (initially empty) row, in order. If a zero is found in an empty column,
-	-- set it as the entry in that column and the current row, then move on to the next row.
-	local dcols = ncols - 1
-
-	for ri = 1, n, ncols do
-		RowStar[ri] = ncols
-
-		for i = 0, dcols do
-			if Costs[ri + i] == 0 and ColStar[i + 1] == np1 then
-				ColStar[i + 1], RowStar[ri] = ri, i
-
-				break
-			end
-		end
-	end
-end
-
--- Finds the smallest element in each row and subtracts it from every row element
-local function SubtractSmallestRowCosts (from, n, ncols)
-	local dcols = ncols - 1
-
-	for ri = 1, n, ncols do
-		local rmin = from[ri]
-
-		for i = 1, dcols do
-			rmin = min(rmin, from[ri + i])
-		end
-
-		for i = ri, ri + dcols do
-			Costs[i] = from[i] - rmin
-		end
-	end
 end
 
 -- Removes a star from its row and updates the "first in column" entry, if necessary
@@ -163,7 +107,7 @@ end
 local Primes = {}
 
 -- Attempts to build a columns-covering path
-local function BuildPath (ri, col, n, ncols, nrows)
+local function BuildPath (core, ri, col, n, ncols, nrows)
 	repeat
 		local rnext = ColStar[col + 1]
 
@@ -185,7 +129,7 @@ local function BuildPath (ri, col, n, ncols, nrows)
 		end
 	until ri > n
 
-	ClearCoverage(ncols, nrows)
+	ClearCoverage(core, ncols, nrows)
 
 	for k in pairs(Primes) do
 		Primes[k] = nil
@@ -193,42 +137,16 @@ local function BuildPath (ri, col, n, ncols, nrows)
 end
 --++++++++++++
 local SUM,LAST
---++++++++++++
--- Lists of uncovered rows and columns (0-based) --
-local UncovCols, UncovRows = {}, {}
-
--- Attempts to find a zero among uncovered elements' costs
-local function FindZero (costs, ucols, urows, ucn, urn, ncols, from, vmin)
-	for i = from, urn do
-		local ri, vmin_cur = urows[i] * ncols + 1, vmin
-
-		for j = 1, ucn do
-			local col = ucols[j]
-			local cost = costs[ri + col]
-
-			if cost < vmin then
-				if cost == 0 then
-					return vmin_cur, ri, col, i
-				else
-					vmin = cost
-				end
-			end
-		end
-	end
-
-	return vmin
-end
-
--- Lists of covered rows and columns (0-based) --
-local CovCols, CovRows = {}, {}
---+++++++++++++++++++++
 local FZ,FZN=0,0
 local UM,UMN=0,0
 local UC1,UC2,UCN=0,0,0
 --+++++++++++++++++++++
+-- Current costs matrix --
+local Costs = {}
+
 -- Prime some uncovered zeroes
-local function PrimeZeroes (ncols, yfunc)
-	local ucn = UncovColN or GetIndices_Set(UncovCols, FreeColBits)
+local function PrimeZeroes (core, ncols, yfunc)
+	local ucn = core.GetUncoveredColumns()
 	local urn = UncovRowN or GetIndices_Set(UncovRows, FreeRowBits)
 	local at, rrows, first_row, vmin, ri, col = 0, 0, UncovRows[1] + 1, huge
 
@@ -244,7 +162,7 @@ LAST=oc()
 		-- crucial for speed). If one is found, prime it and check for a star in the same row.
 		-- (Upvalues are passed as arguments for the slight speed gain as locals, since FindZero()
 		-- may grind through a huge number of iterations.)
-		vmin, ri, col, at = FindZero(Costs, UncovCols, UncovRows, ucn, urn, ncols, at + 1, vmin)
+		vmin, ri, col, at = core.FindZero(Costs, UncovRows, ucn, urn, ncols, at + 1, vmin)
 --+++++++++++++++++++++++
 FZ,FZN=FZ+oc()-LAST,FZN+1
 --+++++++++++++++++++++++
@@ -258,41 +176,24 @@ FZ,FZN=FZ+oc()-LAST,FZN+1
 
 			if scol < ncols then
 				Clear_Fast(FreeRowBits, roff)
-				Set_Fast(FreeColBits, scol)
 
 				-- Invalidate rows, since one became dirty. The rows are being traversed in order,
 				-- however, so they need not be accumulated again (during priming).
 				CovRowN, UncovRowN = nil
 
-				-- Invalidate columns, since one became dirty. At the expense of some locality, a second
-				-- accumulation can be avoided (during priming) by appending the now-uncovered column to
-				-- the uncovered columns list.
-				UncovCols[ucn + 1], ucn = scol, ucn + 1
+				-- Do some mode-specific uncover logic.
+				core.UncoverColumn(scol, ucn)
 
-				CovColN, UncovColN = nil
+				ucn = ucn + 1
 --+++++++++++
 local um=oc()
 --+++++++++++
 				-- Uncovering a column might have flushed out a new minimum value, so a search needs to
-				-- be done down to the column, up to the previous row. Since it has been invalidated
-				-- anyhow, the covered columns array is hijacked to filter out recently covered rows.
-				-- This can be mitigated slightly as the algorithm progresses by jumping past rows that
-				-- were already covered before priming.
-				local ci, rindex = scol + 1, 1
-
-				for row = first_row, at - 1 do
-					if rindex <= rrows and CovRows[rindex] == row then
-						rindex = rindex + 1
-					else
-						local cost = Costs[ci]
-
-						if cost < vmin then
-							vmin = cost
-						end
-					end
-
-					ci = ci + ncols
-				end
+				-- be doneup to the previous row. Since it has been invalidated anyhow (and the name is
+				-- even still appropriate), the covered columns array is hijacked to filter out recently
+				-- covered rows. This can be mitigated slightly as the algorithm progresses by jumping
+				-- past rows that were already covered before priming.
+				vmin = core.CorrectMin(Costs, vmin, CovRows, scol, first_row, at - 1, rrows, ncols)
 
 				CovRows[rrows + 1], rrows = roff + 1, rrows + 1
 --+++++++++++++++++++++
@@ -310,15 +211,24 @@ UM,UMN=UM+oc()-um,UMN+1
 	end
 end
 
--- Updates the cost of each element belonging to the cols x rows set
-local function UpdateCosts (costs, delta, ncols, cols, rows, cn, rn)
-	for i = 1, rn do
-		local ri = rows[i] * ncols + 1
+-- Stars the first zero found in each uncovered row or column
+local function StarSomeZeroes (core, n, ncols)
+	-- Begin with empty columns.
+	local np1 = n + 1
 
-		for j = 1, cn do
-			local index = ri + cols[j]
+	for i = 1, ncols do
+		ColStar[i] = np1
+	end
 
-			costs[index] = costs[index] + delta
+	-- Go through each (initially empty) row, in order. If a zero is found in an empty column,
+	-- set it as the entry in that column and the current row, then move on to the next row.
+	for ri = 1, n, ncols do
+		local col = core.FindZeroInRow(Costs, ColStar, ri, ncols, np1)
+
+		if col then
+			RowStar[ri], ColStar[col + 1] = col, ri
+		else
+			RowStar[ri] = ncols
 		end
 	end
 end
@@ -353,7 +263,7 @@ function M.Run (costs, ncols, opts)
 --+++++++++++++
 LAST,SUM=oc(),0
 --+++++++++++++
-
+local core = dense
 	local nrows = n / ncols
 	local out = (opts and opts.into) or {}
 	local yfunc = (opts and opts.yfunc) or DefYieldFunc
@@ -374,9 +284,10 @@ LAST,SUM=oc(),0
 	end
 
 	-- Kick off the algorithm with a first round of zeroes, starring as many as possible.
-	SubtractSmallestRowCosts(from, n, ncols)
-	StarSomeZeroes(n, ncols)
-	ClearCoverage(ncols, nrows, true)
+	core.SubtractSmallestRowCosts(Costs, from, n, ncols)
+
+	StarSomeZeroes(core--[[Costs, ColStar, RowStar]], n, ncols)
+	ClearCoverage(core, ncols, nrows, true)
 
 	-- Main loop. Begin by checking whether the already-starred zeroes form a solution. 
 	local do_check = true
@@ -391,7 +302,7 @@ LAST=oc()
 --+++++++
 		-- Check if the starred zeroes describe a complete set of unique assignments.
 		if do_check then
-			if CountCoverage(n, ncols) then
+			if core.CountCoverage(RowStar, n, ncols) then
 				if from == Costs then
 					-- Inverted, do something...
 				end
@@ -424,14 +335,14 @@ UC1,UC2,UCN=0,0,0
 		end
 
 		-- Find a noncovered zero and prime it.
-		local prow0, pcol0 = PrimeZeroes(ncols, yfunc)
+		local prow0, pcol0 = PrimeZeroes(core, ncols, yfunc)
 
 		-- If there was no starred zero in the row containing the primed zero, try to build up a
 		-- solution. On the next pass, check if this has produced a valid assignment.
 		if prow0 then
 			do_check = true
 
-			BuildPath(prow0, pcol0, n, ncols, nrows)
+			BuildPath(core, prow0, pcol0, n, ncols, nrows)
 
 		-- Otherwise, no uncovered zeroes remain. Update the matrix and do another pass, without
 		-- altering any stars, primes, or covered lines. (Upvalues are fed through as arguments to
@@ -441,10 +352,9 @@ UC1,UC2,UCN=0,0,0
 --++++++++++++
 local uc0=oc()
 --++++++++++++
-			CovColN = CovColN or GetIndices_Clear(CovCols, FreeColBits)
 			CovRowN = CovRowN or GetIndices_Clear(CovRows, FreeRowBits)
 
-			UpdateCosts(Costs, pcol0, ncols, CovCols, CovRows, CovColN, CovRowN)
+			core.UpdateCovered(Costs, pcol0, CovRows, CovRowN, ncols)
 --+++++++++++++++
 local uc1=oc()
 UC1=UC1+uc1-uc0
@@ -454,10 +364,9 @@ SUM=SUM+uc1-LAST
 --+++++++
 LAST=oc()
 --+++++++
-			UncovColN = UncovColN or GetIndices_Set(UncovCols, FreeColBits)
 			UncovRowN = UncovRowN or GetIndices_Set(UncovRows, FreeRowBits)
 
-			UpdateCosts(Costs, -pcol0, ncols, UncovCols, UncovRows, UncovColN, UncovRowN)
+			core.UpdateUncovered(Costs, pcol0, UncovRows, UncovRowN, ncols)
 --+++++++++++++++
 UC2=UC2+oc()-LAST
 UCN=UCN+1
