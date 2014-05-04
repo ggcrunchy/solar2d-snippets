@@ -122,7 +122,7 @@ function M.FindZero (costs, urows, ucn, urn, ncols, from, vmin)
 end
 
 --- DOCME
-function M.FindZeroInRow(costs, col_star, ri, ncols, np1)
+function M.FindZeroInRow (costs, col_star, ri, ncols, np1)
 	for i = 0, ncols - 1 do
 		if costs[ri + i] == 0 and col_star[i + 1] == np1 then
 			return i

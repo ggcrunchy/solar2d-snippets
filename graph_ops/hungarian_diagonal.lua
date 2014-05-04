@@ -41,11 +41,22 @@ local CovCols, UncovCols = {}, {}
 
 -- Counts of covered / uncovered columns --
 local CovColN, UncovColN]]
+-- Uncovered columns (1-based) --
+local UncovCols = {}
 
+-- Count of uncovered columns --
+local UncovColN = {}
 
 --- DOCMEMORE
 -- Initializes / resets the coverage state
-function M.ClearColumnsCoverage (ncols, is_first)
+function M.ClearColumnsCoverage (ncols)--, is_first)
+	for i = 1, ncols do
+		UncovCols[i] = true
+	end
+
+	UncovCols[ncols + 1] = false -- Guard for lower-right corner (upper-left is implicit)
+
+	UncovColN = ncols
 	--[[
 	if is_first then
 		vector.Init(FreeColBits, ncols)
@@ -59,7 +70,22 @@ function M.ClearColumnsCoverage (ncols, is_first)
 end
 
 --- DOCME
-function M.CorrectMin (costs, vmin, rows, col, rfrom, rto, nrows, ncols)
+function M.CorrectMin (costs, vmin, rows, col, _, rto, nrows)--, ncols)
+	local index = rto * 3 + col -- n.b. produces "incorrect" index in first row, but still short-circuits the loop
+
+	while index > 2 and rto >= col do
+		index, rto = index - 2, rto - 1
+
+		if nrows == 0 or rows[nrows] ~= rto then
+			local cost = costs[index]
+
+			if cost < vmin then
+				vmin = cost
+			end
+		else
+			nrows = nrows - 1
+		end
+	end
 	--[[
 	local ci, rindex = col + 1, 1
 
@@ -84,22 +110,42 @@ end
 --- DOCMEMORE
 -- Do enough columns contain a starred zero?
 function M.CountCoverage (row_star, n, ncols)
-	--[[
 	for ri = 1, n, ncols do
 		local col = row_star[ri]
 
-		if col < ncols and Clear(FreeColBits, col) then
-			CovColN, UncovColN = nil
+		if col < ncols and not UncovCols[col + 1] then--Clear(FreeColBits, col) then
+			UncovCols[col + 1], UncovColN = true, UncovColN + 1--CovColN, UncovColN = nil
 		end
 	end
 
-	return vector.AllClear(FreeColBits)
-	]]
+	return UncovColN == ncols-- vector.AllClear(FreeColBits)
 end
 
 --- DOCMEMORE
 -- Attempts to find a zero among uncovered elements' costs
-function M.FindZero (costs, urows, ucn, urn, ncols, from, vmin)
+function M.FindZero (costs, urows, _, urn, ncols, from, vmin)
+	for i = 1, from, urn do
+		local row, vmin_cur = urows[i], vmin
+		local ri, index = row * ncols + 1, max(row * 3, 1)
+
+		for j = row, row + 2 do
+			if UncovCols[j] then
+				local cost = costs[index]
+
+				if cost < vmin then
+					if cost == 0 then
+						return vmin_cur, ri, j - 1, i
+					else
+						vmin = cost
+					end
+				end
+			end
+
+			index = index + 1
+		end
+	end
+
+	return vmin
 	--[[
 	local ucols = UncovCols
 
@@ -125,7 +171,17 @@ function M.FindZero (costs, urows, ucn, urn, ncols, from, vmin)
 end
 
 --- DOCME
-function M.FindZeroInRow(costs, col_star, ri, ncols, np1)
+function M.FindZeroInRow (costs, col_star, ri, ncols, np1)
+	local row = (ri - 1) / ncols
+	local index = max(row * 3, 1)
+
+	for j = row, row + 2 do
+		if UncovCols[j] and costs[index] == 0 and col_star[j] == np1 then
+			return j - 1
+		end
+
+		index = index + 1
+	end
 --[[
 	for i = 0, ncols - 1 do
 		if costs[ri + i] == 0 and col_star[i + 1] == np1 then
@@ -137,12 +193,31 @@ end
 
 --- DOCME
 function M.GetUncoveredColumns ()
+	return UncovColN
 	--return UncovColN or GetIndices_Set(UncovCols, FreeColBits)
 end
 
 --- DOCMEMORE
 -- Finds the smallest element in each row and subtracts it from every row element
 function M.SubtractSmallestRowCosts (costs, from, n, ncols)
+	-- Row 1.
+	local min1 = min(from[1], from[2])
+
+	costs[1], costs[2] = from[1] - min1, from[2] - min1
+
+	-- Rows 2 through N - 2.
+	local j = 3
+
+	for _ = ncols + 1, n - ncols, ncols do
+		local minj = min(from[j], from[j + 1], from[j + 2])
+
+		costs[j], costs[j + 1], costs[j + 2], j = from[j] - minj, from[j + 1] - minj, from[j + 2] - minj, j + 3
+	end
+
+	-- Row N.
+	local minn = min(from[j], from[j + 1])
+
+	costs[j], costs[j + 1] = from[j] - minn, from[j + 1] - minn
 	--[[
 	local dcols = ncols - 1
 
@@ -162,6 +237,7 @@ end
 
 --- DOCME
 function M.UncoverColumn (col, ucn)
+	UncovCols[col + 1], UncovColN = true, ucn + 1
 	--[[
 	Set_Fast(FreeColBits, col)
 
@@ -176,7 +252,19 @@ end
 
 --- DOCMEMORE
 -- Updates the cost of each element belonging to the cols x rows set
-function M.UpdateCovered (costs, vmin, rows, rn, ncols)
+function M.UpdateCovered (costs, vmin, rows, rn)--, ncols)
+	for i = 1, rn do
+		local row = rows[i]
+		local index = max(row * 3, 1)
+
+		for j = row, row + 2 do
+			if not UncovCols[j] then
+				costs[index] = costs[index] + vmin
+			end
+
+			index = index + 1
+		end
+	end
 	--[[
 	CovColN = CovColN or GetIndices_Clear(CovCols, FreeColBits)
 
@@ -196,7 +284,19 @@ end
 
 --- DOCMEMORE
 -- Updates the cost of each element belonging to the cols x rows set
-function M.UpdateUncovered (costs, vmin, rows, rn, ncols)
+function M.UpdateUncovered (costs, vmin, rows, rn)--, ncols)
+	for i = 1, rn do
+		local row = rows[i]
+		local index = max(row * 3, 1)
+
+		for j = row, row + 2 do
+			if UncovCols[j] then
+				costs[index] = costs[index] - vmin
+			end
+
+			index = index + 1
+		end
+	end
 	--[[
 	UncovColN = UncovColN or GetIndices_Set(UncovCols, FreeColBits)
 
