@@ -165,8 +165,8 @@ end
 local Base = system.ResourceDirectory
 
 -- --
-local Dir = "UI_Assets"
-			--"Background_Assets"
+local Dir = --"UI_Assets"
+			"Background_Assets"
 
 -- --
 local Since
@@ -224,7 +224,7 @@ end
 --
 local function LoadCosts (costs, n, ahead, diag1, diag2, energy, ri, offset)
 	-- Initialize all costs to some improbably large (but finite) energy value.
-	--[[
+--[[
 	for j = 1, n do
 		costs[ri + j] = 1e12
 	end
@@ -242,8 +242,9 @@ local function LoadCosts (costs, n, ahead, diag1, diag2, energy, ri, offset)
 		costs[diag2 - offset] = GetEnergyDiff(diag2, energy)
 	end
 
-	return ri + n]]
-
+	return ri + n
+--]]
+---[[
 	if diag1 then
 		costs[ri + 1], ri = GetEnergyDiff(diag1, energy), ri + 1
 	end
@@ -255,11 +256,13 @@ local function LoadCosts (costs, n, ahead, diag1, diag2, energy, ri, offset)
 	end
 
 	return ri
+--]]
 end
 
 --
 local function SolveAssignment (costs, opts, buf, n, offset)
-	hungarian.Run_Diagonal(costs, opts)--n, opts)
+--	hungarian.Run(costs, n, opts)
+	hungarian.Run_Diagonal(costs, opts)
 
 	local assignment = opts.into
 
