@@ -45,10 +45,6 @@ local GetIndices_Set = vector.GetIndices_Set
 -- Exports --
 local M = {}
 
---+++++++++++++++
-local oc=os.clock
---+++++++++++++++
-
 -- Lowest (1-based) index of star in column, or n + 1 if empty --
 local ColStar = {}
 
@@ -132,12 +128,7 @@ local function BuildPath (core, ri, col, n, ncols, nrows)
 		Primes[k] = nil
 	end
 end
---++++++++++++
-local SUM,LAST
-local FZ,FZN=0,0
-local UM,UMN=0,0
-local UC1,UC2,UCN=0,0,0
---+++++++++++++++++++++
+
 -- Current costs matrix --
 local Costs = {}
 
@@ -148,21 +139,14 @@ local function PrimeZeroes (core, ncols, yfunc)
 	local at, rrows, first_row, vmin, ri, col = 0, 0, UncovRows[1] + 1, huge
 
 	while true do
---+++++++++++++++
-SUM=SUM+oc()-LAST
---+++++++++++++++
 		yfunc()
---+++++++
-LAST=oc()
---+++++++
+
 		-- Look for a zero (on successive passes, resume from after the last zero's row; this is
 		-- crucial for speed). If one is found, prime it and check for a star in the same row.
 		-- (Upvalues are passed as arguments for the slight speed gain as locals, since FindZero()
 		-- may grind through a huge number of iterations.)
 		vmin, ri, col, at = core.FindZero(Costs, UncovRows, ucn, urn, ncols, at + 1, vmin)
---+++++++++++++++++++++++
-FZ,FZN=FZ+oc()-LAST,FZN+1
---+++++++++++++++++++++++
+
 		if ri then
 			Primes[ri] = col
 
@@ -182,9 +166,7 @@ FZ,FZN=FZ+oc()-LAST,FZN+1
 				core.UncoverColumn(scol, ucn)
 
 				ucn = ucn + 1
---+++++++++++
-local um=oc()
---+++++++++++
+
 				-- Uncovering a column might have flushed out a new minimum value, so a search needs to
 				-- be doneup to the previous row. Since it has been invalidated anyhow (and the name is
 				-- even still appropriate), the covered columns array is hijacked to filter out recently
@@ -193,9 +175,7 @@ local um=oc()
 				vmin = core.CorrectMin(Costs, vmin, CovRows, scol, first_row, at - 1, rrows, ncols)
 
 				CovRows[rrows + 1], rrows = roff + 1, rrows + 1
---+++++++++++++++++++++
-UM,UMN=UM+oc()-um,UMN+1
---+++++++++++++++++++++
+
 			-- No star: start building a path from the primed zero.
 			else
 				return ri, col
@@ -235,9 +215,6 @@ local function DefYieldFunc () end
 
 --
 local function AuxRun (core, costs, n, ncols, nrows, opts)
---+++++++++++++
-LAST,SUM=oc(),0
---+++++++++++++
 	local from = costs
 	local out = (opts and opts.into) or {}
 	local yfunc = (opts and opts.yfunc) or DefYieldFunc
@@ -267,13 +244,8 @@ LAST,SUM=oc(),0
 	local do_check = true
 
 	while true do
---+++++++++++++++
-SUM=SUM+oc()-LAST
---+++++++++++++++
 		yfunc()
---+++++++
-LAST=oc()
---+++++++
+
 		-- Check if the starred zeroes describe a complete set of unique assignments.
 		if do_check then
 			if core.CountCoverage(RowStar, n, ncols) then
@@ -289,19 +261,6 @@ LAST=oc()
 					-- ncols > nrows
 				end
 
---+++++++++++++++++++++++++++++++++++++++
---[[
-local final=oc()
-print("TOTAL", SUM+final-LAST)
-print("  Find zero", FZ/FZN, FZ)
-print("  Update min", UM/UMN, UM)
-print("  Update costs (C)", UC1/UCN, UC1)
-print("  Update costs (U)", UC2/UCN, UC2)
-FZ,FZN=0,0
-UM,UMN=0,0
-UC1,UC2,UCN=0,0,0
---]]
---+++++++++++++++++++++++++++++++++++++++
 				return out
 			else
 				do_check = false
@@ -323,28 +282,15 @@ UC1,UC2,UCN=0,0,0
 		-- UpdateCosts() to take advantage of the speed gain as locals, since this will tend to
 		-- churn through a large swath of the cost matrix.)
 		else
---++++++++++++
-local uc0=oc()
---++++++++++++
 			CovRowN = CovRowN or GetIndices_Clear(CovRows, FreeRowBits)
 
 			core.UpdateCovered(Costs, pcol0, CovRows, CovRowN, ncols)
---+++++++++++++++
-local uc1=oc()
-UC1=UC1+uc1-uc0
-SUM=SUM+uc1-LAST
---+++++++++++++++
+
 			yfunc()
---+++++++
-LAST=oc()
---+++++++
+
 			UncovRowN = UncovRowN or GetIndices_Set(UncovRows, FreeRowBits)
 
 			core.UpdateUncovered(Costs, pcol0, UncovRows, UncovRowN, ncols)
---+++++++++++++++
-UC2=UC2+oc()-LAST
-UCN=UCN+1
---+++++++++++++++
 		end
 	end
 end

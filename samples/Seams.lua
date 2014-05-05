@@ -224,7 +224,7 @@ end
 --
 local function LoadCosts (costs, n, ahead, diag1, diag2, energy, ri, offset)
 	-- Initialize all costs to some improbably large (but finite) energy value.
---[[
+---[[
 	for j = 1, n do
 		costs[ri + j] = 1e12
 	end
@@ -244,7 +244,7 @@ local function LoadCosts (costs, n, ahead, diag1, diag2, energy, ri, offset)
 
 	return ri + n
 --]]
----[[
+--[[
 	if diag1 then
 		costs[ri + 1], ri = GetEnergyDiff(diag1, energy), ri + 1
 	end
@@ -258,24 +258,25 @@ local function LoadCosts (costs, n, ahead, diag1, diag2, energy, ri, offset)
 	return ri
 --]]
 end
-
+local TOTAL_COST={}
 --
 local function SolveAssignment (costs, opts, buf, n, offset)
---	hungarian.Run(costs, n, opts)
-	hungarian.Run_Diagonal(costs, opts)
+	hungarian.Run(costs, n, opts)
+--	hungarian.Run_Diagonal(costs, opts)
 
 	local assignment = opts.into
-
+local cost=0
 	for i = 1, n do
 		local at, into = assignment[Indices[i]], buf[i]
 
 		Indices[i], into[#into + 1] = at, offset + at
 
 		local energy = Energy[offset + at]
-
+cost = cost + abs(energy-into.prev)
 		into.cost, into.prev = into.cost + abs(energy - into.prev), energy
 -- ^^ Is this neglecting the first row???
 	end
+TOTAL_COST[#TOTAL_COST+1]=cost
 end
 
 --
@@ -425,7 +426,14 @@ function Scene:show (event)
 
 							--
 							sort(buf1, CostComp)
-
+local t={}
+for i = 1, #TOTAL_COST do
+	t[#t+1] = i .. " (" .. TOTAL_COST[i] .. ")"
+	if #t == 3 or i == #TOTAL_COST then
+		print("COSTS: ", table.concat(t, ", "))
+		t={}
+	end
+end
 							for i = nseams + 1, pn do
 								local buf = buf1[i]
 
