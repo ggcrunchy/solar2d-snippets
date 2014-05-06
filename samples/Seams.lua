@@ -224,7 +224,7 @@ end
 --
 local function LoadCosts (costs, n, ahead, diag1, diag2, energy, ri, offset)
 	-- Initialize all costs to some improbably large (but finite) energy value.
---[[
+---[[
 	for j = 1, n do
 		costs[ri + j] = 1e12
 	end
@@ -243,8 +243,8 @@ local function LoadCosts (costs, n, ahead, diag1, diag2, energy, ri, offset)
 	end
 
 	return ri + n
---]]
----[[
+---]]
+--[[
 	if diag1 then
 		costs[ri + 1], ri = GetEnergyDiff(diag1, energy), ri + 1
 	end
@@ -261,8 +261,8 @@ end
 local TOTAL_COST={}
 --
 local function SolveAssignment (costs, opts, buf, n, offset)
---	hungarian.Run(costs, n, opts)
-	hungarian.Run_Diagonal(costs, opts)
+	hungarian.Run(costs, n, opts)
+--	hungarian.Run_Diagonal(costs, opts)
 
 	local assignment = opts.into
 local cost=0
@@ -447,6 +447,7 @@ for i = 1, #TOTAL_COST do
 		t={}
 	end
 end
+f:close()
 end
 							for i = nseams + 1, pn do
 								local buf = buf1[i]

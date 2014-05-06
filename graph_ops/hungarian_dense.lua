@@ -80,7 +80,7 @@ function M.CorrectMin (costs, vmin, col, urows, rto, _, ncols)--rows, col, rfrom
 		ci = ci + ncols
 	end
 ]]
-	local cp1, pos = col + 1
+	local cp1 = col + 1
 
 	for i = 1, rto do
 		local row = urows[i]
@@ -89,7 +89,7 @@ function M.CorrectMin (costs, vmin, col, urows, rto, _, ncols)--rows, col, rfrom
 			local cost = costs[row * ncols + cp1]
 
 			if cost < vmin then
-				vmin, pos = cost, i
+				vmin = cost
 			end
 		end
 	end

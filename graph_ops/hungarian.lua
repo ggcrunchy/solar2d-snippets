@@ -137,7 +137,7 @@ local function PrimeZeroes (core, ncols, yfunc)
 	local ucn = core.GetUncoveredColumns()
 	local urn = UncovRowN or GetIndices_Set(UncovRows, FreeRowBits)
 	local at--[[, rrows, first_row]], vmin, ri, col = 0--[[, 0, UncovRows[1] + 1]], huge
-
+MOOP=false
 	while true do
 		yfunc()
 
@@ -175,17 +175,17 @@ local function PrimeZeroes (core, ncols, yfunc)
 			--	vmin = core.CorrectMin(Costs, vmin, CovRows, scol, first_row, at - 1, rrows, ncols)
 
 			--	CovRows[rrows + 1], rrows = roff + 1, rrows + 1
-			local aa=at
+				local vmin_cur = vmin
+
 				if at > 1 then
-					local p
-					vmin,p = core.CorrectMin(Costs, vmin, scol, UncovRows, at - 1, roff, ncols)
-					if vmin == 0 then
-						
-					--	print("ARGH")
-					end
+					vmin = core.CorrectMin(Costs, vmin, scol, UncovRows, at - 1, roff, ncols)
 				end
 
-				UncovRows[--[[at]]aa] = false
+				if vmin == 0 then
+					at, urn, vmin = 0, GetIndices_Set(UncovRows, FreeRowBits), vmin_cur
+				else
+					UncovRows[at] = false
+				end
 
 			-- No star: start building a path from the primed zero.
 			else
