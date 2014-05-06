@@ -51,24 +51,60 @@ function M.ClearColumnsCoverage (ncols)
 end
 
 --- DOCME
-function M.CorrectMin (costs, vmin, rows, col, _, rto, nrows)
-	local index = 2 * rto + col + 1 -- n.b. produces "incorrect" index in first row, but still short-circuits the loop
+function M.CorrectMin (costs, vmin, col, urows, rto, roff)--, ncols)-- (costs, vmin, rows, col, _, rto, nrows)
+	local index = 2 * roff + col + 1 -- n.b. produces "incorrect" index in first row, but still short-circuits the loop
+--[[
+-- Issue in rows: (starting from 1)
+-- 31 - 1762840 vs. 1762664
+-- 36 - 1420932 vs. 1420936
+-- 124 - 408283 vs. 408281
+-- 125 - 344785 vs. 344777
+-- 143 - 1749420 vs. 1748912
+-- 236 - 1076621 vs. 1076573
+-- 275 - 1288406 vs. 1288388
+-- 295 - 1275274 vs. 1276124
 
-	while index > 2 and rto >= col do
+On arrow: 40
+]]
+
+	--
+	local count, a, b = 0
+
+	while roff >= col do
+		roff, count = roff - 1, count + 1
+		a, b = roff, a
+	end
+if (not DD and index == 93) or ROW == 40 then
+--	print("?", col, index, rto, roff)
+--	vdump(urows)
+print("?", count, a, b, col, rto)
+	DD=true
+end
+	--
+	local pos
+
+	while index > 2 and count > 0 do--rr >= col do--roff >= col do
 		index = index - 2
-
-		if nrows == 0 or rows[nrows] ~= rto then
+--[[
+		if nrows > 0 and rows[nrows] == rto then
+			nrows = nrows - 1
+		else]]
+		local row = urows[rto]
+--		if urows[rto] == roff - 1 then
+		if row == a or row == b then
 			local cost = costs[index]
 
 			if cost < vmin then
-				vmin = cost
+				vmin, pos = cost, rto
 			end
-		else
-			nrows = nrows - 1
 		end
+--		end
 
-		rto = rto - 1
+		--roff, rto = roff - 1, rto - 1
+		count, rto = count - 1, rto - 1
 	end
+
+	return vmin, pos
 end
 
 --- DOCMEMORE
@@ -186,7 +222,7 @@ end
 function M.UpdateCovered (costs, vmin, rows, rn, ncols)
 	for i = 1, rn do
 		for col, index in ColumnIndex(rows[i], ncols) do
-			if UncovCols[col] == false then
+			if not UncovCols[col] then
 				costs[index] = costs[index] + vmin
 			end
 		end
@@ -196,6 +232,24 @@ end
 --- DOCMEMORE
 -- Updates the cost of each element belonging to the cols x rows set
 function M.UpdateUncovered (costs, vmin, rows, rn, ncols)
+	--[[
+if vmin == 0 then
+	print("CRAP!!!")
+end
+]]
+	local tmin=vmin
+	local ii=0
+for i = 1, rn do
+	for col, index in ColumnIndex(rows[i], ncols) do
+		if UncovCols[col] and costs[index] < tmin then
+			tmin = costs[index]
+			ii=ii+1
+		end
+	end
+end
+if tmin < vmin then
+	print("HECK!", tmin, vmin, ii, ROW)
+end
 	for i = 1, rn do
 		for col, index in ColumnIndex(rows[i], ncols) do
 			if UncovCols[col] then

@@ -136,7 +136,7 @@ local Costs = {}
 local function PrimeZeroes (core, ncols, yfunc)
 	local ucn = core.GetUncoveredColumns()
 	local urn = UncovRowN or GetIndices_Set(UncovRows, FreeRowBits)
-	local at, rrows, first_row, vmin, ri, col = 0, 0, UncovRows[1] + 1, huge
+	local at--[[, rrows, first_row]], vmin, ri, col = 0--[[, 0, UncovRows[1] + 1]], huge
 
 	while true do
 		yfunc()
@@ -168,13 +168,24 @@ local function PrimeZeroes (core, ncols, yfunc)
 				ucn = ucn + 1
 
 				-- Uncovering a column might have flushed out a new minimum value, so a search needs to
-				-- be doneup to the previous row. Since it has been invalidated anyhow (and the name is
+				-- be done, up to the previous row. Since it has been invalidated anyhow (and the name is
 				-- even still appropriate), the covered columns array is hijacked to filter out recently
 				-- covered rows. This can be mitigated slightly as the algorithm progresses by jumping
 				-- past rows that were already covered before priming.
-				vmin = core.CorrectMin(Costs, vmin, CovRows, scol, first_row, at - 1, rrows, ncols)
+			--	vmin = core.CorrectMin(Costs, vmin, CovRows, scol, first_row, at - 1, rrows, ncols)
 
-				CovRows[rrows + 1], rrows = roff + 1, rrows + 1
+			--	CovRows[rrows + 1], rrows = roff + 1, rrows + 1
+			local aa=at
+				if at > 1 then
+					local p
+					vmin,p = core.CorrectMin(Costs, vmin, scol, UncovRows, at - 1, roff, ncols)
+					if vmin == 0 then
+						
+					--	print("ARGH")
+					end
+				end
+
+				UncovRows[--[[at]]aa] = false
 
 			-- No star: start building a path from the primed zero.
 			else

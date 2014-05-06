@@ -62,7 +62,8 @@ function M.ClearColumnsCoverage (ncols, is_first)
 end
 
 --- DOCME
-function M.CorrectMin (costs, vmin, rows, col, rfrom, rto, nrows, ncols)
+function M.CorrectMin (costs, vmin, col, urows, rto, _, ncols)--rows, col, rfrom, rto, nrows, ncols)
+--[[
 	local ci, rindex = col + 1, 1
 
 	for row = rfrom, rto do
@@ -78,8 +79,22 @@ function M.CorrectMin (costs, vmin, rows, col, rfrom, rto, nrows, ncols)
 
 		ci = ci + ncols
 	end
+]]
+	local cp1, pos = col + 1
 
-	return vmin
+	for i = 1, rto do
+		local row = urows[i]
+
+		if row then
+			local cost = costs[row * ncols + cp1]
+
+			if cost < vmin then
+				vmin, pos = cost, i
+			end
+		end
+	end
+
+	return vmin, pos
 end
 
 --- DOCMEMORE
@@ -163,6 +178,15 @@ function M.UncoverColumn (col, ucn)
 	UncovCols[ucn + 1] = col
 
 	CovColN, UncovColN = nil
+--[[
+	CovColN = nil--, UncovColN = nil
+UncovColN=ucn+1
+local index = 1
+	while index < ucn and UncovCols[index] < col do
+		index = index + 1
+	end
+	table.insert(UncovCols, index, col)
+	]]
 end
 
 --- DOCMEMORE
