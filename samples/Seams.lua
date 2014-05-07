@@ -223,28 +223,6 @@ end
 
 --
 local function LoadCosts (costs, n, ahead, diag1, diag2, energy, ri, offset)
-	-- Initialize all costs to some improbably large (but finite) energy value.
---[[
-	for j = 1, n do
-		costs[ri + j] = 1e12
-	end
-
-	--
-	offset = offset - ri
-
-	costs[ahead - offset] = GetEnergyDiff(ahead, energy)
-
-	if diag1 then
-		costs[diag1 - offset] = GetEnergyDiff(diag1, energy)
-	end
-
-	if diag2 then
-		costs[diag2 - offset] = GetEnergyDiff(diag2, energy)
-	end
-
-	return ri + n
---]]
----[[
 	if diag1 then
 		costs[ri + 1], ri = GetEnergyDiff(diag1, energy), ri + 1
 	end
@@ -256,27 +234,23 @@ local function LoadCosts (costs, n, ahead, diag1, diag2, energy, ri, offset)
 	end
 
 	return ri
---]]
 end
-local TOTAL_COST={}
+
 --
 local function SolveAssignment (costs, opts, buf, n, offset)
---	hungarian.Run(costs, n, opts)
 	hungarian.Run_Diagonal(costs, opts)
 
 	local assignment = opts.into
-local cost=0
+
 	for i = 1, n do
 		local at, into = assignment[Indices[i]], buf[i]
 
 		Indices[i], into[#into + 1] = at, offset + at
 
 		local energy = Energy[offset + at]
-cost = cost + abs(energy-into.prev)
+
 		into.cost, into.prev = into.cost + abs(energy - into.prev), energy
--- ^^ Is this neglecting the first row???
 	end
-TOTAL_COST[#TOTAL_COST+1]=cost
 end
 
 --
@@ -287,17 +261,7 @@ local function DoPixelLine (buf, i, n, delta, remove)
 		Pixels[index], index = (Pixels[index] or 0) + inc, index + delta
 	end
 end
---[[
--- Issue in rows: (starting from 1)
--- 31 - 1762840 vs. 1762664
--- 36 - 1420932 vs. 1420936
--- 124 - 408283 vs. 408281
--- 125 - 344785 vs. 344777
--- 143 - 1749420 vs. 1748912
--- 236 - 1076621 vs. 1076573
--- 275 - 1288406 vs. 1288388
--- 295 - 1275274 vs. 1276124
-]]
+
 -- 
 local function DoPixelSeam (buf, i, remove)
 	local seam, inc = buf[i], remove and 1 or -1
@@ -383,7 +347,7 @@ function Scene:show (event)
 							-- Dimension 1: Begin a seam at each index along the first dimension, flagging each
 							-- such index as used. Choose a random color to plot the seam.
 							local nseams, used = floor(pfrac * pn), {}
-math.randomseed(0)
+
 							for i = 1, pn do
 								local r, g, b = random(), random(), random()
 
@@ -405,7 +369,6 @@ math.randomseed(0)
 									-- If doing a two-seams approach, load a row of the cost matrix. Otherwise, advance
 									-- each index to the best of its three edges in the next column or row.
 									if TwoSeams then
-ROW=row-1
 										ri = LoadCosts(costs, pn, ahead, diag1, diag2, energy, ri, offset + finc)
 									else
 										diag1 = not used[diag1] and diag1
@@ -437,18 +400,7 @@ ROW=row-1
 
 							--
 							sort(buf1, CostComp)
-local f=io.open(system.pathForFile("Out.txt", system.DocumentsDirectory), "w")
-if f then
-local t={}
-for i = 1, #TOTAL_COST do
-	t[#t+1] = i .. " (" .. TOTAL_COST[i] .. ")"
-	if #t == 3 or i == #TOTAL_COST then
-		f:write("COSTS: ", table.concat(t, ", "), "\n")
-		t={}
-	end
-end
-f:close()
-end
+
 							for i = nseams + 1, pn do
 								local buf = buf1[i]
 

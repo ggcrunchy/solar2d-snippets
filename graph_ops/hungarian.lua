@@ -137,8 +137,7 @@ local function PrimeZeroes (core, ncols, yfunc)
 	local ucn = core.GetUncoveredColumns()
 	local urn = UncovRowN or GetIndices_Set(UncovRows, FreeRowBits)
 	local at, vmin, ri, col = 0, huge
---	local at--[[, rrows, first_row]], vmin, ri, col = 0--[[, 0, UncovRows[1] + 1]], huge
-MOOP=false
+
 	while true do
 		yfunc()
 
@@ -154,10 +153,8 @@ MOOP=false
 			local scol = RowStar[ri]
 
 			-- If a star was found, cover its row and uncover its column.
-			local roff = (ri - 1) / ncols
-
 			if scol < ncols then
-				Clear_Fast(FreeRowBits, roff)
+				Clear_Fast(FreeRowBits, (ri - 1) / ncols)
 
 				-- Invalidate rows, since one became dirty. The rows are being traversed in order,
 				-- however, so they need not be accumulated again (during priming).
@@ -169,17 +166,16 @@ MOOP=false
 				ucn = ucn + 1
 
 				-- Uncovering a column might have flushed out a new minimum value, so a search needs to
-				-- be done, up to the previous row. Since it has been invalidated anyhow (and the name is
-				-- even still appropriate), the covered columns array is hijacked to filter out recently
-				-- covered rows. This can be mitigated slightly as the algorithm progresses by jumping
-				-- past rows that were already covered before priming.
-			--	vmin = core.CorrectMin(Costs, vmin, CovRows, scol, first_row, at - 1, rrows, ncols)
-
-			--	CovRows[rrows + 1], rrows = roff + 1, rrows + 1
+				-- be done, up to the previous uncovered row. Since it has been invalidated anyhow, the
+				-- covered columns are set to false, rather than regenerating the uncovered columns. It
+				-- is also possible that this new minimum is in fact a zero; in such a case, it is not
+				-- accepted as a minimum (i.e. the previous value is kept), but instead some earlier rows
+				-- must be revisited, and rather than try to shore up gaps, this does indeed trigger a
+				-- rebuilding of the uncovered columns (though is quite less frequent).
 				local vmin_cur = vmin
 
 				if at > 1 then
-					vmin = core.CorrectMin(Costs, vmin, scol, UncovRows, at - 1, roff, ncols)
+					vmin = core.CorrectMin(Costs, vmin, scol, UncovRows, at - 1, ncols)
 				end
 
 				if vmin == 0 then
