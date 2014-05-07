@@ -136,7 +136,8 @@ local Costs = {}
 local function PrimeZeroes (core, ncols, yfunc)
 	local ucn = core.GetUncoveredColumns()
 	local urn = UncovRowN or GetIndices_Set(UncovRows, FreeRowBits)
-	local at--[[, rrows, first_row]], vmin, ri, col = 0--[[, 0, UncovRows[1] + 1]], huge
+	local at, vmin, ri, col = 0, huge
+--	local at--[[, rrows, first_row]], vmin, ri, col = 0--[[, 0, UncovRows[1] + 1]], huge
 MOOP=false
 	while true do
 		yfunc()

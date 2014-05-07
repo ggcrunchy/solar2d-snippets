@@ -49,9 +49,9 @@ function M.ClearColumnsCoverage (ncols)
 
 	UncovColN = ncols
 end
-
+local CI
 --- DOCME
-function M.CorrectMin (costs, vmin, col, urows, rto, roff)--, ncols)-- (costs, vmin, rows, col, _, rto, nrows)
+function M.CorrectMin (costs, vmin, col, urows, rto, roff, ncols)-- (costs, vmin, rows, col, _, rto, nrows)
 	local index = 2 * roff + col + 1 -- n.b. produces "incorrect" index in first row, but still short-circuits the loop
 --[[
 -- Issue in rows: (starting from 1)
@@ -66,7 +66,28 @@ function M.CorrectMin (costs, vmin, col, urows, rto, roff)--, ncols)-- (costs, v
 
 On arrow: 40
 ]]
-
+if true then
+	if rto > 0 and urows[rto] then
+		for col, index in CI(urows[rto]) do
+if not costs[index] or not vmin then
+	print("S?S?DF?D", index, costs[index], vmin, roff, urows[roff], ncols)
+end
+			if costs[index] < vmin then
+				print("!")
+				vmin=costs[index]
+			end
+		end
+	end
+	if rto > 1 and urows[rto-1] then
+		for col, index in CI(urows[rto-1]) do
+			if costs[index] < vmin then
+				print("!!")
+				vmin=costs[index]
+			end
+		end
+	end
+	return vmin
+end
 	--
 	local count, a, b = 0
 
@@ -155,7 +176,7 @@ local function ColumnIndex (row, ncols)
 
 	return AuxColumnIndex, cto, col - 1
 end
-
+CI=ColumnIndex
 --- DOCMEMORE
 -- Attempts to find a zero among uncovered elements' costs
 function M.FindZero (costs, urows, _, urn, ncols, from, vmin)
@@ -235,11 +256,6 @@ end
 --- DOCMEMORE
 -- Updates the cost of each element belonging to the cols x rows set
 function M.UpdateUncovered (costs, vmin, rows, rn, ncols)
-	---[[
-if vmin == 0 then
-	print("CRAP!!!")
-end
---]]
 	local tmin=vmin
 	local ii, idx=0
 	local c,r
