@@ -356,7 +356,7 @@ function Scene:show (event)
 								self.m_bitmap:SetPixel(i - 1, 0, r, g, b)
 							end
 
-							-- 
+							-- Proceed along the other dimension, following paths of low-cost difference.
 							local assignment, costs, offset = TwoSeams and { into = {}, yfunc = TryToYield }, TwoSeams and {}, 0
 
 							for row = 2, fn do
