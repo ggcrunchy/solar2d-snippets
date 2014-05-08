@@ -83,10 +83,11 @@ end
 
 --- DOCME
 function M.CorrectMin (costs, vmin, _, urows, rto)
-	-- In a diagonal matrix, at most three elements are stacked vertically, so up to two rows
-	-- should be visited. Since it is harmless to visit costlier cells, and is just as much (if
-	-- not more) work to line up the column and filter rows, this procedure just does a "brute
-	-- force" (typically six cells) visit to find any new minimum.
+	-- In a diagonal matrix, columns consist of one to three elements, so at most two elements
+	-- in the preceding rows need updating. However, the index gymnastics needed to land on the
+	-- affected elements is almost as much, if not more, effort than just doing an exhaustive
+	-- search over the (0 to 6) elements in those same rows, thus that approach is followed to
+	-- find any new minimum.
 	for rindex = rto, max(rto - 1, 1), -1 do
 		local row = urows[rindex]
 

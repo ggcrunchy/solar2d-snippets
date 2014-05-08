@@ -194,6 +194,13 @@ function M.Bitmap (group)
 
 	stash.isVisible = false
 
+	--- Cancels any pending sets. Dispatches a **"cancel"** event.
+	function Bitmap:Cancel ()
+		self.m_pending = {}
+
+		Dispatch("cancel", self)
+	end
+
 	--- Clears all pixels, canceling any pending sets. Dispatches a **"clear"** event.
 	function Bitmap:Clear ()
 		display.remove(self.m_capture)
