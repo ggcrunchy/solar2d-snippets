@@ -182,11 +182,76 @@ local function TryToYield ()
 	end
 end
 
+-- Waits until a bitmap is fully written
+local function WaitForWrites (bitmap)
+	while bitmap:HasPending() do
+		yield()
+	end
+end
+
 -- Image energy --
 local Energy = {}
 
+-- Puts the image energy in visible form
+local function DrawEnergy (bitmap, w, h)
+	local index = 1
+
+	for y = 1, h do
+		for x = 1, w do
+			bitmap:SetPixel(x - 1, y - 1, sqrt(Energy[index]) / 255)
+
+			TryToYield()
+
+			index = index + 1
+		end
+	end
+
+	WaitForWrites(bitmap)
+end
+
 -- Column or row indices of energy samples --
 local Indices = {}
+
+--
+local function BeginSeam (n, bitmap, dx, dy, mark_used)
+	local buf, x, y, used = {}, 0, 0, mark_used and {}
+
+	for i = 1, n do
+		local r, g, b = random(), random(), random()
+
+		Indices[i], buf[i] = i, { i, cost = 0, prev = 0, r = r, g = g, b = b }
+
+		bitmap:SetPixel(x, y, r, g, b)
+
+		x, y = x + dx, y + dy
+	end
+
+	for i = 1, used and n or 0 do
+		used[i] = true
+	end
+
+	return buf, used
+end
+
+--
+local function ClearExtraneousSeams (bufs, used, bitmap, n, w, keep)
+	for i = bufs.nseams + 1, n do
+		local buf = bufs[i]
+
+		for j = 1, #buf do
+			local index = buf[j]
+			local im1, in_use = index - 1, keep and used[index]
+			local x = im1 % w
+
+			--
+			if not in_use then
+				used[index] = false
+
+				bitmap:SetPixel(x, (im1 - x) / w, sqrt(Energy[buf[j]]) / 255)
+			end
+		end
+	end
+end
 
 -- Calculates the energy difference when moving to a new position
 local function GetEnergyDiff (index, energy)
@@ -210,13 +275,12 @@ local function GetBestEdge (pref, alt1, alt2, energy)
 	return pref
 end
 
---
+-- Calculates the energy for the different edges a seam may try
 local function GetEdgesEnergy (i, finc, pinc, n, offset)
-	local rel_index = i--Indices[i]
-	local index = offset + rel_index
+	local index = offset + i * pinc
 	local ahead, energy = index + finc, Energy[index]
-	local diag1 = rel_index > 1 and ahead - pinc
-	local diag2 = rel_index < n and ahead + pinc
+	local diag1 = i > 1 and ahead - pinc
+	local diag2 = i < n and ahead + pinc
 
 	return ahead, diag1, diag2, energy
 end
@@ -278,10 +342,28 @@ local function CostComp (a, b)
 	return a.cost < b.cost
 end
 
--- Waits until a bitmap is fully written
-local function WaitForWrites (bitmap)
-	while bitmap:HasPending() do
-		yield()
+--
+local function UpdateSeams (bufs, n, bitmap, coord, left_to_right, used)
+	--
+	coord = coord - 1
+
+	if left_to_right then
+		for i = 1, n do
+			local buf = bufs[i]
+
+			bitmap:SetPixel(Indices[i] - 1, coord, buf.r, buf.g, buf.b)
+		end
+	else
+		for i = 1, n do
+			local buf = bufs[i]
+
+			bitmap:SetPixel(coord, Indices[i] - 1, buf.r, buf.g, buf.b)
+		end	
+	end
+
+	--
+	for i = 1, used and n or 0 do
+		used[bufs[i][coord]] = true
 	end
 end
 
@@ -318,24 +400,9 @@ function Scene:show (event)
 							-- Find some energy measure of the image and display it as grey levels.
 							energy.ComputeEnergy(Energy, func, w, h)
 
-							do
-								local index = 1
-
-								for y = 1, h do
-									for x = 1, w do
-										self.m_bitmap:SetPixel(x - 1, y - 1, sqrt(Energy[index]) / 255)
-
-										TryToYield()
-
-										index = index + 1
-									end
-								end
-							end
-
-							WaitForWrites(self.m_bitmap)
+							DrawEnergy(self.m_bitmap, w, h)
 
 							--
-							local buf1, buf2 = {}, {}
 							local ffrac, finc, fn = .2, w, h
 							local pfrac, pinc, pn = .2, 1, w
 	
@@ -346,30 +413,21 @@ function Scene:show (event)
 
 							-- Dimension 1: Begin a seam at each index along the first dimension, flagging each
 							-- such index as used. Choose a random color to plot the seam.
-							local nseams, used = floor(pfrac * pn), {}
-
-							for i = 1, pn do
-								local r, g, b = random(), random(), random()
-
-								Indices[i], buf1[i], used[i] = i, { i, cost = 0, prev = 0, r = r, g = g, b = b }, true
-
-								self.m_bitmap:SetPixel(i - 1, 0, r, g, b)
-							end
+							local buf1, used = BeginSeam(pn, self.m_bitmap, 1, 0, true)
 
 							-- Proceed along the other dimension, following paths of low-cost difference.
 							local assignment, costs, offset = TwoSeams and { into = {}, yfunc = TryToYield }, TwoSeams and {}, 0
 
-							for row = 2, fn do
---print("ROW " .. row .. " of " .. fn)
-								local ri = 0 -- works left-to-right?
+							for coord = 2, fn do
+								local cost_index = 0
 
 								for i = 1, pn do
 									local ahead, diag1, diag2, energy = GetEdgesEnergy(i, finc, pinc, pn, offset)
--- ^^^^^ Offset????
+
 									-- If doing a two-seams approach, load a row of the cost matrix. Otherwise, advance
 									-- each index to the best of its three edges in the next column or row.
 									if TwoSeams then
-										ri = LoadCosts(costs, ahead, diag1, diag2, energy, ri)
+										cost_index = LoadCosts(costs, ahead, diag1, diag2, energy, cost_index)
 									else
 										diag1 = not used[diag1] and diag1
 										ahead = not used[ahead] and ahead
@@ -383,83 +441,80 @@ function Scene:show (event)
 								-- In the two-seams approach, having set all the costs up, solve the column or row.
 								if TwoSeams then
 									SolveAssignment(costs, assignment, buf1, pn, offset + finc)
-
-									for i = 1, pn do
-										local buf = buf1[i]
-		
-										used[buf[row]] = true
-
-										self.m_bitmap:SetPixel(Indices[i] - 1, row - 1, buf.r, buf.g, buf.b)
-									end
-
-									offset = offset + finc
 								end
 
+								-- Advance, update the seam graphics, and pause if necessary.
+								offset = offset + finc
+
+								UpdateSeams(buf1, pn, self.m_bitmap, coord, Method == "vertical", used)
 								TryToYield()
 							end
 
 							-- Pick the lowest-cost seams and restore the image underneath the rest.
 							sort(buf1, CostComp)
 
-							for i = nseams + 1, pn do
-								local buf = buf1[i]
+							buf1.nseams = floor(pfrac * pn)
 
-								for j = 1, #buf do
-									local im1 = buf[j] - 1
-									local x = im1 % w
-
-									used[buf[j]] = false
-
-									self.m_bitmap:SetPixel(x, (im1 - x) / w, sqrt(Energy[buf[j]]) / 255)
-								end
-							end
+							ClearExtraneousSeams(buf1, used, self.m_bitmap, pn, w)
 
 while true do
 	yield()
 end
-							-- Dimension 2: Choose lowest-energy positions along the opposing dimension.
-							nseams = SortEnergy(frac2, inc2, n2)
+							-- Dimension 2: Begin a seam at each index along the second dimension; usage flags are
+							-- unnecessary on this pass. Choose a random color to plot the seam.
+							local buf2 = BeginSeam(fn, self.m_bitmap, 0, 1)
 
 							-- If doing a two-seams approach, initialize the seam index state with the indices
 							-- of the positions just found. Load costs as before and solve for this dimension.
 							if TwoSeams then
-								for i = 1, nseams do
-									buf2[i] = { Indices[i] }
-								end
+								offset = 0
 
-								for _ = 2, n do
-									local row, offset = 0, 0
+								for coord = 2, pn do
+									local cost_index = 0
 
-									for i = 1, nseams do
-										local ahead, diag1, diag2, energy = GetEdgesEnergy(i, inc2, inc, n2, offset)
+									for i = 1, fn do
+										local ahead, diag1, diag2, energy = GetEdgesEnergy(i, pinc, finc, fn, offset)
 
-										-- Load the cost matrix as was done earlier, but omit any diagonal edges that
-										-- already came into use in the other dimension, as those can potentially lead
-										-- to seams crossing twice, and thus an inconsistent index map, q.v the appendix
-										-- in the Avidan & Shamir paper.
-										diag1 = not used[diag1] and diag1
-										diag2 = not used[diag2] and diag2
-										row = LoadCosts(costs, n, ahead, diag1, diag2, energy, row, offset)
+										-- Load the cost matrix as was done earlier, but omit any diagonal edges (by
+										-- assigning improbably high costs) that already came into use in the other
+										-- dimension, as those can potentially lead to seams crossing twice, and thus
+										-- an inconsistent index map, q.v. the appendix in the Avidan & Shamir paper.
+										diag1 = not used[diag1] and diag1 or 1e12
+										diag2 = not used[diag2] and diag2 or 1e12
+										cost_index = LoadCosts(costs, ahead, diag1, diag2, energy, cost_index)
+
+										SolveAssignment(costs, assignment, buf2, fn, offset + pinc)
+
+										-- Advance, update the seam graphics, and pause if necessary.
+										offset = offset + pinc
+
+										UpdateSeams(buf2, fn, self.m_bitmap, coord, Method ~= "vertical")
+										TryToYield()
 									end
-
-									SolveAssignment(costs, assignment, buf2, nseams, n2, offset)
-
-									offset = offset + inc
-
-									TryToYield()
 								end
 
 							-- Otherwise, this dimension is just a row or column.
 							else
-								for i = 1, nseams do
-									local index = Indices[i]
+								for i = 1, pn do
+									local index, buf = Indices[i], buf2[i]
 
-									for _ = 1, n2 do
-										buf2[#buf2 + 1], index = index, index + inc
+									for _ = 1, fn do
+										buf[#buf + 1], index = index, index + pinc
 									end
+
+									TryToYield()
 								end
 							end
 
+							-- Pick the lowest-cost seams and restore the image underneath the rest.
+							sort(buf2, CostComp)
+
+							buf2.nseams = floor(ffrac * fn)
+
+							ClearExtraneousSeams(buf2, used, self.m_bitmap, fn, w, true)
+while true do
+	yield()
+end
 							--
 							Pixels = {}
 
@@ -475,21 +530,21 @@ end
 								end
 							else
 								function DoBuf2 (i, remove)
-									DoPixelLine(buf2, i, n2, inc2, remove)
+									DoPixelLine(buf2, i, pn, pinc, remove)
 								end
 							end
 
 							-- Wire all the state up to some widgets.
-							local cfunc, rfunc, ncseams, nrseams
+							local cfunc, rfunc, cmax, rmax
 
 							if Method == "horizontal" then
-								cfunc, rfunc, ncseams, nrseams = DoBuf1, DoBuf2, #buf1, #buf2
+								cfunc, rfunc, cmax, rmax = DoBuf1, DoBuf2, buf1.nseams, buf2.nseams
 							else
-								cfunc, rfunc, ncseams, nrseams = DoBuf2, DoBuf1, #buf2, #buf1
+								cfunc, rfunc, cmax, rmax = DoBuf2, DoBuf1, buf2.nseams, buf1.nseams
 							end
 
-							AddStepper(self, "cstep", "col_seams", self.m_cs_top, ncseams, cfunc)
-							AddStepper(self, "rstep", "row_seams", self.m_rs_top, nrseams, rfunc)
+							AddStepper(self, "cstep", "col_seams", self.m_cs_top, cmax, cfunc)
+							AddStepper(self, "rstep", "row_seams", self.m_rs_top, rmax, rfunc)
 						end
 
 						--
