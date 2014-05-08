@@ -3,8 +3,6 @@
 -- below each such element (or equivalently, the ones to left and right), except where they
 -- would spill out of the matrix at the corners.
 
--- TODO: Diagrams explaining some of the indexing
-
 --
 -- Permission is hereby granted, free of charge, to any person obtaining
 -- a copy of this software and associated documentation files (the
@@ -51,10 +49,10 @@ function M.ClearColumnsCoverage (ncols)
 	UncovColN = ncols
 end
 
--- --
+-- Difference between column and index --
 local Diff
 
---
+-- Iterator body
 local function AuxColumnIndex (cto, col)
 	if col < cto then
 		col = col + 1
@@ -63,7 +61,7 @@ local function AuxColumnIndex (cto, col)
 	end
 end
 
---
+-- Iterator over column and corresponding index in a diagonal matrix row
 local function ColumnIndex (row, ncols)
 	local col, cto
 

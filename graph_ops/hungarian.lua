@@ -221,7 +221,7 @@ end
 -- Default yield function: no-op
 local function DefYieldFunc () end
 
---
+-- Logic common among various Hungarian cores
 local function AuxRun (core, costs, n, ncols, nrows, opts)
 	local from = costs
 	local out = (opts and opts.into) or {}
@@ -330,8 +330,15 @@ function M.Run (costs, ncols, opts)
 	return AuxRun(dense, costs, n, ncols, n / ncols, opts)
 end
 
---- DOCME
-function M.Run_Diagonal (costs, opts)
+--- Variant of @{Run} that operates (implicitly) on a square [tridiagonal matrix](http://en.wikipedia.org/wiki/Tridiagonal_matrix).
+-- @array costs Array, of size (_nrows_ - 2) * 3 + 2 * 2, of finite, non-negative integers,
+-- laid out as { _task1_, _task2_, _task11_, _task12_, _task13_, ..., _taskn1_, _taskn2_ }:
+-- agent #1's choice is between _task1_ and _task2_, agent #_nrows_ chooses between _taskn1_
+-- and _taskn2_, and agent _j_'s choices are _taskj1_, _taskj2_, _taskj3_, _j_ &isin; [2,
+-- _nrows_ - 1].
+-- @ptable[opt] opts Assignment options, as per @{Run}.
+-- @treturn array _assignment_.
+function M.Run_Tridiagonal (costs, opts)
 	local n = #costs
 
 	assert(n % 3 == 1, "Invalid size of `costs`")

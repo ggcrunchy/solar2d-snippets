@@ -168,11 +168,11 @@ local Base = system.ResourceDirectory
 local Dir = "UI_Assets"
 			--"Background_Assets"
 
--- --
+-- Previous yield time --
 local Since
 
---
-local function Watch ()
+-- Yields if sufficient time has passed
+local function TryToYield ()
 	local now = system.getTimer()
 
 	if now - Since > 100 then
@@ -188,7 +188,7 @@ local Energy = {}
 -- Column or row indices of energy samples --
 local Indices = {}
 
---
+-- Calculates the energy difference when moving to a new position
 local function GetEnergyDiff (index, energy)
 	return abs(Energy[index] - energy)
 end
@@ -221,8 +221,8 @@ local function GetEdgesEnergy (i, finc, pinc, n, offset)
 	return ahead, diag1, diag2, energy
 end
 
---
-local function LoadCosts (costs, n, ahead, diag1, diag2, energy, ri, offset)
+-- Populates a row of the cost matrix
+local function LoadCosts (costs, ahead, diag1, diag2, energy, ri)
 	if diag1 then
 		costs[ri + 1], ri = GetEnergyDiff(diag1, energy), ri + 1
 	end
@@ -236,9 +236,9 @@ local function LoadCosts (costs, n, ahead, diag1, diag2, energy, ri, offset)
 	return ri
 end
 
---
+-- Solves a row's seam assignments, updating total energy
 local function SolveAssignment (costs, opts, buf, n, offset)
-	hungarian.Run_Diagonal(costs, opts)
+	hungarian.Run_Tridiagonal(costs, opts)
 
 	local assignment = opts.into
 
@@ -273,12 +273,12 @@ local function DoPixelSeam (buf, i, remove)
 	end
 end
 
---
+-- Compare seams by cost
 local function CostComp (a, b)
 	return a.cost < b.cost
 end
 
---
+-- Waits until a bitmap is fully written
 local function WaitForWrites (bitmap)
 	while bitmap:HasPending() do
 		yield()
@@ -289,7 +289,7 @@ end
 function Scene:show (event)
 	if event.phase == "did" then
 		--
-		local images, dir, busy = file.EnumerateFiles(Dir, { base = Base, exts = "png" }), Dir .. "/"
+		local images, dir = file.EnumerateFiles(Dir, { base = Base, exts = "png" }), Dir .. "/"
 
 		self.images = common_ui.Listbox(self.view, 275, 20, {
 			height = 120,
@@ -307,15 +307,15 @@ function Scene:show (event)
 					Since = system.getTimer()
 
 					self.busy = timers.WrapEx(function()
-						local func = png.Load(system.pathForFile(dir .. images[index], Base), Watch)
+						local func = png.Load(system.pathForFile(dir .. images[index], Base), TryToYield)
 
 						if func then
-							--
+							-- Load an image and prepare a bitmap to store pixels based on it.
 							local w, h = func("get_dims")
 
 							self.m_bitmap:Resize(w, h)
 
-							--
+							-- Find some energy measure of the image and display it as grey levels.
 							energy.ComputeEnergy(Energy, func, w, h)
 
 							do
@@ -325,7 +325,7 @@ function Scene:show (event)
 									for x = 1, w do
 										self.m_bitmap:SetPixel(x - 1, y - 1, sqrt(Energy[index]) / 255)
 
-										Watch()
+										TryToYield()
 
 										index = index + 1
 									end
@@ -357,7 +357,7 @@ function Scene:show (event)
 							end
 
 							-- 
-							local assignment, costs, offset = TwoSeams and { into = {}, yfunc = Watch }, TwoSeams and {}, 0
+							local assignment, costs, offset = TwoSeams and { into = {}, yfunc = TryToYield }, TwoSeams and {}, 0
 
 							for row = 2, fn do
 --print("ROW " .. row .. " of " .. fn)
@@ -369,7 +369,7 @@ function Scene:show (event)
 									-- If doing a two-seams approach, load a row of the cost matrix. Otherwise, advance
 									-- each index to the best of its three edges in the next column or row.
 									if TwoSeams then
-										ri = LoadCosts(costs, pn, ahead, diag1, diag2, energy, ri, offset + finc)
+										ri = LoadCosts(costs, ahead, diag1, diag2, energy, ri)
 									else
 										diag1 = not used[diag1] and diag1
 										ahead = not used[ahead] and ahead
@@ -395,10 +395,10 @@ function Scene:show (event)
 									offset = offset + finc
 								end
 
-								Watch()
+								TryToYield()
 							end
 
-							--
+							-- Pick the lowest-cost seams and restore the image underneath the rest.
 							sort(buf1, CostComp)
 
 							for i = nseams + 1, pn do
@@ -446,7 +446,7 @@ end
 
 									offset = offset + inc
 
-									Watch()
+									TryToYield()
 								end
 
 							-- Otherwise, this dimension is just a row or column.
