@@ -79,6 +79,37 @@ function Scene:create ()
 	self.view:insert(self.seams_layer)
 
 	--
+	self.m_bitmap = bitmap.Bitmap(self.view)
+
+	self.m_bitmap.x, self.m_bitmap.y = 5, 155
+
+	--
+	self.thumb_backdrop = display.newGroup()
+
+	self.idle_layer:insert(self.thumb_backdrop)
+
+	self.color = display.newRect(self.thumb_backdrop, 0, 0, 64, 64)
+	self.frame = display.newRect(self.idle_layer, 0, 0, 64, 64)
+
+	self.color:setFillColor{ type = "gradient", color1 = { 0, 0, 1 }, color2 = { .3 }, direction = "down" }
+	self.frame:setFillColor(0, 0)
+
+	self.frame.strokeWidth = 3
+
+	-- STUFF FOR RESUMING...
+
+	--
+	self.method = display.newText(self.energy_layer, "", 0, 0, native.systemFontBold, 20)
+
+	self.method.anchorX, self.method.x = 1, CW - 20
+	self.method.anchorY, self.method.y = 1, CH - 20
+
+	--
+	self.about = display.newText(self.view, "", 0, 130, native.systemFontBold, 20)
+
+	self.about.anchorX, self.about.x = 0, 20
+
+	-- (PROBABLY CAN GO UP TOP)
 	self.col_seams = display.newText(self.seams_layer, "", 0, 130, native.systemFontBold, 20)
 
 	self.col_seams.anchorX, self.col_seams.x = 0, 20
@@ -92,40 +123,29 @@ function Scene:create ()
 	self.m_rs_top = 230
 
 	--
-	self.m_bitmap = bitmap.Bitmap(self.view)
-
-	self.m_bitmap.x, self.m_bitmap.y = 5, 155
-
-	--
-	self.about = display.newText(self.energy_layer, "", 0, 0, native.systemFontBold, 20)
-
-	self.about.anchorX, self.about.x = 1, CW - 20
-	self.about.anchorY, self.about.y = 1, CH - 20
-
-	--
 	local tab_buttons = {
 		{ 
 			label = "Method 1", onPress = function()
 				Method, TwoSeams = "vertical", true
-				self.about.text = "Top-to-bottom, then left-to-right seams"
+				self.method.text = "Top-to-bottom, then left-to-right seams"
 			end
 		},
 		{
 			label = "Method 2", onPress = function()
 				Method, TwoSeams = "horizontal", true
-				self.about.text = "Left-to-right, then top-to-bottom seams"
+				self.method.text = "Left-to-right, then top-to-bottom seams"
 			end
 		},
 		{ 
 			label = "Method 3", onPress = function()
 				Method, TwoSeams = "vertical", false
-				self.about.text = "Top-to-bottom seams, then horizontal bars"
+				self.method.text = "Top-to-bottom seams, then horizontal bars"
 			end
 		},
 		{
 			label = "Method 4", onPress = function()
 				Method, TwoSeams = "horizontal", false
-				self.about.text = "Left-to-right seams, then vertical bars"
+				self.method.text = "Left-to-right seams, then vertical bars"
 			end
 		}
 	}
@@ -176,6 +196,11 @@ local Base = system.ResourceDirectory
 -- --
 local Dir = "UI_Assets"
 			--"Background_Assets"
+
+--
+local function SetStatus (str, arg)
+	Scene.about.text = str:format(arg)
+end
 
 -- Previous yield time --
 local Since
@@ -438,7 +463,7 @@ while true do
 end
 	-- Dimension 2: Begin a seam at each index along the second dimension; usage flags are
 	-- unnecessary on this pass. Choose a random color to plot the seam.
-	local buf2 = BeginSeam(fn, self.m_bitmap, 0, 1)
+	local buf2 = BeginSeam(fn, bitmap, 0, 1)
 
 	-- If doing a two-seams approach, initialize the seam index state with the indices of the
 	-- positions just found. Load costs as before and solve for this dimension.
@@ -526,26 +551,62 @@ end
 
 --
 local function BeginAction (scene, func)
-	native.setActivityIndicator(true)
+	if not scene.busy then
+		native.setActivityIndicator(true)
 
-	Since = system.getTimer()
+		Since = system.getTimer()
 
-	scene.busy = timers.WrapEx(function()
-		func()
+		scene.busy = timers.WrapEx(function()
+			func()
 
-		native.setActivityIndicator(false)
+			native.setActivityIndicator(false)
 
-		scene.busy = nil
-	end)
+			scene.busy = nil
+		end)
+	end
+end
+
+--
+local function IdleView (scene, from)
+	scene.idle_layer.isVisible = true
+	scene.energy_layer.isVisible = false
+	scene.seams_layer.isVisible = false
+
+	if from == "idle" then
+		scene.m_bitmap:Clear()
+	else
+		scene.ok_idle.isVisible = false
+	end
+
+	scene.m_bitmap.isVisible = false
+end
+
+--
+local function EnergyView (scene, from)
+	if from == "idle" then
+		scene.idle_layer.isVisible = false
+		scene.energy_layer.isVisible = true
+		scene.ok_energy.isVisible = false
+
+		scene.m_bitmap.isVisible = true
+	else
+		scene.seams_layer.isVisible = false
+	end
+end
+
+--
+local function SeamView (scene)
+	scene.energy_layer.isVisible = false
+	scene.seams_layer.isVisible = true
 end
 
 --
 function Scene:show (event)
 	if event.phase == "did" then
 		--
-		local images, dir = file.EnumerateFiles(Dir, { base = Base, exts = "png" }), Dir .. "/"
+		local images, dir, chosen = file.EnumerateFiles(Dir, { base = Base, exts = "png" }), Dir .. "/"
 
-		self.images = common_ui.Listbox(self.idle_layer, 275, 20, {
+		self.images = common_ui.Listbox(self.idle_layer, 295, 20, {
 			height = 120,
 
 			-- --
@@ -555,40 +616,21 @@ function Scene:show (event)
 
 			-- --
 			press = function(index)
-				local name = dir .. images[index]
-				local _, w, h = png.GetInfo(system.pathForFile(name, Base))
+				chosen, self.ok_idle.isVisible = dir .. images[index], true
 
-				display.remove(self.preview)
+				local _, w, h = png.GetInfo(system.pathForFile(chosen, Base))
+
+				display.remove(self.thumbnail)
 
 				if w <= 64 and h <= 64 then
-					self.preview = display.newImage(self.idle_layer, name, Base)
+					self.thumbnail = display.newImage(self.thumb_backdrop, chosen, Base)
 				else
-					self.preview = display.newImageRect(self.idle_layer, name, Base, 64, 64)
+					self.thumbnail = display.newImageRect(self.thumb_backdrop, chosen, Base, 64, 64)
 				end
 
-				self.preview.x, self.preview.y = self.images.x + 200, self.images.y
+				self.thumbnail.x, self.thumbnail.y = self.color.x, self.color.y
 
---[[
-				if not self.busy then
-					BeginAction(self, function()
-						local func = png.Load(system.pathForFile(dir .. images[index], Base), TryToYield)
-
-						if func then
-							-- Load an image and prepare a bitmap to store pixels based on it.
-							local w, h = func("get_dims")
-
-							self.m_bitmap:Resize(w, h)
-
-							-- Find some energy measure of the image and display it as grey levels.
-							energy.ComputeEnergy(Energy, func, w, h)
-
-							DrawEnergy(self.m_bitmap, w, h)
-
-							-- Carve the seams.
-							CarveSeams(self.m_bitmap, w, h)
-						end
-					end)
-				end]]
+				SetStatus("Press OK to compute energy")
 			end
 		})
 
@@ -604,9 +646,54 @@ function Scene:show (event)
 			end
 		end
 
-		-- Something to load pictures (maybe a preview, when picking from the listbox)
+		--
+		local px, py = self.images.x + self.images.width / 2 + 55, self.images.y
+
+		self.color.x, self.color.y = px, py
+		self.frame.x, self.frame.y = px, py
+
+		--
+		local iw, ih
+
+		self.ok_idle = buttons.Button(self.idle_layer, nil, px + 100, py, 100, 40, function()
+			BeginAction(self, function()
+				SetStatus("Loading image")
+
+				local func = png.Load(system.pathForFile(chosen, Base), TryToYield)
+
+				if func then
+					EnergyView(self, "idle")
+					SetStatus("Computing energy")
+
+					-- Load an image and prepare a bitmap to store pixels based on it.
+					iw, ih = func("get_dims")
+
+					self.m_bitmap:Resize(iw, ih)
+
+					-- Find some energy measure of the image and display it as grey levels.
+					energy.ComputeEnergy(Energy, func, iw, ih)
+
+					DrawEnergy(self.m_bitmap, iw, ih)
+					SetStatus("Press OK to carve seams")
+
+					--
+					self.ok_energy.isVisible = true
+				else
+					SetStatus("Error")
+				end
+			end)
+		end, "OK")
+
+		--
+		self.ok_energy = buttons.Button(self.energy_layer, nil, px + 100, py, 100, 40, function()
+			BeginAction(self, function()
+				SeamView(self, "energy")
+				SetStatus("Carving seams 1") -- will do row by row / col by col report
+				CarveSeams(self.m_bitmap, iw, ih)
+			end)
+		end, "OK")
+
 		-- Some way to specify the number of seams to generate (a slider for portion of each dimension?)
-		-- Way to fire off the algorithm (button?)(grayable?)
 		-- Way to pull a seam... (button, grayable)
 		-- ...and put one back (ditto)
 		-- State to hold indices on first pass, then use "id occupied" buffer on the second pass? (getting there!)
@@ -616,9 +703,8 @@ function Scene:show (event)
 		self.tabs:setSelected(1, true)
 
 		--
-		self.idle_layer.isVisible = true
-		self.energy_layer.isVisible = false
-		self.seams_layer.isVisible = false
+		IdleView(self)
+		SetStatus("Choose an image")
 	end
 end
 
@@ -631,13 +717,14 @@ function Scene:hide (event)
 			timer.cancel(self.busy)
 		end
 
-		display.remove(self.preview)
+		display.remove(self.thumbnail)
 
 		self.m_bitmap:Clear()
 
 		self.images:removeSelf()
+		self.ok_idle:removeSelf()
 
-		self.busy, self.preview = nil
+		self.busy, self.thumbnail = nil
 
 		Pixels = nil
 	end
