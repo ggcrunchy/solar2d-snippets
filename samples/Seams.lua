@@ -27,6 +27,8 @@
 local abs = math.abs
 local floor = math.floor
 local huge = math.huge
+local max = math.max
+local min = math.min
 local random = math.random
 local sort = table.sort
 local sqrt = math.sqrt
@@ -60,6 +62,12 @@ local Scene = composer.newScene()
 local CW, CH = display.contentWidth, display.contentHeight
 
 -- --
+local IW, IH
+
+-- --
+local HorzN, VertN
+
+-- --
 local Method, TwoSeams
 
 -- --
@@ -84,6 +92,11 @@ function Scene:create ()
 	self.m_bitmap.x, self.m_bitmap.y = 5, 155
 
 	--
+	self.about = display.newText(self.view, "", 0, 130, native.systemFontBold, 20)
+
+	self.about.anchorX, self.about.x = 0, 20
+
+	--
 	self.thumb_backdrop = display.newGroup()
 
 	self.idle_layer:insert(self.thumb_backdrop)
@@ -105,22 +118,43 @@ function Scene:create ()
 	self.method.anchorY, self.method.y = 1, CH - 20
 
 	--
-	self.about = display.newText(self.view, "", 0, 130, native.systemFontBold, 20)
+	local cols_text = display.newText(self.energy_layer, "", 0, 0, native.systemFontBold, 20)
+-- HACK!
+	local function COLS (event)
+		HorzN = max(1, min(floor(event.value * IW / 100), IW - 1))
 
-	self.about.anchorX, self.about.x = 0, 20
+		cols_text.text = ("# horz. seams: %i"):format(HorzN)
+	end
+-- /HACK!
+	self.cols_slider = widget.newSlider{
+		left = 280, top = 20, width = 200, listener = COLS
+	}
+-- HACK!
+	self.cols_slider.COLS = COLS
+-- /HACK
 
-	-- (PROBABLY CAN GO UP TOP)
-	self.col_seams = display.newText(self.seams_layer, "", 0, 130, native.systemFontBold, 20)
+	cols_text.anchorX, cols_text.x, cols_text.y = 0, self.cols_slider.x + self.cols_slider.width / 2 + 20, self.cols_slider.y
 
-	self.col_seams.anchorX, self.col_seams.x = 0, 20
+	self.energy_layer:insert(self.cols_slider)
 
-	self.m_cs_top = 150
+	--
+	local rows_text = display.newText(self.energy_layer, "", 0, 0, native.systemFontBold, 20)
+-- HACK!
+	local function ROWS (event)
+		VertN = max(1, min(floor(event.value * IH / 100), IH - 1))
 
-	self.row_seams = display.newText(self.seams_layer, "", 0, 210, native.systemFontBold, 20)
+		rows_text.text = ("# vert. seams: %i"):format(VertN)
+	end
+-- /HACK!
+	self.rows_slider = widget.newSlider{
+		left = 280, top = 70, width = 200, listener = ROWS
+	}
+-- HACK!
+	self.rows_slider.ROWS = ROWS
+-- /HACK!
+	rows_text.anchorX, rows_text.x, rows_text.y = 0, self.rows_slider.x + self.rows_slider.width / 2 + 20, self.rows_slider.y
 
-	self.row_seams.anchorX, self.row_seams.x = 0, 20
-
-	self.m_rs_top = 230
+	self.energy_layer:insert(self.rows_slider)
 
 	--
 	local tab_buttons = {
@@ -151,6 +185,19 @@ function Scene:create ()
 	}
 
 	self.tabs = common_ui.TabBar(self.energy_layer, tab_buttons, { top = display.contentHeight - 105, left = CW - 370, width = 350 })
+
+	-- (PROBABLY CAN GO UP TOP)
+	self.col_seams = display.newText(self.seams_layer, "", 0, 130, native.systemFontBold, 20)
+
+	self.col_seams.anchorX, self.col_seams.x = 0, 20
+
+	self.m_cs_top = 150
+
+	self.row_seams = display.newText(self.seams_layer, "", 0, 210, native.systemFontBold, 20)
+
+	self.row_seams.anchorX, self.row_seams.x = 0, 20
+
+	self.m_rs_top = 230
 end
 
 Scene:addEventListener("create")
@@ -198,8 +245,8 @@ local Dir = "UI_Assets"
 			--"Background_Assets"
 
 --
-local function SetStatus (str, arg)
-	Scene.about.text = str:format(arg)
+local function SetStatus (str, arg1, arg2)
+	Scene.about.text = str:format(arg1, arg2)
 end
 
 -- Previous yield time --
@@ -227,11 +274,11 @@ end
 local Energy = {}
 
 -- Puts the image energy in visible form
-local function DrawEnergy (bitmap, w, h)
+local function DrawEnergy (bitmap)
 	local index = 1
 
-	for y = 1, h do
-		for x = 1, w do
+	for y = 1, IH do
+		for x = 1, IW do
 			bitmap:SetPixel(x - 1, y - 1, sqrt(Energy[index]) / 255)
 
 			TryToYield()
@@ -247,13 +294,19 @@ end
 local Indices = {}
 
 --
-local function BeginSeam (n, bitmap, dx, dy, mark_used)
-	local buf, x, y, used = {}, 0, 0, mark_used and {}
+local function BeginSeam (n, bitmap, inc, left_to_right, mark_used)
+	local buf, x, y, used, dx, dy = {}, 0, 0, mark_used and {}
+
+	if left_to_right then
+		buf.nseams, dx, dy = VertN, 1, 0
+	else
+		buf.nseams, dx, dy = HorzN, 0, 1
+	end
 
 	for i = 1, n do
 		local r, g, b = random(), random(), random()
 
-		Indices[i], buf[i] = i, { i, cost = 0, prev = 0, r = r, g = g, b = b }
+		Indices[i], buf[i] = i, { (i - 1) * inc + 1, cost = 0, prev = 0, r = r, g = g, b = b }
 
 		bitmap:SetPixel(x, y, r, g, b)
 
@@ -261,27 +314,34 @@ local function BeginSeam (n, bitmap, dx, dy, mark_used)
 	end
 
 	for i = 1, used and n or 0 do
-		used[i] = true
+		used[i * inc] = i
 	end
 
 	return buf, used
 end
 
 --
-local function ClearExtraneousSeams (bufs, used, bitmap, n, w, keep)
+local function ClearExtraneousSeams (bufs, used, bitmap, n, other)
+	SetStatus("Cleaning up seams")
+
 	for i = bufs.nseams + 1, n do
 		local buf = bufs[i]
 
 		for j = 1, #buf do
 			local index = buf[j]
-			local im1, in_use = index - 1, keep and used[index]
-			local x = im1 % w
+			local im1, oi = index - 1, other and used[index]
+			local x = im1 % IW
+			local y = (im1 - x) / IW
 
 			--
-			if not in_use then
+			if oi then
+				local obuf = other[oi]
+
+				bitmap:SetPixel(x, y, obuf.r, obuf.g, obuf.b)
+			else
 				used[index] = false
 
-				bitmap:SetPixel(x, (im1 - x) / w, sqrt(Energy[buf[j]]) / 255)
+				bitmap:SetPixel(x, y, sqrt(Energy[buf[j]]) / 255)
 			end
 		end
 	end
@@ -289,7 +349,7 @@ end
 
 -- Calculates the energy difference when moving to a new position
 local function GetEnergyDiff (index, energy)
-	return abs(Energy[index] - energy)
+	return index > 0 and abs(Energy[index] - energy) or 1e12
 end
 
 --
@@ -311,7 +371,7 @@ end
 
 -- Calculates the energy for the different edges a seam may try
 local function GetEdgesEnergy (i, finc, pinc, n, offset)
-	local index = offset + i * pinc
+	local index = offset + (i - 1) * pinc
 	local ahead, energy = index + finc, Energy[index]
 	local diag1 = i > 1 and ahead - pinc
 	local diag2 = i < n and ahead + pinc
@@ -335,17 +395,18 @@ local function LoadCosts (costs, ahead, diag1, diag2, energy, ri)
 end
 
 -- Solves a row's seam assignments, updating total energy
-local function SolveAssignment (costs, opts, buf, n, offset)
+local function SolveAssignment (costs, opts, buf, n, inc, offset)
 	hungarian.Run_Tridiagonal(costs, opts)
 
 	local assignment = opts.into
 
 	for i = 1, n do
 		local at, into = assignment[Indices[i]], buf[i]
+		local index = offset + (at - 1) * inc
 
-		Indices[i], into[#into + 1] = at, offset + at
+		Indices[i], into[#into + 1] = at, index
 
-		local energy = Energy[offset + at]
+		local energy = Energy[index]
 
 		into.cost, into.prev = into.cost + abs(energy - into.prev), energy
 	end
@@ -397,29 +458,30 @@ local function UpdateSeams (bufs, n, bitmap, coord, left_to_right, used)
 
 	--
 	for i = 1, used and n or 0 do
-		used[bufs[i][coord]] = true
+		used[bufs[i][coord]] = i
 	end
 end
 
 --
-local function CarveSeams (bitmap, w, h)
+local function CarveSeams (bitmap)
 	--
-	local ffrac, finc, fn = .2, w, h
-	local pfrac, pinc, pn = .2, 1, w
+	local finc, fn, fstr = IW, IH, "Carving: row %i of %i"
+	local pinc, pn, pstr = 1, IW, "Carving: column %i of %i"
 
 	if Method == "horizontal" then
-		ffrac, pfrac, finc, pinc, fn, pn = pfrac, ffrac, pinc, finc, pn, fn
+		finc, pinc, fn, pn, fstr, pstr = pinc, finc, pn, fn, pstr, fstr
 	end
-	-- ^^^ frac and frac2 should be configurable...
 
 	-- Dimension 1: Begin a seam at each index along the first dimension, flagging each such
 	-- index as used. Choose a random color to plot the seam.
-	local buf1, used = BeginSeam(pn, bitmap, 1, 0, true)
+	local buf1, used = BeginSeam(pn, bitmap, pinc, Method == "vertical", true)
 
 	-- Proceed along the other dimension, following paths of low-cost difference.
-	local assignment, costs, offset = TwoSeams and { into = {}, yfunc = TryToYield }, TwoSeams and {}, 0
+	local assignment, costs, offset = TwoSeams and { into = {}, yfunc = TryToYield }, TwoSeams and {}, 1
 
 	for coord = 2, fn do
+		SetStatus(fstr, coord, fn)
+
 		local cost_index = 0
 
 		for i = 1, pn do
@@ -435,13 +497,13 @@ local function CarveSeams (bitmap, w, h)
 
 				local at, buf = GetBestEdge(ahead, diag1, diag2, energy), buf1[i]
 
-				Indices[i], buf[#buf + 1], used[at] = at - offset, at, true
+				Indices[i], buf[#buf + 1], used[at] = at - offset, at, i
 			end
 		end
 
 		-- In the two-seams approach, having set all the costs up, solve the column or row.
 		if TwoSeams then
-			SolveAssignment(costs, assignment, buf1, pn, offset + finc)
+			SolveAssignment(costs, assignment, buf1, pn, pinc, offset + finc)
 		end
 
 		-- Advance, update the seam graphics, and pause if necessary.
@@ -454,53 +516,65 @@ local function CarveSeams (bitmap, w, h)
 	-- Pick the lowest-cost seams and restore the image underneath the rest.
 	sort(buf1, CostComp)
 
-	buf1.nseams = floor(pfrac * pn)
+	ClearExtraneousSeams(buf1, used, bitmap, pn)
+	WaitForWrites(bitmap)
 
-	ClearExtraneousSeams(buf1, used, bitmap, pn, w)
-
-while true do
-	yield()
-end
 	-- Dimension 2: Begin a seam at each index along the second dimension; usage flags are
 	-- unnecessary on this pass. Choose a random color to plot the seam.
-	local buf2 = BeginSeam(fn, bitmap, 0, 1)
+	local buf2 = BeginSeam(fn, bitmap, finc, Method ~= "vertical")
 
 	-- If doing a two-seams approach, initialize the seam index state with the indices of the
 	-- positions just found. Load costs as before and solve for this dimension.
 	if TwoSeams then
-		offset = 0
+		offset = 1
 
 		for coord = 2, pn do
+			SetStatus(pstr, coord, pn)
+
 			local cost_index = 0
 
 			for i = 1, fn do
 				local ahead, diag1, diag2, energy = GetEdgesEnergy(i, pinc, finc, fn, offset)
 
 				-- Load the cost matrix as was done earlier, but omit any diagonal edges (by assigning
-				-- improbably high costs) that already came into use in the other dimension, as those
+				-- impossibly high costs) that already came into use in the other dimension, as those
 				-- can potentially lead to seams crossing twice, and thus an inconsistent index map, q.v.
 				-- the appendix in the Avidan & Shamir paper.
-				diag1 = not used[diag1] and diag1 or 1e12
-				diag2 = not used[diag2] and diag2 or 1e12
+				if diag1 and used[diag1] then
+					diag1 = -1
+				end
+
+				if diag2 and used[diag2] then
+					diag2 = -1
+				end
+
 				cost_index = LoadCosts(costs, ahead, diag1, diag2, energy, cost_index)
-
-				SolveAssignment(costs, assignment, buf2, fn, offset + pinc)
-
-				-- Advance, update the seam graphics, and pause if necessary.
-				offset = offset + pinc
-
-				UpdateSeams(buf2, fn, bitmap, coord, Method ~= "vertical")
-				TryToYield()
 			end
+
+			-- Solve the column or row. Advance, update the seam graphics, and pause if necessary.
+			offset = offset + pinc
+
+			SolveAssignment(costs, assignment, buf2, fn, finc, offset)
+			UpdateSeams(buf2, fn, bitmap, coord, Method ~= "vertical")
+			TryToYield()
 		end
 
 	-- Otherwise, this dimension is just a row or column.
 	else
-		for i = 1, pn do
+		for i = 1, pn do			
+			SetStatus(pstr, i, pn)
+
 			local index, buf = Indices[i], buf2[i]
 
-			for _ = 1, fn do
-				buf[#buf + 1], index = index, index + pinc
+			buf[#buf + 1] = pinc
+			buf[#buf + 1] = fn
+
+			buf.prev = Energy[index]
+
+			for _ = 2, fn do
+				local energy = Energy[index + pinc]
+
+				buf.cost, buf.prev, index = buf.cost + abs(energy - buf.prev), energy, index + pinc
 			end
 
 			TryToYield()
@@ -510,9 +584,7 @@ end
 	-- Pick the lowest-cost seams and restore the image underneath the rest.
 	sort(buf2, CostComp)
 
-	buf2.nseams = floor(ffrac * fn)
-
-	ClearExtraneousSeams(buf2, used, bitmap, fn, w, true)
+	ClearExtraneousSeams(buf2, used, bitmap, fn, buf1)
 while true do
 	yield()
 end
@@ -550,19 +622,21 @@ end
 end
 
 --
-local function BeginAction (scene, func)
-	if not scene.busy then
-		native.setActivityIndicator(true)
+local function Action (func, scene)
+	return function()
+		if not scene.busy then
+			native.setActivityIndicator(true)
 
-		Since = system.getTimer()
+			Since = system.getTimer()
 
-		scene.busy = timers.WrapEx(function()
-			func()
+			scene.busy = timers.WrapEx(function()
+				func()
 
-			native.setActivityIndicator(false)
+				native.setActivityIndicator(false)
 
-			scene.busy = nil
-		end)
+				scene.busy = nil
+			end)
+		end
 	end
 end
 
@@ -584,11 +658,17 @@ end
 --
 local function EnergyView (scene, from)
 	if from == "idle" then
-		scene.idle_layer.isVisible = false
 		scene.energy_layer.isVisible = true
 		scene.ok_energy.isVisible = false
 
-		scene.m_bitmap.isVisible = true
+-- HACK!
+	scene.cols_slider:COLS{ value = 20 }
+	scene.rows_slider:ROWS{ value = 20 }
+-- /HACK!
+		scene.cols_slider:setValue(20)
+		scene.rows_slider:setValue(20)
+		scene.tabs:setSelected(1, true)
+
 	else
 		scene.seams_layer.isVisible = false
 	end
@@ -637,8 +717,8 @@ function Scene:show (event)
 		-- Add any images in a certain size range to the list.
 		local add_row = common_ui.ListboxRowAdder()
 
-		for _, name in ipairs(images) do
-			local path = system.pathForFile(dir .. name, Base)
+		for i = 1, #images do
+			local path = system.pathForFile(dir .. images[i], Base)
 			local ok, w, h = png.GetInfo(path)
 
 			if ok and w >= 16 and w <= CW - 10 and h >= 16 and h <= CH - 150 then
@@ -653,54 +733,46 @@ function Scene:show (event)
 		self.frame.x, self.frame.y = px, py
 
 		--
-		local iw, ih
+		self.ok_idle = buttons.Button(self.idle_layer, nil, px + 100, py, 100, 40, Action(function()
+			SetStatus("Loading image")
 
-		self.ok_idle = buttons.Button(self.idle_layer, nil, px + 100, py, 100, 40, function()
-			BeginAction(self, function()
-				SetStatus("Loading image")
+			local func = png.Load(system.pathForFile(chosen, Base), TryToYield)
 
-				local func = png.Load(system.pathForFile(chosen, Base), TryToYield)
+			if func then
+				self.idle_layer.isVisible = false
+				self.m_bitmap.isVisible = true
 
-				if func then
-					EnergyView(self, "idle")
-					SetStatus("Computing energy")
+				SetStatus("Computing energy")
 
-					-- Load an image and prepare a bitmap to store pixels based on it.
-					iw, ih = func("get_dims")
+				-- Load an image and prepare a bitmap to store pixels based on it.
+				IW, IH = func("get_dims")
 
-					self.m_bitmap:Resize(iw, ih)
+				self.m_bitmap:Resize(IW, IH)
 
-					-- Find some energy measure of the image and display it as grey levels.
-					energy.ComputeEnergy(Energy, func, iw, ih)
+				-- Find some energy measure of the image and display it as grey levels.
+				energy.ComputeEnergy(Energy, func, IW, IH)
 
-					DrawEnergy(self.m_bitmap, iw, ih)
-					SetStatus("Press OK to carve seams")
+				DrawEnergy(self.m_bitmap)
+				EnergyView(self, "idle")
+				SetStatus("Press OK to carve seams")
 
-					--
-					self.ok_energy.isVisible = true
-				else
-					SetStatus("Error")
-				end
-			end)
-		end, "OK")
+				--
+				self.ok_energy.isVisible = true
+			else
+				SetStatus("Choose an image")
+			end
+		end, self), "OK")
 
 		--
-		self.ok_energy = buttons.Button(self.energy_layer, nil, px + 100, py, 100, 40, function()
-			BeginAction(self, function()
-				SeamView(self, "energy")
-				SetStatus("Carving seams 1") -- will do row by row / col by col report
-				CarveSeams(self.m_bitmap, iw, ih)
-			end)
-		end, "OK")
+		self.ok_energy = buttons.Button(self.energy_layer, nil, px + 100, py, 100, 40, Action(function()
+			SeamView(self, "energy")
+			CarveSeams(self.m_bitmap)
+		end, self), "OK")
 
-		-- Some way to specify the number of seams to generate (a slider for portion of each dimension?)
 		-- Way to pull a seam... (button, grayable)
 		-- ...and put one back (ditto)
-		-- State to hold indices on first pass, then use "id occupied" buffer on the second pass? (getting there!)
-		-- Way to save and resume in-progress carving (these can go quite long, and I've still only done one dimension...)
-		-- Reentrance...
+		-- Way to save and resume in-progress carving (these can go quite long...)
 		-- Extra credit: augmenting seams... :(
-		self.tabs:setSelected(1, true)
 
 		--
 		IdleView(self)
@@ -723,6 +795,7 @@ function Scene:hide (event)
 
 		self.images:removeSelf()
 		self.ok_idle:removeSelf()
+		self.ok_energy:removeSelf()
 
 		self.busy, self.thumbnail = nil
 
