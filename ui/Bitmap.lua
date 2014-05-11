@@ -105,6 +105,17 @@ local function Dispatch (name, target)
 	Event.target = nil
 end
 
+-- Is the bitmap in a visible part of the hierarchy?
+local function IsVisible (element)
+	local stage = display.getCurrentStage()
+
+	while element ~= stage and element.isVisible do
+		element = element.parent
+	end
+
+	return element == stage and stage.isVisible
+end
+
 -- Makes the canvas ready for reuse
 local function ResetCanvas (canvas, stash)
 	for i = canvas.numChildren, 1, -1 do
@@ -224,6 +235,22 @@ function M.Bitmap (group)
 		return next(self.m_pending) ~= nil
 	end
 
+	-- Begin active.
+	local is_paused = false
+
+	--- Predicate.
+	-- @treturn boolean The bitmap is paused?
+	-- @see Bitmap:Pause, Bitmap:Resume
+	function Bitmap:IsPaused ()
+		return is_paused
+	end
+
+	--- Pauses bitmap updates. If already paused, this is a no-op.
+	-- @see Bitmap:IsPaused, Bitmap:Resume
+	function Bitmap:Pause ()
+		is_paused = true
+	end
+
 	-- Initialize the stash quota.
 	local quota = Quota
 
@@ -260,6 +287,12 @@ function M.Bitmap (group)
 		end
 	end
 
+	--- Resumes bitmap updates. If not paused, this is a no-op.
+	-- @see Bitmap:IsPaused, Bitmap:Pause
+	function Bitmap:Resume ()
+		is_paused = false
+	end
+
 	--- If possible, sets a pixel's color; otherwise, the assignment is put in a waiting list.
 	--
 	-- Each bitmap is periodically updated, during which some of the pending operations will be
@@ -282,7 +315,7 @@ function M.Bitmap (group)
 			-- If the stash has pixels available, grab one and write it directly to the canvas.
 			local key = ToKey(x, y)
 
-			if n > 0 then
+			if n > 0 and IsVisible(self) then
 				local pixel = stash[n]
 
 				canvas:insert(pixel)
@@ -315,57 +348,60 @@ function M.Bitmap (group)
 	local allocated = 0
 
 	function Bitmap.m_update ()
-		-- Allocate some pixels, until a reasonable amount are available.
-		local extra = min(10, quota - allocated)
+		if not is_paused and IsVisible(Bitmap) then
+			-- Allocate some pixels, until a reasonable amount are available.
+			local extra = min(10, quota - allocated)
 
-		for _ = 1, extra do
-			local pixel = display.newRect(stash, 0, 0, 1, 1)
+			for _ = 1, extra do
+				local pixel = display.newRect(stash, 0, 0, 1, 1)
 
-			pixel.anchorX, pixel.anchorY = 0, 0
-		end
-
-		allocated = allocated + max(0, extra)
-
-		-- Service pending pixel set requests, until either the waiting list or the pixel stash is
-		-- empty. Ignore requests for pixels that have become invalid due to resizes.
-		local pending, nstash = Bitmap.m_pending, stash.numChildren
-
-		for k, v in pairs(pending) do
-			if nstash == 0 then
-				break
-			else
-				local x, y = FromKey(k)
-
-				if x < curw and y < curh then
-					local pixel = stash[nstash]
-
-					canvas:insert(pixel)
-
-					pixel.x, pixel.y, nstash = x, y, nstash - 1
-
-					color.SetFillColor_Number(pixel, v)
-				end
-
-				pending[k] = nil
+				pixel.anchorX, pixel.anchorY = 0, 0
 			end
-		end
 
-		-- If the canvas is dirty, capture its contents (overwriting any old capture), and put the
-		-- canvas back in a clean state. Send an event.
-		if canvas.numChildren > 0 then
-			local new = display.captureBounds(white.contentBounds)
+			allocated = allocated + max(0, extra)
 
-			display.remove(Bitmap.m_capture)
+			-- Service pending pixel set requests, until either the waiting list or the pixel stash is
+			-- empty. Ignore requests for pixels that have become invalid due to resizes.
+			local pending, nstash = Bitmap.m_pending, stash.numChildren
 
-			AddCapture(Bitmap, new)
-			ResetCanvas(canvas, stash)
-			Dispatch("update", Bitmap)
+			for k, v in pairs(pending) do
+				if nstash == 0 then
+					break
+				else
+					local x, y = FromKey(k)
+
+					if x < curw and y < curh then
+						local pixel = stash[nstash]
+
+						canvas:insert(pixel)
+
+						pixel.x, pixel.y, nstash = x, y, nstash - 1
+
+						color.SetFillColor_Number(pixel, v)
+					end
+
+					pending[k] = nil
+				end
+			end
+
+			-- If the canvas is dirty, capture its contents (overwriting any old capture), and restore
+			-- the canvas to a clean state. Send an event.
+			if canvas.numChildren > 0 then
+				local new = display.captureBounds(white.contentBounds)
+
+				display.remove(Bitmap.m_capture)
+
+				AddCapture(Bitmap, new)
+				ResetCanvas(canvas, stash)
+				Dispatch("update", Bitmap)
+			end
 		end
 	end
 
-	-- If the bitmap is being added to the current scene, hook into the hide and show machinery
-	-- to manage the update list on scene switches, keeping the scene name around for cleanup
-	-- purposes. It is not obvious how to connect a non-current scene, so this is unsupported.
+	-- If the bitmap is being added to the current scene, hook into Composer's hide and show
+	-- machinery to manage the update list on scene switches, keeping the scene name around
+	-- for cleanup purposes. Connecting to a non-current scene is unsupported; however, being
+	-- invisible, it would incur not much more than some listener overhead.
 	local name = composer.getSceneName("current")
 	local scene = name and composer.getScene(name)
 
