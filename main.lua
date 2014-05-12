@@ -141,15 +141,5 @@ function vdumpx (var, name, limit)
 	var_dump.Print(var, { hex_uints = true, name = name, limit = limit })
 end
 
-package.loaded.bit = require("plugin.bit")
---[[
-local aa=require("graph_ops.hungarian")
-local eat=aa.Run({1,2,3,2,4,6,3,6,9},3)
----[=[
-local out=aa.Run_Labels{ ted = { a = 1, b = 2, c = 3 }, joe = { a = 2, b = 4, c = 6 }, ann = { a = 3, b = 6, c = 9 } }
-vdump(out)
---]=]
-vdump(eat)
---]]
 -- Kick off the app.
 scenes.GoToScene{ name = "scene.Intro" }

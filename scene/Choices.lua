@@ -59,7 +59,6 @@ local Names = {
 	"Hilbert",
 	"HilbertMixer",
 	"Hop",
-	"ImageFX",
 	"Nodes",
 	"OrbitsAndLattices",
 	"Pixels",

@@ -28,6 +28,7 @@ local max = math.max
 local min = math.min
 local next = next
 local pairs = pairs
+local yield = coroutine.yield
 
 -- Extension imports --
 local indexOf = table.indexOf
@@ -91,6 +92,9 @@ local function Cleanup (event)
 
 	bitmap.m_capture, bitmap.m_pending, bitmap.m_scene, bitmap.m_update = nil
 end
+
+-- Default wait function: no-op
+local function DefWait () end
 
 -- Event to dispatch --
 local Event = {}
@@ -169,8 +173,8 @@ local Quota = 150
 -- consume inordinate an amount of expensive (in time and / or space) per-pixel resources.
 --
 -- As with any display object, certain events are exposed via the **addEventListener** and
--- **removeEventListener** methods. Each of these provide the standard event **name** key,
--- along with the bitmap itself under the **target** key.
+-- **removeEventListener** methods. Each such event provides the standard **name** key, along
+-- with a reference to the bitmap itself under the **target** key.
 --
 -- If **composer** is being used, it is assumed that _group_ belongs to the current scene. If
 -- this is not so, the bitmap will not be able to idle between scene switches.
@@ -339,6 +343,19 @@ function M.Bitmap (group)
 	-- @bool show The background should be shown?
 	function Bitmap:ShowBackground (show)
 		white.isVisible = show
+	end
+
+	--- Yields until no more set operations are pending.
+	-- @callable[opt] update Called (without arguments) before yielding, when sets are still
+	-- pending; if absent, a no-op.
+	-- @see coroutine.yield, Bitmap:HasPending
+	function Bitmap:WaitForPendingSets (update)
+		update = update or DefWait
+
+		while next(self.m_pending) do
+			update()
+			yield()
+		end
 	end
 
 	-- Create a waiting list.
