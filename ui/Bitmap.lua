@@ -345,9 +345,9 @@ function M.Bitmap (group)
 		white.isVisible = show
 	end
 
-	--- Yields until no more set operations are pending.
-	-- @callable[opt] update Called (without arguments) before yielding, when sets are still
-	-- pending; if absent, a no-op.
+	--- Yields the current coroutine until no more set operations are pending.
+	-- @callable[opt] update Called (without arguments) before yielding, when set operations are
+	-- still pending; if absent, a no-op.
 	-- @see coroutine.yield, Bitmap:HasPending
 	function Bitmap:WaitForPendingSets (update)
 		update = update or DefWait
