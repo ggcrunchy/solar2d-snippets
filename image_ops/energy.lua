@@ -29,8 +29,8 @@ local M = {}
 -- Ping / pong buffers used to turn energy calculation into a dynamic programming problem --
 local Prev, This, Next = {}, {}, {}
 
---
-local function LoadRow (x, y, r, g, b, a)
+-- Populates a row of the energy matrix
+local function LoadRow (x, _, r, g, b, a)
 	local offset = (x - 1) * 4
 
 	Next[offset + 1], Next[offset + 2], Next[offset + 3], Next[offset + 4] = r, g, b, a
@@ -106,7 +106,16 @@ end
 -- Default yield function: no-op
 local DefYieldFunc = function() end
 
---- DOCME
+--- Computes an image's energy.
+--
+-- Currently, this is a gradient energy metric, with values being integers &isin; [0, 512).
+-- @array energy Matrix, of size _w_ * _h_, which will receive the energy values.
+-- @callable func Called to supply color information, cf. **"for\_each"** and related
+-- options from @{image_ops.png.Load}'s result.
+-- @uint w Width of energy matrix (and implicitly, _func_'s image)...
+-- @uint h ...and height.
+-- @callable[opt] yfunc Yield function, called periodically during the computation (no
+-- arguments), e.g. to yield within a coroutine. If absent, a no-op.
 function M.ComputeEnergy (energy, func, w, h, yfunc)
 	yfunc = yfunc or DefYieldFunc
 
