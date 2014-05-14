@@ -45,6 +45,7 @@ local CW, CH = display.contentWidth, display.contentHeight
 --
 function Scene:show (event)
 	if event.phase == "did" then
+		--
 		local backdrop = display.newGroup()
 
 		self.view:insert(backdrop)
@@ -58,9 +59,25 @@ function Scene:show (event)
 		frame.strokeWidth = 3
 
 		--
+		local resume
+
+		--
 		local params = event.params
-		local funcs, ok, thumbnail = params.funcs
+
+		if params.bitmap then
+			params.bitmap.isVisible = false
+		end
+
+		--
+		local funcs, cancel, ok, thumbnail = params.funcs
 		local images, dir, chosen = file.EnumerateFiles(params.dir, { base = params.base, exts = "png" }), params.dir .. "/"
+
+		local function Wait ()
+			funcs.SetStatus("Press OK to compute energy")
+
+			cancel.isVisible = false
+		end
+
 		local image_list = common_ui.Listbox(self.view, 295, 20, {
 			height = 120,
 
@@ -85,27 +102,33 @@ function Scene:show (event)
 
 				thumbnail.x, thumbnail.y = color.x, color.y
 
-				funcs.SetStatus("Press OK to compute energy")
-
 				--
-				ok = ok or buttons.Button(self.view, nil, color.x + 100, color.y, 100, 40, funcs.Action(function()
+				ok = ok or buttons.Button(self.view, nil, color.x + 90, color.y - 20, 100, 40, funcs.Action(function()
 					funcs.SetStatus("Loading image")
+
+					cancel.isVisible = true
 
 					local image = png.Load(system.pathForFile(chosen, params.base), funcs.TryToYield)
 
+					cancel.isVisible = false
+
 					if image then
 						return function()
-							composer.showOverlay("samples.overlay.Seams_Energy", {
-								params = {
-									image = image, funcs = funcs,
-									bitmap_x = params.bitmap_x, bitmap_y = params.bitmap_y, ok_x = ok.x, ok_y = ok.y
-								}
-							})
+							params.ok_x = ok.x
+							params.ok_y = ok.y
+							params.cancel_y = cancel.y
+							params.image = image
+
+							funcs.ShowOverlay("samples.overlay.Seams_Energy", params)
 						end
 					else
 						funcs.SetStatus("Choose an image")
 					end
 				end), "OK")
+
+				cancel = cancel or buttons.Button(self.view, nil, ok.x, ok.y + 100, 100, 40, Wait, "Cancel")
+
+				Wait()
 			end
 		})
 

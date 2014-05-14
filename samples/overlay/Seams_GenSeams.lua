@@ -31,6 +31,7 @@ local sort = table.sort
 local sqrt = math.sqrt
 
 -- Modules --
+local buttons = require("ui.Button")
 local hungarian = require("graph_ops.hungarian")
 
 -- Corona modules --
@@ -209,6 +210,19 @@ function Scene:show (event)
 		end
 
 		--
+		buttons.Button(self.view, nil, params.ok_x, params.cancel_y, 100, 40, function()
+			funcs.Cancel()
+			funcs.ShowOverlay("samples.overlay.Seams_Energy", params)
+		end, "Cancel")
+--[[
+		local save = buttons.Button(self.view, nil, params.ok_x, params.ok_y, 100, 40, function()
+			funcs.Cancel()
+
+			-- ? (probably has to be inside the action, or at least forward declare a lot of stuff)
+			-- go to... where?
+		end, "Save")
+]]
+		--
 		funcs.Action(function()
 			-- Dimension 1: Begin a seam at each index along the first dimension, flagging each such
 			-- index as used. Choose a random color to plot the seam.
@@ -326,8 +340,12 @@ function Scene:show (event)
 			-- Pick the lowest-cost seams and restore the image underneath the rest.
 			sort(buf2, CostComp)
 
-			ClearExtraneousSeams(params, buf2, used, image, fn, buf1)
--- Send bufs to Carve...
+			ClearExtraneousSeams(params, buf2, used, image, fn, buf1) -- Cleanup probably pointless...
+
+			-- Present carve options.
+			params.buf1, params.buf2 = buf1, buf2
+
+			funcs.ShowOverlay("samples.overlay.Seams_Carve", params)
 		end)()
 	end
 end

@@ -88,8 +88,27 @@ local Funcs = {
 	end,
 
 	--
+	Cancel = function()
+		if Scene.busy then
+			timer.cancel(Scene.busy)
+			native.setActivityIndicator(false)
+
+			Scene.busy = nil
+		end
+	end,
+
+	--
 	SetStatus = function(str, arg1, arg2)
 		Scene.about.text = str:format(arg1, arg2)
+	end,
+
+	--
+	ShowOverlay = function(name, params)
+		if params.bitmap then
+			Scene.view:insert(params.bitmap)
+		end
+
+		composer.showOverlay(name, { params = params })
 	end,
 
 	-- Yields if sufficient time has passed
@@ -118,10 +137,7 @@ Scene:addEventListener("show")
 --
 function Scene:hide (event)
 	if event.phase == "did" then
-		if self.busy then
-			timer.cancel(self.busy)
-		end
-
+		Funcs.Cancel()
 		composer.hideOverlay()
 	end
 end

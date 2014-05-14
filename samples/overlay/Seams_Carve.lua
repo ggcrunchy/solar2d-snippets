@@ -23,8 +23,15 @@
 -- [ MIT license: http://www.opensource.org/licenses/mit-license.php ]
 --
 
+-- Modules --
+local bitmap = require("ui.Bitmap")
+
+-- Corona globals --
+local display = display
+
 -- Corona modules --
 local composer = require("composer")
+local widget = require("widget")
 
 --
 local Scene = composer.newScene()
@@ -32,6 +39,36 @@ local Scene = composer.newScene()
 --
 function Scene:show (event)
 	if event.phase == "did" then
+		local params = event.params
+		local funcs, image = params.funcs, params.bitmap
+
+		--
+		self.view:insert(image)
+
+		--
+		local hgroup, hw, hh = display.newGroup()
+
+		self.view:insert(hgroup)
+
+		-- Text, stepper
+
+		--
+		local vgroup, vw, vh = display.newGroup()
+
+		self.view:insert(vgroup)
+
+		-- Text, stepper
+
+		--
+		local igroup, iw, ih = display.newGroup()
+
+		self.view:insert(igroup)
+
+		--
+		vgroup.isVisible, igroup.isVisible = false, false
+
+		--
+--		local back, save
 --[[
 	self.col_seams = display.newText(self.seams_layer, "", 0, 130, native.systemFontBold, 20)
 

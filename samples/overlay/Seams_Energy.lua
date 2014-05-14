@@ -67,7 +67,16 @@ local function DrawEnergy (bitmap, funcs, energy_values, iw, ih)
 end
 
 --
-local function Slider (group, top, text, func)
+local function Slider (group, top, params, dkey, nprefix)
+	local text = display.newText(group, "", 0, 0, native.systemFontBold, 20)
+	local nkey, ntext = nprefix .. "n", "# " .. nprefix .. ". seams: %i"
+
+	local function func (event)
+		params[nkey] = max(1, min(floor(event.value * params[dkey] / 100), params[dkey] - 1))
+
+		text.text = ntext:format(params[nkey])		
+	end
+
 	local args = { left = 280, top = top, width = 200, listener = func, value = 20 }
 	local slider = widget.newSlider(args)
 -- HACK! (args has value...)
@@ -82,7 +91,6 @@ end
 function Scene:show (event)
 	if event.phase == "did" then
 		local params = event.params
-		local iw, ih = params.image("get_dims")
 
 		--
 		local method_str = display.newText(self.view, "", 0, 0, native.systemFontBold, 20)
@@ -91,47 +99,34 @@ function Scene:show (event)
 		method_str.anchorY, method_str.y = 1, CH - 20
 
 		--
-		local cols_text, horzn = display.newText(self.view, "", 0, 0, native.systemFontBold, 20)
+		params.iw, params.ih = params.image("get_dims")
 
-		Slider(self.view, 20, cols_text, function(event)
-			horzn = max(1, min(floor(event.value * iw / 100), iw - 1))
-
-			cols_text.text = ("# horz. seams: %i"):format(horzn)
-		end)
+		Slider(self.view, 20, params, "iw", "horz")
+		Slider(self.view, 70, params, "ih", "vert")
 
 		--
-		local rows_text, vertn = display.newText(self.view, "", 0, 0, native.systemFontBold, 20)
-
-		Slider(self.view, 70, rows_text, function(event)
-			vertn = max(1, min(floor(event.value * ih / 100), ih - 1))
-
-			rows_text.text = ("# vert. seams: %i"):format(vertn)
-		end)
-
-		--
-		local method, two_seams
 		local tabs = common_ui.TabBar(self.view, {
 			{ 
 				label = "Method 1", onPress = function()
-					method, two_seams = "vertical", true
+					params.method, params.two_seams = "vertical", true
 					method_str.text = "Top-to-bottom, then left-to-right seams"
 				end
 			},
 			{
 				label = "Method 2", onPress = function()
-					method, two_seams = "horizontal", true
+					params.method, params.two_seams = "horizontal", true
 					method_str.text = "Left-to-right, then top-to-bottom seams"
 				end
 			},
 			{ 
 				label = "Method 3", onPress = function()
-					method, two_seams = "vertical", false
+					params.method, params.two_seams = "vertical", false
 					method_str.text = "Top-to-bottom seams, then horizontal bars"
 				end
 			},
 			{
 				label = "Method 4", onPress = function()
-					method, two_seams = "horizontal", false
+					params.method, params.two_seams = "horizontal", false
 					method_str.text = "Left-to-right seams, then vertical bars"
 				end
 			}
@@ -139,33 +134,35 @@ function Scene:show (event)
 
 		tabs:setSelected(1, true)
 
-		-- Prepare a bitmap to store image energy.
-		local image, values = bitmap.Bitmap(self.view), {}
+		-- Prepare a bitmap to store image energy, accounting for its already existing.
+		local image, values = params.bitmap or bitmap.Bitmap(self.view), {}
 
-		image.x, image.y = params.bitmap_x, params.bitmap_y
+		image.x, image.y, image.isVisible = params.bitmap_x, params.bitmap_y, true
 
-		image:Resize(iw, ih)
+		image:Resize(params.iw, params.ih)
+
+		--
+		local funcs = params.funcs
+		local cancel = buttons.Button(self.view, nil, params.ok_x, params.cancel_y, 100, 40, function()
+			funcs.Cancel()
+
+			composer.showOverlay("samples.overlay.Seams_ChooseFile", { params = params })
+		end, "Cancel")
 
 		-- Find some energy measure of the image and display it as grey levels.
-		local funcs, pgroup = params.funcs, event.parent.view
-
 		funcs.Action(function()
 			funcs.SetStatus("Computing energy")
-			energy.ComputeEnergy(values, params.image, iw, ih)
+			energy.ComputeEnergy(values, params.image, params.iw, params.ih)
 
-			DrawEnergy(image, funcs, values, iw, ih)
+			DrawEnergy(image, funcs, values, params.iw, params.ih)
+
+			cancel.isVisible = false
 
 			funcs.SetStatus("Press OK to carve seams")
 			buttons.Button(self.view, nil, params.ok_x, params.ok_y, 100, 40, function()
-				pgroup:insert(image) -- Prevent removal by Composer
+				params.bitmap, params.energy = image, values
 
-				composer.showOverlay("samples.overlay.Seams_GenSeams", {
-					params = {
-						bitmap = image, energy = values, funcs = funcs,
-						iw = iw, ih = ih, horzn = horzn, vertn = vertn,
-						method = method, two_seams = two_seams
-					}
-				})
+				funcs.ShowOverlay("samples.overlay.Seams_GenSeams", params)
 			end, "OK")
 		end)()
 	end
