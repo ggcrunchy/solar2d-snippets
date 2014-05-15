@@ -105,6 +105,12 @@
   <li><a href="../modules/effect.Stars.html">Stars</a></li>
   <li><a href="../modules/effect.Stash.html">Stash</a></li>
   <li><a href="../modules/event_block.Maze.html">Maze</a></li>
+  <li><a href="../modules/fft_ops.core.html">core</a></li>
+  <li><a href="../modules/fft_ops.fft.html">fft</a></li>
+  <li><a href="../modules/fft_ops.goertzel.html">goertzel</a></li>
+  <li><a href="../modules/fft_ops.real_fft.html">real_fft</a></li>
+  <li><a href="../modules/fft_ops.two_ffts.html">two_ffts</a></li>
+  <li><a href="../modules/fft_ops.utils.html">utils</a></li>
   <li><a href="../modules/fill.CellularAutomata.html">CellularAutomata</a></li>
   <li><a href="../modules/fill.Circle.html">Circle</a></li>
   <li><a href="../modules/FIXES.html">FIXES</a></li>
@@ -132,9 +138,11 @@
   <li><a href="../modules/geom2d_ops.predicates.html">predicates</a></li>
   <li><a href="../modules/geom2d_ops.quantize.html">quantize</a></li>
   <li><a href="../modules/geom2d_ops.vector.html">vector</a></li>
+  <li><a href="../modules/graph_ops.disjoint_set.html">disjoint_set</a></li>
   <li><a href="../modules/graph_ops.flow.html">flow</a></li>
   <li><a href="../modules/graph_ops.hungarian.html">hungarian</a></li>
   <li><a href="../modules/graph_ops.labels.html">labels</a></li>
+  <li><a href="../modules/graph_ops.mst.html">mst</a></li>
   <li><a href="../modules/hash_ops.html">hash_ops</a></li>
   <li><a href="../modules/hud.Action.html">Action</a></li>
   <li><a href="../modules/hud.Move.html">Move</a></li>
@@ -152,8 +160,6 @@
   <li><a href="../modules/mesh_ops.html">mesh_ops</a></li>
   <li><a href="../modules/number_ops.complex.html">complex</a></li>
   <li><strong>convolve</strong></li>
-  <li><a href="../modules/number_ops.fft.html">fft</a></li>
-  <li><a href="../modules/number_ops.fft_utils.html">fft_utils</a></li>
   <li><a href="../modules/number_ops.funcs.html">funcs</a></li>
   <li><a href="../modules/number_ops.gray.html">gray</a></li>
   <li><a href="../modules/number_ops.hilbert.html">hilbert</a></li>
@@ -196,6 +202,9 @@
   <li><a href="../modules/scene.Level.html">Level</a></li>
   <li><a href="../modules/scene.MapEditor.html">MapEditor</a></li>
   <li><a href="../modules/scene.Options.html">Options</a></li>
+  <li><a href="../modules/signal_ops.circular_convolution.html">circular_convolution</a></li>
+  <li><a href="../modules/signal_ops.fft_convolution.html">fft_convolution</a></li>
+  <li><a href="../modules/signal_ops.linear_convolution.html">linear_convolution</a></li>
   <li><a href="../modules/spline_ops.arc_length.html">arc_length</a></li>
   <li><a href="../modules/spline_ops.bezier.html">bezier</a></li>
   <li><a href="../modules/spline_ops.cubic.html">cubic</a></li>
@@ -259,28 +268,28 @@
 <h2><a href="#Functions">Functions</a></h2>
 <table class="function_list">
 	<tr>
-	<td class="name" nowrap><a href="#CircularConvolve_1D">CircularConvolve_1D (signal, kernel)</a></td>
-	<td class="summary">One-dimensional circular convolution.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#CircularConvolve_2D">CircularConvolve_2D (signal, kernel, scols, kcols)</a></td>
-	<td class="summary">Two-dimensional circular convolution.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#Convolve_1D">Convolve_1D (signal, kernel)</a></td>
-	<td class="summary">One-dimensional linear convolution.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#Convolve_2D">Convolve_2D (signal, kernel, scols, kcols[, shape="full"])</a></td>
-	<td class="summary">Two-dimensional linear convolution.</td>
-	</tr>
-	<tr>
 	<td class="name" nowrap><a href="#ConvolveFFT_1D">ConvolveFFT_1D (signal, kernel[, opts])</a></td>
 	<td class="summary">One-dimensional linear convolution using fast Fourier transforms.</td>
 	</tr>
 	<tr>
+	<td class="name" nowrap><a href="#ConvolveMultipleFFTs_1D">ConvolveMultipleFFTs_1D (sn, kernel, func[, opts])</a></td>
+	<td class="summary">Enters a loop, fetching a new signal on each iteration.</td>
+	</tr>
+	<tr>
 	<td class="name" nowrap><a href="#ConvolveFFT_2D">ConvolveFFT_2D (signal, kernel, scols, kcols[, opts])</a></td>
 	<td class="summary">Two-dimensional linear convolution using fast Fourier transforms.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#ConvolveMultipleFFTs_2D">ConvolveMultipleFFTs_2D (sn, kernel, scols, kcols, func[, opts])</a></td>
+	<td class="summary">Enters a loop, fetching a new signal on each iteration.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#PrecomputeKernel_1D">PrecomputeKernel_1D (out, sn, kernel)</a></td>
+	<td class="summary">Precomputes a kernel, e.g.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#PrecomputeKernel_2D">PrecomputeKernel_2D (out, sn, kernel, scols, kcols)</a></td>
+	<td class="summary">Precomputes a kernel, e.g.</td>
 	</tr>
 </table>
 
@@ -291,165 +300,12 @@
     <h2><a name="Functions"></a>Functions</h2>
     <dl class="function">
     <dt>
-    <a name = "CircularConvolve_1D"></a>
-    <strong>CircularConvolve_1D (signal, kernel)</strong>
-    </dt>
-    <dd>
-    One-dimensional circular convolution.
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">signal</span>
-            <span class="types"><span class="type">array</span></span>
-         Real discrete signal...
-        </li>
-        <li><span class="parameter">kernel</span>
-            <span class="types"><span class="type">array</span></span>
-         ...and kernel.
-        </li>
-    </ul>
-
-    <h3>Returns:</h3>
-    <ol>
-
-           <span class="types"><span class="type">array</span></span>
-        Convolution, of size #<em>signal</em>.
-    </ol>
-
-
-
-
-</dd>
-    <dt>
-    <a name = "CircularConvolve_2D"></a>
-    <strong>CircularConvolve_2D (signal, kernel, scols, kcols)</strong>
-    </dt>
-    <dd>
-    Two-dimensional circular convolution.
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">signal</span>
-            <span class="types"><span class="type">array</span></span>
-         Real discrete signal...
-        </li>
-        <li><span class="parameter">kernel</span>
-            <span class="types"><span class="type">array</span></span>
-         ...and kernel.
-        </li>
-        <li><span class="parameter">scols</span>
-            <span class="types"><span class="type">uint</span></span>
-         Number of columns in <em>signal</em>...
-        </li>
-        <li><span class="parameter">kcols</span>
-            <span class="types"><span class="type">uint</span></span>
-         ... and in <em>kernel</em>.
-        </li>
-    </ul>
-
-    <h3>Returns:</h3>
-    <ol>
-
-           <span class="types"><span class="type">array</span></span>
-        Convolution, with dimensions and layout as per <em>signal</em>.
-    </ol>
-
-
-
-
-</dd>
-    <dt>
-    <a name = "Convolve_1D"></a>
-    <strong>Convolve_1D (signal, kernel)</strong>
-    </dt>
-    <dd>
-    One-dimensional linear convolution.
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">signal</span>
-            <span class="types"><span class="type">array</span></span>
-         Real discrete signal...
-        </li>
-        <li><span class="parameter">kernel</span>
-            <span class="types"><span class="type">array</span></span>
-         ...and kernel.
-        </li>
-    </ul>
-
-    <h3>Returns:</h3>
-    <ol>
-
-           <span class="types"><span class="type">array</span></span>
-        Convolution, of size #<em>signal</em> + #<em>kernel</em> - 1.
-    </ol>
-
-
-
-
-</dd>
-    <dt>
-    <a name = "Convolve_2D"></a>
-    <strong>Convolve_2D (signal, kernel, scols, kcols[, shape="full"])</strong>
-    </dt>
-    <dd>
-    Two-dimensional linear convolution.
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">signal</span>
-            <span class="types"><span class="type">array</span></span>
-         Real discrete signal...
-        </li>
-        <li><span class="parameter">kernel</span>
-            <span class="types"><span class="type">array</span></span>
-         ...and kernel.
-        </li>
-        <li><span class="parameter">scols</span>
-            <span class="types"><span class="type">uint</span></span>
-         Number of columns in <em>signal</em>...
-        </li>
-        <li><span class="parameter">kcols</span>
-            <span class="types"><span class="type">uint</span></span>
-         ... and in <em>kernel</em>.
-        </li>
-        <li><span class="parameter">shape</span>
-            <span class="types"><a class="type" href="http://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
-         One of <strong>"compact"</strong>, <strong>"full"</strong>, or <strong>"same"</strong>, which describes
- how much of the convolution is returned (emanating from the center).
-         (<em>default</em> "full")
-        </li>
-    </ul>
-
-    <h3>Returns:</h3>
-    <ol>
-        <li>
-           <span class="types"><span class="type">array</span></span>
-        Convolution.</li>
-        <li>
-           <span class="types"><span class="type">uint</span></span>
-
-<p> Number of columns in the convolution, given <em>shape</em>:</p>
-
-<ul>
-    <li>For <strong>"compact"</strong>: <em>scols</em> - <em>kcols</em> + 1.</li>
-    <li>For <strong>"full"</strong>: <em>scols</em> + <em>kcols</em> - 1.</li>
-    <li>For <strong>"same"</strong>: <em>scols</em>.</li>
-</ul>
-</li>
-    </ol>
-
-
-
-
-</dd>
-    <dt>
     <a name = "ConvolveFFT_1D"></a>
     <strong>ConvolveFFT_1D (signal, kernel[, opts])</strong>
     </dt>
     <dd>
     One-dimensional linear convolution using fast Fourier transforms.  For certain <em>signal</em>
- and <em>kernel</em> combinations, this may be significantly faster than <a href="../modules/number_ops.convolve.html#Convolve_1D">Convolve_1D</a>.
+ and <em>kernel</em> combinations, this may be significantly faster than ???.
 
     <h3>Parameters:</h3>
     <ul>
@@ -469,9 +325,9 @@
 <ul>
     <li><strong>into</strong>: If provided, this table will receive the convolution.</li>
     <li><strong>method</strong>: If this is <strong>"goertzel"</strong>, the transforms are done using the <a href="http://en.wikipedia.org/wiki/Goertzel_algorithm">Goertzel algorithm</a>,
-    which may offer better performance in some cases. If it is <strong>"separate"</strong>, two FFT's are
-    computed separately. Otherwise, the two real FFT's are computed as one complex FFT.
-    is used to perform the </li>
+    which may offer better performance in some cases. If it is <strong>"precomputed_kernel"</strong>, the
+    <em>kernel</em> argument is assumed to already be FFT'd. If it is <strong>"separate"</strong>, two FFT's are
+    computed separately. Otherwise, the two real FFT's are computed as one complex FFT.</li>
 </ul>
 
         </li>
@@ -485,6 +341,58 @@
     </ol>
 
 
+    <h3>See also:</h3>
+    <ul>
+         <a href="../modules/number_ops.convolve.html#PrecomputeKernel_1D">PrecomputeKernel_1D</a>
+    </ul>
+
+
+</dd>
+    <dt>
+    <a name = "ConvolveMultipleFFTs_1D"></a>
+    <strong>ConvolveMultipleFFTs_1D (sn, kernel, func[, opts])</strong>
+    </dt>
+    <dd>
+    Enters a loop, fetching a new signal on each iteration. </p>
+
+<p> Each pair of this variable signal and the constant kernel are then convolved, in much
+ the same way they would be by <a href="../modules/number_ops.convolve.html#ConvolveFFT_1D">ConvolveFFT_1D</a>.
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">sn</span>
+            <span class="types"><span class="type">uint</span></span>
+         Size of real discrete signal.
+        </li>
+        <li><span class="parameter">kernel</span>
+            <span class="types"><span class="type">array</span></span>
+         Real discrete kernel.
+        </li>
+        <li><span class="parameter">func</span>
+            <span class="types"><span class="type">callable</span></span>
+         Called as</p>
+<pre><code>signal, out = func(sn, arg)
+</code></pre>
+<p> where <em>signal</em> is a real discrete signal of size <em>sn</em> (additional values beyond this will
+ be ignored) and <em>out</em> will receive the convolution.</p>
+
+<p> The loop aborts when <em>signal</em> is <strong>nil</strong>.
+        </li>
+        <li><span class="parameter">opts</span>
+            <span class="types"><a class="type" href="http://www.lua.org/manual/5.1/manual.html#5.5">table</a></span>
+
+<p> Convolve options. Fields:</p>
+
+<ul>
+    <li><strong>arg</strong>: If provided, this will be the argument to <em>func</em>.</li>
+    <li><strong>method</strong>: As per <a href="../modules/number_ops.convolve.html#ConvolveFFT_1D">ConvolveFFT_1D</a>.</li>
+</ul>
+
+        </li>
+    </ul>
+
+
+
 
 
 </dd>
@@ -494,7 +402,7 @@
     </dt>
     <dd>
     Two-dimensional linear convolution using fast Fourier transforms.  For certain <em>signal</em>
- and <em>kernel</em> combinations, this may be significantly faster than <a href="../modules/number_ops.convolve.html#Convolve_2D">Convolve_2D</a>.
+ and <em>kernel</em> combinations, this may be significantly faster than ???.
 
     <h3>Parameters:</h3>
     <ul>
@@ -535,8 +443,134 @@
         <li>
            <span class="types"><span class="type">uint</span></span>
         Number of columns in the convolution. Currently, only the <strong>"full"</strong> shape
- is supported, i.e. #<em>scols</em> + #<em>kcols</em> - 1.</li>
+ is supported, i.e. <em>scols</em> + <em>kcols</em> - 1.</li>
     </ol>
+
+
+    <h3>See also:</h3>
+    <ul>
+         <a href="../modules/number_ops.convolve.html#PrecomputeKernel_2D">PrecomputeKernel_2D</a>
+    </ul>
+
+
+</dd>
+    <dt>
+    <a name = "ConvolveMultipleFFTs_2D"></a>
+    <strong>ConvolveMultipleFFTs_2D (sn, kernel, scols, kcols, func[, opts])</strong>
+    </dt>
+    <dd>
+    Enters a loop, fetching a new signal on each iteration. </p>
+
+<p> Each pair of this variable signal and the constant kernel are then convolved, in much
+ the same way they would be by <a href="../modules/number_ops.convolve.html#ConvolveFFT_2D">ConvolveFFT_2D</a>.
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">sn</span>
+            <span class="types"><span class="type">uint</span></span>
+         Size of real discrete signal.
+        </li>
+        <li><span class="parameter">kernel</span>
+            <span class="types"><span class="type">array</span></span>
+         Real discrete kernel.
+        </li>
+        <li><span class="parameter">scols</span>
+            <span class="types"><span class="type">uint</span></span>
+         Number of columns in signal...
+        </li>
+        <li><span class="parameter">kcols</span>
+            <span class="types"><span class="type">uint</span></span>
+         ... and in <em>kernel</em>.
+        </li>
+        <li><span class="parameter">func</span>
+            <span class="types"><span class="type">callable</span></span>
+         Called as</p>
+<pre><code>signal, out = func(sn, arg)
+</code></pre>
+<p> where <em>signal</em> is a real discrete signal of size <em>sn</em> (additional values beyond this will
+ be ignored) and <em>out</em> will receive the convolution.</p>
+
+<p> The loop aborts when <em>signal</em> is <strong>nil</strong>.
+        </li>
+        <li><span class="parameter">opts</span>
+            <span class="types"><a class="type" href="http://www.lua.org/manual/5.1/manual.html#5.5">table</a></span>
+
+<p> Convolve options. Fields:</p>
+
+<ul>
+    <li><strong>arg</strong>: If provided, this will be the argument to <em>func</em>.</li>
+    <li><strong>method</strong>: As per <a href="../modules/number_ops.convolve.html#ConvolveFFT_2D">ConvolveFFT_2D</a>.</li>
+</ul>
+
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "PrecomputeKernel_1D"></a>
+    <strong>PrecomputeKernel_1D (out, sn, kernel)</strong>
+    </dt>
+    <dd>
+    Precomputes a kernel, e.g.  for consumption by the <strong>"precomputed_kernel"</strong> option of
+ <a href="../modules/number_ops.convolve.html#ConvolveFFT_1D">ConvolveFFT_1D</a>.
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">out</span>
+            <span class="types"><span class="type">array</span></span>
+         Computed kernel. Assumed to be distinct from <em>kernel</em>.
+        </li>
+        <li><span class="parameter">sn</span>
+            <span class="types"><span class="type">uint</span></span>
+         Size of corresponding real discrete signal.
+        </li>
+        <li><span class="parameter">kernel</span>
+            <span class="types"><span class="type">array</span></span>
+         Real discrete kernel.
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "PrecomputeKernel_2D"></a>
+    <strong>PrecomputeKernel_2D (out, sn, kernel, scols, kcols)</strong>
+    </dt>
+    <dd>
+    Precomputes a kernel, e.g.  for consumption by the <strong>"precomputed_kernel"</strong> option of
+ <a href="../modules/number_ops.convolve.html#ConvolveFFT_2D">ConvolveFFT_2D</a>.
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">out</span>
+            <span class="types"><span class="type">array</span></span>
+         Computed kernel. Assumed to be distinct from <em>kernel</em>.
+        </li>
+        <li><span class="parameter">sn</span>
+            <span class="types"><span class="type">uint</span></span>
+         Size of corresponding real discrete signal.
+        </li>
+        <li><span class="parameter">kernel</span>
+            <span class="types"><span class="type">array</span></span>
+         Real discrete kernel.
+        </li>
+        <li><span class="parameter">scols</span>
+            <span class="types"><span class="type">uint</span></span>
+         Number of columns in signal...
+        </li>
+        <li><span class="parameter">kcols</span>
+            <span class="types"><span class="type">uint</span></span>
+         ... and in <em>kernel</em>.
+        </li>
+    </ul>
+
 
 
 

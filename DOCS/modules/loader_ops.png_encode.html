@@ -105,6 +105,12 @@
   <li><a href="../modules/effect.Stars.html">Stars</a></li>
   <li><a href="../modules/effect.Stash.html">Stash</a></li>
   <li><a href="../modules/event_block.Maze.html">Maze</a></li>
+  <li><a href="../modules/fft_ops.core.html">core</a></li>
+  <li><a href="../modules/fft_ops.fft.html">fft</a></li>
+  <li><a href="../modules/fft_ops.goertzel.html">goertzel</a></li>
+  <li><a href="../modules/fft_ops.real_fft.html">real_fft</a></li>
+  <li><a href="../modules/fft_ops.two_ffts.html">two_ffts</a></li>
+  <li><a href="../modules/fft_ops.utils.html">utils</a></li>
   <li><a href="../modules/fill.CellularAutomata.html">CellularAutomata</a></li>
   <li><a href="../modules/fill.Circle.html">Circle</a></li>
   <li><a href="../modules/FIXES.html">FIXES</a></li>
@@ -132,9 +138,11 @@
   <li><a href="../modules/geom2d_ops.predicates.html">predicates</a></li>
   <li><a href="../modules/geom2d_ops.quantize.html">quantize</a></li>
   <li><a href="../modules/geom2d_ops.vector.html">vector</a></li>
+  <li><a href="../modules/graph_ops.disjoint_set.html">disjoint_set</a></li>
   <li><a href="../modules/graph_ops.flow.html">flow</a></li>
   <li><a href="../modules/graph_ops.hungarian.html">hungarian</a></li>
   <li><a href="../modules/graph_ops.labels.html">labels</a></li>
+  <li><a href="../modules/graph_ops.mst.html">mst</a></li>
   <li><a href="../modules/hash_ops.html">hash_ops</a></li>
   <li><a href="../modules/hud.Action.html">Action</a></li>
   <li><a href="../modules/hud.Move.html">Move</a></li>
@@ -151,9 +159,6 @@
   <li><a href="../modules/mask.MarchingSquares.html">MarchingSquares</a></li>
   <li><a href="../modules/mesh_ops.html">mesh_ops</a></li>
   <li><a href="../modules/number_ops.complex.html">complex</a></li>
-  <li><a href="../modules/number_ops.convolve.html">convolve</a></li>
-  <li><a href="../modules/number_ops.fft.html">fft</a></li>
-  <li><a href="../modules/number_ops.fft_utils.html">fft_utils</a></li>
   <li><a href="../modules/number_ops.funcs.html">funcs</a></li>
   <li><a href="../modules/number_ops.gray.html">gray</a></li>
   <li><a href="../modules/number_ops.hilbert.html">hilbert</a></li>
@@ -196,6 +201,9 @@
   <li><a href="../modules/scene.Level.html">Level</a></li>
   <li><a href="../modules/scene.MapEditor.html">MapEditor</a></li>
   <li><a href="../modules/scene.Options.html">Options</a></li>
+  <li><a href="../modules/signal_ops.circular_convolution.html">circular_convolution</a></li>
+  <li><a href="../modules/signal_ops.fft_convolution.html">fft_convolution</a></li>
+  <li><a href="../modules/signal_ops.linear_convolution.html">linear_convolution</a></li>
   <li><a href="../modules/spline_ops.arc_length.html">arc_length</a></li>
   <li><a href="../modules/spline_ops.bezier.html">bezier</a></li>
   <li><a href="../modules/spline_ops.cubic.html">cubic</a></li>
@@ -259,19 +267,19 @@
 <h2><a href="#Functions">Functions</a></h2>
 <table class="function_list">
 	<tr>
-	<td class="name" nowrap><a href="#Save_Interleaved">Save_Interleaved (name, colors, w, opts)</a></td>
+	<td class="name" nowrap><a href="#Save_Interleaved">Save_Interleaved (name, colors, w[, opts])</a></td>
 	<td class="summary">Saves color data as a PNG.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#Save_RGBA">Save_RGBA (name, r, g, b, a, w, opts)</a></td>
+	<td class="name" nowrap><a href="#Save_RGBA">Save_RGBA (name, r, g, b, a, w[, opts])</a></td>
 	<td class="summary">Variant of <a href="../modules/loader_ops.png_encode.html#Save_Interleaved">Save_Interleaved</a>, with colors as separate channels.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#ToString_Interleaved">ToString_Interleaved (colors, w, opts)</a></td>
+	<td class="name" nowrap><a href="#ToString_Interleaved">ToString_Interleaved (colors, w[, opts])</a></td>
 	<td class="summary">Variant of <a href="../modules/loader_ops.png_encode.html#Save_Interleaved">Save_Interleaved</a> that emits a raw byte stream, instead of saving to file.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#ToString_RGBA">ToString_RGBA (r, g, b, a, w, opts)</a></td>
+	<td class="name" nowrap><a href="#ToString_RGBA">ToString_RGBA (r, g, b, a, w[, opts])</a></td>
 	<td class="summary">Variant of <a href="../modules/loader_ops.png_encode.html#Save_RGBA">Save_RGBA</a> that emits a raw byte stream, instead of saving to file.</td>
 	</tr>
 </table>
@@ -284,7 +292,7 @@
     <dl class="function">
     <dt>
     <a name = "Save_Interleaved"></a>
-    <strong>Save_Interleaved (name, colors, w, opts)</strong>
+    <strong>Save_Interleaved (name, colors, w[, opts])</strong>
     </dt>
     <dd>
     Saves color data as a PNG.
@@ -306,7 +314,7 @@
         <li><span class="parameter">opts</span>
             <span class="types"><a class="type" href="http://www.lua.org/manual/5.1/manual.html#5.5">table</a></span>
 
-<p> Optional save options. Fields:</p>
+<p> Save options. Fields:</p>
 
 <ul>
     <li><strong>from_01</strong>: If true, color values are interpreted as being &isin; [0, 1], instead of
@@ -331,7 +339,7 @@
 </dd>
     <dt>
     <a name = "Save_RGBA"></a>
-    <strong>Save_RGBA (name, r, g, b, a, w, opts)</strong>
+    <strong>Save_RGBA (name, r, g, b, a, w[, opts])</strong>
     </dt>
     <dd>
     Variant of <a href="../modules/loader_ops.png_encode.html#Save_Interleaved">Save_Interleaved</a>, with colors as separate channels.
@@ -382,7 +390,7 @@
 </dd>
     <dt>
     <a name = "ToString_Interleaved"></a>
-    <strong>ToString_Interleaved (colors, w, opts)</strong>
+    <strong>ToString_Interleaved (colors, w[, opts])</strong>
     </dt>
     <dd>
     Variant of <a href="../modules/loader_ops.png_encode.html#Save_Interleaved">Save_Interleaved</a> that emits a raw byte stream, instead of saving to file.
@@ -416,7 +424,7 @@
 </dd>
     <dt>
     <a name = "ToString_RGBA"></a>
-    <strong>ToString_RGBA (r, g, b, a, w, opts)</strong>
+    <strong>ToString_RGBA (r, g, b, a, w[, opts])</strong>
     </dt>
     <dd>
     Variant of <a href="../modules/loader_ops.png_encode.html#Save_RGBA">Save_RGBA</a> that emits a raw byte stream, instead of saving to file.
