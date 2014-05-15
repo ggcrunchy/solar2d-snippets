@@ -318,8 +318,7 @@ function M.HermiteToCatmullRom (src1, src2, src3, src4, dst1, dst2, dst3, dst4)
 	dst4.x, dst4.y = p4x, p4y
 end
 
---- [Line integrand](http://en.wikipedia.org/wiki/Arc_length#Finding_arc_lengths_by_integrating)
--- for a cubic polynomial.
+--- [Line integrand](http://en.wikipedia.org/wiki/Arc_length#Finding_arc_lengths_by_integrating) for a cubic polynomial.
 -- @array[opt] poly The underlying polynomial, (dx/dt)&sup2; + (dy/dt)&sup2;: elements 1 to
 -- 5 are the x&#8308;, x&sup3;, x&sup2;, x, and constant coefficients, respectively. If
 -- absent, a table is supplied.

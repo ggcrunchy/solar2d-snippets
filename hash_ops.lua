@@ -98,9 +98,9 @@ do
 		return Hash(str, seed or 0)
 	end
 
-	-- Variant of @{Pearson} that builds an _n_-byte string.
+	--- Variant of @{Pearson} that builds an _n_-byte string.
 	-- @string str String to hash.
-	-- @integer n Bytes in result.
+	-- @uint n Bytes in result.
 	-- @treturn string Hash string.
 	function M.Pearson_N (str, n)
 		Acquire()
@@ -115,7 +115,7 @@ end
 
 --- [32-bit FNV 1-A hash](http://www.isthe.com/chongo/tech/comp/fnv/#FNV-1a).
 -- @string str String to hash.
--- @treturn integer 32-bit hash value.
+-- @treturn int 32-bit hash value.
 function M.FNV32_1A (str)
 	local hash = 2166136261
 

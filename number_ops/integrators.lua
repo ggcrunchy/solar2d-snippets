@@ -102,7 +102,7 @@ do
 	function M.Romberg (func, a, b)
 		local ipower, h = 1, b - a
 
-		-- Initialize T_{1,1} entry.
+		-- Initialize T_{1, 1} entry.
 		Rom0[1] = .5 * h * (func(a) + func(b))
 
 		for i = 2, Order do

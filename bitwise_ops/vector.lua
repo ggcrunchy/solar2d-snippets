@@ -103,7 +103,7 @@ function M.AllSet (vector)
 	local n, mask = vector.n, vector.mask
 
 	if mask ~= 0 then
-		if mask ~= vector[n] then -- In bitwise version, mask less than 2^31
+		if mask ~= vector[n] then -- In bitwise version, mask will be less than 2^31
 			return false
 		end
 
@@ -181,7 +181,7 @@ function M.GetBitCount (vector)
 end
 
 -- Gets the offsets referenced by a bit block
-local AuxGet
+local AuxGet, AuxGetNot, AuxGetNot_Mask
 
 if HasBitLib then
 	function AuxGet (out, bits, offset, j)
@@ -200,6 +200,14 @@ if HasBitLib then
 
 		return j
 	end
+
+	function AuxGetNot (out, bits, offset, j)
+		return AuxGet(out, bnot(bits), offset, j)
+	end
+
+	function AuxGetNot_Mask (out, bits, offset, j, mask)
+		return AuxGet(out, band(bnot(bits), mask), offset, j)
+	end
 else
 	function AuxGet (out, bits, ri, j)
 		while bits ~= 0 do
@@ -210,6 +218,14 @@ else
 		end
 
 		return j
+	end
+
+	function AuxGetNot (out, bits, offset, j)
+		return AuxGet(out, 2^53 - bits - 1, offset, j)
+	end
+
+	function AuxGetNot_Mask (out, bits, offset, j, mask)
+		return AuxGet(out, (2^53 - bits - 1) % (mask + 1), offset, j)
 	end
 end
 
@@ -222,69 +238,38 @@ local function Reverse (vector, l, r)
 	end
 end
 
+-- Amount offset increases between bit blocks --
+local OffsetInc = HasBitLib and 32 or 53
+
 --- Gets the indices of all cleared bits.
--- @function GetIndices_Clear
 -- @array out Receives the indices, in order.
 -- @tparam BitVector from
 -- @treturn uint Number of cleared bits (size of _out_).
+function M.GetIndices_Clear (out, from)
+	local left, offset, n, mask = 1, 0, from.n, from.mask
 
-if HasBitLib then
-	function M.GetIndices_Clear (out, from)
-		local left, offset, n, mask = 1, 0, from.n, from.mask
-
-		if mask ~= 0 then
-			n = n - 1
-		end
-
-		for i = 1, n do
-			local after = AuxGet(out, bnot(from[i]), offset, left)
-
-			Reverse(out, left, after)
-
-			left, offset = after, offset + 32
-		end
-
-		if mask ~= 0 then
-			local after = AuxGet(out, band(bnot(from[n + 1]), mask), offset, left)
-
-			Reverse(out, left, after)
-
-			return after - 1
-		else
-			return left - 1
-		end
+	if mask ~= 0 then
+		n = n - 1
 	end
-else
-	function M.GetIndices_Clear (out, from)
-		local left, offset, n, mask = 1, 0, from.n, from.mask
 
-		if mask ~= 0 then
-			n = n - 1
-		end
+	for i = 1, n do
+		local after = AuxGetNot(out, from[i], offset, left)
 
-		for i = 1, n do
-			local after = AuxGet(out, 2^53 - from[i] - 1, offset, left)
+		Reverse(out, left, after)
 
-			Reverse(out, left, after)
+		left, offset = after, offset + OffsetInc
+	end
 
-			left, offset = after, offset + 53
-		end
+	if mask ~= 0 then
+		local after = AuxGetNot_Mask(out, from[n + 1], offset, left, mask)
 
-		if mask ~= 0 then
-			local bits = (2^53 - from[n + 1] - 1) % (mask + 1)
-			local after = AuxGet(out, bits, offset, left)
+		Reverse(out, left, after)
 
-			Reverse(out, left, after)
-
-			return after - 1
-		else
-			return left - 1
-		end
+		return after - 1
+	else
+		return left - 1
 	end
 end
-
--- Amount offset increases between bit blocks --
-local OffsetInc = HasBitLib and 32 or 53
 
 --- Gets the indices of all set bits.
 -- @array out Receives the indices, in order.

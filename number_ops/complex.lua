@@ -72,7 +72,7 @@ end
 -- @number b ...and complex part.
 -- @number c Real part of _z2_...
 -- @number d ...and complex part.
--- @return number Signed area.
+-- @treturn number Signed area.
 function M.Area (a, b, c, d)
 	return b * c - a * d
 end
@@ -242,7 +242,7 @@ function M.Normalize (a, b)
 	return a / mag, b / mag
 end
 
---- Computes _z_^_n_.
+--- Computes _z^n_.
 -- @number a Real part of _z_...
 -- @number b ...and complex part.
 -- @number n Real exponent.
@@ -256,7 +256,7 @@ function M.Pow (a, b, n)
 	return r * cos(theta), r * sin(theta)
 end
 
---- Computes _z1_^_z2_.
+--- Computes _z1^z2_.
 -- @number a Real part of _z1_...
 -- @number b ...and complex part.
 -- @number c Real part of _z2_...
@@ -273,7 +273,7 @@ function M.Pow_Complex (a, b, c, d)
 	return t * cos(b), t * sin(b)
 end
 
---- Computes _n_^_z_.
+--- Computes _n^z_.
 -- @number n Real base.
 -- @number a Real part of _z_...
 -- @number b ...and complex part.

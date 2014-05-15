@@ -64,6 +64,8 @@ function Scene:show (event)
 
 		self.view:insert(igroup)
 
+		-- Save image
+
 		--
 		vgroup.isVisible, igroup.isVisible = false, false
 
@@ -110,8 +112,6 @@ local function AddStepper (scene, key, tkey, top, max, func)
 
 				-- Update image!
 				-- Block stepper while update is in progress?
-				-- Could probably do a few rows at a time interspersed with captures
-				-- Actually, this should probably set a flag and let a timer do the rest...
 			end
 		end
 	}

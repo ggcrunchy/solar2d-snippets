@@ -91,6 +91,8 @@ end
 -- This is an irreversible operation (@{Find} exploits this for great efficiency).
 --
 -- This is a no-op if the nodes already share a root.
+-- @tparam Node node1 Node #1 to unite...
+-- @tparam Node node2 ...and node #2.
 function M.Union (node1, node2)
 	local root1 = _Find_(node1)
     local root2 = _Find_(node2)
