@@ -29,13 +29,16 @@ local abs = math.abs
 -- Corona globals --
 local system = system
 
+-- Cached module references --
+local _GetFrameID_
+
 -- Exports --
 local M = {}
 
 -- Unique frame ID (lazily evaluated) --
 local FrameID = 0
 
--- Frame difference, last frame time --
+-- Frame difference; last frame time --
 local Diff, Last = 0
 
 --- Getter.
@@ -48,7 +51,7 @@ end
 -- @treturn uint Current frame ID.
 function M.GetFrameID ()
 	if FrameID <= 0 then
-		FrameID = abs(FrameID) + 1
+		FrameID = 1 - FrameID
 	end
 
 	return FrameID
@@ -70,7 +73,7 @@ function M.OnFirstCallInFrame (func)
 	local id
 
 	return function(arg)
-		local is_first = id ~= M.GetFrameID()
+		local is_first = id ~= _GetFrameID_()
 
 		if is_first then
 			id = FrameID
@@ -99,6 +102,9 @@ Runtime:addEventListener("system", function(event)
 --		SG:Clear()
 	end
 end)
+
+-- Cache module members.
+_GetFrameID_ = M.GetFrameID
 
 -- Export the module.
 return M

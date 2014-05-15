@@ -217,6 +217,7 @@ function M.DoOrDefer (object, other, phase, func)
 
 	-- Phase "ended", objects intact: break pairings.
 	elseif intact then
+		-- TODO: what should `list' be??? (Partners[object], I think... but I forgot; will have to finally attend to this soon)
 		for i = #(list or "") - 1, 1, -2 do
 			RemoveFrom(object, list[i])
 		end
@@ -236,7 +237,7 @@ local NamedFlags = setmetatable({}, {
 	__index = function(t, k)
 		assert(Mask < 0xFFFF, "Limit of 16 named flags")
 
-		t[k], Mask = Mask, Mask + Mask
+		t[k], Mask = Mask, 2 * Mask
 
 		return t[k]
 	end

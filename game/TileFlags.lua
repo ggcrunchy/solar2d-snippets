@@ -30,7 +30,6 @@
 
 -- Modules --
 local array_index = require("array_ops.index")
-local args = require("iterator_ops.args")
 local powers_of_2 = require("bitwise_ops.powers_of_2")
 local dispatch_list = require("game.DispatchList")
 local flag_utils = require("utils.Flag")
@@ -45,17 +44,11 @@ local TestFlag = flag_utils.TestFlag
 local M = {}
 
 -- Flags for each cardinal direction --
-local DirFlags = flag_utils.MakeFlags{ "left", "right", "up", "down" }
+local DirFlags = { left = 0x1, right = 0x2, up = 0x4, down = 0x8 }
 
 -- Helper to build up tile flags as combination of cardinal directions
-local function OrFlags (...)
-	local flags = 0
-
-	for _, name in args.Args(...) do
-		flags = flags + DirFlags[name]
-	end
-
-	return flags
+local function OrFlags (name1, name2, name3, name4)
+	return DirFlags[name1] + DirFlags[name2] + (DirFlags[name3] or 0) + (DirFlags[name4] or 0)
 end
 
 -- Flag unions describing which directions leave tiles --
@@ -95,23 +88,16 @@ function M.GetFlagsByName (name)
 	return TileFlags[name] or DirFlags[name] or 0
 end
 
---- Indicates what combination a group of named flags will yield.
--- @param ... Some combination of **"left"**, **"right"**, **"up"**", and **"down"**.
--- @treturn string One of the values of _name_ in @{GetFlagsByName}, or **nil** if no
--- match was found.
-function M.GetNameByFlagNames (...)
-	return M.GetNameByFlags(OrFlags(...)) -- TODO: COULD (easily) be called with duplicate names...
-end
-
 -- The names of each cardinal direction, indexed by its flag --
 local NamesByValueDir = table_funcs.Invert(DirFlags)
 
 -- The names of each flag combination, indexed by its union of flags --
 local NamesByValueTile = table_funcs.Invert(TileFlags)
 
---- Variant of @{GetNameByFlagNames} using the flags themselves as input.
+--- Getter.
 -- @uint flags Union of flags.
--- @treturn string As per @{GetNameByFlagNames}.
+-- @treturn ?|string|nil One of the values of _name_ in @{GetFlagsByName}, or **nil** if no
+-- match was found.
 function M.GetNameByFlags (flags)
 	return NamesByValueTile[flags] or NamesByValueDir[flags]
 end

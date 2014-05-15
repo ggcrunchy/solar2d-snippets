@@ -55,7 +55,7 @@ end
 -- @treturn number Reflected vector x-component...
 -- @treturn number ...and y-component.
 function M.Reflect (dx, dy, nx, ny)
-	local scale = 2 * (dx * nx + dy * ny) / (nx * nx + ny * ny)
+	local scale = 2 * (dx * nx + dy * ny) / (nx^2 + ny^2)
 
 	return dx - scale * nx, dy - scale * ny
 end
