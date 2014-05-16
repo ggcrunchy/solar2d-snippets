@@ -23,6 +23,9 @@
 -- [ MIT license: http://www.opensource.org/licenses/mit-license.php ]
 --
 
+-- Standard library imports --
+local sqrt = math.sqrt
+
 -- Exports --
 local M = {}
 
@@ -108,7 +111,7 @@ local DefYieldFunc = function() end
 
 --- Computes an image's energy.
 --
--- Currently, this is a gradient energy metric, with values being integers &isin; [0, 512).
+-- Currently, this is a gradient energy metric, with values being integers &isin; [0, 512K).
 -- @array energy Matrix, of size _w_ * _h_, which will receive the energy values.
 -- @callable func Called to supply color information, cf. **"for\_each"** and related
 -- options from @{image_ops.png.Load}'s result.
@@ -150,6 +153,15 @@ function M.ComputeEnergy (energy, func, w, h, yfunc)
 	TwoRowsEnergy(energy, index, This, Prev, w)
 
 	yfunc()
+end
+
+--- Converts an energy sample, as found by @{ComputeEnergy}, to a gray value.
+-- @uint energy
+-- @treturn number Gray value, &isin; [0, 1].
+-- @todo Figure out how to generalize this, when more variety is available.
+function M.ToGray (energy)
+	return sqrt(.125 * energy) / 255 -- gradient computes 8 samples in [0, 255]
+	-- ^^ TODO: compare other energy implementations
 end
 
 -- Export the module.

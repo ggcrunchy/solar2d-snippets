@@ -90,10 +90,12 @@ local function ClearExtraneousSeams (params, bufs, used, bitmap, n, other)
 			else
 				used[index] = false
 
-				bitmap:SetPixel(x, y, sqrt(values[buf[j]]) / 255)
+				bitmap:SetPixel(x, y, params.gray(values[buf[j]]))
 			end
 		end
 	end
+
+	bitmap:WaitForPendingSets()
 end
 
 -- Calculates the energy difference when moving to a new position
@@ -271,8 +273,6 @@ function Scene:show (event)
 			sort(buf1, CostComp)
 
 			ClearExtraneousSeams(params, buf1, used, image, pn)
-
-			image:WaitForPendingSets()
 
 			-- Dimension 2: Begin a seam at each index along the second dimension; usage flags are
 			-- unnecessary on this pass. Choose a random color to plot the seam.

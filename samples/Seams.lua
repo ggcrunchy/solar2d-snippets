@@ -105,6 +105,7 @@ local Funcs = {
 	--
 	ShowOverlay = function(name, params)
 		if params.bitmap then
+			params.bitmap:Cancel()
 			Scene.view:insert(params.bitmap)
 		end
 

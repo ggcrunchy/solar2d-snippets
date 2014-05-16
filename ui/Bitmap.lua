@@ -24,6 +24,7 @@
 --
 
 -- Standard library imports --
+local assert = assert
 local max = math.max
 local min = math.min
 local next = next
@@ -263,6 +264,9 @@ function M.Bitmap (group)
 	-- @uint w New width, &gt; 0...
 	-- @uint h ...and height.
 	function Bitmap:Resize (w, h)
+		assert(w > 0, "Invalid width")
+		assert(h > 0, "Invalid height")
+
 		if w ~= curw or h ~= curh then
 			white.width, white.height = w, h
 

@@ -27,7 +27,6 @@
 local floor = math.floor
 local max = math.max
 local min = math.min
-local sqrt = math.sqrt
 
 -- Modules --
 local bitmap = require("ui.Bitmap")
@@ -55,7 +54,7 @@ local function DrawEnergy (bitmap, funcs, energy_values, iw, ih)
 
 	for y = 1, ih do
 		for x = 1, iw do
-			bitmap:SetPixel(x - 1, y - 1, sqrt(energy_values[index]) / 255)
+			bitmap:SetPixel(x - 1, y - 1, energy.ToGray(energy_values[index]))
 
 			funcs.TryToYield()
 
@@ -99,14 +98,8 @@ function Scene:show (event)
 		method_str.anchorY, method_str.y = 1, CH - 20
 
 		--
-		params.iw, params.ih = params.image("get_dims")
-
-		Slider(self.view, 20, params, "iw", "horz")
-		Slider(self.view, 70, params, "ih", "vert")
-
-		--
 		local tabs = common_ui.TabBar(self.view, {
-			{ 
+			{
 				label = "Method 1", onPress = function()
 					params.method, params.two_seams = "vertical", true
 					method_str.text = "Top-to-bottom, then left-to-right seams"
@@ -118,7 +111,7 @@ function Scene:show (event)
 					method_str.text = "Left-to-right, then top-to-bottom seams"
 				end
 			},
-			{ 
+			{
 				label = "Method 3", onPress = function()
 					params.method, params.two_seams = "vertical", false
 					method_str.text = "Top-to-bottom seams, then horizontal bars"
@@ -133,6 +126,12 @@ function Scene:show (event)
 		}, { top = CH - 105, left = CW - 370, width = 350 })
 
 		tabs:setSelected(1, true)
+
+		--
+		params.iw, params.ih = params.image("get_dims")
+
+		Slider(self.view, 20, params, "iw", "horz")
+		Slider(self.view, 70, params, "ih", "vert")
 
 		-- Prepare a bitmap to store image energy, accounting for its already existing.
 		local image, values = params.bitmap or bitmap.Bitmap(self.view), {}
@@ -160,7 +159,7 @@ function Scene:show (event)
 
 			funcs.SetStatus("Press OK to carve seams")
 			buttons.Button(self.view, nil, params.ok_x, params.ok_y, 100, 40, function()
-				params.bitmap, params.energy = image, values
+				params.bitmap, params.energy, params.gray = image, values, energy.ToGray
 
 				funcs.ShowOverlay("samples.overlay.Seams_GenSeams", params)
 			end, "OK")
