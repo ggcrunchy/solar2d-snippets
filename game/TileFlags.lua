@@ -32,13 +32,12 @@
 local array_index = require("array_ops.index")
 local powers_of_2 = require("bitwise_ops.powers_of_2")
 local dispatch_list = require("game.DispatchList")
-local flag_utils = require("utils.Flag")
 local range = require("number_ops.range")
 local table_funcs = require("table_ops.funcs")
 
 -- Imports --
+local IsSet = powers_of_2.IsSet
 local PowersOf2 = powers_of_2.PowersOf2
-local TestFlag = flag_utils.TestFlag
 
 -- Exports --
 local M = {}
@@ -121,7 +120,7 @@ end
 -- @treturn boolean _index_ is valid and the resolved flag is set for the tile?
 -- @see ResolveFlags
 function M.IsFlagSet (index, name)
-	return TestFlag(ResolvedFlags[index] or 0, DirFlags[name])
+	return IsSet(ResolvedFlags[index] or 0, DirFlags[name])
 end
 
 --- Predicate.
@@ -205,7 +204,7 @@ function M.ResolveFlags (update)
 			local what = NamesByValueDir[power]
 			local all = what ~= ignore and Flags[i + Deltas[what]]
 
-			if not (all and TestFlag(all, Reverse[what])) then
+			if not (all and IsSet(all, Reverse[what])) then
 				flags = flags - power
 			end
 		end

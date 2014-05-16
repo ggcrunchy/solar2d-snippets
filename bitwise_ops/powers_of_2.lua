@@ -1,4 +1,6 @@
 --- Operations dealing with powers of 2.
+--
+-- For the idea behind the clear and set operations, see [Iterating Bits In Lua](http://ricilake.blogspot.com/2007/10/iterating-bits-in-lua.html).
 
 --
 -- Permission is hereby granted, free of charge, to any person obtaining
@@ -33,8 +35,25 @@ local operators = require("bitwise_ops.operators")
 local bor = operators.bor
 local rshift = operators.rshift
 
+-- Cached module references --
+local _IsSet_
+
 -- Exports --
 local M = {}
+
+--- Utility.
+-- @uint var Value to modify.
+-- @uint power Power of 2 to remove from _var_.
+-- @treturn uint _var_, with _power_ removed.
+-- @treturn boolean _power_ was present, i.e. this was not a no-op?
+-- @see IsSet, Set
+function M.Clear (var, power)
+	if _IsSet_(var, power) then
+		return var - power, true
+	else
+		return var, false
+	end
+end
 
 --- DOCME
 function M.CLP2 (x)
@@ -90,12 +109,38 @@ local function AuxPowersOf2 (bits, removed)
 	end
 end
 
+--- Predicate.
+-- @uint var
+-- @uint power
+-- @treturn boolean _power_ is present in _var_?
+-- @see Clear, Set
+function M.IsSet (var, flag)
+	return var % (2 * flag) >= flag
+end
+
 --- Iterates over the set bits / powers of 2 in an integer.
 -- @uint n Integer &isin; [0, 2^53] (0 being a no-op).
 -- @treturn iterator Supplies removed bits, power of 2, bit index (0-based).
 function M.PowersOf2 (n)
 	return AuxPowersOf2, n, 0
 end
+
+--- Utility.
+-- @uint var Variable to modify.
+-- @uint power Power of 2 to add to _var_.
+-- @treturn uint _var_, with _power_ added.
+-- @treturn boolean _power_ was absent, i.e. this was not a no-op?
+-- @see Clear, IsSet
+function M.Set (var, power)
+	if _IsSet_(var, power) then
+		return var, false
+	else
+		return var + power, true
+	end
+end
+
+-- Cache module members.
+_IsSet_ = M.IsSet
 
 -- Export the module.
 return M

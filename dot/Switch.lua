@@ -30,7 +30,7 @@ local bind_utils = require("utils.Bind")
 local common = require_ex.Lazy("editor.Common")
 local collision = require("game.Collision")
 local dispatch_list = require("game.DispatchList")
-local flag_utils = require("utils.Flag")
+local powers_of_2 = require("bitwise_ops.powers_of_2")
 local links = require_ex.Lazy("editor.Links")
 local tags = require_ex.Lazy("editor.Tags")
 
@@ -59,7 +59,7 @@ function Switch:ActOn ()
 	--
 	-- Fire the event and stop showing its hint, and wait for it to finish.
 	for _, event in Events.Iter(self) do
-		if not flag_utils.TestFlag(waiting, flag) then
+		if not powers_of_2.IsSet(waiting, flag) then
 			event("fire", forward)
 
 			waiting = waiting + flag
@@ -120,7 +120,7 @@ function Switch:Update ()
 	local flag, touched, waiting = 1, self.m_touched, self.m_waiting
 
 	for _, event in Events.Iter(self) do
-		if flag_utils.TestFlag(waiting, flag) and event("is_done") then
+		if powers_of_2.IsSet(waiting, flag) and event("is_done") then
 			waiting = waiting - flag
 
 			if touched then
@@ -148,7 +148,7 @@ collision.AddHandler("switch", function(phase, switch, _, other_type)
 		local flag, waiting = 1, switch.m_waiting
 
 		for _, event in Events.Iter(switch) do
-			if not flag_utils.TestFlag(waiting, flag) then
+			if not powers_of_2.IsSet(waiting, flag) then
 				event("show", switch, is_touched)
 			end
 

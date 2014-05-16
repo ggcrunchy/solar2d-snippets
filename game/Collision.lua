@@ -30,7 +30,7 @@ local assert = assert
 local adaptive = require("table_ops.adaptive")
 local args = require("iterator_ops.args")
 local dispatch_list = require("game.DispatchList")
-local flag_utils = require("utils.Flag")
+local powers_of_2 = require("bitwise_ops.powers_of_2")
 local timers = require("game.Timers")
 
 -- Corona globals --
@@ -258,7 +258,7 @@ function M.FilterBits (...)
 
 	for _, name in args.Args(...) do
 		if name ~= nil then
-			bits = flag_utils.SetFlag(bits, NamedFlags[name])
+			bits = powers_of_2.Set(bits, NamedFlags[name])
 		end
 	end
 
