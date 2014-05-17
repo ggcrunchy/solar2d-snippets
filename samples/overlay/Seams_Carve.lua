@@ -55,14 +55,17 @@ end
 local function AddStepper (group, max, func, str)
 	local text = display.newText(group, str:format(max), 0, 0, native.systemFontBold, 20)
 	local stepper = widget.newStepper{
-		left = 250, top = 20,
-		initialValue = max, minimumValue = 0, maximumValue = max,
+		left = 250, top = 20, initialValue = max, minimumValue = 0, maximumValue = max,
 
 		onPress = function(event)
 			local phase = event.phase
 
 			if phase == "increment" or phase == "decrement" then
-				func(max - event.value + 1, phase == "decrement" and -1 or 1)
+				if phase == "decrement" then
+					func(max - event.value, -1)
+				else
+					func(max - event.value + 1, 1)
+				end
 
 				text.text = str:format(event.value)
 			end
@@ -95,89 +98,109 @@ local function DoSeam (usage, buf, i, inc)
 		usage[index] = (usage[index] or 0) - inc
 	end
 end
--- ^^ Have seen -2, -1, 3 :/
+
 -- --
 local InSeam = {}
 
 --
-local function UpdateSeamOverEnergy (bitmap, w, h, energy, seam, gray, usage)
-	--
-	local r, g, b = seam.r, seam.g, seam.b
-
+local function BeginSeam (seam)
 	for i = 1, #seam do
 		InSeam[seam[i]] = true
 	end
 
-	--
-	local y, index = 0, 1
+	return seam.r, seam.g, seam.b
+end
 
-	for _ = 1, h do
-		local x = 0
-
-		for _ = 1, w do
-			local count = usage[index]
-
-			--
-			if count ~= 1 and count ~= 2 then
-				if InSeam[index] then
-					bitmap:SetPixel(x, y, r, g, b)
-				else
-					bitmap:SetPixel(x, y, gray(energy[index]))
-				end
-
-				x = x + 1
-			end
-
-			index = index + 1
-		end
-
-		--
-		if x > 0 then
-			y = y + 1
-		end
-	end
-
-	--
+--
+local function EndSeam (seam)
 	for i = 1, #seam do
 		InSeam[seam[i]] = nil
 	end
 end
 
 --
-local function ImageUpdate (bitmap, w, h, image, usage)
-	local pixels, y, ii, ui = image("get_pixels"), 0, 1, 1
+local function UpdateSeamOverEnergy (bitmap, w, h, energy, seam, gray, flat)
+	local y, fi, r, g, b = 0, 1, BeginSeam(seam)
 
 	for _ = 1, h do
 		local x = 0
 
 		for _ = 1, w do
-			local count = usage[ui]
+			local index = flat[fi]
 
-			if count ~= 1 and count ~= 2 then
-				local r, g, b, a = pixels[ii], pixels[ii + 1], pixels[ii + 2], pixels[ii + 3]
-
-				bitmap:SetPixel(x, y, r / 255, g / 255, b / 255, a / 255)
-
-				x = x + 1
+			if InSeam[index] then
+				bitmap:SetPixel(x, y, r, g, b)
+			else
+				bitmap:SetPixel(x, y, gray(energy[index]))
 			end
 
-			ii, ui = ii + 4, ui + 1
+			x, fi = x + 1, fi + 1
 		end
 
-		--
-		if x > 0 then
-			y = y + 1
+		y = y + 1
+	end
+
+	EndSeam(seam)
+end
+
+--
+local function ImageUpdate (bitmap, w, h, image, flat)
+	local pixels, y, fi = image("get_pixels"), 0, 1
+
+	for _ = 1, h do
+		local x = 0
+
+		for _ = 1, w do
+			local ii = flat[fi] * 4 - 3
+			local r, g, b, a = pixels[ii], pixels[ii + 1], pixels[ii + 2], pixels[ii + 3]
+
+			bitmap:SetPixel(x, y, r / 255, g / 255, b / 255, a / 255)
+
+			x, fi = x + 1, fi + 1
+		end
+
+		y = y + 1
+	end
+end
+
+--
+local function Flatten (usage, flat, w, h)
+	local wcol = 1
+
+	for col = 1, w do
+		local index, at = col, wcol
+
+		for _ = 1, h do
+			local count = usage[index]
+
+			if count ~= 1 and count ~= 2 then
+				flat[at], at = index, at + w
+			end
+
+			index = index + w
+		end
+
+		if at ~= wcol then
+			wcol = wcol + 1
 		end
 	end
 end
 
 --
-local function SizeDiff (bitmap, w, h)
+local function SizeDiff (bitmap, w, h, usage, flat, params)
 	local bw, bh = bitmap:GetDims()
 
 	if ForceUpdate or bw ~= w or bh ~= h then
-		bitmap:Cancel()
+		bitmap:Clear()
 		bitmap:Resize(w, h)
+
+		local area = w * h
+
+		if flat.n ~= area then
+			Flatten(usage, flat, params.iw, params.ih)
+
+			flat.n = area
+		end
 
 		ForceUpdate = false
 
@@ -263,16 +286,16 @@ function Scene:show (event)
 		method_str.anchorY, method_str.y = 1, CH - 20
 
 		--
-		local active
+		local flat, active = {}
 		local tabs = common_ui.TabBar(self.view, {
 			{
 				label = "(H) Seams", onPress = function()
 					active, method_str.text = UpdateActive(active, hgroup), "Left-to-right seams"
 
-					if SizeDiff(himage, curw, curh) then
+					if SizeDiff(himage, curw, curh, usage, flat, params) then
 						local hi = hbufs.nseams - hstepper:getValue() + 1
 
-						UpdateSeamOverEnergy(himage, params.iw, params.ih, params.energy, hbufs[hi], params.gray, usage)
+						UpdateSeamOverEnergy(himage, params.iw, params.ih, params.energy, hbufs[hi], params.gray, flat)
 					end
 				end
 			},
@@ -280,10 +303,10 @@ function Scene:show (event)
 				label = "(V) Seams", onPress = function()
 					active, method_str.text = UpdateActive(active, vgroup), "Top-to-bottom seams"
 
-					if SizeDiff(vimage, curw, curh) then
+					if SizeDiff(vimage, curw, curh, usage, flat, params) then
 						local vi = vbufs.nseams - vstepper:getValue() + 1
 
-						UpdateSeamOverEnergy(vimage, params.iw, params.ih, params.energy, vbufs[vi], params.gray, usage)
+						UpdateSeamOverEnergy(vimage, params.iw, params.ih, params.energy, vbufs[vi], params.gray, flat)
 					end
 				end
 			},
@@ -291,8 +314,8 @@ function Scene:show (event)
 				label = "Image", onPress = function()
 					active, method_str.text = UpdateActive(active, igroup), "Carved image"
 
-					if SizeDiff(iimage, curw, curh) then
-						ImageUpdate(iimage, params.iw, params.ih, params.image, usage)
+					if SizeDiff(iimage, curw, curh, usage, flat, params) then
+						ImageUpdate(iimage, params.iw, params.ih, params.image, flat)--usage)
 					end
 				end
 			}
