@@ -335,6 +335,7 @@ function Scene:show (event)
 
 		--
 --		local save
+		-- Save carved image file somewhere, various associated GUI apparatus...
 	end
 end
 

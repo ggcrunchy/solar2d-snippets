@@ -223,6 +223,7 @@ function Scene:show (event)
 			-- ? (probably has to be inside the action, or at least forward declare a lot of stuff)
 			-- go to... where?
 		end, "Save")
+		Also, resume logic, too
 ]]
 		--
 		funcs.Action(function()

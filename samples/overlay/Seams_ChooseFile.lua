@@ -58,7 +58,10 @@ function Scene:show (event)
 
 		frame.strokeWidth = 3
 
-		--
+		-- TODO:
+		-- If database not empty, populate list (do file existence / integrity checks?)
+		-- Add remove option: removes current entry from list (closes list if empty)
+		-- Add resume option: load image, energy as usual (i.e. pretend to hit "OK"), but jump into seam generation (phase, index, prev, cost)
 		local resume
 
 		--
@@ -142,6 +145,8 @@ function Scene:show (event)
 			if good and w >= 16 and w <= CW - 10 and h >= 16 and h <= CH - 150 then
 				image_list:insertRow(add_row)
 			end
+			-- TODO: More intelligent way to handle? Owing to restrictions of bitmaps (because of captures), need to ensure some
+			-- screen real estate for interface...
 		end
 
 		--
@@ -149,8 +154,6 @@ function Scene:show (event)
 
 		color.x, color.y = px, py
 		frame.x, frame.y = px, py
-
--- TODO: Way to save and resume in-progress carving (these can go quite long...)
 	end
 end
 

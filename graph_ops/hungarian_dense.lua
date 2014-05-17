@@ -48,8 +48,9 @@ local CovCols, UncovCols = {}, {}
 -- Counts of covered / uncovered columns --
 local CovColN, UncovColN
 
---- DOCMEMORE
--- Initializes / resets the coverage state
+--- Initializes / resets the coverage state.
+-- @uint ncols Number of columns in the cost matrix.
+-- @bool is_first Is the Hungarian algorithm just being initialized?
 function M.ClearColumnsCoverage (ncols, is_first)
 	if is_first then
 		vector.Init(FreeColBits, ncols)
@@ -61,7 +62,15 @@ function M.ClearColumnsCoverage (ncols, is_first)
 	CovColN, UncovColN = nil
 end
 
---- DOCME
+--- Corrects the minimum value to account for an uncovered column.
+-- @array costs Entries of cost matrix.
+-- @int vmin Current minimum value.
+-- @uint col Offset of recently uncovered column (0-based).
+-- @array urows Offsets of uncovered rows (1-based); some of these may be **false**, and
+-- should be skipped.
+-- @uint rto Index of row before the one just covered (may be 0).
+-- @uint ncols Number of columns in _costs_.
+-- @treturn int Updated minimum value.
 function M.CorrectMin (costs, vmin, col, urows, rto, ncols)
 	local cp1 = col + 1
 
@@ -80,8 +89,12 @@ function M.CorrectMin (costs, vmin, col, urows, rto, ncols)
 	return vmin
 end
 
---- DOCMEMORE
--- Do enough columns contain a starred zero?
+--- Updates column coverage, counting starred zeroes.
+-- @ptable row_star If a row has no zero, its offset (1-based) maps to _ncols_; otherwise, it
+-- maps to the zero's column offset (0-based).
+-- @uint n Number of elements in the cost matrix...
+-- @uint ncols ...and number of columns in the same.
+-- @treturn boolean Are there enough zeroes for a solution?
 function M.CountCoverage (row_star, n, ncols)
 	for ri = 1, n, ncols do
 		local col = row_star[ri]
@@ -94,8 +107,19 @@ function M.CountCoverage (row_star, n, ncols)
 	return vector.AllClear(FreeColBits)
 end
 
---- DOCMEMORE
--- Attempts to find a zero among uncovered elements' costs
+--- Attempts to find an uncovered zero.
+-- @array costs Entries of cost matrix.
+-- @array urows Offsets of uncovered rows (1-based).
+-- @param ucn Number of uncovered columns.
+-- @uint urn Number of rows in _urows_.
+-- @uint ncols Number of columns in _costs_.
+-- @uint from Index of first row to search.
+-- @int vmin Current minimum value.
+-- @treturn[1] int Updated minimum value (minima in zero's row are not considered).
+-- @treturn[1] uint Offset of zero's row (1-based).
+-- @treturn[1] uint Offset of zero's column (0-based).
+-- @treturn[1] uint Index of zero's row in _urows_.
+-- @treturn[2] int Updated minimum value.
 function M.FindZero (costs, urows, ucn, urn, ncols, from, vmin)
 	local ucols = UncovCols
 
@@ -119,7 +143,14 @@ function M.FindZero (costs, urows, ucn, urn, ncols, from, vmin)
 	return vmin
 end
 
---- DOCME
+--- Attempts to find an uncovered zero in a row.
+-- @array costs Entries of cost matrix.
+-- @array col_star If a column has no zero, its offset (1-based) maps to _np1_; otherwise,
+-- it maps to the smallest valid row offset (1-based).
+-- @uint ri Offset of zero's row (1-based).
+-- @uint ncols Number of columns in _costs_...
+-- @uint np1 ...and number of elements in the same, plus 1.
+-- @treturn ?uint If zero was found, its column offset (0-based).
 function M.FindZeroInRow (costs, col_star, ri, ncols, np1)
 	for i = 0, ncols - 1 do
 		if costs[ri + i] == 0 and col_star[i + 1] == np1 then
@@ -128,13 +159,17 @@ function M.FindZeroInRow (costs, col_star, ri, ncols, np1)
 	end
 end
 
---- DOCME
+--- Getter.
+-- @treturn uint Count of uncovered columns.
 function M.GetUncoveredColumns ()
 	return UncovColN or GetIndices_Set(UncovCols, FreeColBits)
 end
 
---- DOCMEMORE
--- Finds the smallest element in each row and subtracts it from every row element
+--- Finds the smallest element in each row and subtracts it from every row element.
+-- @array costs Entries of cost matrix.
+-- @array from Original entries of cost matrix (may differ from _costs_).
+-- @uint n Number of elements in _costs_...
+-- @uint ncols ...and number of columns in the same.
 function M.SubtractSmallestRowCosts (costs, from, n, ncols)
 	local dcols = ncols - 1
 
@@ -151,7 +186,9 @@ function M.SubtractSmallestRowCosts (costs, from, n, ncols)
 	end
 end
 
---- DOCME
+--- Updates state to reflect uncovering a column.
+-- @uint col Column offset (0-based).
+-- @uint ucn Number of currently uncovered columns.
 function M.UncoverColumn (col, ucn)
 	Set_Fast(FreeColBits, col)
 
@@ -163,36 +200,44 @@ function M.UncoverColumn (col, ucn)
 	CovColN, UncovColN = nil
 end
 
---- DOCMEMORE
--- Updates the cost of each element belonging to the cols x rows set
-function M.UpdateCovered (costs, vmin, rows, rn, ncols)
+--- Updates the cost of each element belonging to the _ccols_ &times; _crows_ set.
+-- @array costs Entries of cost matrix.
+-- @int vmin Minimum uncovered value.
+-- @array crows Offsets of covered rows (1-based).
+-- @uint crn Number of rows in _crows_.
+-- @uint ncols Number of columns in _costs_.
+function M.UpdateCovered (costs, vmin, crows, crn, ncols)
 	CovColN = CovColN or GetIndices_Clear(CovCols, FreeColBits)
 
-	local cols, cn = CovCols, CovColN
+	local ccols, ccn = CovCols, CovColN
 
-	for i = 1, rn do
-		local ri = rows[i] * ncols + 1
+	for i = 1, crn do
+		local ri = crows[i] * ncols + 1
 
-		for j = 1, cn do
-			local index = ri + cols[j]
+		for j = 1, ccn do
+			local index = ri + ccols[j]
 
 			costs[index] = costs[index] + vmin
 		end
 	end
 end
 
---- DOCMEMORE
--- Updates the cost of each element belonging to the cols x rows set
-function M.UpdateUncovered (costs, vmin, rows, rn, ncols)
+--- Updates the cost of each element belonging to the _ucols_ &times; _urows_ set.
+-- @array costs Entries of cost matrix.
+-- @int vmin Minimum uncovered value.
+-- @array urows Offsets of uncovered rows (1-based).
+-- @uint urn Number of rows in _urows_.
+-- @uint ncols Number of columns in _costs_.
+function M.UpdateUncovered (costs, vmin, urows, urn, ncols)
 	UncovColN = UncovColN or GetIndices_Set(UncovCols, FreeColBits)
 
-	local cols, cn = UncovCols, UncovColN
+	local ucols, ucn = UncovCols, UncovColN
 
-	for i = 1, rn do
-		local ri = rows[i] * ncols + 1
+	for i = 1, urn do
+		local ri = urows[i] * ncols + 1
 
-		for j = 1, cn do
-			local index = ri + cols[j]
+		for j = 1, ucn do
+			local index = ri + ucols[j]
 
 			costs[index] = costs[index] - vmin
 		end

@@ -55,7 +55,9 @@ function M.Clear (var, power)
 	end
 end
 
---- DOCME
+--- Rounds to "least power-of-2" ceiling.
+-- @uint x
+-- @treturn uint If _x_ &gt; 0, least power-of-2 &ge; _x_; otherwise, 0. 
 function M.CLP2 (x)
 	if x > 0 then
 		x = x - 1
@@ -76,8 +78,8 @@ end
 local Tick = { 0, 0, 0 }
 
 --- Getter.
--- @uint n Integer.
--- @treturn uint If _n_ > 0, lowest power of 2 in _n_; otherwise, 0.
+-- @uint n
+-- @treturn uint If _n_ &gt; 0, lowest power of 2 in _n_; otherwise, 0.
 function M.GetLowestPowerOf2 (n)
 	if n > 0 then
 		local bit = 1
@@ -114,8 +116,8 @@ end
 -- @uint power
 -- @treturn boolean _power_ is present in _var_?
 -- @see Clear, Set
-function M.IsSet (var, flag)
-	return var % (2 * flag) >= flag
+function M.IsSet (var, power)
+	return var % (2 * power) >= power
 end
 
 --- Iterates over the set bits / powers of 2 in an integer.
