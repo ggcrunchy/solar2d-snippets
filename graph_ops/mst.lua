@@ -37,21 +37,21 @@ local labels = require("graph_ops.labels")
 -- Exports --
 local M = {}
 
--- --
+-- Offsets into current edge / weight table --
 local Indices = {}
 
--- --
+-- Forest used to perform union-find --
 local VertNodes = {}
 
---- DOCME
+--- Kruskal's algorithm
 local function Kruskal (nverts, edges_weight, mst)
-	--
+	-- Begin with all vertices as singleton MST's (reusing old nodes if available).
 	for i = 1, nverts do
 		VertNodes[i] = disjoint_set.NewNode(i, VertNodes[i])
 	end
 
-	--
-	local n = 0
+	-- Incrementally add safe edges to the tree, one by one.
+	local n, up_to = 0, 2 * (nverts - 1)
 
 	for _, index in ipairs(Indices) do
 		local u, v = edges_weight[index], edges_weight[index + 1]
@@ -60,22 +60,26 @@ local function Kruskal (nverts, edges_weight, mst)
 		if disjoint_set.Find(un) ~= disjoint_set.Find(vn) then
 			mst[n + 1], mst[n + 2], n = u, v, n + 2
 
-			disjoint_set.Union(un, vn)
+			if n < up_to then
+				disjoint_set.Union(un, vn)
+			else
+				break -- No more than nverts - 1 edges will be added
+			end
 		end
 	end
 
 	return mst, n
 end
 
--- --
+-- Current MST's edges and weights --
 local EdgesWeight
 
---
+-- Compare edges by weight
 local function CompEdges (i1, i2)
 	return EdgesWeight[i1 + 2] < EdgesWeight[i2 + 2]
 end
 
---
+-- Puts the edges in non-decreasing order.
 local function SortEdges (edges_weight, nindices)
 	EdgesWeight = edges_weight
 
@@ -88,12 +92,14 @@ local function SortEdges (edges_weight, nindices)
 	EdgesWeight = nil
 end
 
---- DOCME
--- @array edges_weight
--- @ptable[opt] opts
--- @treturn array MST
-function M.MST (edges_weight, opts)
-	--
+--- Builds a minimum spanning tree over a graph.
+--
+-- Currently, this uses [Kruskal's algorithm](http://en.wikipedia.org/wiki/Kruskal's_algorithm).
+-- @array edges_weight Edges and weights, stored as { ..., _vertex1_, _vertex2_, _weight_,
+-- ... }, where each _vertex?_ is an index &isin; [1, _n_] and _weight_ is a number.
+-- @treturn array Minimum spanning tree, stored as { _tvertex1_, _tvertex2_, ... }, where
+-- the _tvertex?_ are as above, each pair constituting an edge.
+function M.MST (edges_weight)
 	local nindices, nverts = 0, 0
 
 	for i = 1, #edges_weight, 3 do
@@ -102,10 +108,8 @@ function M.MST (edges_weight, opts)
 		Indices[nindices] = i
 	end
 
-	--
 	SortEdges(edges_weight, nindices)
 
-	--
 	assert(nverts > 0, "Invalid vertices")
 
 	return (Kruskal(nverts, edges_weight, {}))
@@ -117,11 +121,12 @@ local LabelToIndex, IndexToLabel, CleanUp = labels.NewLabelGroup()
 -- Scratch buffers --
 local Buf, MST = {}, {}
 
---- DOCME
--- @ptable graph
--- @ptable[opt] opts
--- @treturn table MST
-function M.MST_Labels (graph, opts)
+--- Labeled variant of @{MST}.
+-- @ptable graph Edges and weights, stored as { ..., _label1_ = { _label2_ = _weight_, ... },
+-- ... }, where _weight_ is a number.
+-- @treturn table Minimum spanning tree, stored as { ..., _ulabel1_ = { _vlabel2_, ... },
+-- ... }, where the _ulabel?_ and _vlabel?_ are as above.
+function M.MST_Labels (graph)
 	-- Convert the graph into a form amenable to the MST algorithm.
 	local n, nindices, nverts = 0, 0, 0
 
@@ -138,10 +143,9 @@ function M.MST_Labels (graph, opts)
 		end
 	end
 
-	--
 	SortEdges(Buf, nindices)
 
-	--
+	-- Build the tree, then restore labels.
 	local mst = nverts > 0 and {}
 
 	if mst then

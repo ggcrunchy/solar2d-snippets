@@ -54,10 +54,10 @@ end
 
 Scene:addEventListener("create")
 
--- --
+-- Base directory for sample images --
 local Base = system.ResourceDirectory
 
--- --
+-- Image subdirectory --
 local Dir = "UI_Assets"
 			--"Background_Assets"
 
@@ -66,7 +66,7 @@ local Since
 
 -- --
 local Funcs = {
-	--
+	-- Launches a long-running action, providing for some follow-up (which may itself be such an action)
 	Action = function(func)
 		return function()
 			native.setActivityIndicator(true)
@@ -87,7 +87,7 @@ local Funcs = {
 		end
 	end,
 
-	--
+	-- Cancels any action in progress
 	Cancel = function()
 		if Scene.busy then
 			timer.cancel(Scene.busy)
@@ -97,12 +97,12 @@ local Funcs = {
 		end
 	end,
 
-	--
+	-- Sets the status text
 	SetStatus = function(str, arg1, arg2)
 		Scene.about.text = str:format(arg1, arg2)
 	end,
 
-	--
+	-- Launches an overlay, accounting for state to be maintained between overlays
 	ShowOverlay = function(name, params)
 		if params.bitmap then
 			params.bitmap:Cancel()
@@ -128,7 +128,7 @@ local Funcs = {
 function Scene:show (event)
 	if event.phase == "did" then
 		composer.showOverlay("samples.overlay.Seams_ChooseFile", {
-			params = { base = Base, dir = Dir, bitmap_x = 5, bitmap_y = 155, funcs = Funcs }
+			params = { base = Base, dir = Dir, bitmap_x = 5, bitmap_y = 155, db = "Seams.sqlite3", funcs = Funcs }
 		})
 	end
 end

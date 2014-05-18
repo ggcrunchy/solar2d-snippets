@@ -33,6 +33,8 @@ local native = native
 
 -- Corona modules --
 local composer = require("composer")
+local json = require("json")
+local sqlite3 = require("sqlite3")
 local widget = require("widget")
 
 --
@@ -315,7 +317,7 @@ function Scene:show (event)
 					active, method_str.text = UpdateActive(active, igroup), "Carved image"
 
 					if SizeDiff(iimage, curw, curh, usage, flat, params) then
-						ImageUpdate(iimage, params.iw, params.ih, params.image, flat)--usage)
+						ImageUpdate(iimage, params.iw, params.ih, params.image, flat)
 					end
 				end
 			}

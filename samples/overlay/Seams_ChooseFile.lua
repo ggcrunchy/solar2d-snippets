@@ -35,6 +35,8 @@ local system = system
 
 -- Corona modules --
 local composer = require("composer")
+local json = require("json")
+local sqlite3 = require("sqlite3")
 
 -- Choose File phase overlay (seam-carving demo) --
 local Scene = composer.newScene()
@@ -45,7 +47,8 @@ local CW, CH = display.contentWidth, display.contentHeight
 --
 function Scene:show (event)
 	if event.phase == "did" then
-		--
+		-- Make a small preview pane for the currently chosen image, and put a gradient behind it
+		-- so that solid colored images have a reasonable expectation of visibilty.
 		local backdrop = display.newGroup()
 
 		self.view:insert(backdrop)
@@ -64,14 +67,15 @@ function Scene:show (event)
 		-- Add resume option: load image, energy as usual (i.e. pretend to hit "OK"), but jump into seam generation (phase, index, prev, cost)
 		local resume
 
-		--
+		-- We may be coming from the energy view, in which case the bitmap, though maintained,
+		-- should be hidden.
 		local params = event.params
 
 		if params.bitmap then
 			params.bitmap.isVisible = false
 		end
 
-		--
+		-- Add a listbox to be populated with some image choices.
 		local funcs, cancel, ok, thumbnail = params.funcs
 		local images, dir, chosen = file.EnumerateFiles(params.dir, { base = params.base, exts = "png" }), params.dir .. "/"
 
@@ -84,13 +88,12 @@ function Scene:show (event)
 		local image_list = common_ui.Listbox(self.view, 295, 20, {
 			height = 120,
 
-			-- --
 			get_text = function(index)
 				return images[index]
 			end,
 
-			-- --
 			press = function(index)
+				-- Update the thumbnail in the preview pane.
 				chosen = dir .. images[index]
 
 				local _, w, h = png.GetInfo(system.pathForFile(chosen, params.base))
@@ -105,7 +108,10 @@ function Scene:show (event)
 
 				thumbnail.x, thumbnail.y = color.x, color.y
 
-				--
+				-- On the first selection, add a button to launch the next step. When fired, the selected
+				-- image is read into memory; assuming that went well, the algorithm proceeds on to the
+				-- energy computation step. The option to cancel is available during loading (although
+				-- this is typically a quick process).
 				ok = ok or buttons.Button(self.view, nil, color.x + 90, color.y - 20, 100, 40, funcs.Action(function()
 					funcs.SetStatus("Loading image")
 
@@ -149,7 +155,7 @@ function Scene:show (event)
 			-- screen real estate for interface...
 		end
 
-		--
+		-- Place the preview pane relative to the listbox.
 		local px, py = image_list.x + image_list.width / 2 + 55, image_list.y
 
 		color.x, color.y = px, py

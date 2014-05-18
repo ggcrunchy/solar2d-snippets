@@ -65,7 +65,7 @@ local function DrawEnergy (bitmap, funcs, energy_values, iw, ih)
 	bitmap:WaitForPendingSets()
 end
 
---
+-- Adds seam density sliders and related elements
 local function Slider (group, top, params, dkey, nprefix)
 	local text = display.newText(group, "", 0, 0, native.systemFontBold, 20)
 	local nkey, ntext = nprefix .. "n", "# " .. nprefix .. ". seams: %i"
@@ -91,13 +91,13 @@ function Scene:show (event)
 	if event.phase == "did" then
 		local params = event.params
 
-		--
+		-- Add a string describing the seam-carving method...
 		local method_str = display.newText(self.view, "", 0, 0, native.systemFontBold, 20)
 
 		method_str.anchorX, method_str.x = 1, CW - 20
 		method_str.anchorY, method_str.y = 1, CH - 20
 
-		--
+		-- ...and tabs used to select it.
 		local tabs = common_ui.TabBar(self.view, {
 			{
 				label = "Method 1", onPress = function()
@@ -127,28 +127,27 @@ function Scene:show (event)
 
 		tabs:setSelected(1, true)
 
-		--
+		-- Provide some control over seam density.
 		params.iw, params.ih = params.image("get_dims")
 
 		Slider(self.view, 20, params, "iw", "horz")
 		Slider(self.view, 70, params, "ih", "vert")
 
-		-- Prepare a bitmap to store image energy, accounting for its already existing.
+		-- Prepare a bitmap to store image energy (if not already created).
 		local image, values = params.bitmap or bitmap.Bitmap(self.view), {}
 
 		image.x, image.y, image.isVisible = params.bitmap_x, params.bitmap_y, true
 
 		image:Resize(params.iw, params.ih)
 
-		--
+		-- Find some energy measure of the image and display it as gray levels, allowing the user
+		-- to cancel while either is in progress. If both complete, proceed to the generation step.
 		local funcs = params.funcs
 		local cancel = buttons.Button(self.view, nil, params.ok_x, params.cancel_y, 100, 40, function()
 			funcs.Cancel()
-
 			composer.showOverlay("samples.overlay.Seams_ChooseFile", { params = params })
 		end, "Cancel")
 
-		-- Find some energy measure of the image and display it as grey levels.
 		funcs.Action(function()
 			funcs.SetStatus("Computing energy")
 			energy.ComputeEnergy(values, params.image, params.iw, params.ih)

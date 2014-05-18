@@ -40,7 +40,7 @@ local composer = require("composer")
 --
 local Scene = composer.newScene()
 
---
+-- Begins a set of seams along one dimensions
 local function BeginSeam (indices, params, n, bitmap, inc, left_to_right, mark_used)
 	local buf, x, y, used, dx, dy = {}, 0, 0, mark_used and {}
 
@@ -53,7 +53,7 @@ local function BeginSeam (indices, params, n, bitmap, inc, left_to_right, mark_u
 	for i = 1, n do
 		local r, g, b = random(), random(), random()
 
-		indices[i], buf[i] = i, { (i - 1) * inc + 1, cost = 0, prev = 0, r = r, g = g, b = b }
+		indices[i], buf[i] = i, { (i - 1) * inc + 1, cost = 0, prev = 0, r = r, g = g, b = b, id = i }
 
 		bitmap:SetPixel(x, y, r, g, b)
 
@@ -61,13 +61,13 @@ local function BeginSeam (indices, params, n, bitmap, inc, left_to_right, mark_u
 	end
 
 	for i = 1, used and n or 0 do
-		used[i * inc] = i
+		used[(i - 1) * inc + 1] = i
 	end
-
+-- ^^^ TODO: New (fixed?) indexing, test this
 	return buf, used
 end
 
---
+-- Removes higher-energy seams from consideration
 local function ClearExtraneousSeams (params, bufs, used, bitmap, n, other)
 	params.funcs.SetStatus("Cleaning up seams")
 
@@ -85,8 +85,10 @@ local function ClearExtraneousSeams (params, bufs, used, bitmap, n, other)
 			--
 			if oi then
 				local obuf = other[oi]
-
+				-- ^^^ TODO: Do a search for id == oi in other
 				bitmap:SetPixel(x, y, obuf.r, obuf.g, obuf.b)
+
+			--
 			else
 				used[index] = false
 
@@ -103,7 +105,7 @@ local function GetEnergyDiff (values, index, energy)
 	return index > 0 and abs(values[index] - energy) or 1e12
 end
 
---
+-- TODO: untested!!!!
 local function GetBestEdge (values, pref, alt1, alt2, energy)
 	local best = pref and GetEnergyDiff(values, pref, energy) or huge
 	local dalt1 = alt1 and GetEnergyDiff(values, alt1, energy) or huge
@@ -168,9 +170,9 @@ local function CostComp (a, b)
 	return a.cost < b.cost
 end
 
---
+-- Updates state following generation of a new row or column of seams
 local function UpdateSeams (indices, bufs, n, bitmap, coord, left_to_right, used)
-	--
+	-- Traverse the row or column, updating pixels as we vary in the perpendicular direction.
 	coord = coord - 1
 
 	if left_to_right then
@@ -187,10 +189,11 @@ local function UpdateSeams (indices, bufs, n, bitmap, coord, left_to_right, used
 		end	
 	end
 
-	--
+	-- If requested, emit seam ID's to indicate occupancy.
 	for i = 1, used and n or 0 do
 		used[bufs[i][coord]] = i
 	end
+	-- ^^^ TODO: Not resilient against sort?
 end
 
 --
@@ -199,7 +202,7 @@ function Scene:show (event)
 		local params = event.params
 		local funcs, image = params.funcs, params.bitmap
 
-		--
+		-- Lift the bitmap back into the overlay.
 		self.view:insert(image)
 
 		--
@@ -338,10 +341,11 @@ function Scene:show (event)
 				end
 			end
 
-			-- Pick the lowest-cost seams and restore the image underneath the rest.
+			-- Pick the lowest-cost seams and restore the image underneath the rest, leaving the seams
+			-- found in the first dimension.
 			sort(buf2, CostComp)
 
-			ClearExtraneousSeams(params, buf2, used, image, fn, buf1) -- Cleanup probably pointless...
+			ClearExtraneousSeams(params, buf2, used, image, fn, buf1)
 
 			-- Present carve options.
 			params.buf1, params.buf2 = buf1, buf2
