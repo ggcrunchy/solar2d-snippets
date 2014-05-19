@@ -48,17 +48,17 @@ local Scene = composer.newScene()
 -- Cached dimensions --
 local CW, CH = display.contentWidth, display.contentHeight
 
--- --
+-- If true, invoke update logic even when the bitmap size has not changed --
 local ForceUpdate
 
---
+-- Code-initiated tab selection
 local function Select (tabs, i)
 	ForceUpdate = true
 
 	tabs:setSelected(i, true)
 end
 
---
+-- Adds a stepper to add or remove seams on a given dimension
 local function AddStepper (group, max, func, str)
 	local text = display.newText(group, str:format(max), 0, 0, native.systemFontBold, 20)
 	local stepper = widget.newStepper{
@@ -86,7 +86,7 @@ local function AddStepper (group, max, func, str)
 	return stepper
 end
 
---
+-- Updates a straight-line seam's pixel usage
 local function DoLine (usage, buf, i, n, delta, inc, flag)
 	local op, index = inc > 0 and Clear or Set, buf[i]
 -- ^^ Needs fixing: not in format given in GenSeams...
@@ -95,7 +95,7 @@ local function DoLine (usage, buf, i, n, delta, inc, flag)
 	end
 end
 
---
+-- Updates a general seam's pixel usage
 local function DoSeam (usage, seam, inc, flag)
 	local op = inc > 0 and Clear or Set
 
@@ -106,28 +106,16 @@ local function DoSeam (usage, seam, inc, flag)
 	end
 end
 
--- --
+-- Pixels in which the current seam can be found --
 local InSeam = {}
 
---
-local function BeginSeam (seam)
+-- Draws the current (carved) image energy, along with the next seam (if any) to be removed
+local function UpdateSeamOverEnergy (bitmap, w, h, energy, seam, gray, usage)
 	for i = 1, #seam do
 		InSeam[seam[i]] = true
 	end
 
-	return seam.r, seam.g, seam.b
-end
-
---
-local function EndSeam (seam)
-	for i = 1, #seam do
-		InSeam[seam[i]] = nil
-	end
-end
-
---
-local function UpdateSeamOverEnergy (bitmap, w, h, energy, seam, gray, flat)
-	local fi, r, g, b = 1, BeginSeam(seam)
+	local flat, fi, r, g, b = usage.flat, 1, seam.r, seam.g, seam.b
 
 	for y = 0, h - 1 do
 		for x = 0, w - 1 do
@@ -143,12 +131,14 @@ local function UpdateSeamOverEnergy (bitmap, w, h, energy, seam, gray, flat)
 		end
 	end
 
-	EndSeam(seam)
+	for i = 1, #seam do
+		InSeam[seam[i]] = nil
+	end
 end
 
---
-local function ImageUpdate (bitmap, w, h, image, flat)
-	local pixels, fi = image("get_pixels"), 1
+-- Draws the current (carved) image
+local function ImageUpdate (bitmap, w, h, image, usage)
+	local pixels, flat, fi = image("get_pixels"), usage.flat, 1
 
 	for y = 0, h - 1 do
 		for x = 0, w - 1 do
@@ -162,19 +152,15 @@ local function ImageUpdate (bitmap, w, h, image, flat)
 	end
 end
 
--- --
+-- Usage flags for pixels whose seams have been removed --
 local HorzFlag = 0x1
-
--- --
 local VertFlag = 0x2
-
--- --
 local Both = HorzFlag + VertFlag
 
---
-local function Flatten (usage, flat, w, h, ncols)
-	--
-	local n = 0
+-- Flattens the available indices (i.e. those not in removed seams) into matrix form
+local function Flatten (usage, w, h, ncols)
+	-- Compact left-to-right...
+	local n, flat = 0, usage.flat
 
 	for i = 1, w * h do
 		local state = usage[i]
@@ -184,7 +170,7 @@ local function Flatten (usage, flat, w, h, ncols)
 		end
 	end
 
-	--
+	-- ...and top-to-bottom.
 	for col = 1, ncols do
 		local wpos = col
 
@@ -198,8 +184,8 @@ local function Flatten (usage, flat, w, h, ncols)
 	end
 end
 
---
-local function SizeDiff (bitmap, w, h, usage, flat, params)
+-- Indicates whether a group's assumed size differs from reality (if so, performs some common associated logic)
+local function SizeDiff (bitmap, w, h, usage, params)
 	local bw, bh = bitmap:GetDims()
 
 	if ForceUpdate or bw ~= w or bh ~= h then
@@ -208,10 +194,10 @@ local function SizeDiff (bitmap, w, h, usage, flat, params)
 
 		local area = w * h
 
-		if flat.n ~= area then
-			Flatten(usage, flat, params.iw, params.ih, w)
+		if usage.n ~= area then
+			Flatten(usage, params.iw, params.ih, w)
 
-			flat.n = area
+			usage.n = area
 		end
 
 		ForceUpdate = false
@@ -220,7 +206,7 @@ local function SizeDiff (bitmap, w, h, usage, flat, params)
 	end
 end
 
---
+-- Helper to switch the active group
 local function UpdateActive (old, new)
 	if old then
 		old.isVisible = false
@@ -237,14 +223,14 @@ function Scene:show (event)
 		local params = event.params
 		local funcs = params.funcs
 
-		--
+		-- Add a group of elements for horizontal seams, reusing the common bitmap...
 		local hgroup, hstepper = display.newGroup()
 		local himage = params.bitmap
 
 		self.view:insert(hgroup)
 		hgroup:insert(himage)
 
-		--
+		-- ...add another for vertical seams...
 		local vgroup, vstepper = display.newGroup()
 		local vimage = bitmap.Bitmap(vgroup)
 
@@ -252,7 +238,7 @@ function Scene:show (event)
 
 		vimage.x, vimage.y = himage.x, himage.y
 
-		--
+		-- ...and finally, one for the image itself.
 		local igroup = display.newGroup()
 		local iimage = bitmap.Bitmap(igroup)
 
@@ -260,13 +246,16 @@ function Scene:show (event)
 
 		iimage.x, iimage.y = himage.x, himage.y
 
-		--
+--		local save
+		-- Save carved image file somewhere, various associated GUI apparatus...
+
+		-- Begin in the horizontal group.
 		vgroup.isVisible, igroup.isVisible = false, false
 
-		--
-		local curw, curh, usage, hbufs, vbufs = params.iw, params.ih, {}, params.buf1, params.buf2
+		-- Set up all the state, choosing the buffers, and how to process them, according to the
+		-- options chosen during the previous steps.
+		local curw, curh, usage, hbufs, vbufs = params.iw, params.ih, { flat = {} }, params.buf1, params.buf2
 
-		--
 		local function DoHorzBuf (i, inc)
 			DoSeam(usage, hbufs[i], inc, HorzFlag)
 
@@ -291,23 +280,24 @@ function Scene:show (event)
 			hbufs, vbufs = vbufs, hbufs
 		end
 
-		--
+		-- Add a string describing the group being viewed...
 		local method_str = display.newText(self.view, "", 0, 20, native.systemFontBold, 20)
 
 		method_str.anchorX, method_str.x = 1, CW - 20
 		method_str.anchorY, method_str.y = 1, CH - 20
 
-		--
-		local flat, active = {}
+		-- ...and tabs used to select it.
+		local active
 		local tabs = common_ui.TabBar(self.view, {
 			{
 				label = "(H) Seams", onPress = function()
 					active, method_str.text = UpdateActive(active, hgroup), "Left-to-right seams"
 
-					if SizeDiff(himage, curw, curh, usage, flat, params) then
-						local hi = hbufs.nseams - hstepper:getValue() + 1
+					if SizeDiff(himage, curw, curh, usage, params) then
+						local hn = hbufs.nseams
+						local hi = hn - hstepper:getValue() + 1
 
-						UpdateSeamOverEnergy(himage, curw, curh, params.energy, hbufs[hi], params.gray, flat)
+						UpdateSeamOverEnergy(himage, curw, curh, params.energy, hi <= hn and hbufs[hi] or "", params.gray, usage)
 					end
 				end
 			},
@@ -315,10 +305,11 @@ function Scene:show (event)
 				label = "(V) Seams", onPress = function()
 					active, method_str.text = UpdateActive(active, vgroup), "Top-to-bottom seams"
 
-					if SizeDiff(vimage, curw, curh, usage, flat, params) then
-						local vi = vbufs.nseams - vstepper:getValue() + 1
+					if SizeDiff(vimage, curw, curh, usage, params) then
+						local vn = vbufs.nseams
+						local vi = vn - vstepper:getValue() + 1
 
-						UpdateSeamOverEnergy(vimage, curw, curh, params.energy, vbufs[vi], params.gray, flat)
+						UpdateSeamOverEnergy(vimage, curw, curh, params.energy, vi <= vn and vbufs[vi] or "", params.gray, usage)
 					end
 				end
 			},
@@ -326,14 +317,14 @@ function Scene:show (event)
 				label = "Image", onPress = function()
 					active, method_str.text = UpdateActive(active, igroup), "Carved image"
 
-					if SizeDiff(iimage, curw, curh, usage, flat, params) then
-						ImageUpdate(iimage, curw, curh, params.image, flat)
+					if SizeDiff(iimage, curw, curh, usage, params) then
+						ImageUpdate(iimage, curw, curh, params.image, usage)
 					end
 				end
 			}
 		}, { top = CH - 105, left = CW - 270, width = 250 })
 
-		--
+		-- Add steppers to perform carving / uncarving.
 		hstepper = AddStepper(hgroup, hbufs.nseams, function(i, inc)
 			DoHorzBuf(i, inc)
 			Select(tabs, 1)
@@ -344,10 +335,6 @@ function Scene:show (event)
 		end, "Vertical seams remaining: %i")
 
 		Select(tabs, 1)
-
-		--
---		local save
-		-- Save carved image file somewhere, various associated GUI apparatus...
 	end
 end
 

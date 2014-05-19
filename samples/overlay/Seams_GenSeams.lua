@@ -211,7 +211,7 @@ function Scene:show (event)
 		-- Lift the bitmap back into the overlay.
 		self.view:insert(image)
 
-		--
+		-- Assign state to either the forward or the perpendicular part of the generation.
 		local finc, fn, fstr = params.iw, params.ih, "Carving: row %i of %i"
 		local pinc, pn, pstr = 1, params.iw, "Carving: column %i of %i"
 		local indices, method = {}, params.method
@@ -220,7 +220,10 @@ function Scene:show (event)
 			finc, pinc, fn, pn, fstr, pstr = pinc, finc, pn, fn, pstr, fstr
 		end
 
-		--
+		-- Generate the seams. Allow the user to cancel while this is in progress, or save the
+		-- current state; since the latter may itself be time-consuming, it hijacks the busy
+		-- timer (though for cancellation purposes, remains the same) until complete, to avoid
+		-- the awkward scenario that generation finishes, and the view switches, along the way.
 		buttons.Button(self.view, nil, params.ok_x, params.cancel_y, 100, 40, function()
 			funcs.Cancel()
 			funcs.ShowOverlay("samples.overlay.Seams_Energy", params)
@@ -232,9 +235,7 @@ function Scene:show (event)
 			-- ? (probably has to be inside the action, or at least forward declare a lot of stuff)
 			-- go to... where?
 		end, "Save")
-		Also, resume logic, too
 ]]
-		--
 		funcs.Action(function()
 			-- Dimension 1: Begin a seam at each index along the first dimension, flagging each such
 			-- index as used. Choose a random color to plot the seam.
@@ -301,10 +302,10 @@ function Scene:show (event)
 					for i = 1, fn do
 						local ahead, diag1, diag2, energy = GetEdgesEnergy(values, i, pinc, finc, fn, offset)
 
-						-- Load the cost matrix as was done earlier, but omit any diagonal edges (by assigning
-						-- impossibly high costs) that already came into use in the other dimension, as those
-						-- can potentially lead to seams crossing twice, and thus an inconsistent index map,
-						-- q.v. the appendix in the Avidan & Shamir paper.
+						-- Load the cost matrix as was done earlier, but omit any diagonal edges (implicitly,
+						-- by assigning impossibly high costs) that remain in use from the other dimension:
+						-- these may occasionally lead to seam pairs crossing twice, and thus an inconsistent
+						-- index map, q.v. the appendix in the Avidan & Shamir paper.
 						if diag1 and used[diag1] then
 							diag1 = -1
 						end

@@ -91,7 +91,7 @@ function Scene:show (event)
 	if event.phase == "did" then
 		local params = event.params
 
-		-- Add a string describing the seam-carving method...
+		-- Add a string describing the seam-generation method...
 		local method_str = display.newText(self.view, "", 0, 0, native.systemFontBold, 20)
 
 		method_str.anchorX, method_str.x = 1, CW - 20
