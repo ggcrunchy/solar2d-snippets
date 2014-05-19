@@ -63,7 +63,7 @@ local function BeginSeam (indices, params, n, bitmap, inc, left_to_right, mark_u
 	for i = 1, used and n or 0 do
 		used[(i - 1) * inc + 1] = i
 	end
--- ^^^ TODO: New (fixed?) indexing, test this
+
 	return buf, used
 end
 
@@ -78,17 +78,24 @@ local function ClearExtraneousSeams (params, bufs, used, bitmap, n, other)
 
 		for j = 1, #buf do
 			local index = buf[j]
-			local im1, oi = index - 1, other and used[index]
+			local im1, id = index - 1, other and used[index]
 			local x = im1 % iw
 			local y = (im1 - x) / iw
 
-			--
-			if oi then
-				local obuf = other[oi]
-				-- ^^^ TODO: Do a search for id == oi in other
-				bitmap:SetPixel(x, y, obuf.r, obuf.g, obuf.b)
+			-- If the pixel also belongs to a seam that was retained in the other dimension, keep it
+			-- around. Because of sorting, the seam might have moved, so search for it by ID.
+			if id then
+				for k = 1, #other do
+					local obuf = other[k]
 
-			--
+					if obuf.id == id then
+						bitmap:SetPixel(x, y, obuf.r, obuf.g, obuf.b)
+
+						break
+					end
+				end
+
+			-- Otherwise, restore the gray level.
 			else
 				used[index] = false
 
@@ -193,7 +200,6 @@ local function UpdateSeams (indices, bufs, n, bitmap, coord, left_to_right, used
 	for i = 1, used and n or 0 do
 		used[bufs[i][coord]] = i
 	end
-	-- ^^^ TODO: Not resilient against sort?
 end
 
 --

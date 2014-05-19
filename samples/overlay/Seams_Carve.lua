@@ -26,6 +26,11 @@
 -- Modules --
 local bitmap = require("ui.Bitmap")
 local common_ui = require("editor.CommonUI")
+local powers_of_2 = require("bitwise_ops.powers_of_2")
+
+-- Imports --
+local Clear = powers_of_2.Clear
+local Set = powers_of_2.Set
 
 -- Corona globals --
 local display = display
@@ -82,22 +87,22 @@ local function AddStepper (group, max, func, str)
 end
 
 --
-local function DoLine (usage, buf, i, n, delta, inc)
-	local index = buf[i]
+local function DoLine (usage, buf, i, n, delta, inc, flag)
+	local op, index = inc > 0 and Clear or Set, buf[i]
 -- ^^ Needs fixing: not in format given in GenSeams...
 	for _ = 1, n do
-		usage[index], index = (usage[index] or 0) - inc, index + delta
+		usage[index], index = op(usage[index] or 0, flag), index + delta
 	end
 end
 
 --
-local function DoSeam (usage, buf, i, inc)
-	local seam = buf[i]
+local function DoSeam (usage, seam, inc, flag)
+	local op = inc > 0 and Clear or Set
 
-	for j = 1, #seam do
-		local index = seam[j]
+	for i = 1, #seam do
+		local index = seam[i]
 
-		usage[index] = (usage[index] or 0) - inc
+		usage[index] = op(usage[index] or 0, flag)
 	end
 end
 
@@ -122,12 +127,10 @@ end
 
 --
 local function UpdateSeamOverEnergy (bitmap, w, h, energy, seam, gray, flat)
-	local y, fi, r, g, b = 0, 1, BeginSeam(seam)
+	local fi, r, g, b = 1, BeginSeam(seam)
 
-	for _ = 1, h do
-		local x = 0
-
-		for _ = 1, w do
+	for y = 0, h - 1 do
+		for x = 0, w - 1 do
 			local index = flat[fi]
 
 			if InSeam[index] then
@@ -136,10 +139,8 @@ local function UpdateSeamOverEnergy (bitmap, w, h, energy, seam, gray, flat)
 				bitmap:SetPixel(x, y, gray(energy[index]))
 			end
 
-			x, fi = x + 1, fi + 1
+			fi = fi + 1
 		end
-
-		y = y + 1
 	end
 
 	EndSeam(seam)
@@ -147,43 +148,52 @@ end
 
 --
 local function ImageUpdate (bitmap, w, h, image, flat)
-	local pixels, y, fi = image("get_pixels"), 0, 1
+	local pixels, fi = image("get_pixels"), 1
 
-	for _ = 1, h do
-		local x = 0
-
-		for _ = 1, w do
+	for y = 0, h - 1 do
+		for x = 0, w - 1 do
 			local ii = flat[fi] * 4 - 3
 			local r, g, b, a = pixels[ii], pixels[ii + 1], pixels[ii + 2], pixels[ii + 3]
 
 			bitmap:SetPixel(x, y, r / 255, g / 255, b / 255, a / 255)
 
-			x, fi = x + 1, fi + 1
+			fi = fi + 1
 		end
-
-		y = y + 1
 	end
 end
 
+-- --
+local HorzFlag = 0x1
+
+-- --
+local VertFlag = 0x2
+
+-- --
+local Both = HorzFlag + VertFlag
+
 --
-local function Flatten (usage, flat, w, h)
-	local wcol = 1
+local function Flatten (usage, flat, w, h, ncols)
+	--
+	local n = 0
 
-	for col = 1, w do
-		local index, at = col, wcol
+	for i = 1, w * h do
+		local state = usage[i]
 
-		for _ = 1, h do
-			local count = usage[index]
-
-			if count ~= 1 and count ~= 2 then
-				flat[at], at = index, at + w
-			end
-
-			index = index + w
+		if state ~= HorzFlag and state ~= Both then
+			flat[n + 1], n = i, n + 1
 		end
+	end
 
-		if at ~= wcol then
-			wcol = wcol + 1
+	--
+	for col = 1, ncols do
+		local wpos = col
+
+		for rpos = col, n, ncols do
+			local index = flat[rpos]
+
+			if usage[index] ~= VertFlag then
+				flat[wpos], wpos = index, wpos + ncols
+			end
 		end
 	end
 end
@@ -199,7 +209,7 @@ local function SizeDiff (bitmap, w, h, usage, flat, params)
 		local area = w * h
 
 		if flat.n ~= area then
-			Flatten(usage, flat, params.iw, params.ih)
+			Flatten(usage, flat, params.iw, params.ih, w)
 
 			flat.n = area
 		end
@@ -258,7 +268,7 @@ function Scene:show (event)
 
 		--
 		local function DoHorzBuf (i, inc)
-			DoSeam(usage, hbufs, i, inc)
+			DoSeam(usage, hbufs[i], inc, HorzFlag)
 
 			curw = curw + inc
 		end
@@ -267,7 +277,7 @@ function Scene:show (event)
 
 		if params.two_seams then
 			function DoVertBuf (i, inc)
-				DoSeam(usage, vbufs, i, inc)
+				DoSeam(usage, vbufs[i], inc, VertFlag)
 
 				curh = curh + inc
 			end
@@ -297,7 +307,7 @@ function Scene:show (event)
 					if SizeDiff(himage, curw, curh, usage, flat, params) then
 						local hi = hbufs.nseams - hstepper:getValue() + 1
 
-						UpdateSeamOverEnergy(himage, params.iw, params.ih, params.energy, hbufs[hi], params.gray, flat)
+						UpdateSeamOverEnergy(himage, curw, curh, params.energy, hbufs[hi], params.gray, flat)
 					end
 				end
 			},
@@ -308,7 +318,7 @@ function Scene:show (event)
 					if SizeDiff(vimage, curw, curh, usage, flat, params) then
 						local vi = vbufs.nseams - vstepper:getValue() + 1
 
-						UpdateSeamOverEnergy(vimage, params.iw, params.ih, params.energy, vbufs[vi], params.gray, flat)
+						UpdateSeamOverEnergy(vimage, curw, curh, params.energy, vbufs[vi], params.gray, flat)
 					end
 				end
 			},
@@ -317,7 +327,7 @@ function Scene:show (event)
 					active, method_str.text = UpdateActive(active, igroup), "Carved image"
 
 					if SizeDiff(iimage, curw, curh, usage, flat, params) then
-						ImageUpdate(iimage, params.iw, params.ih, params.image, flat)
+						ImageUpdate(iimage, curw, curh, params.image, flat)
 					end
 				end
 			}
