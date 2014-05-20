@@ -291,7 +291,10 @@ Scene:addEventListener("create")
 
 --
 function Scene:show ()
-
+	-- Do some multi-view thing...
+	-- Case 1: just switch among them
+	-- Case 2: make sure they overlay with transparency
+	-- Anything else? (functional parity with grid funcs, I suppose)
 end
 
 Scene:addEventListener("show")

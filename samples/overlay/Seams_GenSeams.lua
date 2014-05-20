@@ -228,14 +228,18 @@ function Scene:show (event)
 			funcs.Cancel()
 			funcs.ShowOverlay("samples.overlay.Seams_Energy", params)
 		end, "Cancel")
---[[
-		local save = buttons.Button(self.view, nil, params.ok_x, params.ok_y, 100, 40, function()
-			funcs.Cancel()
 
-			-- ? (probably has to be inside the action, or at least forward declare a lot of stuff)
-			-- go to... where?
+		buttons.Button(self.view, nil, params.ok_x, params.ok_y, 100, 40, function()
+			-- filename, directory, base, size
+			-- dimension 1 or 2? row / column
+			-- if 2
+			-- 	first group of seams
+			--	in-progress state
+			-- else
+			--  in-progress state
+			-- method, two-seams
 		end, "Save")
-]]
+
 		funcs.Action(function()
 			-- Dimension 1: Begin a seam at each index along the first dimension, flagging each such
 			-- index as used. Choose a random color to plot the seam.

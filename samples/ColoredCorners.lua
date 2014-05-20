@@ -48,9 +48,9 @@ Scene:addEventListener("create")
 --
 function Scene:show (event)
 	if event.phase == "did" then
-		-- Something to load pictures
-		-- Pick energy function?
-		-- State to hold seam nodes
+		-- Something to load pictures (pretty much available in seams sample)
+		-- Pick energy function? (Add one or both from paper)
+		-- State to hold seam nodes (basically, try to recreate the example in the paper...)
 		-- Choice of algorithms: random, sub-patch, whole patch (seems correlation would be useful, here)
 		-- Way to tune the randomness (k = .001 to 1, as in the GC paper, say)
 		-- Way to fire off the algorithm
