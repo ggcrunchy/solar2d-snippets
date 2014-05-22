@@ -249,7 +249,6 @@
   <li><a href="../modules/utils.Curves.html">Curves</a></li>
   <li><a href="../modules/utils.Device.html">Device</a></li>
   <li><a href="../modules/utils.File.html">File</a></li>
-  <li><a href="../modules/utils.Flag.html">Flag</a></li>
   <li><a href="../modules/utils.Frames.html">Frames</a></li>
   <li><a href="../modules/utils.Mask.html">Mask</a></li>
   <li><a href="../modules/utils.ObjectHelper.html">ObjectHelper</a></li>
@@ -278,6 +277,10 @@
 	<tr>
 	<td class="name" nowrap><a href="#Pearson">Pearson (str, seed)</a></td>
 	<td class="summary"><a href="http://burtleburtle.net/bob/hash/pearson.html">Pearson's hash</a>.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Pearson_N">Pearson_N (str, n)</a></td>
+	<td class="summary">Variant of <a href="../modules/hash_ops.html#Pearson">Pearson</a> that builds an <em>n</em>-byte string.</td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#FNV32_1A">FNV32_1A (str)</a></td>
@@ -322,6 +325,36 @@
 
 </dd>
     <dt>
+    <a name = "Pearson_N"></a>
+    <strong>Pearson_N (str, n)</strong>
+    </dt>
+    <dd>
+    Variant of <a href="../modules/hash_ops.html#Pearson">Pearson</a> that builds an <em>n</em>-byte string.
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">str</span>
+            <span class="types"><a class="type" href="http://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
+         String to hash.
+        </li>
+        <li><span class="parameter">n</span>
+            <span class="types"><span class="type">uint</span></span>
+         Bytes in result.
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><a class="type" href="http://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
+        Hash string.
+    </ol>
+
+
+
+
+</dd>
+    <dt>
     <a name = "FNV32_1A"></a>
     <strong>FNV32_1A (str)</strong>
     </dt>
@@ -339,7 +372,7 @@
     <h3>Returns:</h3>
     <ol>
 
-           <span class="types"><span class="type">integer</span></span>
+           <span class="types"><span class="type">int</span></span>
         32-bit hash value.
     </ol>
 

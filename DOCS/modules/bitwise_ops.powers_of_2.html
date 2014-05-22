@@ -249,7 +249,6 @@
   <li><a href="../modules/utils.Curves.html">Curves</a></li>
   <li><a href="../modules/utils.Device.html">Device</a></li>
   <li><a href="../modules/utils.File.html">File</a></li>
-  <li><a href="../modules/utils.Flag.html">Flag</a></li>
   <li><a href="../modules/utils.Frames.html">Frames</a></li>
   <li><a href="../modules/utils.Mask.html">Mask</a></li>
   <li><a href="../modules/utils.ObjectHelper.html">ObjectHelper</a></li>
@@ -268,24 +267,34 @@
 
 <h1>Module <code>bitwise_ops.powers_of_2</code></h1>
 <p>Operations dealing with powers of 2.</p>
-<p>
-
-</p>
+<p> For the idea behind the clear and set operations, see <a href="http://ricilake.blogspot.com/2007/10/iterating-bits-in-lua.html">Iterating Bits In Lua</a>.</p>
 
 
 <h2><a href="#Functions">Functions</a></h2>
 <table class="function_list">
 	<tr>
+	<td class="name" nowrap><a href="#Clear">Clear (var, power)</a></td>
+	<td class="summary">Utility.</td>
+	</tr>
+	<tr>
 	<td class="name" nowrap><a href="#CLP2">CLP2 (x)</a></td>
-	<td class="summary">DOCME</td>
+	<td class="summary">Rounds to "least power-of-2" ceiling.</td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#GetLowestPowerOf2">GetLowestPowerOf2 (n)</a></td>
 	<td class="summary">Getter.</td>
 	</tr>
 	<tr>
+	<td class="name" nowrap><a href="#IsSet">IsSet (var, power)</a></td>
+	<td class="summary">Predicate.</td>
+	</tr>
+	<tr>
 	<td class="name" nowrap><a href="#PowersOf2">PowersOf2 (n)</a></td>
 	<td class="summary">Iterates over the set bits / powers of 2 in an integer.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Set">Set (var, power)</a></td>
+	<td class="summary">Utility.</td>
 	</tr>
 </table>
 
@@ -296,21 +305,66 @@
     <h2><a name="Functions"></a>Functions</h2>
     <dl class="function">
     <dt>
+    <a name = "Clear"></a>
+    <strong>Clear (var, power)</strong>
+    </dt>
+    <dd>
+    Utility.
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">var</span>
+            <span class="types"><span class="type">uint</span></span>
+         Value to modify.
+        </li>
+        <li><span class="parameter">power</span>
+            <span class="types"><span class="type">uint</span></span>
+         Power of 2 to remove from <em>var</em>.
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+        <li>
+           <span class="types"><span class="type">uint</span></span>
+        <em>var</em>, with <em>power</em> removed.</li>
+        <li>
+           <span class="types"><span class="type">boolean</span></span>
+        <em>power</em> was present, i.e. this was not a no-op?</li>
+    </ol>
+
+
+    <h3>See also:</h3>
+    <ul>
+         <li><a href="../modules/bitwise_ops.powers_of_2.html#IsSet">IsSet</a></li>
+         <li><a href="../modules/bitwise_ops.powers_of_2.html#Set">Set</a></li>
+    </ul>
+
+
+</dd>
+    <dt>
     <a name = "CLP2"></a>
     <strong>CLP2 (x)</strong>
     </dt>
     <dd>
-    DOCME
+    Rounds to "least power-of-2" ceiling.
 
     <h3>Parameters:</h3>
     <ul>
         <li><span class="parameter">x</span>
+            <span class="types"><span class="type">uint</span></span>
 
 
 
         </li>
     </ul>
 
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">uint</span></span>
+        If <em>x</em> &gt; 0, least power-of-2 &ge; <em>x</em>; otherwise, 0.
+    </ol>
 
 
 
@@ -327,7 +381,9 @@
     <ul>
         <li><span class="parameter">n</span>
             <span class="types"><span class="type">uint</span></span>
-         Integer.
+
+
+
         </li>
     </ul>
 
@@ -335,10 +391,49 @@
     <ol>
 
            <span class="types"><span class="type">uint</span></span>
-        If <em>n</em> > 0, lowest power of 2 in <em>n</em>; otherwise, 0.
+        If <em>n</em> &gt; 0, lowest power of 2 in <em>n</em>; otherwise, 0.
     </ol>
 
 
+
+
+</dd>
+    <dt>
+    <a name = "IsSet"></a>
+    <strong>IsSet (var, power)</strong>
+    </dt>
+    <dd>
+    Predicate.
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">var</span>
+            <span class="types"><span class="type">uint</span></span>
+
+
+
+        </li>
+        <li><span class="parameter">power</span>
+            <span class="types"><span class="type">uint</span></span>
+
+
+
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">boolean</span></span>
+        <em>power</em> is present in <em>var</em>?
+    </ol>
+
+
+    <h3>See also:</h3>
+    <ul>
+         <li><a href="../modules/bitwise_ops.powers_of_2.html#Clear">Clear</a></li>
+         <li><a href="../modules/bitwise_ops.powers_of_2.html#Set">Set</a></li>
+    </ul>
 
 
 </dd>
@@ -365,6 +460,44 @@
     </ol>
 
 
+
+
+</dd>
+    <dt>
+    <a name = "Set"></a>
+    <strong>Set (var, power)</strong>
+    </dt>
+    <dd>
+    Utility.
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">var</span>
+            <span class="types"><span class="type">uint</span></span>
+         Variable to modify.
+        </li>
+        <li><span class="parameter">power</span>
+            <span class="types"><span class="type">uint</span></span>
+         Power of 2 to add to <em>var</em>.
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+        <li>
+           <span class="types"><span class="type">uint</span></span>
+        <em>var</em>, with <em>power</em> added.</li>
+        <li>
+           <span class="types"><span class="type">boolean</span></span>
+        <em>power</em> was absent, i.e. this was not a no-op?</li>
+    </ol>
+
+
+    <h3>See also:</h3>
+    <ul>
+         <li><a href="../modules/bitwise_ops.powers_of_2.html#Clear">Clear</a></li>
+         <li><a href="../modules/bitwise_ops.powers_of_2.html#IsSet">IsSet</a></li>
+    </ul>
 
 
 </dd>

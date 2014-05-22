@@ -249,7 +249,6 @@
   <li><a href="../modules/utils.Curves.html">Curves</a></li>
   <li><a href="../modules/utils.Device.html">Device</a></li>
   <li><a href="../modules/utils.File.html">File</a></li>
-  <li><a href="../modules/utils.Flag.html">Flag</a></li>
   <li><a href="../modules/utils.Frames.html">Frames</a></li>
   <li><a href="../modules/utils.Mask.html">Mask</a></li>
   <li><a href="../modules/utils.ObjectHelper.html">ObjectHelper</a></li>
@@ -276,12 +275,12 @@
 <h2><a href="#Functions">Functions</a></h2>
 <table class="function_list">
 	<tr>
-	<td class="name" nowrap><a href="#MST">MST (edges_weight[, opts])</a></td>
-	<td class="summary">DOCME</td>
+	<td class="name" nowrap><a href="#MST">MST (edges_weight)</a></td>
+	<td class="summary">Builds a minimum spanning tree over a graph.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#MST_Labels">MST_Labels (graph[, opts])</a></td>
-	<td class="summary">DOCME</td>
+	<td class="name" nowrap><a href="#MST_Labels">MST_Labels (graph)</a></td>
+	<td class="summary">Labeled variant of <a href="../modules/graph_ops.mst.html#MST">MST</a>.</td>
 	</tr>
 </table>
 
@@ -293,24 +292,19 @@
     <dl class="function">
     <dt>
     <a name = "MST"></a>
-    <strong>MST (edges_weight[, opts])</strong>
+    <strong>MST (edges_weight)</strong>
     </dt>
     <dd>
-    DOCME
+    Builds a minimum spanning tree over a graph. </p>
+
+<p> Currently, this uses <a href="http://en.wikipedia.org/wiki/Kruskal's_algorithm">Kruskal's algorithm</a>.
 
     <h3>Parameters:</h3>
     <ul>
         <li><span class="parameter">edges_weight</span>
             <span class="types"><span class="type">array</span></span>
-
-
-
-        </li>
-        <li><span class="parameter">opts</span>
-            <span class="types"><a class="type" href="http://www.lua.org/manual/5.1/manual.html#5.5">table</a></span>
-
-
-
+         Edges and weights, stored as { ..., <em>vertex1</em>, <em>vertex2</em>, <em>weight</em>,
+ ... }, where each <em>vertex?</em> is an index &isin; [1, <em>n</em>] and <em>weight</em> is a number.
         </li>
     </ul>
 
@@ -318,7 +312,8 @@
     <ol>
 
            <span class="types"><span class="type">array</span></span>
-        MST
+        Minimum spanning tree, stored as { <em>tvertex1</em>, <em>tvertex2</em>, ... }, where
+ the <em>tvertex?</em> are as above, each pair constituting an edge.
     </ol>
 
 
@@ -327,24 +322,17 @@
 </dd>
     <dt>
     <a name = "MST_Labels"></a>
-    <strong>MST_Labels (graph[, opts])</strong>
+    <strong>MST_Labels (graph)</strong>
     </dt>
     <dd>
-    DOCME
+    Labeled variant of <a href="../modules/graph_ops.mst.html#MST">MST</a>.
 
     <h3>Parameters:</h3>
     <ul>
         <li><span class="parameter">graph</span>
             <span class="types"><a class="type" href="http://www.lua.org/manual/5.1/manual.html#5.5">table</a></span>
-
-
-
-        </li>
-        <li><span class="parameter">opts</span>
-            <span class="types"><a class="type" href="http://www.lua.org/manual/5.1/manual.html#5.5">table</a></span>
-
-
-
+         Edges and weights, stored as { ..., <em>label1</em> = { <em>label2</em> = <em>weight</em>, ... },
+ ... }, where <em>weight</em> is a number.
         </li>
     </ul>
 
@@ -352,7 +340,8 @@
     <ol>
 
            <span class="types"><a class="type" href="http://www.lua.org/manual/5.1/manual.html#5.5">table</a></span>
-        MST
+        Minimum spanning tree, stored as { ..., <em>ulabel1</em> = { <em>vlabel2</em>, ... },
+ ... }, where the <em>ulabel?</em> and <em>vlabel?</em> are as above.
     </ol>
 
 

@@ -249,7 +249,6 @@
   <li><a href="../modules/utils.Curves.html">Curves</a></li>
   <li><a href="../modules/utils.Device.html">Device</a></li>
   <li><a href="../modules/utils.File.html">File</a></li>
-  <li><a href="../modules/utils.Flag.html">Flag</a></li>
   <li><a href="../modules/utils.Frames.html">Frames</a></li>
   <li><a href="../modules/utils.Mask.html">Mask</a></li>
   <li><a href="../modules/utils.ObjectHelper.html">ObjectHelper</a></li>
@@ -283,12 +282,8 @@
 	<td class="summary">Getter.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#GetNameByFlagNames">GetNameByFlagNames (...)</a></td>
-	<td class="summary">Indicates what combination a group of named flags will yield.</td>
-	</tr>
-	<tr>
 	<td class="name" nowrap><a href="#GetNameByFlags">GetNameByFlags (flags)</a></td>
-	<td class="summary">Variant of <a href="../modules/game.TileFlags.html#GetNameByFlagNames">GetNameByFlagNames</a> using the flags themselves as input.</td>
+	<td class="summary">Getter.</td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#GetResolvedFlags">GetResolvedFlags (index)</a></td>
@@ -393,37 +388,11 @@
 
 </dd>
     <dt>
-    <a name = "GetNameByFlagNames"></a>
-    <strong>GetNameByFlagNames (...)</strong>
-    </dt>
-    <dd>
-    Indicates what combination a group of named flags will yield.
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">...</span>
-         Some combination of <strong>"left"</strong>, <strong>"right"</strong>, <strong>"up"</strong>", and <strong>"down"</strong>.
-        </li>
-    </ul>
-
-    <h3>Returns:</h3>
-    <ol>
-
-           <span class="types"><a class="type" href="http://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
-        One of the values of <em>name</em> in <a href="../modules/game.TileFlags.html#GetFlagsByName">GetFlagsByName</a>, or <strong>nil</strong> if no
- match was found.
-    </ol>
-
-
-
-
-</dd>
-    <dt>
     <a name = "GetNameByFlags"></a>
     <strong>GetNameByFlags (flags)</strong>
     </dt>
     <dd>
-    Variant of <a href="../modules/game.TileFlags.html#GetNameByFlagNames">GetNameByFlagNames</a> using the flags themselves as input.
+    Getter.
 
     <h3>Parameters:</h3>
     <ul>
@@ -436,8 +405,9 @@
     <h3>Returns:</h3>
     <ol>
 
-           <span class="types"><a class="type" href="http://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
-        As per <a href="../modules/game.TileFlags.html#GetNameByFlagNames">GetNameByFlagNames</a>.
+           <span class="types"><a class="type" href="http://www.lua.org/manual/5.1/manual.html#5.4">string</a> or <span class="type">nil</span></span>
+        One of the values of <em>name</em> in <a href="../modules/game.TileFlags.html#GetFlagsByName">GetFlagsByName</a>, or <strong>nil</strong> if no
+ match was found.
     </ol>
 
 

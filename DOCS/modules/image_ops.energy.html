@@ -249,7 +249,6 @@
   <li><a href="../modules/utils.Curves.html">Curves</a></li>
   <li><a href="../modules/utils.Device.html">Device</a></li>
   <li><a href="../modules/utils.File.html">File</a></li>
-  <li><a href="../modules/utils.Flag.html">Flag</a></li>
   <li><a href="../modules/utils.Frames.html">Frames</a></li>
   <li><a href="../modules/utils.Mask.html">Mask</a></li>
   <li><a href="../modules/utils.ObjectHelper.html">ObjectHelper</a></li>
@@ -279,6 +278,10 @@
 	<td class="name" nowrap><a href="#ComputeEnergy">ComputeEnergy (energy, func, w, h[, yfunc])</a></td>
 	<td class="summary">Computes an image's energy.</td>
 	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#ToGray">ToGray (energy)</a></td>
+	<td class="summary">Converts an energy sample, as found by <a href="../modules/image_ops.energy.html#ComputeEnergy">ComputeEnergy</a>, to a gray value.</td>
+	</tr>
 </table>
 
 <br/>
@@ -294,7 +297,7 @@
     <dd>
     Computes an image's energy. </p>
 
-<p> Currently, this is a gradient energy metric, with values being integers &isin; [0, 512).
+<p> Currently, this is a gradient energy metric, with values being integers &isin; [0, 512K).
 
     <h3>Parameters:</h3>
     <ul>
@@ -322,6 +325,34 @@
         </li>
     </ul>
 
+
+
+
+
+</dd>
+    <dt>
+    <a name = "ToGray"></a>
+    <strong>ToGray (energy)</strong>
+    </dt>
+    <dd>
+    Converts an energy sample, as found by <a href="../modules/image_ops.energy.html#ComputeEnergy">ComputeEnergy</a>, to a gray value.
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">energy</span>
+            <span class="types"><span class="type">uint</span></span>
+
+
+
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">number</span></span>
+        Gray value, &isin; [0, 1].
+    </ol>
 
 
 
