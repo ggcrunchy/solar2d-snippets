@@ -171,7 +171,7 @@ local Quota = 150
 --- Creates a new 1-by-1 bitmap, with background enabled.
 --
 -- A bitmap will gradually incorporate changes to its pixels, while striving also to not
--- consume inordinate an amount of expensive (in time and / or space) per-pixel resources.
+-- consume an inordinate amount of expensive (in time and / or space) per-pixel resources.
 --
 -- As with any display object, certain events are exposed via the **addEventListener** and
 -- **removeEventListener** methods. Each such event provides the standard **name** key, along

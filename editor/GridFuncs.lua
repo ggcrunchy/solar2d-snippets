@@ -41,7 +41,7 @@ local display = display
 local M = {}
 
 --- Common logic for the **PAINT** / **EDIT** / **ERASE** combination of grid operations.
--- @callable dialog_wrapper Cf. the result of @{editor.Dialog.DialogWrapper}.
+-- @callable dialog_wrapper Cf. the result of @{editor.dialog.DialogWrapper}.
 -- @array types An array of strings denoting type.
 -- @treturn function A "common ops" wrapper for an editor view. Its signature starts with a
 -- _what_ parameter, then all grid function parameters, cf. _func_ in @{ui.Grid2D.Grid2D}.

@@ -31,7 +31,7 @@ local dialog_data = require("editor.dialog.Data")
 local dialog_items = require("editor.dialog.Items")
 local dialog_layout = require("editor.dialog.Layout")
 local dialog_methods = require("editor.dialog.Methods")
-local utils = require("editor.Dialog.Utils")
+local utils = require("editor.dialog.Utils")
 
 -- Modules --
 local common = require("editor.Common")

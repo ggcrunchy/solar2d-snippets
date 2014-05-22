@@ -295,6 +295,12 @@ function Scene:show ()
 	-- Case 1: just switch among them
 	-- Case 2: make sure they overlay with transparency
 	-- Anything else? (functional parity with grid funcs, I suppose)
+
+-- STUFF TO READ:
+	-- http://en.wikipedia.org/wiki/Incomplete_Cholesky_factorization
+	-- http://en.wikipedia.org/wiki/Conjugate_gradient_method
+	-- http://en.wikipedia.org/wiki/Preconditioner
+	-- http://en.wikipedia.org/wiki/Cholesky_factorization
 end
 
 Scene:addEventListener("show")
