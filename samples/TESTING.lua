@@ -301,6 +301,52 @@ function Scene:show ()
 	-- http://en.wikipedia.org/wiki/Conjugate_gradient_method
 	-- http://en.wikipedia.org/wiki/Preconditioner
 	-- http://en.wikipedia.org/wiki/Cholesky_factorization
+
+	local sqrt = math.sqrt
+
+	--
+	local function ICCG (a, n)
+		local out, ri, di = {}, 0, 1
+
+		for i = 1, n do
+			local index = ri + i
+			local sqr = a[index]
+
+			for j = 1, i - 1 do
+				sqr = sqr - out[di - j]^2
+			end
+
+			local diag = sqrt(sqr)
+
+			out[di] = diag
+
+			local ij, ji, vstep = index, di, i
+
+			for j = i + 1, n do
+				ij, ji, vstep = ij + 1, ji + vstep, vstep + 1
+
+				local diff, ik, jk = a[ij], di - 1, ji - 1
+
+				for k = 1, i - 1 do
+					diff, ik, jk = diff - out[ik] * out[jk], ik - 1, jk - 1
+				end
+
+
+print("JI", ji)
+				out[ji] = diff / diag
+			end
+
+			ri, di = ri + n, di + i + 1
+		end
+
+		return out
+	end
+	local b = ICCG({4,12,-16,12,37,-43,-16,-43,98}, 3)
+--	local lii = (aii - sum(k=1,i-1)L^2(i,k))^1/2
+--	for j = i+1, n
+--		lji = 1/lii(aij - sum(k=1,i-1)L(i,k)L(j,k))
+
+	vdump(b)
 end
 
 Scene:addEventListener("show")
