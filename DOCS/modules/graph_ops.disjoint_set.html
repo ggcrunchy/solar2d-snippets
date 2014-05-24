@@ -76,11 +76,11 @@
   <li><a href="../modules/dot.Warp.html">Warp</a></li>
   <li><a href="../modules/editor.Common.html">Common</a></li>
   <li><a href="../modules/editor.CommonUI.html">CommonUI</a></li>
-  <li><a href="../modules/editor.Dialog.Data.html">Dialog.Data</a></li>
-  <li><a href="../modules/editor.Dialog.Items.html">Dialog.Items</a></li>
-  <li><a href="../modules/editor.Dialog.Layout.html">Dialog.Layout</a></li>
-  <li><a href="../modules/editor.Dialog.Methods.html">Dialog.Methods</a></li>
-  <li><a href="../modules/editor.Dialog.Utils.html">Dialog.Utils</a></li>
+  <li><a href="../modules/editor.dialog.Data.html">dialog.Data</a></li>
+  <li><a href="../modules/editor.dialog.Items.html">dialog.Items</a></li>
+  <li><a href="../modules/editor.dialog.Layout.html">dialog.Layout</a></li>
+  <li><a href="../modules/editor.dialog.Methods.html">dialog.Methods</a></li>
+  <li><a href="../modules/editor.dialog.Utils.html">dialog.Utils</a></li>
   <li><a href="../modules/editor.Dialog.html">Dialog</a></li>
   <li><a href="../modules/editor.Events.html">Events</a></li>
   <li><a href="../modules/editor.Grid.html">Grid</a></li>
@@ -283,7 +283,7 @@
 	<td class="summary">Finds the root of the node.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#NewNode">NewNode ([elem], node)</a></td>
+	<td class="name" nowrap><a href="#NewNode">NewNode ([elem[, node]])</a></td>
 	<td class="summary">Initializes a singleton (cf.</td>
 	</tr>
 	<tr>
@@ -358,7 +358,7 @@
 </dd>
     <dt>
     <a name = "NewNode"></a>
-    <strong>NewNode ([elem], node)</strong>
+    <strong>NewNode ([elem[, node]])</strong>
     </dt>
     <dd>
     Initializes a singleton (cf.  <a href="../modules/graph_ops.disjoint_set.html#Find">Find</a>) disjoint set node.
@@ -369,7 +369,7 @@
          Element to assign.
         </li>
         <li><span class="parameter">node</span>
-            <span class="types"><span class="type">Node[opt]</span></span>
+            <span class="types"><span class="type">Node</span></span>
          Node to populate. If absent, one is supplied.
         </li>
     </ul>
