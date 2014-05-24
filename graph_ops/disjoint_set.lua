@@ -56,12 +56,12 @@ end
 function M.Find (node)
 	AuxFind(node)
 
-    return node.parent or node
+	return node.parent or node
 end
 
 --- Initializes a singleton (cf. @{Find}) disjoint set node.
 -- @param[opt] elem Element to assign.
--- @tparam Node[opt] node Node to populate. If absent, one is supplied.
+-- @tparam[opt] Node node Node to populate. If absent, one is supplied.
 -- @treturn Node _node_.
 function M.NewNode (elem, node)
 	node = node or {}
@@ -95,7 +95,7 @@ end
 -- @tparam Node node2 ...and node #2.
 function M.Union (node1, node2)
 	local root1 = _Find_(node1)
-    local root2 = _Find_(node2)
+	local root2 = _Find_(node2)
 
 	if root1 ~= root2 then
 		if root1.rank < root2.rank then
