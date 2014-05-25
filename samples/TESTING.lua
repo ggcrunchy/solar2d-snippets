@@ -33,6 +33,7 @@ local M
 
 do
 	-- Standard library imports --
+	local floor = math.floor
 	local remove = table.remove
 
 	-- Modules --
@@ -53,61 +54,69 @@ do
 	M = {}
 
 	--
-	local function Cell (grid, x, y)
-		local gx, gy = grid:contentToLocal(x, y)
-		local col = array_index.FitToSlot(gx, -grid.width / 2, grid.width / grid.m_ncols)
-		local row = array_index.FitToSlot(gy, -grid.height / 2, grid.height / grid.m_nrows)
+	local function GetCellDims (back)
+		return back.width / back.m_ncols, back.height / back.m_nrows
+	end
+
+	--
+	local function Cell (back, x, y)
+		local gx, gy = back:contentToLocal(x, y)
+		local dw, dh = GetCellDims(back)
+		local col = array_index.FitToSlot(gx, -back.width / 2, dw)
+		local row = array_index.FitToSlot(gy, -back.height / 2, dh)
 
 		return col, row
 	end
 
-	--
-	local function PosDim (grid)
-		local x, dw = grid.x - .5 * grid.width, grid.width / grid.m_ncols
-		local y, dh = grid.y - .5 * grid.height, grid.height / grid.m_nrows
+	-- Event to dispatch --
+	local Event = {}
 
-		return x, y, dw, dh
-	end
+	-- Dispatch events to grid
+	local function Dispatch (back, col, row, x, y, is_first)
+		local grid = back.parent.parent
 
-	--
-	local function GetTarget (grid)
-		return grid.parent.parent:GetTarget()
+		Event.name = "cell"
+		Event.target = grid
+		Event.col, Event.x = col, floor(x)
+		Event.row, Event.y = row, floor(y)
+		Event.is_first = is_first
+
+		grid:dispatchEvent(Event)
 	end
 
 	-- Touch listener
-	local Touch = touch.TouchHelperFunc(function(event, grid)
+	local Touch = touch.TouchHelperFunc(function(event, back)
 		-- Track initial coordinates for dragging.
-		local col, row = Cell(grid, event.x, event.y)
-		local x, y, dw, dh = PosDim(grid)
+		local col, row = Cell(back, event.x, event.y)
+		local dw, dh = GetCellDims(back)
 
-		grid.m_func(GetTarget(grid), col, row, x + (col - 1) * dw, y + (row - 1) * dh, dw, dh)
+		Dispatch(back, col, row, (col - back.m_cx) * dw, (row - back.m_cy) * dh, true)
 
-		grid.m_col, grid.m_row = col, row
-	end, function(event, grid)
+		back.m_col, back.m_row, Event.target = col, row
+	end, function(event, back)
 		-- Fit the new position to a cell and do the callback on it if the cell has changed.
 		-- Since moving may skip over intervening cells, we do a line traversal to approximate
 		-- the path, likewise performing callbacks on each cell in between.
-		local end_col, end_row = Cell(grid, event.x, event.y)
+		local end_col, end_row = Cell(back, event.x, event.y)
 
-		end_col = range.ClampIn(end_col, 1, grid.m_ncols)
-		end_row = range.ClampIn(end_row, 1, grid.m_nrows)
+		end_col = range.ClampIn(end_col, 1, back.m_ncols)
+		end_row = range.ClampIn(end_row, 1, back.m_nrows)
 
-		local x, y, dw, dh = PosDim(grid)
-		local func, group = grid.m_func, GetTarget(grid)
-		local first = true
+		local first, dw, dh = true, GetCellDims(back)
+		local cx, cy = back.m_cx, back.m_cy
 
 		-- TODO: I have gotten an "y1 is nil" error...
-		for col, row in grid_iterators.LineIter(grid.m_col, grid.m_row,	end_col, end_row) do
+		for col, row in grid_iterators.LineIter(back.m_col, back.m_row, end_col, end_row) do
 			if not first then
-				func(group, col, row, x + (col - 1) * dw, y + (row - 1) * dh, dw, dh)
+				Dispatch(back, col, row, (col - cx) * dw, (row - cy) * dh, false)
 			end
 
 			first = false
 		end
 
 		-- Commit the new previous coordinates.
-		grid.m_col = end_col
-		grid.m_row = end_row
+		back.m_col = end_col
+		back.m_row = end_row
 	end)
 
 	-- Common line add logic
@@ -131,88 +140,117 @@ do
 	-- @number h
 	-- @uint cols
 	-- @uint rows
-	-- @callable func
 	-- @treturn DisplayGroup Child #1: the background; Child #2: the target + lines group.
 	-- @see ui.Skin.GetSkin
-	function M.Grid2D (group, skin, x, y, w, h, cols, rows, func)
+	function M.Grid2D (group, skin, x, y, w, h, cols, rows)
 		skin = skins.GetSkin(skin)
 
-		local ggroup = display.newGroup()
+		local Grid = display.newGroup()
 
-		group:insert(ggroup)
+		group:insert(Grid)
 
 		--
 		local cgroup = display.newContainer(w, h)
 
-		ggroup:insert(cgroup)
+		Grid:insert(cgroup)
 
 		cgroup.x, cgroup.y = x, y
 
 		--
 		local target = display.newGroup()
-
-		cgroup:insert(target, true)
-		target:translate(-w / 2, -h / 2)
-
-		--
 		local back = display.newRect(0, 0, w, h)
+		local halfw, halfh = floor(w / 2), floor(h / 2)
 
 		cgroup:insert(back, true)
-		cgroup:translate(w / 2, h / 2)
+		cgroup:translate(halfw, halfh)
+		cgroup:insert(target, true)
+		target:translate(-halfw, -halfh)
 
-		if not skin.grid2d_backopaque then
-			back.isHitTestable = true
-			back.isVisible = false
-		end
-
+		--
 		back:setFillColor(colors.GetColor(skin.grid2d_backcolor))
 
-		back.m_ncols = cols
-		back.m_nrows = rows
-		back.m_func = func
+		back.m_ncols, back.m_cx = cols, .5
+		back.m_nrows, back.m_cy = rows, .5
 
 		--
 		back:addEventListener("touch", Touch)
 
 		--
-		local lgroup = display.newGroup()
+		if skin.grid2d_trapinput then
+			back.isHitTestable = true
+		end
 
-		ggroup:insert(lgroup)
+		--
+		local lines = display.newGroup()
+		local xf, yf = x + w - 1, y + h - 1
 
+		Grid:insert(lines)
+
+		--
 		local xoff, dw = 0, w / cols
 
-		for _ = 1, cols + 1 do
-			AddGridLine(lgroup, skin, x + xoff, y, x + xoff, y + h)
+		for _ = 1, cols do
+			local cx = floor(x + xoff)
+
+			AddGridLine(lines, skin, cx, y, cx, yf)
 
 			xoff = xoff + dw
 		end
 
+		AddGridLine(lines, skin, xf, y, xf, yf)
+
+		--
 		local yoff, dh = 0, h / rows
 
-		for _ = 1, rows + 1 do
-			AddGridLine(lgroup, skin, x, y + yoff, x + w, y + yoff)
+		for _ = 1, rows do
+			local cy = floor(y + yoff)
+
+			AddGridLine(lines, skin, x, cy, xf, cy)
 
 			yoff = yoff + dh
 		end
 
-		---DOCME
+		AddGridLine(lines, skin, x, yf, xf, yf)
+
+		--- DOCME
+		-- @treturn uint W
+		-- @treturn uint H
+		function Grid:GetCellDims ()
+			return GetCellDims(back)
+		end
+
+		--- DOCME
 		-- @treturn DisplayGroup X
-		function ggroup:GetTarget ()
+		function Grid:GetTarget ()
 			return target
 		end
 
 		--- DOCME
-		-- @string name
-		-- @string dir
-		function ggroup:SetMask (name, dir)
-			utils.SetMask(self, back, name, dir)
+		-- @number x
+		-- @number y
+		function Grid:SetCentering (x, y)
+			back.m_cx = 1 - range.ClampIn(x, 0, 1)
+			back.m_cy = 1 - range.ClampIn(y, 0, 1)
 		end
 
-		---DOCME
-		-- @pgroup target
-		-- @pgroup reserve
-		function ggroup:SetTarget (target, reserve)
-			utils.SetTarget(self, target, lgroup, reserve)
+		--- DOCME
+		-- @bool show
+		function Grid:ShowBack (show)
+			back.isVisible = show
+		end
+
+		--- DOCME
+		-- @bool show
+		function Grid:ShowLines (show)
+			lines.isVisible = show
+		end
+
+		--
+		local function PosDim (back)
+			local x = back.x - .5 * back.width
+			local y = back.y - .5 * back.height
+
+			return x, y, GetCellDims(back)
 		end
 
 		--- Manually performs a touch (or drag) on the grid.
@@ -223,7 +261,7 @@ do
 		-- @uint row ...and row.
 		-- @uint cto Final column... (If absent, _col_.)
 		-- @uint rto ...and row. (Ditto for _row_.)
-		function ggroup:TouchCell (col, row, cto, rto)
+		function Grid:TouchCell (col, row, cto, rto)
 			local scol, srow, x, y, dw, dh = self.m_col, self.m_row, PosDim(back)
 			local event = remove(Events) or { name = "touch", id = "ignore_me" }
 
@@ -255,22 +293,22 @@ do
 		-- @number y ...and y-coordinate.
 		-- @number xto Final x... (If absent, _x_.)
 		-- @number yto ...and y. (Ditto for _y_.)
-		function ggroup:TouchXY (x, y, xto, yto)
+		function Grid:TouchXY (x, y, xto, yto)
 			local col, row = Cell(back, x, y)
 
 			self:TouchCell(col, row, Cell(back, xto or x, yto or y))
 		end
 
 		-- Provide the grid.
-		return ggroup
+		return Grid
 	end
 
 	-- Main 2D grid skin --
 	skins.AddToDefaultSkin("grid2d", {
 		backcolor = { .375, .375, .375, .75 },
-		backopaque = true,
 		linecolor = "white",
-		linewidth = 2
+		linewidth = 2,
+		trapinput = true
 	})
 
 	-- Export the module.
@@ -279,11 +317,52 @@ end
 
 --
 function Scene:create ()
-	self.gg = M.Grid2D(self.view, nil, 20, 20, 400, 400, 10, 10,
-	function(group, col, row, x, y, dw, dh)
-	--
-	end)
+	self.gg = M.Grid2D(self.view, nil, 20, 20, 400, 400, 10, 10)
 
+	local stash = display.newGroup()
+
+	stash.isVisible = false
+
+	local erase, used = true, {}
+
+	self.gg:addEventListener("cell", function(event)
+		if event.is_first then
+			erase = not erase
+		end
+
+		local key = ("%i_%i"):format(event.col, event.row)
+
+		if erase then
+			local circ = used[key]
+
+			if circ then
+				stash:insert(circ)
+
+				used[key] = false
+			end
+		elseif not used[key] then
+			local circ = stash[stash.numChildren] or display.newCircle(0, 0, 20)
+
+			circ.x = event.x
+			circ.y = event.y
+
+			event.target:GetTarget():insert(circ)
+
+			used[key] = circ
+		end
+	end)
+timer.performWithDelay(4000, function()
+	self.gg:ShowLines(false)
+end)
+timer.performWithDelay(8000, function()
+	self.gg:ShowBack(false)
+end)
+timer.performWithDelay(12000, function()
+	self.gg:ShowLines(true)
+end)
+timer.performWithDelay(16000, function()
+	self.gg:ShowBack(true)
+end)
 -- TODO: Get several atop one another working right...
 end
 
@@ -295,7 +374,11 @@ function Scene:show ()
 	-- Case 1: just switch among them
 	-- Case 2: make sure they overlay with transparency
 	-- Anything else? (functional parity with grid funcs, I suppose)
+end
 
+Scene:addEventListener("show")
+
+--[[
 -- STUFF TO READ:
 	-- http://en.wikipedia.org/wiki/Incomplete_Cholesky_factorization
 	-- http://en.wikipedia.org/wiki/Conjugate_gradient_method
@@ -331,8 +414,6 @@ function Scene:show ()
 					diff, ik, jk = diff - out[ik] * out[jk], ik - 1, jk - 1
 				end
 
-
-print("JI", ji)
 				out[ji] = diff / diag
 			end
 
@@ -342,13 +423,7 @@ print("JI", ji)
 		return out
 	end
 	local b = ICCG({4,12,-16,12,37,-43,-16,-43,98}, 3)
---	local lii = (aii - sum(k=1,i-1)L^2(i,k))^1/2
---	for j = i+1, n
---		lji = 1/lii(aij - sum(k=1,i-1)L(i,k)L(j,k))
-
 	vdump(b)
-end
-
-Scene:addEventListener("show")
+]]
 
 return Scene
