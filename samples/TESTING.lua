@@ -374,56 +374,93 @@ function Scene:show ()
 	-- Case 1: just switch among them
 	-- Case 2: make sure they overlay with transparency
 	-- Anything else? (functional parity with grid funcs, I suppose)
+--[[
+	In Grid.lua
+
+	-- GetHelp():
+	if Grid.grid.parent.isVisible then
+
+	-- GetCellDims(): (should just use one of the grids?)
+
+	-- AuxShow():
+	for func in Iter(Grid.func) do
+
+	-- UpdateCoord():
+		--
+		local target = Grid.grid:GetTarget()
+		local cw, ch = GetCellDims()
+
+		To.x, To.y = nil
+
+	-- Init(), 1:
+	-- Consolidate grid and related interface elements into a group.
+	Grid.group = display.newGroup()
+
+	view:insert(Grid.group)
+
+	-- Keep an invisible group on hand to store inactive grid targets.
+	Grid.reserve = display.newGroup()
+
+	Grid.reserve.isVisible = false
+
+	-- Build the grid and put opaque elements around it to each side (as a lazy mask).
+	local gx, gy = 120, 80
+	local cw, ch = GetCellDims()
+	local gw, gh = ceil(cw * VCols), ceil(ch * VRows)
+
+	Grid.grid = grid2D.Grid2D(Grid.group, nil, gx, gy, gw, gh, VCols, VRows, GridFunc)
+
+	common_ui.WallInRect(Grid.group, gx, gy, gw, gh)
+
+	local grid_proxy = common.Proxy(view, Grid.grid)
+
+	-- Init(), 2:
+	local n = Grid.group.numChildren
+	local scroll_proxy = common.Proxy(view, Grid.group[n - 3], Grid.group[n - 2], Grid.group[n - 1], Grid.group[n])
+
+	-- Show(), 1:
+		for _, group in Iter() do
+			Grid.group:insert(group)
+
+			if group ~= target then
+				group.alpha = .75
+				group.isVisible = true
+
+				group:toBack()
+			end
+		end
+
+		Grid.grid:SetTarget(target, Grid.reserve)
+
+	-- Show(), 2:
+		--
+		Grid.group:toBack()
+
+	-- Show(), 3:
+	elseif Grid then -- TODO: Wrong check... (or the stuff after is wrong)
+		Grid.grid:SetTarget(nil, Grid.reserve)
+
+		for _, group in Iter() do
+			Grid.reserve:insert(group)
+		end
+	end
+
+	-- function M.UpdatePick(): (group, pick, row, col, x, y, w, h) (must retain semantics of this...)
+]]
+
+--[[
+	In GridFuncs.lua
+
+	Nothing obvious, though makes evident lots of the snarls inherent in the current editor design
+]]
+
+--[[
+	Generally:
+
+	Find grid.Get() instances...
+]]
 end
 
 Scene:addEventListener("show")
-
---[[
--- STUFF TO READ:
-	-- http://en.wikipedia.org/wiki/Incomplete_Cholesky_factorization
-	-- http://en.wikipedia.org/wiki/Conjugate_gradient_method
-	-- http://en.wikipedia.org/wiki/Preconditioner
-	-- http://en.wikipedia.org/wiki/Cholesky_factorization
-
-	local sqrt = math.sqrt
-
-	--
-	local function ICCG (a, n)
-		local out, ri, di = {}, 0, 1
-
-		for i = 1, n do
-			local index = ri + i
-			local sqr = a[index]
-
-			for j = 1, i - 1 do
-				sqr = sqr - out[di - j]^2
-			end
-
-			local diag = sqrt(sqr)
-
-			out[di] = diag
-
-			local ij, ji, vstep = index, di, i
-
-			for j = i + 1, n do
-				ij, ji, vstep = ij + 1, ji + vstep, vstep + 1
-
-				local diff, ik, jk = a[ij], di - 1, ji - 1
-
-				for k = 1, i - 1 do
-					diff, ik, jk = diff - out[ik] * out[jk], ik - 1, jk - 1
-				end
-
-				out[ji] = diff / diag
-			end
-
-			ri, di = ri + n, di + i + 1
-		end
-
-		return out
-	end
-	local b = ICCG({4,12,-16,12,37,-43,-16,-43,98}, 3)
-	vdump(b)
-]]
 
 return Scene
