@@ -452,12 +452,21 @@ function Scene:show ()
 	In GridFuncs.lua
 
 	Nothing obvious, though makes evident lots of the snarls inherent in the current editor design
+	Well, nothing obvious aside from this not being a listener any more :)
 ]]
 
 --[[
 	Generally:
 
 	Find grid.Get() instances...
+
+	TODO:
+
+	Convert "common ops" monstrosity into view objects, GridFuncs -> GridView
+	Then just turn various messages into calls ("load" -> Load(), "get_values" -> GetValues(), etc.)
+	Just make the grid itself another thing to get
+	Doesn't look like it ought to be too awful...
+	Change "grid" to the listener
 ]]
 end
 

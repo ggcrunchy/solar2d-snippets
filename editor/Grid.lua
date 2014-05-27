@@ -235,6 +235,7 @@ local function UpdateCoord (col, row, diff)
 			for _, group in Iter(target) do
 				transition.to(group, To)
 			end
+			-- ^^ Does this even work in single-layer mode?
 		end
 	end
 
