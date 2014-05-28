@@ -232,10 +232,9 @@ local function UpdateCoord (col, row, diff)
 
 		--
 		if To.x or To.y then
-			for _, group in Iter(target) do
+			for _, group in Iter(nil, target) do
 				transition.to(group, To)
 			end
-			-- ^^ Does this even work in single-layer mode?
 		end
 	end
 
