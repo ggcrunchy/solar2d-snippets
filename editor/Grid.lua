@@ -330,7 +330,7 @@ end
 -- @callable func
 function M.Show (func)
 	local show = not not func
-
+-- ^^ "func" will be grids themselves...
 	--
 	if show then
 		local target = Targets[func]
@@ -403,12 +403,19 @@ function M.ShowOrHide (items, func)
 end
 
 --- DOCME
-function M.UpdatePick (group, pick, row, col, x, y, w, h)
+function M.ShowPick (pick, col, row, show)
+	if pick and pick.m_col == col and pick.m_row == row then
+		pick.isVisible = show
+	end
+end
+
+--- DOCME
+function M.UpdatePick (group, pick, col, row, x, y, w, h)
 	if group == "show" or group == "hide" then
 		if pick and pick.m_col == col and pick.m_row == row then
 			pick.isVisible = group == "show"
 		end
-
+-- ^^ TODO: This is moved into ShowPick()
 	--
 	else
 		if not pick then
@@ -418,6 +425,7 @@ function M.UpdatePick (group, pick, row, col, x, y, w, h)
 		end
 
 		pick.x, pick.y = x + w / 2, y + h / 2
+-- ^^ TODO: already translated?
 		pick.isVisible = true
 
 		pick.m_col = col

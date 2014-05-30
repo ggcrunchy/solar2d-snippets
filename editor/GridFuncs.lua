@@ -227,22 +227,31 @@ local GRID
 local GRIDHACK
 -- /TODO
 
+	local function ShowHide (event)
+		local key, show = common.ToKey(event.col, event.row), event.name == "show"
+
+		if values[key] then
+			tiles[key].isVisible = show
+		end
+
+		grid.ShowPick(pick, event.col, event.row, show)
+	end
+
+	GRID:addEventListener("show", ShowHide)
+	GRID:addEventListener("hide", ShowHide)
+
+
 	GRID:addEventListener("cell", function(event)
 		local key, which = common.ToKey(event.col, event.row), current:GetCurrent()
 		local cur, tile = values[key], tiles[key]
 
 		--
-		pick = grid.UpdatePick(group, pick, event.col, event.row, x, y, w, h)
+		pick = grid.UpdatePick(GRID.parent--[[group]], pick, event.col, event.row, event.x, event.y, GRID:GetCellDims())--w, h)
 		-- Dims from target:GetDims()... x, y depends on centering
 -- ^^ I think "group" is just target.parent
+
 		--
-		if group == "show" or group == "hide" then
-			if cur then
-				tile.isVisible = group == "show"
-			end
--- ^^ Should this be moved elsewhere, now? (maybe incorporate management of this into the widget proper?)
-		--
-		elseif option == "Edit" then
+		if option == "Edit" then
 			if cur then
 				dialog_wrapper("edit", cur, current.parent, key, tile)
 			else
@@ -267,9 +276,9 @@ local GRIDHACK
 			end
 
 			values[key] = dialog_wrapper("new_values", types[which], key)
-			tiles[key] = tile or sheet.NewImage(group, tile_images, x, y, w, h)
+			tiles[key] = tile or sheet.NewImage(GRID.parent--[[group]], tile_images, event.x, event.y, GRID:GetCellDims())--w, h)
 
-			tiles[key]:translate(w / 2, h / 2)
+		--	tiles[key]:translate(w / 2, h / 2)
 -- ^^ TODO: see above
 			sheet.SetSpriteSetImageFrame(tiles[key], which)
 
@@ -343,7 +352,7 @@ GRIDHACK.isHitTestable = false
 		values, tiles = {}, {}
 
 		--
-		current = grid1D.OptionsHGrid(group, nil, 150, 50, 200, 100, title)
+		current = grid1D.OptionsHGrid(GRID.parent--[[group]], nil, 150, 50, 200, 100, title)
 -- ^^ TODO: group
 		--
 		local tab_buttons = { "Paint", "Edit", "Erase" }
@@ -366,12 +375,12 @@ GRIDHACK.isHitTestable = false
 			}
 		end
 
-		tabs = common_ui.TabBar(group, tab_buttons, { top = display.contentHeight - 65, left = 120, width = 300 }, true)
+		tabs = common_ui.TabBar(GRID.parent--[[group]], tab_buttons, { top = display.contentHeight - 65, left = 120, width = 300 }, true)
 -- ^^ TODO: group
 		tabs:setSelected(1, true)
 
 		-- TODO: Hack!
-		GRIDHACK = common_ui.TabsHack(group, tabs, #tab_buttons)
+		GRIDHACK = common_ui.TabsHack(GRID.parent--[[group]], tabs, #tab_buttons)
 -- ^^ TODO: group
 		GRIDHACK.isHitTestable = false 
 		-- /TODO
