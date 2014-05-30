@@ -221,32 +221,19 @@ end
 function M.EditEraseVVVV (dialog_wrapper, types)
 	local current, option, pick, tabs, tiles, try_option, tile_images, values
 
-local GRID
+local GRID = grid.NewGrid()
 
 -- TODO: HACK!
 local GRIDHACK
 -- /TODO
 
-	local function ShowHide (event)
-		local key, show = common.ToKey(event.col, event.row), event.name == "show"
-
-		if values[key] then
-			tiles[key].isVisible = show
-		end
-
-		grid.ShowPick(pick, event.col, event.row, show)
-	end
-
-	GRID:addEventListener("show", ShowHide)
-	GRID:addEventListener("hide", ShowHide)
-
-
+	--
 	GRID:addEventListener("cell", function(event)
 		local key, which = common.ToKey(event.col, event.row), current:GetCurrent()
 		local cur, tile = values[key], tiles[key]
 
 		--
-		pick = grid.UpdatePick(GRID.parent--[[group]], pick, event.col, event.row, event.x, event.y, GRID:GetCellDims())--w, h)
+		pick = grid.UpdatePick(GRID:GetTarget()--[[group]], pick, event.col, event.row, event.x, event.y, GRID:GetCellDims())--w, h)
 		-- Dims from target:GetDims()... x, y depends on centering
 -- ^^ I think "group" is just target.parent
 
@@ -276,7 +263,7 @@ local GRIDHACK
 			end
 
 			values[key] = dialog_wrapper("new_values", types[which], key)
-			tiles[key] = tile or sheet.NewImage(GRID.parent--[[group]], tile_images, event.x, event.y, GRID:GetCellDims())--w, h)
+			tiles[key] = tile or sheet.NewImage(GRID:GetTarget()--[[group]], tile_images, event.x, event.y, GRID:GetCellDims())--w, h)
 
 		--	tiles[key]:translate(w / 2, h / 2)
 -- ^^ TODO: see above
@@ -296,11 +283,25 @@ local GRIDHACK
 	end)
 
 	--
+	local function ShowHide (event)
+		local key, show = common.ToKey(event.col, event.row), event.name == "show"
+
+		if values[key] then
+			tiles[key].isVisible = show
+		end
+
+		grid.ShowPick(pick, event.col, event.row, show)
+	end
+
+	GRID:addEventListener("hide", ShowHide)
+	GRID:addEventListener("show", ShowHide)
+
+	--
 	local View = {}
 
 	--- DOCME
-	function View:Enter (func)
-		grid.Show(func)
+	function View:Enter ()
+		grid.Show(GRID)--func)
 -- ^^ TODO: This may change, e.g. via just GRID
 		try_option(tabs, option)
 		common.ShowCurrent(current, option == "Paint")

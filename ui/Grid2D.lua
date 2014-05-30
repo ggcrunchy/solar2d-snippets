@@ -74,13 +74,19 @@ local function Dispatch (back, col, row, x, y, is_first)
 	grid:dispatchEvent(Event)
 end
 
+--
+local function GetOffsets (back)
+	return (back.m_coffset or 0) - back.m_cx, (back.m_roffset or 0) - back.m_cy
+end
+
 -- Touch listener
 local Touch = touch.TouchHelperFunc(function(event, back)
 	-- Track initial coordinates for dragging.
+	local coff, roff = GetOffsets(back)
 	local col, row = Cell(back, event.x, event.y)
 	local dw, dh = GetCellDims(back)
 
-	Dispatch(back, col, row, (col - back.m_cx) * dw, (row - back.m_cy) * dh, true)
+	Dispatch(back, col, row, (col + coff) * dw, (row + roff) * dh, true)
 
 	back.m_col, back.m_row, Event.target = col, row
 end, function(event, back)
@@ -93,12 +99,12 @@ end, function(event, back)
 	end_row = range.ClampIn(end_row, 1, back.m_nrows)
 
 	local first, dw, dh = true, GetCellDims(back)
-	local cx, cy = back.m_cx, back.m_cy
+	local coff, roff = GetOffsets(back)
 
 	-- TODO: I have gotten an "y1 is nil" error...
 	for col, row in grid_iterators.LineIter(back.m_col, back.m_row, end_col, end_row) do
 		if not first then
-			Dispatch(back, col, row, (col - cx) * dw, (row - cy) * dh, false)
+			Dispatch(back, col, row, (col + coff) * dw, (row + roff) * dh, false)
 		end
 
 		first = false
@@ -221,6 +227,18 @@ function M.Grid2D (group, skin, x, y, w, h, cols, rows)
 	function Grid:SetCentering (x, y)
 		back.m_cx = 1 - range.ClampIn(x, 0, 1)
 		back.m_cy = 1 - range.ClampIn(y, 0, 1)
+	end
+
+	--- DOCME
+	-- @uint coffset
+	function Grid:SetColOffset (coffset)
+		back.m_coffset = coffset
+	end
+
+	--- DOCME
+	-- @uint roffset
+	function Grid:SetRowOffset (roffset)
+		back.m_roffset = roffset
 	end
 
 	--- DOCME

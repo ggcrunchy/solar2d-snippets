@@ -54,19 +54,22 @@ local Targets
 
 --- Cleans up various state used by editor grid operations.
 function M.CleanUp ()
+--[[
 	if Grid then
 		Grid.reserve:removeSelf()
 	end
+]]
 
 	Grid, Offset, Targets = nil
 end
 
 --- Getter.
 -- @treturn DisplayObject The global editor @{ui.Grid2D} widget.
+--[[
 function M.Get ()
 	return Grid.grid
 end
-
+]]
 --- DOCME
 function M.GetHelp (func)
 	if Grid.grid.parent.isVisible then
@@ -95,6 +98,7 @@ local function GetCellDims ()
 end
 
 --
+--[[
 local function GridFunc (group, col, row, x, y, w, h)
 	if Grid.func then
 		local cw, ch = GetCellDims()
@@ -102,7 +106,7 @@ local function GridFunc (group, col, row, x, y, w, h)
 		Grid.func(group, Col + col, Row + row, x + Col * cw, y + Row * ch, w, h)
 	end
 end
-
+]]
 --
 local function GetShowHide (old, new, nvis)
 	local delta, past = new - old, old + nvis
@@ -154,10 +158,19 @@ local function Iter (k, v)
 	end
 end
 
+-- --
+local ShowHideEvent = {}
+
 -- Helper to show or hide one or more layers
 local function AuxShow (how, col, row)
+	ShowHideEvent.name, ShowHideEvent.col, ShowHideEvent.row = how, col, row
+--[[
 	for func in Iter(Grid.func) do
 		func(how, col, row)
+	end
+]]
+	for grid in Iter(Grid.active) do
+		grid:dispatchEvent(ShowHideEvent)
 	end
 end
 
@@ -190,7 +203,7 @@ local function UpdateCoord (col, row, diff)
 	local cdelta, crange = 0, ncols - ColBase
 	local rdelta, rrange = 0, nrows - RowBase
 
-	if Grid.func then
+	if Grid.active then--func then
 		col = max(0, min(col, crange))
 		row = max(0, min(row, rrange))
 
@@ -204,7 +217,7 @@ local function UpdateCoord (col, row, diff)
 			local dc, show, hide = GetShowHide(Col, col, VCols)
 
 			Col = col
-
+-- ^^^ SetColOffset() all
 			-- 
 			for row = 1, VRows do
 				AuxShow("show", show, Row + row)
@@ -219,7 +232,7 @@ local function UpdateCoord (col, row, diff)
 			local dr, show, hide = GetShowHide(Row, row, VRows)
 
 			Row = row
-
+-- ^^ SetRowOffset() all...
 			-- 
 			for col = 1, VCols do
 				AuxShow("show", Col + col, show)
@@ -232,8 +245,8 @@ local function UpdateCoord (col, row, diff)
 
 		--
 		if To.x or To.y then
-			for _, group in Iter(nil, target) do
-				transition.to(group, To)
+			for grid in Iter(Grid.active) do--_, group in Iter(nil, target) do
+				transition.to(grid:GetTarget()--[[group]], To)
 			end
 		end
 	end
@@ -260,6 +273,13 @@ local function AddButton (name, x, y, dc, dr)
 	common.AddButton(name, button)
 end
 
+--
+local function GridRect ()
+	local cw, ch = GetCellDims()
+
+	return 120, 80, ceil(cw * VCols), ceil(ch * VRows)
+end
+
 --- Initializes various state used by editor grid operations.
 -- @pgroup view Map editor scene view.
 function M.Init (view)
@@ -278,7 +298,7 @@ function M.Init (view)
 	Grid.reserve = display.newGroup()
 
 	Grid.reserve.isVisible = false
-
+-- ^^ Defunct?
 	-- Build the grid and put opaque elements around it to each side (as a lazy mask).
 	local gx, gy = 120, 80
 	local cw, ch = GetCellDims()
@@ -287,7 +307,7 @@ function M.Init (view)
 	Grid.grid = grid2D.Grid2D(Grid.group, nil, gx, gy, gw, gh, VCols, VRows, GridFunc)
 
 	common_ui.WallInRect(Grid.group, gx, gy, gw, gh)
-
+-- ^^^ TODO: Just make a dummy rect (perhaps even in lieu of the proxy) with GridRect() dimensions
 	local grid_proxy = common.Proxy(view, Grid.grid)
 
 	-- Add scroll buttons for each dimension where the level exceeds the grid.
@@ -326,13 +346,24 @@ function M.Init (view)
 	M.Show(false)
 end
 
+--- DOCME
+function M.NewGrid ()
+	local gx, gy, gw, gh = GridRect()
+	local grid = grid2D.Grid2D(Grid.group, nil, gx, gy, gw, gh, VCols, VRows)
+
+	Targets[grid] = true
+
+	return grid
+end
+
 ---DOCME
 -- @callable func
-function M.Show (func)
-	local show = not not func
+function M.Show (target)--func)
+	local show = not not target--func
 -- ^^ "func" will be grids themselves...
 	--
 	if show then
+--[[
 		local target = Targets[func]
 
 		if not target then
@@ -340,19 +371,21 @@ function M.Show (func)
 
 			Targets[func] = target
 		end
+]]
+		for grid in Iter() do--_, group in Iter() do
+		--	Grid.group:insert(group)
 
-		for _, group in Iter() do
-			Grid.group:insert(group)
+			if grid ~= target then--group ~= target then
+				grid--[[group]].alpha = .75
+--				group.isVisible = true
 
-			if group ~= target then
-				group.alpha = .75
-				group.isVisible = true
-
-				group:toBack()
+				grid--[[group]]:toBack()
 			end
+
+			grid.isVisible = true
 		end
 
-		Grid.grid:SetTarget(target, Grid.reserve)
+	--	Grid.grid:SetTarget(target, Grid.reserve)
 
 		--
 		local cw, ch = GetCellDims()
@@ -363,16 +396,20 @@ function M.Show (func)
 		Grid.group:toBack()
 
 	--
-	elseif Grid then -- TODO: Wrong check... (or the stuff after is wrong)
-		Grid.grid:SetTarget(nil, Grid.reserve)
+	else--if Grid then -- TODO: Wrong check... (or the stuff after is wrong)
+--		Grid.grid:SetTarget(nil, Grid.reserve)
 
-		for _, group in Iter() do
-			Grid.reserve:insert(group)
+--		for _, group in Iter() do
+--			Grid.reserve:insert(group)
+--		end
+		for grid in pairs(Targets) do
+			grid.isVisible = false
 		end
 	end
 
 	--
-	Grid.func = func
+--	Grid.func = func
+	Grid.active = target
 	Grid.group.isVisible = show
 end
 
@@ -391,14 +428,19 @@ end
 -- @ptable items
 -- @callable func
 function M.ShowOrHide (items, func)
-	func = func or DefShowOrHide
+--	func = func or DefShowOrHide
 
 	local redge, bedge = Col + VCols, Row + VRows
 
 	for k, v in pairs(items) do
 		local col, row = common.FromKey(k)
 
-		func(v, col > Col and col <= redge and row > Row and row <= bedge)
+--		func(v, col > Col and col <= redge and row > Row and row <= bedge)
+		ShowHideEvent.name = col > Col and col <= redge and row > Row and row <= bedge and "show" or "hide"
+		ShowHideEvent.col, ShowHideEvent.row = col, row
+
+		v:dispatchEvent(ShowHideEvent)
+		-- ^^ TODO: Need to ensure everybody has listener
 	end
 end
 
@@ -411,20 +453,23 @@ end
 
 --- DOCME
 function M.UpdatePick (group, pick, col, row, x, y, w, h)
+--[[
 	if group == "show" or group == "hide" then
 		if pick and pick.m_col == col and pick.m_row == row then
 			pick.isVisible = group == "show"
 		end
 -- ^^ TODO: This is moved into ShowPick()
 	--
-	else
+	else]]
 		if not pick then
 			pick = display.newRect(group, 0, 0, w, h)
 
 			pick:setFillColor(1, 0, 0, .25)
+		elseif pick.parent ~= group then
+			group:insert(pick)
 		end
 
-		pick.x, pick.y = x + w / 2, y + h / 2
+		pick.x, pick.y = x, y-- + w / 2, y + h / 2
 -- ^^ TODO: already translated?
 		pick.isVisible = true
 
@@ -432,7 +477,7 @@ function M.UpdatePick (group, pick, col, row, x, y, w, h)
 		pick.m_row = row
 
 		pick:toBack()
-	end
+--	end
 
 	return pick
 end
