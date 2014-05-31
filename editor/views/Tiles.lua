@@ -71,10 +71,61 @@ local TileNames = {	"_H", "_V", "UL", "UR", "LL", "LR", "TT", "LT", "RT", "BT", 
 local GRIDHACK
 -- /TODO
 
+--
+local GRID
+
+--
+local function Cell (event)
+	local key, is_dirty = common.ToKey(event.col, event.row)
+	local tile = Tiles[key]
+
+	--
+	if Erase then
+		if tile then
+			tile:removeSelf()
+
+			is_dirty = true
+		end
+
+		Tiles[key] = nil
+
+	--
+	else
+		if tile then
+			is_dirty = sheet.GetSpriteSetImageFrame(tile) ~= CurrentTile:GetCurrent()
+		else
+			Tiles[key] = sheet.NewImage(event.target:GetTarget()--[[group]], TileImages, event.x, event.y)--x + w / 2, y + h / 2, w, h)
+
+			is_dirty = true
+		end
+
+		sheet.SetSpriteSetImageFrame(Tiles[key], CurrentTile:GetCurrent())
+	end
+
+	--
+	if is_dirty then
+		common.Dirty()
+	end
+end
+
+--
+local function ShowHide (event)
+	local tile = Tiles[common.ToKey(event.col, event.row)]
+
+	if tile then
+		tile.isVisible = event.show
+	end
+end
+
 ---
 -- @pgroup view X
 function M.Load (view)
 	Tiles = {}
+
+GRID = grid.NewGrid()
+
+GRID:addEventListener("cell", Cell)
+GRID:addEventListener("show", ShowHide)
 
 	--
 	local thumbs = {}
@@ -112,14 +163,14 @@ function M.Load (view)
 	CurrentTile.isVisible = false
 
 	--
-	common.AddHelp("Tiles", { current = CurrentTile, grid = grid.Get(), tabs = Tabs })
+	common.AddHelp("Tiles", { current = CurrentTile, --[[grid = grid.Get(), ]]tabs = Tabs })
 	common.AddHelp("Tiles", {
 		current = "The current tile. When painting, cells are populated with this tile.",
 		["tabs:1"] = "'Paint Mode' is used to add new tiles to the level, by clicking a grid cell or dragging across the grid.",
 		["tabs:2"] = "'Erase Mode' is used to remove tiles from the level, by clicking an occupied grid cell or dragging across the grid."
 	})
 end
-
+--[[
 --
 local function GridFunc (group, col, row, x, y, w, h)
 	local key, is_dirty = common.ToKey(col, row)
@@ -159,10 +210,10 @@ local function GridFunc (group, col, row, x, y, w, h)
 		common.Dirty()
 	end
 end
-
+]]
 --- DOCMAYBE
 function M.Enter ()
-	grid.Show(GridFunc)
+	grid.Show(GRID)--GridFunc)
 	TryOption(Tabs)
 	common.ShowCurrent(CurrentTile, not Erase)
 
@@ -189,6 +240,7 @@ function M.Unload ()
 	Tabs:removeSelf()
 
 	CurrentTile, Erase, Tabs, Tiles, TileImages, TryOption = nil
+GRID=nil
 end
 
 -- Listen to events.
@@ -215,11 +267,11 @@ dispatch_list.AddToMultipleLists{
 
 	-- Load Level WIP --
 	load_level_wip = function(level)
-		grid.Show(GridFunc)
+		grid.Show(GRID)--GridFunc)
 
 		level.tiles.version = nil
 
-		local cells = grid.Get()
+		local cells = GRID--grid.Get()
 
 		for k, v in pairs(level.tiles) do
 			CurrentTile:SetCurrent(v)

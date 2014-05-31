@@ -48,7 +48,7 @@ local StartPos
 -- --
 local Tabs
 
---
+--[[
 local function GridFunc (group, col, row, x, y, w, h)
 	--
 	if group ~= "show" and group ~= "hide" then
@@ -70,14 +70,42 @@ local function GridFunc (group, col, row, x, y, w, h)
 		StartPos.x, StartPos.y = x + w / 2, y + h / 2
 	end
 end
-
+]]
 -- TODO: Hack!
 local GRIDHACK
 -- /TODO
 
+--
+local GRID
+
+--
+local function Cell (event)
+	if not StartPos then
+		local cw, ch = event.target:GetCellDims()
+
+		StartPos = display.newCircle(event.target:GetTarget()--[[group]], 0, 0, min(cw, ch) / 2)
+
+		StartPos:setStrokeColor(1, 0, 0)
+
+		StartPos.strokeWidth = 3
+	end
+
+	if event.col ~= StartPos.m_col or event.row ~= StartPos.m_row then
+		StartPos.m_col = event.col
+		StartPos.m_row = event.row
+-- grid event?
+		common.Dirty()
+	end
+
+	StartPos.x, StartPos.y = event.x, event.y--x + w / 2, y + h / 2
+end
+
 ---
 -- @pgroup view X
 function M.Load (view)
+GRID = grid.NewGrid()
+
+GRID:addEventListener("cell", Cell)
 	--
 	local tab_buttons = { "Start" }--, "Events" } -- todo: other player stuff, not events
 
@@ -96,7 +124,7 @@ function M.Load (view)
 
 					--
 					if label == "Start" then
-						grid.Show(GridFunc)
+						grid.Show(GRID)--GridFunc)
 					-- else ...
 					end
 
@@ -133,7 +161,7 @@ end
 --- DOCMAYBE
 function M.Enter ()
 	if Option == "Start" then
-		grid.Show(GridFunc)
+		grid.Show(GRID)--GridFunc)
 	end
 
 	-- Zoom factors?
@@ -161,6 +189,7 @@ function M.Unload ()
 	Tabs:removeSelf()
 
 	Option, StartPos, Tabs = nil
+GRID = nil
 end
 
 -- Listen to events.
@@ -168,9 +197,9 @@ dispatch_list.AddToMultipleLists{
 	-- Load Level WIP --
 	load_level_wip = function(level)
 		if level.player.col and level.player.row then
-			grid.Show(GridFunc)
+			grid.Show(GRID)--GridFunc)
 
-			grid.Get():TouchCell(level.player.col, level.player.row)
+			--[[grid.Get()]]GRID:TouchCell(level.player.col, level.player.row)
 
 			grid.Show(false)
 		end

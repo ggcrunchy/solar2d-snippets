@@ -124,7 +124,7 @@ end
 -- @callable common_ops Used to supply the values.
 -- @treturn boolean Were there any duplicates?
 function M.CheckNamesInValues (what, verify, common_ops)
-	local names, values = {}, common_ops("get_values")
+	local names, values = {}, common_ops:GetValues()--("get_values")
 
 	for _, v in pairs(values) do
 		if _CheckForNameDups_(what, verify, names, v) then
@@ -167,15 +167,15 @@ end
 -- populate its cells.
 -- @callable common_ops Used to supply the current tile grid, values, and tiles that belong
 -- to the module.
-function M.LoadGroupOfValues_Grid (level, what, mod, grid_func, common_ops)
-	grid.Show(grid_func)
+function M.LoadGroupOfValues_Grid (level, what, mod, common_ops)--grid_func, common_ops)
+	grid.Show(common_ops:GetGrid())--grid_func)
 
 	level[what].version = nil
 
-	local values, tiles = common_ops("get_values_and_tiles")
-	local current = common_ops("get_current")
+	local values, tiles = common_ops:GetValues(), common_ops:GetTiles()--common_ops("get_values_and_tiles")
+	local current = common_ops:GetCurrent()--common_ops("get_current")
 	local types = mod.GetTypes()
-	local cells = grid.Get()
+	local cells = common_ops:GetGrid()--grid.Get()
 
 	for k, entry in pairs(level[what].entries) do
 		_SetCurrentIndex_(current, types, entry.type)
@@ -387,7 +387,7 @@ function M.SaveGroupOfValues (level, what, mod, common_ops)
 
 	level[what] = { entries = target, version = 1 }
 
-	local values = common_ops("get_values")
+	local values = common_ops:GetValues()--("get_values")
 
 	for k, v in pairs(values) do
 		target[k] = _SaveValuesIntoEntry_(level, mod, v, {})
@@ -478,7 +478,7 @@ end
 -- _values_ is a table of values to verify, and _key_ refers to the key being verified.
 -- @callable common_ops Used to supply the values that belong to the module.
 function M.VerifyValues (verify, mod, common_ops)
-	local values = common_ops("get_values")
+	local values = common_ops:GetValues()--("get_values")
 
 	for k, v in pairs(values) do
 		mod.EditorEvent(v.type, "verify", verify, values, k)

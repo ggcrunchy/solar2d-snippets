@@ -72,7 +72,7 @@ end
 ]]
 --- DOCME
 function M.GetHelp (func)
-	if Grid.grid.parent.isVisible then
+	if Grid.group--[[.grid.parent]].isVisible then
 		common.GetHelp(func, "_Grid_")
 	end
 end
@@ -159,11 +159,11 @@ local function Iter (k, v)
 end
 
 -- --
-local ShowHideEvent = {}
+local ShowHideEvent = { name = "show" }
 
 -- Helper to show or hide one or more layers
 local function AuxShow (how, col, row)
-	ShowHideEvent.name, ShowHideEvent.col, ShowHideEvent.row = how, col, row
+	ShowHideEvent.show, ShowHideEvent.col, ShowHideEvent.row = how == "show", col, row
 --[[
 	for func in Iter(Grid.func) do
 		func(how, col, row)
@@ -217,6 +217,11 @@ local function UpdateCoord (col, row, diff)
 			local dc, show, hide = GetShowHide(Col, col, VCols)
 
 			Col = col
+
+for grid in pairs(Targets) do
+	grid:SetColOffset(col)
+end
+
 -- ^^^ SetColOffset() all
 			-- 
 			for row = 1, VRows do
@@ -232,6 +237,10 @@ local function UpdateCoord (col, row, diff)
 			local dr, show, hide = GetShowHide(Row, row, VRows)
 
 			Row = row
+
+for grid in pairs(Targets) do
+	grid:SetRowOffset(row)
+end
 -- ^^ SetRowOffset() all...
 			-- 
 			for col = 1, VCols do
@@ -397,7 +406,7 @@ function M.Show (target)--func)
 		local cw, ch = GetCellDims()
 
 		target.x, target.y = -Col * cw, -Row * ch
-
+-- ^^ This needs to affect all of them
 		--
 		Grid.group:toBack()
 
@@ -423,7 +432,7 @@ end
 --- Utility.
 -- @bool show Enable showing multiple layers?
 function M.ShowMultipleLayers (show)
-	DoMultipleLayers = not not show
+	DoMultipleLayers = false -- not not show
 end
 
 --
@@ -435,19 +444,14 @@ end
 -- @ptable items
 -- @callable func
 function M.ShowOrHide (items, func)
---	func = func or DefShowOrHide
+	func = func or DefShowOrHide
 
 	local redge, bedge = Col + VCols, Row + VRows
 
 	for k, v in pairs(items) do
 		local col, row = common.FromKey(k)
 
---		func(v, col > Col and col <= redge and row > Row and row <= bedge)
-		ShowHideEvent.name = col > Col and col <= redge and row > Row and row <= bedge and "show" or "hide"
-		ShowHideEvent.col, ShowHideEvent.row = col, row
-
-		v:dispatchEvent(ShowHideEvent)
-		-- ^^ TODO: Need to ensure everybody has listener
+		func(v, col > Col and col <= redge and row > Row and row <= bedge)
 	end
 end
 

@@ -60,7 +60,6 @@ local timers = require("game.Timers")
 
 -- Corona globals --
 local display = display
-local graphics = graphics
 local native = native
 local transition = transition
 
@@ -71,7 +70,7 @@ local composer = require("composer")
 local Scene = composer.newScene()
 
 -- Create Scene --
-function Scene:create (event)
+function Scene:create ()
 	scenes.Alias("Editor")
 end
 
@@ -94,7 +93,7 @@ local function SetCurrent (view)
 end
 
 -- List of editor views --
-local EditorView-- = {}
+local EditorView
 
 -- Names of editor views --
 local Names, Prefix = require_ex.GetNames("config.EditorViews")
@@ -102,11 +101,11 @@ local Names, Prefix = require_ex.GetNames("config.EditorViews")
 -- Tab buttons to choose views... --
 local TabButtons = {}
 
-for i, name in ipairs(Names) do
+for _, name in ipairs(Names) do
 	TabButtons[#TabButtons + 1] = {
 		label = name,
 
-		onPress = function(event)
+		onPress = function()
 			SetCurrent(EditorView[name])
 
 			return true
@@ -206,7 +205,7 @@ function Scene:show (event)
 		if scenes.ComingFrom() == "Level" then
 			dispatch_list.CallList("enter_menus")
 
-			local exists, data = persistence.LevelExists(TestLevelName, true)
+			local _, data = persistence.LevelExists(TestLevelName, true)
 
 			-- TODO: Doesn't exist? (Database failure?)
 

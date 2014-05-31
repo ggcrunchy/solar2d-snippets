@@ -58,7 +58,7 @@ local M = {}
 -- * **"get_current"**: Returns the current tile @{ui.Grid1D}.
 -- * **"get_values"**: Returns the values table.
 -- * **"get_values_and_tiles"**: Returns the values and tiles tables.
-function M.EditErase (dialog_wrapper, types)
+function M.EditEraseDD (dialog_wrapper, types)
 	local current, option, pick, tabs, tiles, try_option, tile_images, values
 -- TODO: HACK!
 local GRIDHACK
@@ -218,24 +218,23 @@ GRIDHACK.isHitTestable = false
 	end
 end
 
-function M.EditEraseVVVV (dialog_wrapper, types)
+function M.EditErase (dialog_wrapper, types)
 	local current, option, pick, tabs, tiles, try_option, tile_images, values
 
-local GRID = grid.NewGrid()
-
+local GRID
 -- TODO: HACK!
 local GRIDHACK
 -- /TODO
 
 	--
-	GRID:addEventListener("cell", function(event)
+	local function Cell (event)
 		local key, which = common.ToKey(event.col, event.row), current:GetCurrent()
 		local cur, tile = values[key], tiles[key]
+		local target, cw, ch = event.target:GetTarget(), event.target:GetCellDims()
 
 		--
-		pick = grid.UpdatePick(GRID:GetTarget()--[[group]], pick, event.col, event.row, event.x, event.y, GRID:GetCellDims())--w, h)
+		pick = grid.UpdatePick(target, pick, event.col, event.row, event.x, event.y, cw, ch)
 		-- Dims from target:GetDims()... x, y depends on centering
--- ^^ I think "group" is just target.parent
 
 		--
 		if option == "Edit" then
@@ -263,7 +262,7 @@ local GRIDHACK
 			end
 
 			values[key] = dialog_wrapper("new_values", types[which], key)
-			tiles[key] = tile or sheet.NewImage(GRID:GetTarget()--[[group]], tile_images, event.x, event.y, GRID:GetCellDims())--w, h)
+			tiles[key] = tile or sheet.NewImage(target, tile_images, event.x, event.y, cw, ch)
 
 		--	tiles[key]:translate(w / 2, h / 2)
 -- ^^ TODO: see above
@@ -280,21 +279,18 @@ local GRIDHACK
 
 			common.Dirty()
 		end
-	end)
+	end
 
 	--
 	local function ShowHide (event)
-		local key, show = common.ToKey(event.col, event.row), event.name == "show"
+		local key = common.ToKey(event.col, event.row)
 
 		if values[key] then
-			tiles[key].isVisible = show
+			tiles[key].isVisible = event.show
 		end
 
-		grid.ShowPick(pick, event.col, event.row, show)
+		grid.ShowPick(pick, event.col, event.row, event.show)
 	end
-
-	GRID:addEventListener("hide", ShowHide)
-	GRID:addEventListener("show", ShowHide)
 
 	--
 	local View = {}
@@ -349,11 +345,16 @@ GRIDHACK.isHitTestable = false
 	end
 
 	--- DOCME
-	function View:Load (prefix, title)
+	function View:Load (group, prefix, title)
 		values, tiles = {}, {}
 
+GRID = grid.NewGrid()
+
+	GRID:addEventListener("cell", Cell)
+	GRID:addEventListener("show", ShowHide)
+
 		--
-		current = grid1D.OptionsHGrid(GRID.parent--[[group]], nil, 150, 50, 200, 100, title)
+		current = grid1D.OptionsHGrid(group, nil, 150, 50, 200, 100, title)
 -- ^^ TODO: group
 		--
 		local tab_buttons = { "Paint", "Edit", "Erase" }
@@ -376,12 +377,12 @@ GRIDHACK.isHitTestable = false
 			}
 		end
 
-		tabs = common_ui.TabBar(GRID.parent--[[group]], tab_buttons, { top = display.contentHeight - 65, left = 120, width = 300 }, true)
+		tabs = common_ui.TabBar(group, tab_buttons, { top = display.contentHeight - 65, left = 120, width = 300 }, true)
 -- ^^ TODO: group
 		tabs:setSelected(1, true)
 
 		-- TODO: Hack!
-		GRIDHACK = common_ui.TabsHack(GRID.parent--[[group]], tabs, #tab_buttons)
+		GRIDHACK = common_ui.TabsHack(group, tabs, #tab_buttons)
 -- ^^ TODO: group
 		GRIDHACK.isHitTestable = false 
 		-- /TODO
