@@ -458,15 +458,18 @@ function M.Proxy (group, ...)
 		end
 	end
 
-	if minx then
-		local rect = M.NewRect(group, .5 * (minx + maxx), .5 * (miny + maxy), maxx - minx, maxy - miny)
+	return minx and M.ProxyRect(group, minx, miny, maxx, maxy)
+end
 
-		rect.isVisible = false
+--- DOCME
+function M.ProxyRect (group, minx, miny, maxx, maxy)
+	local rect = M.NewRect(group, .5 * (minx + maxx), .5 * (miny + maxy), maxx - minx, maxy - miny)
 
-		rect.m_is_proxy = true
+	rect.isVisible = false
 
-		return rect
-	end
+	rect.m_is_proxy = true
+
+	return rect
 end
 
 --- Gets the content rect of an object.

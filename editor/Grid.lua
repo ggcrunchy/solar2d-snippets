@@ -248,6 +248,7 @@ local function UpdateCoord (col, row, diff)
 			for grid in Iter(Grid.active) do--_, group in Iter(nil, target) do
 				transition.to(grid:GetTarget()--[[group]], To)
 			end
+			-- ^^ Should just do all anyway?
 		end
 	end
 
@@ -265,7 +266,7 @@ local function UpdateDir (button)
 end
 
 --
-local function AddButton (name, x, y, dc, dr)
+local function AddButton (name, x, y)--, dc, dr)
 	local button = common_ui.ScrollButton(Grid.group, name, x, y, UpdateDir)
 
 	button:translate(button.width / 2, button.height / 2)
@@ -295,11 +296,14 @@ function M.Init (view)
 	view:insert(Grid.group)
 
 	-- Keep an invisible group on hand to store inactive grid targets.
+--[[
 	Grid.reserve = display.newGroup()
 
 	Grid.reserve.isVisible = false
+]]
 -- ^^ Defunct?
 	-- Build the grid and put opaque elements around it to each side (as a lazy mask).
+--[[
 	local gx, gy = 120, 80
 	local cw, ch = GetCellDims()
 	local gw, gh = ceil(cw * VCols), ceil(ch * VRows)
@@ -309,6 +313,8 @@ function M.Init (view)
 	common_ui.WallInRect(Grid.group, gx, gy, gw, gh)
 -- ^^^ TODO: Just make a dummy rect (perhaps even in lieu of the proxy) with GridRect() dimensions
 	local grid_proxy = common.Proxy(view, Grid.grid)
+]]
+	local grid_proxy = common.ProxyRect(view, GridRect())
 
 	-- Add scroll buttons for each dimension where the level exceeds the grid.
 	local x, y = display.contentWidth - 100, display.contentHeight - 230
@@ -327,7 +333,7 @@ function M.Init (view)
 
 	local n = Grid.group.numChildren
 	local scroll_proxy = common.Proxy(view, Grid.group[n - 3], Grid.group[n - 2], Grid.group[n - 1], Grid.group[n])
-
+-- ^^ Should be reordered? (would put nil's at right spot, if empty)
 	-- Add the offset text and initialize it and the scroll button opacities.
 	Offset = display.newText(Grid.group, "", display.contentWidth - 170, display.contentHeight - 40, native.systemFont, 24)
 
@@ -381,7 +387,7 @@ function M.Show (target)--func)
 
 				grid--[[group]]:toBack()
 			end
-
+-- ^^^ Where do these get set for the target?
 			grid.isVisible = true
 		end
 
@@ -396,7 +402,8 @@ function M.Show (target)--func)
 		Grid.group:toBack()
 
 	--
-	else--if Grid then -- TODO: Wrong check... (or the stuff after is wrong)
+	elseif Grid then -- TODO: Wrong check... (or the stuff after is wrong)
+		Grid.active = nil
 --		Grid.grid:SetTarget(nil, Grid.reserve)
 
 --		for _, group in Iter() do
