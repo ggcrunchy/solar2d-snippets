@@ -54,25 +54,12 @@ local Targets
 
 --- Cleans up various state used by editor grid operations.
 function M.CleanUp ()
---[[
-	if Grid then
-		Grid.reserve:removeSelf()
-	end
-]]
-
 	Grid, Offset, Targets = nil
 end
 
---- Getter.
--- @treturn DisplayObject The global editor @{ui.Grid2D} widget.
---[[
-function M.Get ()
-	return Grid.grid
-end
-]]
 --- DOCME
 function M.GetHelp (func)
-	if Grid.group--[[.grid.parent]].isVisible then
+	if Grid.group.isVisible then
 		common.GetHelp(func, "_Grid_")
 	end
 end
@@ -97,16 +84,6 @@ local function GetCellDims ()
 	return gw / ColBase, gh / RowBase
 end
 
---
---[[
-local function GridFunc (group, col, row, x, y, w, h)
-	if Grid.func then
-		local cw, ch = GetCellDims()
-
-		Grid.func(group, Col + col, Row + row, x + Col * cw, y + Row * ch, w, h)
-	end
-end
-]]
 --
 local function GetShowHide (old, new, nvis)
 	local delta, past = new - old, old + nvis
@@ -136,25 +113,19 @@ end
 -- Should multiple layers be shown? --
 local DoMultipleLayers
 
--- One-shot iterator (no-op if key and value are absent; dummy key added when value only)
-local DoOnce
-
-local function Once (k, v)
-	if DoOnce and (k or v) then
-		DoOnce = false
-
-		return k or false, v
+-- One-shot iterator (no-op if value is absent)
+local function Once (v, i)
+	if v ~= nil and i == nil then
+		return v
 	end
 end
 
 -- Conditional (one- or multi-shot) iterator
-local function Iter (k, v)
+local function Iter (v)
 	if DoMultipleLayers then
 		return pairs(Targets)
 	else
-		DoOnce = true
-
-		return Once, k, v
+		return Once, v
 	end
 end
 
@@ -164,11 +135,7 @@ local ShowHideEvent = { name = "show" }
 -- Helper to show or hide one or more layers
 local function AuxShow (how, col, row)
 	ShowHideEvent.show, ShowHideEvent.col, ShowHideEvent.row = how == "show", col, row
---[[
-	for func in Iter(Grid.func) do
-		func(how, col, row)
-	end
-]]
+
 	for grid in Iter(Grid.active) do
 		grid:dispatchEvent(ShowHideEvent)
 	end
@@ -208,7 +175,7 @@ local function UpdateCoord (col, row, diff)
 		row = max(0, min(row, rrange))
 
 		--
-		local target = Grid.active--[[grid]]:GetTarget()
+		local target = Grid.active:GetTarget()
 		local cw, ch = GetCellDims()
 
 		To.x, To.y = nil
@@ -218,11 +185,10 @@ local function UpdateCoord (col, row, diff)
 
 			Col = col
 
-for grid in pairs(Targets) do
-	grid:SetColOffset(col)
-end
+			for grid in pairs(Targets) do
+				grid:SetColOffset(col)
+			end
 
--- ^^^ SetColOffset() all
 			-- 
 			for row = 1, VRows do
 				AuxShow("show", show, Row + row)
@@ -238,10 +204,10 @@ end
 
 			Row = row
 
-for grid in pairs(Targets) do
-	grid:SetRowOffset(row)
-end
--- ^^ SetRowOffset() all...
+			for grid in pairs(Targets) do
+				grid:SetRowOffset(row)
+			end
+
 			-- 
 			for col = 1, VCols do
 				AuxShow("show", Col + col, show)
@@ -254,10 +220,9 @@ end
 
 		--
 		if To.x or To.y then
-			for grid in pairs(Targets) do--Iter(Grid.active) do--_, group in Iter(nil, target) do
-				transition.to(grid:GetTarget()--[[group]], To)
+			for grid in pairs(Targets) do
+				transition.to(grid:GetTarget(), To)
 			end
-			-- ^^ Should just do all anyway?
 		end
 	end
 
@@ -304,26 +269,9 @@ function M.Init (view)
 
 	view:insert(Grid.group)
 
-	-- Keep an invisible group on hand to store inactive grid targets.
---[[
-	Grid.reserve = display.newGroup()
-
-	Grid.reserve.isVisible = false
-]]
--- ^^ Defunct?
-	-- Build the grid and put opaque elements around it to each side (as a lazy mask).
---[[
-	local gx, gy = 120, 80
-	local cw, ch = GetCellDims()
-	local gw, gh = ceil(cw * VCols), ceil(ch * VRows)
-
-	Grid.grid = grid2D.Grid2D(Grid.group, nil, gx, gy, gw, gh, VCols, VRows, GridFunc)
-
-	common_ui.WallInRect(Grid.group, gx, gy, gw, gh)
--- ^^^ TODO: Just make a dummy rect (perhaps even in lieu of the proxy) with GridRect() dimensions
-	local grid_proxy = common.Proxy(view, Grid.grid)
-]]
-	local grid_proxy = common.ProxyRect(view, GridRect())
+	--
+	local gx, gy, gw, gh = GridRect()
+	local grid_proxy = common.ProxyRect(view, gx, gy, gx + gw, gy + gh)
 
 	-- Add scroll buttons for each dimension where the level exceeds the grid.
 	local x, y = display.contentWidth - 100, display.contentHeight - 230
@@ -341,8 +289,8 @@ function M.Init (view)
 	end
 
 	local n = Grid.group.numChildren
-	local scroll_proxy = common.Proxy(view, Grid.group[n - 3], Grid.group[n - 2], Grid.group[n - 1], Grid.group[n])
--- ^^ Should be reordered? (would put nil's at right spot, if empty)
+	local scroll_proxy = common.Proxy(view, Grid.group[n], Grid.group[n - 1], Grid.group[n - 2], Grid.group[n - 3])
+
 	-- Add the offset text and initialize it and the scroll button opacities.
 	Offset = display.newText(Grid.group, "", display.contentWidth - 170, display.contentHeight - 40, native.systemFont, 24)
 
@@ -351,8 +299,8 @@ function M.Init (view)
 	--
 	common.AddHelp("_Grid_", {
 		grid = "A marked cell on the grid indicates where the current selection will be appear.",
-		offset = "Offset of upper-left cell in grid, from (0, 0)",
-		scroll = "Scrolls the grid, i.e. updates the offset"
+		offset = "Offset of upper-left cell in grid, from (0, 0).",
+		scroll = "Scrolls the grid, i.e. updates the offset."
 	})
 
 	common.AddHelp("_Grid_", { grid = grid_proxy, offset = Offset, scroll = scroll_proxy })
@@ -376,67 +324,34 @@ function M.NewGrid ()
 end
 
 ---DOCME
--- @callable func
-function M.Show (target)--func)
-	local show = not not target--func
--- ^^ "func" will be grids themselves...
+-- @pgroup target
+function M.Show (target)
+	local show = not not target
+
 	--
 	if show then
---[[
-		local target = Targets[func]
-
-		if not target then
-			target = display.newGroup()
-
-			Targets[func] = target
-		end
-]]
-		for grid in Iter(target) do--_, group in Iter() do
-		--	Grid.group:insert(group)
-
+		for grid in Iter(target) do
 			grid:ShowLines(grid == target)
 
-			if grid == target then--group ~= target then
+			if grid == target then
 				grid.alpha = 1
 			else
-				grid--[[group]].alpha = .75
---				group.isVisible = true
+				grid.alpha = .75
 
-				grid--[[group]]:toBack()
+				grid:toBack()
 			end
--- ^^^ Where do these get set for the target?
+
 			grid.isVisible = true
 		end
 
-	--	Grid.grid:SetTarget(target, Grid.reserve)
-
-		--
-		local cw, ch = GetCellDims()
-
-		for grid in pairs(Targets) do
-			local target = grid:GetTarget()
-
-			target.x, target.y = grid:GetCellPos(Col, Row)-- -Col * cw, -Row * ch
-		end
--- ^^ This needs to affect all of them
--- Actually, maybe this is pointless?
-		--
-		Grid.group:toBack()
-
 	--
-	elseif Grid then -- TODO: Wrong check... (or the stuff after is wrong)
---		Grid.grid:SetTarget(nil, Grid.reserve)
-
---		for _, group in Iter() do
---			Grid.reserve:insert(group)
---		end
+	else
 		for grid in pairs(Targets) do
 			grid.isVisible = false
 		end
 	end
 
 	--
---	Grid.func = func
 	Grid.active = target
 	Grid.group.isVisible = show
 end
@@ -476,29 +391,18 @@ end
 
 --- DOCME
 function M.UpdatePick (group, pick, col, row, x, y, w, h)
---[[
-	if group == "show" or group == "hide" then
-		if pick and pick.m_col == col and pick.m_row == row then
-			pick.isVisible = group == "show"
-		end
--- ^^ TODO: This is moved into ShowPick()
-	--
-	else]]
-		if not pick then
-			pick = display.newRect(group, 0, 0, w, h)
+	if not pick then
+		pick = display.newRect(group, 0, 0, w, h)
 
-			pick:setFillColor(1, 0, 0, .25)
-		end
+		pick:setFillColor(1, 0, 0, .25)
+	end
 
-		pick.x, pick.y = x, y-- + w / 2, y + h / 2
--- ^^ TODO: already translated?
-		pick.isVisible = true
+	pick:toBack()
 
-		pick.m_col = col
-		pick.m_row = row
+	pick.x, pick.y = x, y
 
-		pick:toBack()
---	end
+	pick.m_col = col
+	pick.m_row = row
 
 	return pick
 end

@@ -146,7 +146,7 @@ local LinkTouch = touch.TouchHelperFunc(function(_, link)
 	params.rep = link.m_rep
 	params.sub = link.m_sub
 	params.tags = link.m_tags
-end, nil, function(_, link)
+end, nil, function()
 	composer.showOverlay("overlay.Link", OverlayArgs)
 
 	local params = OverlayArgs.params
@@ -349,37 +349,6 @@ function M.TabsHack (group, tabs, n, x, y, w, h)
 	rect.isHitTestable, rect.isVisible = true, false
 
 	return rect
-end
-
--- The walls will intercept any input
-local function NoHit () return true end
-
--- Adds a dummy object to catch input
-local function AddWall (group, x, y, w, h)
-	w, h = w or display.contentWidth - x, h or display.contentHeight - y
-
-	local wall = common.NewRect(group, x, y, w, h)
-
-	wall:addEventListener("touch", NoHit)
-	wall:setFillColor(0)
-	wall:translate(-w / 2, -h / 2)
-end
-
---- Surrounds a rectangle with "walls". For various use cases, this is a viable alternative
--- to masks for obscuring rendering and touch events outside of the rectangle.
---
--- The construct is useful so long as the "walled-in" objects remain below the walls in the
--- display hierarchy.
--- @pgroup group Group to which wall elements are added.
--- @number x Upper-left x-coordinate of rectangle...
--- @number y ...and y-coordinate.
--- @number w Rectangle width...
--- @number h ...and height.
-function M.WallInRect (group, x, y, w, h)
-	AddWall(group, 0, 0, false, y - 1)
-	AddWall(group, 0, y - 1, x - 1, h + 2)
-	AddWall(group, x + w + 1, y - 1, false, h + 2)
-	AddWall(group, 0, y + h + 1, false, false)
 end
 
 -- Export the module.

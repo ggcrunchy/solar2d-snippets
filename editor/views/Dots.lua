@@ -41,13 +41,12 @@ local M = {}
 local Dialog = dialog.DialogWrapper(dots.EditorEvent)
 
 -- --
-local CommonOps = grid_funcs.EditErase(Dialog, dots.GetTypes())
+local GridView = grid_funcs.EditErase(Dialog, dots.GetTypes())
 
 --- DOCME
 -- @pgroup view X
 function M.Load (view)
---	CommonOps("load", view, 
-	CommonOps:Load(view, "Dot", "Current dot")
+	GridView:Load(view, "Dot", "Current dot")
 
 	common.AddHelp("Dot", {
 		current = "The current dot type. When painting, cells are populated with this dot.",
@@ -57,30 +56,22 @@ function M.Load (view)
 	})
 end
 
---[[
-local function GridFunc (group, col, row, x, y, w, h)
-	CommonOps("grid", group, col, row, x, y, w, h)
-end
-]]
 --- DOCME
 -- @pgroup view
 function M.Enter (view)
---	CommonOps("enter", view, GridFunc)
-	CommonOps:Enter(view)
+	GridView:Enter(view)
 
 	common.SetHelpContext("Dot")
 end
 
 --- DOCME
 function M.Exit ()
---	CommonOps("exit")
-	CommonOps:Exit()
+	GridView:Exit()
 end
 
 --- DOCME
 function M.Unload ()
---	CommonOps("unload")
-	CommonOps:Unload()
+	GridView:Unload()
 end
 
 -- Listen to events.
@@ -100,21 +91,21 @@ dispatch_list.AddToMultipleLists{
 
 	-- Load Level WIP --
 	load_level_wip = function(level)
-		events.LoadGroupOfValues_Grid(level, "dots", dots, --[[GridFunc, ]]CommonOps)
+		events.LoadGroupOfValues_Grid(level, "dots", dots, GridView)
 	end,
 
 	-- Save Level WIP --
 	save_level_wip = function(level)
-		events.SaveGroupOfValues(level, "dots", dots, CommonOps)
+		events.SaveGroupOfValues(level, "dots", dots, GridView)
 	end,
 
 	-- Verify Level WIP --
 	verify_level_wip = function(verify)
 		if verify.pass == 1 then
-			events.CheckNamesInValues("dot", verify, CommonOps)
+			events.CheckNamesInValues("dot", verify, GridView)
 		end
 
-		events.VerifyValues(verify, dots, CommonOps)
+		events.VerifyValues(verify, dots, GridView)
 	end
 }
 

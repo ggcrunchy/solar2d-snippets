@@ -216,15 +216,6 @@ function M.Grid2D (group, skin, x, y, w, h, cols, rows)
 	end
 
 	--- DOCME
-	-- @uint coffset
-	-- @uint roffset
-	-- @treturn number X
-	-- @treturn number Y
-	function Grid:GetCellPos (coffset, roffset)
-		return -floor(w / 2 + coffset * dw), -floor(h / 2 + roffset * dh)
-	end
-
-	--- DOCME
 	-- @treturn DisplayGroup X
 	function Grid:GetTarget ()
 		return target
@@ -273,6 +264,7 @@ function M.Grid2D (group, skin, x, y, w, h, cols, rows)
 	function Grid:TouchCell (col, row, cto, rto)
 		local scol, srow, x, y = self.m_col, self.m_row, back:localToContent(-.5 * back.width, -.5 * back.height)
 		local event, dw, dh = remove(Events) or { name = "touch", id = "ignore_me" }, GetCellDims(back)
+	--	local dc, dr = (back.m_coffset or 0) - .5, (back.m_roffset or 0) - .5
 
 		event.target, event.x, event.y = back, x + (col - .5) * dw, y + (row - .5) * dh
 		event.phase = "began"

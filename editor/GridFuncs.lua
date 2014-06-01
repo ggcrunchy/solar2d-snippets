@@ -58,170 +58,11 @@ local M = {}
 -- * **"get_current"**: Returns the current tile @{ui.Grid1D}.
 -- * **"get_values"**: Returns the values table.
 -- * **"get_values_and_tiles"**: Returns the values and tiles tables.
-function M.EditEraseDD (dialog_wrapper, types)
-	local current, option, pick, tabs, tiles, try_option, tile_images, values
--- TODO: HACK!
-local GRIDHACK
--- /TODO
-	return function (what, group, col_, row_, x, y, w, h)
-		-- Grid --
-		if what == "grid" then
-			local key, which = common.ToKey(col_, row_), current:GetCurrent()
-			local cur, tile = values[key], tiles[key]
 
-			--
-			pick = grid.UpdatePick(group, pick, col_, row_, x, y, w, h)
-
-			--
-			if group == "show" or group == "hide" then
-				if cur then
-					tile.isVisible = group == "show"
-				end
-
-			--
-			elseif option == "Edit" then
-				if cur then
-					dialog_wrapper("edit", cur, current.parent, key, tile)
-				else
-					dialog_wrapper("close")
-				end
-
-			--
-			elseif option == "Erase" then
-				if tile then
-					tile:removeSelf()
-
-					common.BindRepAndValues(tile, nil)
-					common.Dirty()
-				end
-
-				values[key], tiles[key] = nil
-
-			--
-			elseif not cur or sheet.GetSpriteSetImageFrame(tile) ~= which then -- TODO: can 'tile' sub for 'cur' ?(then we have a pattern...)
-				if tile then
-					links.RemoveTag(tile)
-				end
-
-				values[key] = dialog_wrapper("new_values", types[which], key)
-				tiles[key] = tile or sheet.NewImage(group, tile_images, x, y, w, h)
-
-				tiles[key]:translate(w / 2, h / 2)
-
-				sheet.SetSpriteSetImageFrame(tiles[key], which)
-
-				--
-				local tag = dialog_wrapper("get_tag", types[which])
-
-				if tag then
-					common.BindRepAndValues(tiles[key], values[key])
-
-					links.SetTag(tiles[key], tag)
-				end
-
-				common.Dirty()
-			end
-
-		-- Load --
-		-- col_: Prefix
-		-- row_: Title
-		elseif what == "load" then
-			values, tiles = {}, {}
-
-			--
-			current = grid1D.OptionsHGrid(group, nil, 150, 50, 200, 100, row_)
-
-			--
-			local tab_buttons = { "Paint", "Edit", "Erase" }
-
-			for i, label in ipairs(tab_buttons) do
-				tab_buttons[i] = {
-					label = label,
-
-					onPress = function()
-						option = label
-
-						common.ShowCurrent(current, label == "Paint")
-
-						if label ~= "Edit" then
-							dialog_wrapper("close")
-						end
-
-						return true
-					end
-				}
-			end
-
-			tabs = common_ui.TabBar(group, tab_buttons, { top = display.contentHeight - 65, left = 120, width = 300 }, true)
-
-			tabs:setSelected(1, true)
-
-			-- TODO: Hack!
-			GRIDHACK = common_ui.TabsHack(group, tabs, #tab_buttons)
-
-			GRIDHACK.isHitTestable = false 
-			-- /TODO
-
-			--
-			try_option = common.ChoiceTrier(tab_buttons)
-
-			--
-			tile_images = common.SpriteSetFromThumbs(col_, types)
-
-			current:Bind(tile_images, #tile_images)
-			current:toFront()
-
-			common.ShowCurrent(current, false)
-
-			--
-			common.AddHelp(col_, { current = current, tabs = tabs })
-
-		-- Enter --
-		-- col_: Grid func
-		elseif what == "enter" then
-			grid.Show(col_)
-
-			try_option(tabs, option)
-			common.ShowCurrent(current, option == "Paint")
-
-			tabs.isVisible = true
--- TODO: Hack!
-GRIDHACK.isHitTestable = true 
--- /TODO
-		-- Exit --
-		elseif what == "exit" then
-			dialog_wrapper("close")
-
-			common.SetChoice(option)
-			common.ShowCurrent(current, false)
-
-			tabs.isVisible = false
--- TODO: Hack!
-GRIDHACK.isHitTestable = false 
--- /TODO
-			grid.Show(false)
-
-		-- Unload --
-		elseif what == "unload" then
-			tabs:removeSelf()
-
-			current, option, pick, tabs, tiles, tile_images, try_option, values = nil
-
-		-- Get Data --
-		elseif what == "get_current" then
-			return current
-		elseif what == "get_values" then
-			return values
-		elseif what == "get_values_and_tiles" then
-			return values, tiles
-		end
-	end
-end
-
+--- DOCME (i.e. bring the above stuff back into sync)
 function M.EditErase (dialog_wrapper, types)
-	local current, option, pick, tabs, tiles, try_option, tile_images, values
+	local cells, current, option, pick, tabs, tiles, try_option, tile_images, values
 
-local GRID
 -- TODO: HACK!
 local GRIDHACK
 -- /TODO
@@ -234,7 +75,6 @@ local GRIDHACK
 
 		--
 		pick = grid.UpdatePick(target, pick, event.col, event.row, event.x, event.y, cw, ch)
-		-- Dims from target:GetDims()... x, y depends on centering
 
 		--
 		if option == "Edit" then
@@ -264,8 +104,6 @@ local GRIDHACK
 			values[key] = dialog_wrapper("new_values", types[which], key)
 			tiles[key] = tile or sheet.NewImage(target, tile_images, event.x, event.y, cw, ch)
 
-		--	tiles[key]:translate(w / 2, h / 2)
--- ^^ TODO: see above
 			sheet.SetSpriteSetImageFrame(tiles[key], which)
 
 			--
@@ -297,8 +135,7 @@ local GRIDHACK
 
 	--- DOCME
 	function View:Enter ()
-		grid.Show(GRID)--func)
--- ^^ TODO: This may change, e.g. via just GRID
+		grid.Show(cells)
 		try_option(tabs, option)
 		common.ShowCurrent(current, option == "Paint")
 
@@ -331,7 +168,7 @@ GRIDHACK.isHitTestable = false
 
 	--- DOCME
 	function View:GetGrid ()
-		return GRID
+		return cells
 	end
 
 	--- DOCME
@@ -346,12 +183,10 @@ GRIDHACK.isHitTestable = false
 
 	--- DOCME
 	function View:Load (group, prefix, title)
-		values, tiles = {}, {}
+		values, tiles, cells = {}, {}, grid.NewGrid()
 
-GRID = grid.NewGrid()
-
-	GRID:addEventListener("cell", Cell)
-	GRID:addEventListener("show", ShowHide)
+		cells:addEventListener("cell", Cell)
+		cells:addEventListener("show", ShowHide)
 
 		--
 		current = grid1D.OptionsHGrid(group, nil, 150, 50, 200, 100, title)
@@ -406,8 +241,7 @@ GRID = grid.NewGrid()
 	function View:Unload ()
 		tabs:removeSelf()
 
-		current, option, pick, tabs, tiles, tile_images, try_option, values = nil
-GRID = nil
+		cells, current, option, pick, tabs, tiles, tile_images, try_option, values = nil
 	end
 
 	return View
