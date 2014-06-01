@@ -254,7 +254,7 @@ end
 
 		--
 		if To.x or To.y then
-			for grid in Iter(Grid.active) do--_, group in Iter(nil, target) do
+			for grid in pairs(Targets) do--Iter(Grid.active) do--_, group in Iter(nil, target) do
 				transition.to(grid:GetTarget()--[[group]], To)
 			end
 			-- ^^ Should just do all anyway?
@@ -419,6 +419,7 @@ function M.Show (target)--func)
 			target.x, target.y = grid:GetCellPos(Col, Row)-- -Col * cw, -Row * ch
 		end
 -- ^^ This needs to affect all of them
+-- Actually, maybe this is pointless?
 		--
 		Grid.group:toBack()
 

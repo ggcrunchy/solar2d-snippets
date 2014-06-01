@@ -179,11 +179,14 @@ local function WipeBlock (block)
 end
 
 --
+local GRID
+
+--
 local function TouchBlock (block, name, old_name)
 	Name = name
 
 	local coffset, roffset = grid.GetOffsets()
-	local cells = grid.Get()
+	local cells = GRID--grid.Get()
 
 	for row = block.row1, block.row2 do
 		for col = block.col1, block.col2 do
@@ -224,7 +227,8 @@ local HandleTouch = touch.TouchHelperFunc(function(event, handle)
 end, function(event, handle)
 	CanFill, ID, Name = true, handle.m_id, handle.m_name
 
-	grid.Get():TouchXY(handle.m_x, handle.m_y, event.x, event.y)
+--	grid.Get()
+	GRID:TouchXY(handle.m_x, handle.m_y, event.x, event.y)
 
 	UpdateBlock(Blocks[ID])
 	UpdateHandles(Blocks[ID])
@@ -282,10 +286,28 @@ end
 local GRIDHACK
 -- /TODO
 
+--
+local Cell
+
+--
+local function ShowHide (event)
+	local tile = Tiles[common.ToKey(event.col, event.row)]
+
+	if tile then
+		tile.image.isVisible = event.show and Option ~= "Stretch"
+		tile.id_str.isVisible = event.show
+	end
+end
+
 ---
 -- @pgroup view X
 function M.Load (view)
 	Blocks, Tiles = {}, {}
+
+GRID = grid.NewGrid()
+
+GRID:addEventListener("cell", Cell)
+GRID:addEventListener("show", ShowHide)
 
 	--
 	CurrentEvent = grid1D.OptionsHGrid(view, nil, 150, 50, 200, 100, "Current event")
@@ -397,7 +419,7 @@ local function AddImage (group, key, id, x, y, w, h, hide)
 
 	sheet.SetSpriteSetImageFrame(image, events.GetIndex(Types, block.info.type))
 
-	image.x, image.y = x + w / 2, y + h / 2
+	image.x, image.y = x, y-- + w / 2, y + h / 2
 	image.isVisible = not hide
 -- TODO (make this a block thing? the rep?)
 	local id_str = n > 0 and cache[n] or display.newText(group, id, 0, 0, native.systemFontBold, 32)
@@ -423,7 +445,7 @@ local function AddRep (block, type)
 	if tag then
 		local tile = Tiles[common.ToKey(block.col1, block.row1)].image
 		local rep = display.newRect(tile.parent, 0, 0, 50, 50, 15)
-
+-- ^^ rounded?
 		FitTo(rep, tile)
 
 		common.BindRepAndValues(rep, block.info)
@@ -470,7 +492,7 @@ local function FindFreeID ()
 	return #Blocks + 1
 end
 
---
+--[[
 local function GridFunc (group, col, row, x, y, w, h)
 	local key = common.ToKey(col, row)
 	local tile = Tiles[key]
@@ -539,10 +561,75 @@ local function GridFunc (group, col, row, x, y, w, h)
 		end
 	end
 end
+]]
+function Cell (event)
+	local col, row = event.col, event.row
+	local key = common.ToKey(col, row)
+	local tile = Tiles[key]
+
+	--
+	if Option == "Paint" then
+		if not tile then
+			local id, which = FindFreeID(), CurrentEvent:GetCurrent()
+
+			Blocks[id] = { col1 = col, row1 = row, col2 = col, row2 = row, info = Dialog("new_values", Types[which], id) }
+
+			AddImage(event.target:GetTarget()--[[group]], key, id, event.x, event.y, event.target:GetCellDims())--x, y, w, h)
+			AddRep(Blocks[id], Types[which])
+
+			common.Dirty()
+		end
+
+	--
+	elseif Option == "Edit" then
+		if tile then
+			Dialog("edit", Blocks[tile.id].info, CurrentEvent.parent, tile.id, Blocks[tile.id].rep)
+		else
+			Dialog("close")
+		end
+
+	--
+	elseif Option == "Erase" then
+		local id = tile and tile.id
+
+		if id then
+			WipeBlock(Blocks[id])
+
+			common.BindRepAndValues(Blocks[id].rep, nil)
+			display.remove(Blocks[id].rep)
+
+			Blocks[id].cache:removeSelf()
+
+			Blocks[id] = false
+
+			common.Dirty()
+		end
+
+	--
+	elseif Name == "fill" then
+		local w, h = event.target:GetCellDims()
+
+		AddImage(event.target:GetTarget()--[[group]], key, ID, event.x, event.y, w, h, true)
+
+	--
+	elseif CanFill then
+		local col1, row1, col2, row2 = GetColsRows()
+
+		CanFill = CheckCol(col, row1, row2) and CheckRow(row, col1, col2)
+
+		if CanFill then
+			if Name == "ul" then
+				Col1, Row1 = col, row
+			else
+				Col2, Row2 = col, row
+			end
+		end
+	end
+end
 
 --- DOCMAYBE
 function M.Enter ()
-	grid.Show(GridFunc)
+	grid.Show(GRID)--GridFunc)
 	TryOption(Tabs, Option)
 	common.ShowCurrent(CurrentEvent, Option == "Paint")
 
@@ -571,6 +658,7 @@ function M.Unload ()
 	Tabs:removeSelf()
 
 	CurrentEvent, Option, Blocks, Tabs, Tiles, TileImages, TryOption, Types = nil
+GRID = nil
 end
 
 --
@@ -610,11 +698,11 @@ dispatch_list.AddToMultipleLists{
 
 	-- Load Level WIP --
 	load_level_wip = function(level)
-		grid.Show(GridFunc)
+		grid.Show(GRID)--GridFunc)
 
 		level.event_blocks.version = nil
 
-		local cells = grid.Get()
+		local cells = GRID--grid.Get()
 
 		for id, block in ipairs(level.event_blocks.blocks) do
 			if block then
