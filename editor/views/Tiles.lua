@@ -94,7 +94,9 @@ local function Cell (event)
 		if tile then
 			is_dirty = sheet.GetSpriteSetImageFrame(tile) ~= CurrentTile:GetCurrent()
 		else
-			Tiles[key] = sheet.NewImage(event.target:GetTarget()--[[group]], TileImages, event.x, event.y)--x + w / 2, y + h / 2, w, h)
+			local grid = event.target
+
+			Tiles[key] = sheet.NewImage(grid:GetTarget()--[[group]], TileImages, event.x, event.y, grid:GetCellDims())--x + w / 2, y + h / 2, w, h)
 
 			is_dirty = true
 		end

@@ -444,7 +444,7 @@ end
 --- Utility.
 -- @bool show Enable showing multiple layers?
 function M.ShowMultipleLayers (show)
-	DoMultipleLayers = false -- not not show
+	DoMultipleLayers = not not show
 end
 
 --

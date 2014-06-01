@@ -566,7 +566,11 @@ function Cell (event)
 	local col, row = event.col, event.row
 	local key = common.ToKey(col, row)
 	local tile = Tiles[key]
-
+if event.is_first then
+	print("IS", col, row)
+else
+	print("NOT", col, row)
+end
 	--
 	if Option == "Paint" then
 		if not tile then

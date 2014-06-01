@@ -262,14 +262,6 @@ function M.Grid2D (group, skin, x, y, w, h, cols, rows)
 		lines.isVisible = show
 	end
 
-	--
-	local function PosDim (back)
-		local x = back.x - .5 * back.width
-		local y = back.y - .5 * back.height
-
-		return x, y, GetCellDims(back)
-	end
-
 	--- Manually performs a touch (or drag) on the grid.
 	--
 	-- This will trigger the grid's current touch behavior. Any in-progress touch state
@@ -279,8 +271,8 @@ function M.Grid2D (group, skin, x, y, w, h, cols, rows)
 	-- @uint cto Final column... (If absent, _col_.)
 	-- @uint rto ...and row. (Ditto for _row_.)
 	function Grid:TouchCell (col, row, cto, rto)
-		local scol, srow, x, y, dw, dh = self.m_col, self.m_row, PosDim(back)
-		local event = remove(Events) or { name = "touch", id = "ignore_me" }
+		local scol, srow, x, y = self.m_col, self.m_row, back:localToContent(-.5 * back.width, -.5 * back.height)
+		local event, dw, dh = remove(Events) or { name = "touch", id = "ignore_me" }, GetCellDims(back)
 
 		event.target, event.x, event.y = back, x + (col - .5) * dw, y + (row - .5) * dh
 		event.phase = "began"
