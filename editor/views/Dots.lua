@@ -46,7 +46,6 @@ local CommonOps = grid_funcs.EditErase(Dialog, dots.GetTypes())
 --- DOCME
 -- @pgroup view X
 function M.Load (view)
-print("VIEW", view)
 --	CommonOps("load", view, 
 	CommonOps:Load(view, "Dot", "Current dot")
 

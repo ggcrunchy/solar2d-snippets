@@ -148,7 +148,7 @@ function M.Grid2D (group, skin, x, y, w, h, cols, rows)
 	--
 	local cgroup = display.newContainer(w, h)
 
-	Grid:insert(cgroup)
+	Grid:insert(cgroup, true)
 
 	cgroup.x, cgroup.y = x, y
 
@@ -213,6 +213,15 @@ function M.Grid2D (group, skin, x, y, w, h, cols, rows)
 	-- @treturn uint H
 	function Grid:GetCellDims ()
 		return GetCellDims(back)
+	end
+
+	--- DOCME
+	-- @uint coffset
+	-- @uint roffset
+	-- @treturn number X
+	-- @treturn number Y
+	function Grid:GetCellPos (coffset, roffset)
+		return -floor(w / 2 + coffset * dw), -floor(h / 2 + roffset * dh)
 	end
 
 	--- DOCME

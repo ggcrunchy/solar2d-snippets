@@ -208,7 +208,7 @@ local function UpdateCoord (col, row, diff)
 		row = max(0, min(row, rrange))
 
 		--
-		local target = Grid.grid:GetTarget()
+		local target = Grid.active--[[grid]]:GetTarget()
 		local cw, ch = GetCellDims()
 
 		To.x, To.y = nil
@@ -366,6 +366,10 @@ function M.NewGrid ()
 	local gx, gy, gw, gh = GridRect()
 	local grid = grid2D.Grid2D(Grid.group, nil, gx, gy, gw, gh, VCols, VRows)
 
+	grid:ShowBack(false)
+
+	grid.isVisible = false
+
 	Targets[grid] = true
 
 	return grid
@@ -387,10 +391,14 @@ function M.Show (target)--func)
 			Targets[func] = target
 		end
 ]]
-		for grid in Iter() do--_, group in Iter() do
+		for grid in Iter(target) do--_, group in Iter() do
 		--	Grid.group:insert(group)
 
-			if grid ~= target then--group ~= target then
+			grid:ShowLines(grid == target)
+
+			if grid == target then--group ~= target then
+				grid.alpha = 1
+			else
 				grid--[[group]].alpha = .75
 --				group.isVisible = true
 
@@ -405,14 +413,17 @@ function M.Show (target)--func)
 		--
 		local cw, ch = GetCellDims()
 
-		target.x, target.y = -Col * cw, -Row * ch
+		for grid in pairs(Targets) do
+			local target = grid:GetTarget()
+
+			target.x, target.y = grid:GetCellPos(Col, Row)-- -Col * cw, -Row * ch
+		end
 -- ^^ This needs to affect all of them
 		--
 		Grid.group:toBack()
 
 	--
 	elseif Grid then -- TODO: Wrong check... (or the stuff after is wrong)
-		Grid.active = nil
 --		Grid.grid:SetTarget(nil, Grid.reserve)
 
 --		for _, group in Iter() do
@@ -476,8 +487,6 @@ function M.UpdatePick (group, pick, col, row, x, y, w, h)
 			pick = display.newRect(group, 0, 0, w, h)
 
 			pick:setFillColor(1, 0, 0, .25)
-		elseif pick.parent ~= group then
-			group:insert(pick)
 		end
 
 		pick.x, pick.y = x, y-- + w / 2, y + h / 2
