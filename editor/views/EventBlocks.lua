@@ -185,7 +185,7 @@ local Grid
 local function TouchBlock (block, name, old_name)
 	Name = name
 
-	local coffset, roffset = grid.GetOffsets()
+	local coffset, roffset = 0,0--grid.GetOffsets()
 
 	for row = block.row1, block.row2 do
 		for col = block.col1, block.col2 do
@@ -209,7 +209,7 @@ end
 
 --
 local HandleTouch = touch.TouchHelperFunc(function(event, handle)
-	handle.m_x, handle.m_y = event.x, event.y
+--	handle.m_x, handle.m_y = event.x, event.y
 
 	local block = Blocks[handle.m_id]
 	local hgroup = block.m_handle_group
@@ -226,7 +226,7 @@ local HandleTouch = touch.TouchHelperFunc(function(event, handle)
 end, function(event, handle)
 	CanFill, ID, Name = true, handle.m_id, handle.m_name
 
-	Grid:TouchXY(handle.m_x, handle.m_y, event.x, event.y)
+	Grid:TouchXY(--[[handle.m_x, handle.m_y]]event.xStart, event.yStart, event.x, event.y)
 
 	UpdateBlock(Blocks[ID])
 	UpdateHandles(Blocks[ID])
@@ -415,8 +415,7 @@ local function AddImage (group, key, id, x, y, w, h, hide)
 
 	sheet.SetSpriteSetImageFrame(image, events.GetIndex(Types, block.info.type))
 
-	image.x, image.y = x, y-- + w / 2, y + h / 2
-	image.isVisible = not hide
+	image.x, image.y, image.isVisible = x, y, not hide
 -- TODO (make this a block thing? the rep?)
 	local id_str = n > 0 and cache[n] or display.newText(group, id, 0, 0, native.systemFontBold, 32)
 
@@ -440,8 +439,8 @@ local function AddRep (block, type)
 
 	if tag then
 		local tile = Tiles[common.ToKey(block.col1, block.row1)].image
-		local rep = display.newRect(tile.parent, 0, 0, 50, 50, 15)
--- ^^ rounded?
+		local rep = display.newRect(tile.parent, 0, 0, 50, 50)--, 15) -- <- should be rounded?
+
 		FitTo(rep, tile)
 
 		common.BindRepAndValues(rep, block.info)

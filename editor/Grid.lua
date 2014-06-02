@@ -170,7 +170,7 @@ local function UpdateCoord (col, row, diff)
 	local cdelta, crange = 0, ncols - ColBase
 	local rdelta, rrange = 0, nrows - RowBase
 
-	if Grid.active then--func then
+	if Grid.active then
 		col = max(0, min(col, crange))
 		row = max(0, min(row, rrange))
 
@@ -240,7 +240,7 @@ local function UpdateDir (button)
 end
 
 --
-local function AddButton (name, x, y)--, dc, dr)
+local function AddButton (name, x, y)
 	local button = common_ui.ScrollButton(Grid.group, name, x, y, UpdateDir)
 
 	button:translate(button.width / 2, button.height / 2)

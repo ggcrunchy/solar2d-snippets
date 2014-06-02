@@ -32,7 +32,7 @@ local dialog = require("editor.Dialog")
 local dispatch_list = require("game.DispatchList")
 local dots = require("game.Dots")
 local events = require("editor.Events")
-local grid_funcs = require("editor.GridFuncs")
+local grid_views = require("editor.GridViews")
 
 -- Exports --
 local M = {}
@@ -41,7 +41,7 @@ local M = {}
 local Dialog = dialog.DialogWrapper(dots.EditorEvent)
 
 -- --
-local GridView = grid_funcs.EditErase(Dialog, dots.GetTypes())
+local GridView = grid_views.EditErase(Dialog, dots.GetTypes())
 
 --- DOCME
 -- @pgroup view X

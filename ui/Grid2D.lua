@@ -75,15 +75,23 @@ local function Dispatch (back, col, row, x, y, is_first)
 end
 
 --
+local function Cell2 (back, x, y)
+	local col, row = Cell(back, x, y)
+	local coff, roff = back.m_coffset or 0, back.m_roffset or 0
+
+	return col + coff, row + roff
+end
+
+--
 local function GetOffsets (back)
-	return (back.m_coffset or 0) - back.m_cx, (back.m_roffset or 0) - back.m_cy
+	return --[[(back.m_coffset or 0)]]0 - back.m_cx, --[[(back.m_roffset or 0)]]0 - back.m_cy
 end
 
 -- Touch listener
 local Touch = touch.TouchHelperFunc(function(event, back)
 	-- Track initial coordinates for dragging.
 	local coff, roff = GetOffsets(back)
-	local col, row = Cell(back, event.x, event.y)
+	local col, row = Cell2(back, event.x, event.y)
 	local dw, dh = GetCellDims(back)
 
 	Dispatch(back, col, row, (col + coff) * dw, (row + roff) * dh, true)
@@ -97,11 +105,11 @@ end, function(event, back)
 
 	end_col = range.ClampIn(end_col, 1, back.m_ncols)
 	end_row = range.ClampIn(end_row, 1, back.m_nrows)
-
+end_col = end_col + (back.m_coffset or 0)
+end_row = end_row + (back.m_roffset or 0)
 	local first, dw, dh = true, GetCellDims(back)
 	local coff, roff = GetOffsets(back)
 
-	-- TODO: I have gotten an "y1 is nil" error...
 	for col, row in grid_iterators.LineIter(back.m_col, back.m_row, end_col, end_row) do
 		if not first then
 			Dispatch(back, col, row, (col + coff) * dw, (row + roff) * dh, false)
@@ -126,6 +134,35 @@ end
 
 -- Cache of simulated touch events --
 local Events = {}
+
+--
+local function BeginTouch (back, x, y)
+	local event = remove(Events) or { name = "touch", id = "ignore_me" }
+
+	event.target, event.x, event.y = back, x, y
+	event.phase = "began"
+
+	Touch(event)
+
+	return event
+end
+
+--
+local function EndTouch (event)
+	event.phase = "ended"
+
+	Touch(event)
+
+	Events[#Events + 1], event.target = event
+end
+
+--
+local function MoveTouch (event, x, y)
+	event.x, event.y = x, y
+	event.phase = "moved"
+
+	Touch(event)
+end
 
 ---DOCME
 -- @pgroup group Group to which grid will be inserted.
@@ -263,41 +300,75 @@ function M.Grid2D (group, skin, x, y, w, h, cols, rows)
 	-- @uint rto ...and row. (Ditto for _row_.)
 	function Grid:TouchCell (col, row, cto, rto)
 		local scol, srow, x, y = self.m_col, self.m_row, back:localToContent(-.5 * back.width, -.5 * back.height)
-		local event, dw, dh = remove(Events) or { name = "touch", id = "ignore_me" }, GetCellDims(back)
-	--	local dc, dr = (back.m_coffset or 0) - .5, (back.m_roffset or 0) - .5
+		local dw, dh = GetCellDims(back)
+		local event = BeginTouch(back, x + (col - .5) * dw, y + (row - .5) * dh)
+	--[[local event, dw, dh = remove(Events) or { name = "touch", id = "ignore_me" }, 
 
 		event.target, event.x, event.y = back, x + (col - .5) * dw, y + (row - .5) * dh
 		event.phase = "began"
 
 		Touch(event)
+]]
 
 		cto, rto = cto or col, rto or row
 
 		if col ~= cto or row ~= rto then
-			event.x, event.y = x + (cto - .5) * dw, y + (rto - .5) * dh
+		--	event.x, event.y = 
+			MoveTouch(event, x + (cto - .5) * dw, y + (rto - .5) * dh)--[[
 			event.phase = "moved"
 
-			Touch(event)
+			Touch(event)]]
 		end
 
+		EndTouch(event)--[[
 		event.phase = "ended"
 
-		Touch(event)
+		Touch(event)]]
 
-		self.m_col, self.m_row, event.target = scol, srow
+		self.m_col, self.m_row--[[, event.target]] = scol, srow
 
-		Events[#Events + 1] = event
+--		Events[#Events + 1] = event
 	end
 
-	--- Variant of @{ggroup:TouchCell} that uses x- and y-coordinates.
+	--- Variant of @{Grid:TouchCell} that uses x- and y-coordinates.
 	-- @number x Initial touch x-coordinate.
 	-- @number y ...and y-coordinate.
 	-- @number xto Final x... (If absent, _x_.)
 	-- @number yto ...and y. (Ditto for _y_.)
 	function Grid:TouchXY (x, y, xto, yto)
+--[[
 		local col, row = Cell(back, x, y)
 
 		self:TouchCell(col, row, Cell(back, xto or x, yto or y))
+]]
+		local scol, srow = self.m_col, self.m_row
+		--[[
+		local event = remove(Events) or { name = "touch", id = "ignore_me" }
+
+		event.target, event.x, event.y = back, x, y
+		event.phase = "began"
+
+		Touch(event)]]
+		local event = BeginTouch(back, x, y)
+
+		xto, yto = xto or x, yto or y
+
+		if x ~= xto or y ~= yto then
+			MoveTouch(event, xto, yto)--[[
+			event.x, event.y = xto, yto
+			event.phase = "moved"
+
+			Touch(event)]]
+		end
+
+		EndTouch(event)--[[
+		event.phase = "ended"
+
+		Touch(event)]]
+
+		self.m_col, self.m_row--[[, event.target]] = scol, srow
+
+--		Events[#Events + 1] = event
 	end
 
 	-- Provide the grid.

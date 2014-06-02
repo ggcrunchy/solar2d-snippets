@@ -1,4 +1,19 @@
---- Various useful, somewhat general grid functions.
+--- Various useful, somewhat general grid view objects.
+
+-- The following methods are available:
+--
+-- * **"grid"**: Boilerplate: editor grid function body.
+-- * **"load"**: Boilerplate: editor view being loaded... (The assets directory prefix, viz.
+-- in **"_prefix_\_Assets/", is passed through _col_, and a title for the current tile
+-- @{ui.Grid1D} is passed through _row_.)
+-- * **Enter(view)**: The editor view is being entered... (
+-- * **Exit**: ...exited...
+-- * **Load(group, prefix, title)**:
+-- * **Unload**: ...or unloaded.
+-- * **GetCurrent**: Returns the current tile @{ui.Grid1D}.
+-- * **GetGrid**: @{ui.Grid2D.Grid2D}
+-- * **GetValues**: Returns the values table.
+-- * **GetTiles**: Returns the values and tiles tables.
 
 --
 -- Permission is hereby granted, free of charge, to any person obtaining
@@ -43,23 +58,7 @@ local M = {}
 --- Common logic for the **PAINT** / **EDIT** / **ERASE** combination of grid operations.
 -- @callable dialog_wrapper Cf. the result of @{editor.Dialog.DialogWrapper}.
 -- @array types An array of strings denoting type.
--- @treturn function A "common ops" wrapper for an editor view. Its signature starts with a
--- _what_ parameter, then all grid function parameters, cf. _func_ in @{ui.Grid2D.Grid2D}.
---
--- The following choices are available for _what_:
---
--- * **"grid"**: Boilerplate: editor grid function body.
--- * **"load"**: Boilerplate: editor view being loaded... (The assets directory prefix, viz.
--- in **"_prefix_\_Assets/", is passed through _col_, and a title for the current tile
--- @{ui.Grid1D} is passed through _row_.)
--- * **"enter"**: ...entered... (The grid function is passed through _col_.)
--- * **"exit"**: ...exited...
--- * **"unload"**: ...or unloaded.
--- * **"get_current"**: Returns the current tile @{ui.Grid1D}.
--- * **"get_values"**: Returns the values table.
--- * **"get_values_and_tiles"**: Returns the values and tiles tables.
-
---- DOCME (i.e. bring the above stuff back into sync)
+-- @treturn GridView Editor grid view object.
 function M.EditErase (dialog_wrapper, types)
 	local cells, current, option, pick, tabs, tiles, try_option, tile_images, values
 

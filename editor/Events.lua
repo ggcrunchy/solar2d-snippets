@@ -1,8 +1,7 @@
 --- Some operations, e.g. for persistence and verification, reused among editor events.
 --
--- Many of these operations take a **common_ops** argument, namely to be called with one
--- of the **"get"**-type arguments. (Presently, these seem to all operate on grid-bound
--- values.) For an example of such a function, see @{editor.GridFuncs.EditErase}.
+-- Many operations take an argument of type **GridView**. For an example of such an object,
+-- see @{editor.GridViews.EditErase}.
 
 --
 -- Permission is hereby granted, free of charge, to any person obtaining
@@ -121,10 +120,10 @@ end
 -- on each blob of values in the group.
 -- @string what What type of value is being named (for error messages)?
 -- @array verify Verify block.
--- @callable common_ops Used to supply the values.
+-- @tparam GridView grid_view Supplies the module's values.
 -- @treturn boolean Were there any duplicates?
-function M.CheckNamesInValues (what, verify, common_ops)
-	local names, values = {}, common_ops:GetValues()
+function M.CheckNamesInValues (what, verify, grid_view)
+	local names, values = {}, grid_view:GetValues()
 
 	for _, v in pairs(values) do
 		if _CheckForNameDups_(what, verify, names, v) then
@@ -163,19 +162,16 @@ end
 -- @string what The group to load is found under `level[what].entries`.
 -- @ptable mod Module. As per @{LoadValuesFromEntry}, and in addition must contain a
 -- **GetTypes** function, which returns an array of type names.
--- @callable grid_func Grid function, used to temporarily enable the grid in order to
--- populate its cells.
--- @callable common_ops Used to supply the current tile grid, values, and tiles that belong
--- to the module.
-function M.LoadGroupOfValues_Grid (level, what, mod, common_ops)
-	local cells = common_ops:GetGrid()
+-- @tparam GridView grid_view Supplies the module's current tile grid, values, and tiles.
+function M.LoadGroupOfValues_Grid (level, what, mod, grid_view)
+	local cells = grid_view:GetGrid()
 
 	grid.Show(cells)
 
 	level[what].version = nil
 
-	local values, tiles = common_ops:GetValues(), common_ops:GetTiles()
-	local current = common_ops:GetCurrent()
+	local values, tiles = grid_view:GetValues(), grid_view:GetTiles()
+	local current = grid_view:GetCurrent()
 	local types = mod.GetTypes()
 
 	for k, entry in pairs(level[what].entries) do
@@ -382,13 +378,13 @@ end
 -- @ptable level Saved level state, as per @{SaveValuesIntoEntry}.
 -- @string what The group to load is found under `level[what].entries`.
 -- @ptable mod Module, as per @{SaveValuesIntoEntry}.
--- @callable common_ops  Used to supply the values that belong to the module.
-function M.SaveGroupOfValues (level, what, mod, common_ops)
+-- @tparam GridView grid_view Supplies the module's values.
+function M.SaveGroupOfValues (level, what, mod, grid_view)
 	local target = {}
 
 	level[what] = { entries = target, version = 1 }
 
-	local values = common_ops:GetValues()
+	local values = grid_view:GetValues()
 
 	for k, v in pairs(values) do
 		target[k] = _SaveValuesIntoEntry_(level, mod, v, {})
@@ -477,9 +473,9 @@ end
 --
 -- A **"verify"** editor event takes as arguments, in order: _verify_, _values_, _key_, where
 -- _values_ is a table of values to verify, and _key_ refers to the key being verified.
--- @callable common_ops Used to supply the values that belong to the module.
-function M.VerifyValues (verify, mod, common_ops)
-	local values = common_ops:GetValues()
+-- @tparam GridView grid_view Supplies the module's values.
+function M.VerifyValues (verify, mod, grid_view)
+	local values = grid_view:GetValues()
 
 	for k, v in pairs(values) do
 		mod.EditorEvent(v.type, "verify", verify, values, k)
