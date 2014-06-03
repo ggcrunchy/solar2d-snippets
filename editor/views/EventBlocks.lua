@@ -185,11 +185,9 @@ local Grid
 local function TouchBlock (block, name, old_name)
 	Name = name
 
-	local coffset, roffset = 0,0--grid.GetOffsets()
-
 	for row = block.row1, block.row2 do
 		for col = block.col1, block.col2 do
-			Grid:TouchCell(col - coffset, row - roffset)
+			Grid:TouchCell(col, row)
 		end
 	end
 
@@ -209,8 +207,6 @@ end
 
 --
 local HandleTouch = touch.TouchHelperFunc(function(event, handle)
---	handle.m_x, handle.m_y = event.x, event.y
-
 	local block = Blocks[handle.m_id]
 	local hgroup = block.m_handle_group
 
@@ -226,7 +222,7 @@ local HandleTouch = touch.TouchHelperFunc(function(event, handle)
 end, function(event, handle)
 	CanFill, ID, Name = true, handle.m_id, handle.m_name
 
-	Grid:TouchXY(--[[handle.m_x, handle.m_y]]event.xStart, event.yStart, event.x, event.y)
+	Grid:TouchXY(event.xStart, event.yStart, event.x, event.y)
 
 	UpdateBlock(Blocks[ID])
 	UpdateHandles(Blocks[ID])

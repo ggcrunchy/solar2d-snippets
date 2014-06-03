@@ -64,16 +64,6 @@ function M.GetHelp (func)
 	end
 end
 
--- Column and row of upper-left cell --
-local Col, Row
-
---- Getter.
--- @treturn uint Column offset... (i.e. upper-left cell visible on grid)
--- @treturn uint ...and row offset.
-function M.GetOffsets ()
-	return Col, Row
-end
-
 -- Number of columns and rows shown in the grid (maximum) and used as baseline for metrics --
 local ColBase, RowBase = 9, 9
 
@@ -143,6 +133,9 @@ end
 
 -- --
 local Hide = {}
+
+-- Column and row of upper-left cell --
+local Col, Row
 
 -- How many columns and rows are viewable on the grid? --
 local VCols, VRows

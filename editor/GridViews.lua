@@ -130,10 +130,10 @@ local GRIDHACK
 	end
 
 	--
-	local View = {}
+	local EditEraseGridView = {}
 
 	--- DOCME
-	function View:Enter ()
+	function EditEraseGridView:Enter ()
 		grid.Show(cells)
 		try_option(tabs, option)
 		common.ShowCurrent(current, option == "Paint")
@@ -145,7 +145,7 @@ GRIDHACK.isHitTestable = true
 	end
 
 	--- DOCME
-	function View:Exit ()
+	function EditEraseGridView:Exit ()
 		dialog_wrapper("close")
 
 		common.SetChoice(option)
@@ -159,29 +159,29 @@ GRIDHACK.isHitTestable = false
 	end
 
 	--- DOCME
-	function View:GetCurrent ()
+	function EditEraseGridView:GetCurrent ()
 		return current
 	end
 
 	-- ^^ RENAME, while about it? (e.g. choice)
 
 	--- DOCME
-	function View:GetGrid ()
+	function EditEraseGridView:GetGrid ()
 		return cells
 	end
 
 	--- DOCME
-	function View:GetTiles ()
+	function EditEraseGridView:GetTiles ()
 		return tiles
 	end
 
 	--- DOCME
-	function View:GetValues ()
+	function EditEraseGridView:GetValues ()
 		return values
 	end
 
 	--- DOCME
-	function View:Load (group, prefix, title)
+	function EditEraseGridView:Load (group, prefix, title)
 		values, tiles, cells = {}, {}, grid.NewGrid()
 
 		cells:addEventListener("cell", Cell)
@@ -237,13 +237,13 @@ GRIDHACK.isHitTestable = false
 	end
 
 	--- DOCME
-	function View:Unload ()
+	function EditEraseGridView:Unload ()
 		tabs:removeSelf()
 
 		cells, current, option, pick, tabs, tiles, tile_images, try_option, values = nil
 	end
 
-	return View
+	return EditEraseGridView
 end
 
 -- Export the module.

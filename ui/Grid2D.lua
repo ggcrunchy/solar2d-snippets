@@ -75,42 +75,36 @@ local function Dispatch (back, col, row, x, y, is_first)
 end
 
 --
-local function Cell2 (back, x, y)
-	local col, row = Cell(back, x, y)
-	local coff, roff = back.m_coffset or 0, back.m_roffset or 0
-
-	return col + coff, row + roff
-end
-
---
 local function GetOffsets (back)
-	return --[[(back.m_coffset or 0)]]0 - back.m_cx, --[[(back.m_roffset or 0)]]0 - back.m_cy
+	return -back.m_cx, -back.m_cy
 end
 
 -- Touch listener
 local Touch = touch.TouchHelperFunc(function(event, back)
 	-- Track initial coordinates for dragging.
 	local coff, roff = GetOffsets(back)
-	local col, row = Cell2(back, event.x, event.y)
+	local col, row = Cell(back, event.x, event.y)
 	local dw, dh = GetCellDims(back)
+
+	col = col + back.m_coffset
+	row = row + back.m_roffset
 
 	Dispatch(back, col, row, (col + coff) * dw, (row + roff) * dh, true)
 
 	back.m_col, back.m_row, Event.target = col, row
 end, function(event, back)
-	-- Fit the new position to a cell and do the callback on it if the cell has changed.
-	-- Since moving may skip over intervening cells, we do a line traversal to approximate
-	-- the path, likewise performing callbacks on each cell in between.
+	-- Fit the new position to a cell, detecting whether the coordinates have changed. Since the
+	-- new cell may be non-adjacent, a line traversal is performed to approximate the movement.
 	local end_col, end_row = Cell(back, event.x, event.y)
 
-	end_col = range.ClampIn(end_col, 1, back.m_ncols)
-	end_row = range.ClampIn(end_row, 1, back.m_nrows)
-end_col = end_col + (back.m_coffset or 0)
-end_row = end_row + (back.m_roffset or 0)
+	end_col = range.ClampIn(end_col, 1, back.m_ncols) + back.m_coffset
+	end_row = range.ClampIn(end_row, 1, back.m_nrows) + back.m_roffset
+
 	local first, dw, dh = true, GetCellDims(back)
 	local coff, roff = GetOffsets(back)
 
 	for col, row in grid_iterators.LineIter(back.m_col, back.m_row, end_col, end_row) do
+		-- Invoke the listener on each new traversed cell.
 		if not first then
 			Dispatch(back, col, row, (col + coff) * dw, (row + roff) * dh, false)
 		end
@@ -119,8 +113,7 @@ end_row = end_row + (back.m_roffset or 0)
 	end
 
 	-- Commit the new previous coordinates.
-	back.m_col = end_col
-	back.m_row = end_row
+	back.m_col, back.m_row, Event.target = end_col, end_row
 end)
 
 -- Common line add logic
@@ -173,7 +166,7 @@ end
 -- @number h
 -- @uint cols
 -- @uint rows
--- @treturn DisplayGroup Child #1: the background; Child #2: the target + lines group. 
+-- @treturn DisplayObject Grid widget. 
 -- @see ui.Skin.GetSkin
 function M.Grid2D (group, skin, x, y, w, h, cols, rows)
 	skin = skins.GetSkin(skin)
@@ -202,8 +195,8 @@ function M.Grid2D (group, skin, x, y, w, h, cols, rows)
 	--
 	back:setFillColor(colors.GetColor(skin.grid2d_backcolor))
 
-	back.m_ncols, back.m_cx = cols, .5
-	back.m_nrows, back.m_cy = rows, .5
+	back.m_ncols, back.m_cx, back.m_coffset = cols, .5, 0
+	back.m_nrows, back.m_cy, back.m_roffset = rows, .5, 0
 
 	--
 	back:addEventListener("touch", Touch)
@@ -269,13 +262,13 @@ function M.Grid2D (group, skin, x, y, w, h, cols, rows)
 	--- DOCME
 	-- @uint coffset
 	function Grid:SetColOffset (coffset)
-		back.m_coffset = coffset
+		back.m_coffset = coffset or 0
 	end
 
 	--- DOCME
 	-- @uint roffset
 	function Grid:SetRowOffset (roffset)
-		back.m_roffset = roffset
+		back.m_roffset = roffset or 0
 	end
 
 	--- DOCME
@@ -300,34 +293,18 @@ function M.Grid2D (group, skin, x, y, w, h, cols, rows)
 	-- @uint rto ...and row. (Ditto for _row_.)
 	function Grid:TouchCell (col, row, cto, rto)
 		local scol, srow, x, y = self.m_col, self.m_row, back:localToContent(-.5 * back.width, -.5 * back.height)
-		local dw, dh = GetCellDims(back)
-		local event = BeginTouch(back, x + (col - .5) * dw, y + (row - .5) * dh)
-	--[[local event, dw, dh = remove(Events) or { name = "touch", id = "ignore_me" }, 
-
-		event.target, event.x, event.y = back, x + (col - .5) * dw, y + (row - .5) * dh
-		event.phase = "began"
-
-		Touch(event)
-]]
+		local dc, dr, dw, dh = back.m_coffset + .5, back.m_roffset + .5, GetCellDims(back)
+		local event = BeginTouch(back, x + (col - dc) * dw, y + (row - dr) * dh)
 
 		cto, rto = cto or col, rto or row
 
 		if col ~= cto or row ~= rto then
-		--	event.x, event.y = 
-			MoveTouch(event, x + (cto - .5) * dw, y + (rto - .5) * dh)--[[
-			event.phase = "moved"
-
-			Touch(event)]]
+			MoveTouch(event, x + (cto - dc) * dw, y + (rto - dr) * dh)
 		end
 
-		EndTouch(event)--[[
-		event.phase = "ended"
+		EndTouch(event)
 
-		Touch(event)]]
-
-		self.m_col, self.m_row--[[, event.target]] = scol, srow
-
---		Events[#Events + 1] = event
+		self.m_col, self.m_row = scol, srow
 	end
 
 	--- Variant of @{Grid:TouchCell} that uses x- and y-coordinates.
@@ -336,39 +313,18 @@ function M.Grid2D (group, skin, x, y, w, h, cols, rows)
 	-- @number xto Final x... (If absent, _x_.)
 	-- @number yto ...and y. (Ditto for _y_.)
 	function Grid:TouchXY (x, y, xto, yto)
---[[
-		local col, row = Cell(back, x, y)
-
-		self:TouchCell(col, row, Cell(back, xto or x, yto or y))
-]]
 		local scol, srow = self.m_col, self.m_row
-		--[[
-		local event = remove(Events) or { name = "touch", id = "ignore_me" }
-
-		event.target, event.x, event.y = back, x, y
-		event.phase = "began"
-
-		Touch(event)]]
 		local event = BeginTouch(back, x, y)
 
 		xto, yto = xto or x, yto or y
 
 		if x ~= xto or y ~= yto then
-			MoveTouch(event, xto, yto)--[[
-			event.x, event.y = xto, yto
-			event.phase = "moved"
-
-			Touch(event)]]
+			MoveTouch(event, xto, yto)
 		end
 
-		EndTouch(event)--[[
-		event.phase = "ended"
+		EndTouch(event)
 
-		Touch(event)]]
-
-		self.m_col, self.m_row--[[, event.target]] = scol, srow
-
---		Events[#Events + 1] = event
+		self.m_col, self.m_row = scol, srow
 	end
 
 	-- Provide the grid.
