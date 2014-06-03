@@ -30,13 +30,13 @@ local min = math.min
 
 -- Modules --
 local common = require("editor.Common")
-local common_ui = require("editor.CommonUI")
 local dialog = require("editor.Dialog")
 local dispatch_list = require("game.DispatchList")
 local event_blocks = require("game.EventBlocks")
 local events = require("editor.Events")
 local grid = require("editor.Grid")
 local grid1D = require("ui.Grid1D")
+local grid_views = require("editor.GridViews")
 local links = require("editor.Links")
 local sheet = require("ui.Sheet")
 local touch = require("ui.Touch")
@@ -276,10 +276,6 @@ local function ShowHandles (block, group, id)
 	end
 end
 
--- TODO: Hack!
-local GRIDHACK
--- /TODO
-
 --
 local Cell
 
@@ -305,63 +301,48 @@ function M.Load (view)
 	CurrentEvent = grid1D.OptionsHGrid(view, nil, 150, 50, 200, 100, "Current event")
 
 	--
-	local tab_buttons = { "Paint", "Edit", "Stretch", "Erase" }
+	local choices = { "Paint", "Edit", "Stretch", "Erase" }
 
-	for i, label in ipairs(tab_buttons) do
-		tab_buttons[i] = {
-			label = label,
+	Tabs = grid_views.AddTabs(view, choices, function(label)
+		return function()
+			if Option ~= label then
+				common.ShowCurrent(CurrentEvent, label == "Paint")
 
-			onPress = function()
-				if Option ~= label then
-					common.ShowCurrent(CurrentEvent, label == "Paint")
+				--
+				if Option == "Edit" then
+					Dialog("close")
 
-					--
-					if Option == "Edit" then
-						Dialog("close")
+				--
+				elseif Option == "Stretch" then
+					grid.ShowOrHide(Tiles, function(tile, show)
+						tile.image.isVisible = show
+					end)
 
-					--
-					elseif Option == "Stretch" then
-						grid.ShowOrHide(Tiles, function(tile, show)
-							tile.image.isVisible = show
-						end)
-
-						for _, block in ipairs(Blocks) do
-							ShowHandles(block)
-						end
+					for _, block in ipairs(Blocks) do
+						ShowHandles(block)
 					end
-
-					--
-					if label == "Stretch" then
-						grid.ShowOrHide(Tiles, function(tile)
-							tile.image.isVisible = false
-						end)
-
-						for id, block in ipairs(Blocks) do
-							ShowHandles(block, view, id)
-						end
-					end
-
-					Option = label
-
-					return true
 				end
+
+				--
+				if label == "Stretch" then
+					grid.ShowOrHide(Tiles, function(tile)
+						tile.image.isVisible = false
+					end)
+
+					for id, block in ipairs(Blocks) do
+						ShowHandles(block, view, id)
+					end
+				end
+
+				Option = label
+
+				return true
 			end
-		}
-	end
+		end
+	end, 360)
 
 	--
-	Tabs = common_ui.TabBar(view, tab_buttons, { top = display.contentHeight - 65, left = 120, width = 360 }, true)
-
-	Tabs:setSelected(1, true)
-
-	-- TODO: Hack!
-	GRIDHACK = common_ui.TabsHack(view, Tabs, #tab_buttons)
-
-	GRIDHACK.isHitTestable = false
-	-- /TODO
-
-	--
-	TryOption = common.ChoiceTrier(tab_buttons)
+	TryOption = common.ChoiceTrier(choices)
 
 	--
 	Types = event_blocks.GetTypes()
@@ -556,9 +537,7 @@ function M.Enter ()
 	common.ShowCurrent(CurrentEvent, Option == "Paint")
 
 	Tabs.isVisible = true
--- TODO: Hack!
-GRIDHACK.isHitTestable = true 
--- /TODO
+
 	common.SetHelpContext("EventBlock")
 end
 
@@ -567,9 +546,7 @@ function M.Exit ()
 	Dialog("close")
 
 	Tabs.isVisible = false
--- TODO: Hack!
-GRIDHACK.isHitTestable = false 
--- /TODO
+
 	common.SetChoice(Option)
 	common.ShowCurrent(CurrentEvent, false)
 	grid.Show(false)

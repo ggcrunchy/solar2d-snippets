@@ -29,10 +29,10 @@ local pairs = pairs
 
 -- Modules --
 local common = require("editor.Common")
-local common_ui = require("editor.CommonUI")
 local dispatch_list = require("game.DispatchList")
 local grid = require("editor.Grid")
 local grid1D = require("ui.Grid1D")
+local grid_views = require("editor.GridViews")
 local sheet = require("ui.Sheet")
 
 -- Exports --
@@ -56,23 +56,8 @@ local Tabs
 -- --
 local Tiles
 
---
-local function SetEraseMode (erase)
-	return function()
-		Erase = erase
-
-		CurrentTile.isVisible = not erase
-
-		return true
-	end
-end
-
 -- --
 local TileNames = {	"_H", "_V", "UL", "UR", "LL", "LR", "TT", "LT", "RT", "BT", "_4", "_U", "_L", "_R", "_D" }
-
--- TODO: Hack!
-local GRIDHACK
--- /TODO
 
 --
 local function Cell (event)
@@ -138,24 +123,20 @@ function M.Load (view)
 	CurrentTile = grid1D.OptionsHGrid(view, nil, 150, 50, 200, 100, "Current tile")
 
 	--
-	local tab_buttons = {
-		-- Paint mode --
-		{ label = "Paint", onPress = SetEraseMode(false), selected = true },
+	local choices = { "Paint", "Erase" }
 
-		-- Erase mode --
-		{ label = "Erase", onPress = SetEraseMode(true) }
-	}
+	Tabs = grid_views.AddTabs(view, choices, function(label)
+		return function()
+			Erase = label == "Erase"
 
-	Tabs = common_ui.TabBar(view, tab_buttons, { top = display.contentHeight - 65, left = 120, width = 200 }, true)
+			CurrentTile.isVisible = not Erase
 
-	-- TODO: Hack!
-	GRIDHACK = common_ui.TabsHack(view, Tabs, #tab_buttons)
-
-	GRIDHACK.isHitTestable = false
-	-- /TODO
+			return true
+		end
+	end, 200)
 
 	--
-	TryOption = common.ChoiceTrier(tab_buttons)
+	TryOption = common.ChoiceTrier(choices)
 
 	--
 	CurrentTile:Bind(TileImages, #TileNames - 4) -- 4 for (unimplemented) up, left, right, down...
@@ -178,18 +159,14 @@ function M.Enter ()
 	common.ShowCurrent(CurrentTile, not Erase)
 
 	Tabs.isVisible = true
--- TODO: Hack!
-GRIDHACK.isHitTestable = true 
--- /TODO
+
 	common.SetHelpContext("Tiles")
 end
 
 --- DOCMAYBE
 function M.Exit ()
 	Tabs.isVisible = false
--- TODO: Hack!
-GRIDHACK.isHitTestable = false 
--- /TODO
+
 	common.SetChoice(Erase and "Erase" or "Paint")
 	common.ShowCurrent(CurrentTile, false)
 	grid.Show(false)

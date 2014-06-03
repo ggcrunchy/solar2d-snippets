@@ -1,4 +1,4 @@
---- Various useful, somewhat general grid view objects.
+--- Various useful, somewhat general grid view objects, and associated logic.
 
 -- The following methods are available:
 --
@@ -55,16 +55,51 @@ local display = display
 -- Exports --
 local M = {}
 
+--- DOCME
+-- @pgroup group
+-- @array names
+-- @callable func
+-- @uint w
+-- @treturn DisplayObject X
+function M.AddTabs (group, names, func, w)
+	local buttons = {}
+
+	for i, label in ipairs(names) do
+		buttons[i] = { label = label, onPress = func(label) }
+	end
+
+	local tabs = common_ui.TabBar(group, buttons, { top = display.contentHeight - 65, left = 120, width = w }, true)
+
+-- HACK!
+local GRIDHACK = common_ui.TabsHack(group, tabs, #buttons)
+local old = getmetatable(tabs)
+setmetatable(tabs, {
+	__index = old.__index,
+	__newindex = function(t, k, v)
+		if k == "isVisible" then
+			GRIDHACK.isHitTestable = v
+		end
+
+		old.__newindex(t, k, v)
+	end
+})
+GRIDHACK.isHitTestable = false
+tabs:addEventListener("finalize", function()
+	GRIDHACK:removeSelf()
+end)
+-- /HACK
+
+	tabs:setSelected(1, true)
+
+	return tabs
+end
+
 --- Common logic for the **PAINT** / **EDIT** / **ERASE** combination of grid operations.
 -- @callable dialog_wrapper Cf. the result of @{editor.Dialog.DialogWrapper}.
 -- @array types An array of strings denoting type.
 -- @treturn GridView Editor grid view object.
 function M.EditErase (dialog_wrapper, types)
 	local cells, current, option, pick, tabs, tiles, try_option, tile_images, values
-
--- TODO: HACK!
-local GRIDHACK
--- /TODO
 
 	--
 	local function Cell (event)
@@ -139,9 +174,6 @@ local GRIDHACK
 		common.ShowCurrent(current, option == "Paint")
 
 		tabs.isVisible = true
--- TODO: Hack!
-GRIDHACK.isHitTestable = true 
--- /TODO
 	end
 
 	--- DOCME
@@ -152,9 +184,7 @@ GRIDHACK.isHitTestable = true
 		common.ShowCurrent(current, false)
 
 		tabs.isVisible = false
--- TODO: Hack!
-GRIDHACK.isHitTestable = false 
--- /TODO
+
 		grid.Show(false)
 	end
 
@@ -189,40 +219,26 @@ GRIDHACK.isHitTestable = false
 
 		--
 		current = grid1D.OptionsHGrid(group, nil, 150, 50, 200, 100, title)
--- ^^ TODO: group
+
 		--
-		local tab_buttons = { "Paint", "Edit", "Erase" }
+		local choices = { "Paint", "Edit", "Erase" }
 
-		for i, label in ipairs(tab_buttons) do
-			tab_buttons[i] = {
-				label = label,
+		tabs = M.AddTabs(group, choices, function(label)
+			return function()
+				option = label
 
-				onPress = function()
-					option = label
+				common.ShowCurrent(current, label == "Paint")
 
-					common.ShowCurrent(current, label == "Paint")
-
-					if label ~= "Edit" then
-						dialog_wrapper("close")
-					end
-
-					return true
+				if label ~= "Edit" then
+					dialog_wrapper("close")
 				end
-			}
-		end
 
-		tabs = common_ui.TabBar(group, tab_buttons, { top = display.contentHeight - 65, left = 120, width = 300 }, true)
--- ^^ TODO: group
-		tabs:setSelected(1, true)
-
-		-- TODO: Hack!
-		GRIDHACK = common_ui.TabsHack(group, tabs, #tab_buttons)
--- ^^ TODO: group
-		GRIDHACK.isHitTestable = false 
-		-- /TODO
+				return true
+			end
+		end, 300)
 
 		--
-		try_option = common.ChoiceTrier(tab_buttons)
+		try_option = common.ChoiceTrier(choices)
 
 		--
 		tile_images = common.SpriteSetFromThumbs(prefix, types)

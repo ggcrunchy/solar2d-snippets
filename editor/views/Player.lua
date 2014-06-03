@@ -29,9 +29,9 @@ local min = math.min
 
 -- Modules --
 local common = require("editor.Common")
-local common_ui = require("editor.CommonUI")
 local dispatch_list = require("game.DispatchList")
 local grid = require("editor.Grid")
+local grid_views = require("editor.GridViews")
 
 -- Corona globals --
 local display = display
@@ -50,10 +50,6 @@ local StartPos
 
 -- --
 local Tabs
-
--- TODO: Hack!
-local GRIDHACK
--- /TODO
 
 --
 local function Cell (event)
@@ -85,45 +81,29 @@ function M.Load (view)
 	Grid:addEventListener("cell", Cell)
 
 	--
-	local tab_buttons = { "Start" }--, "Events" } -- todo: other player stuff, not events
+	local choices = { "Start" }--, "Events" } -- todo: other player stuff, not events
 
-	for i, label in ipairs(tab_buttons) do
-		tab_buttons[i] = {
-			label = label,
-
-			onPress = function()
-				if Option ~= label then
-
-					--
-					if Option == "Start" then
-						grid.Show(false)
-					-- else...
-					end
-
-					--
-					if label == "Start" then
-						grid.Show(Grid)
-					-- else ...
-					end
-
-					Option = label
+	Tabs = grid_views.AddTabs(view, choices, function(label)
+		return function()
+			if Option ~= label then
+				--
+				if Option == "Start" then
+					grid.Show(false)
+				-- else...
 				end
 
-				return true
+				--
+				if label == "Start" then
+					grid.Show(Grid)
+				-- else ...
+				end
+
+				Option = label
 			end
-		}
-	end
 
-	--
-	Tabs = common_ui.TabBar(view, tab_buttons, { top = display.contentHeight - 65, left = 120, width = 200 }, true)
-
-	Tabs:setSelected(1, true)
-
-	-- TODO: Hack!
-	GRIDHACK = common_ui.TabsHack(view, Tabs, #tab_buttons)
-
-	GRIDHACK.isHitTestable = false 
-	-- /TODO
+			return true
+		end
+	end, 200)
 
 	--
 	grid.Show(false)
@@ -147,18 +127,14 @@ function M.Enter ()
 	-- "positions"
 
 	Tabs.isVisible = true
--- TODO: Hack!
-GRIDHACK.isHitTestable = true 
--- /TODO
+
 	common.SetHelpContext("Player")
 end
 
 --- DOCMAYBE
 function M.Exit ()
 	Tabs.isVisible = false
--- TODO: Hack!
-GRIDHACK.isHitTestable = false 
--- /TODO
+
 	grid.Show(false)
 end
 
