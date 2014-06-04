@@ -81,7 +81,7 @@ local function Cell (event)
 		else
 			local grid = event.target
 
-			Tiles[key] = sheet.NewImage(grid:GetTarget(), TileImages, event.x, event.y, grid:GetCellDims())
+			Tiles[key] = sheet.NewImage(grid:GetCanvas(), TileImages, event.x, event.y, grid:GetCellDims())
 
 			is_dirty = true
 		end

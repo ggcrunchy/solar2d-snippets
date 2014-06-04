@@ -105,10 +105,10 @@ function M.EditErase (dialog_wrapper, types)
 	local function Cell (event)
 		local key, which = common.ToKey(event.col, event.row), current:GetCurrent()
 		local cur, tile = values[key], tiles[key]
-		local target, cw, ch = event.target:GetTarget(), event.target:GetCellDims()
+		local canvas, cw, ch = event.target:GetCanvas(), event.target:GetCellDims()
 
 		--
-		pick = grid.UpdatePick(target, pick, event.col, event.row, event.x, event.y, cw, ch)
+		pick = grid.UpdatePick(canvas, pick, event.col, event.row, event.x, event.y, cw, ch)
 
 		--
 		if option == "Edit" then
@@ -136,7 +136,7 @@ function M.EditErase (dialog_wrapper, types)
 			end
 
 			values[key] = dialog_wrapper("new_values", types[which], key)
-			tiles[key] = tile or sheet.NewImage(target, tile_images, event.x, event.y, cw, ch)
+			tiles[key] = tile or sheet.NewImage(canvas, tile_images, event.x, event.y, cw, ch)
 
 			sheet.SetSpriteSetImageFrame(tiles[key], which)
 

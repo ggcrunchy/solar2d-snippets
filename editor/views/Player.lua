@@ -56,7 +56,7 @@ local function Cell (event)
 	if not StartPos then
 		local cw, ch = event.target:GetCellDims()
 
-		StartPos = display.newCircle(event.target:GetTarget(), 0, 0, min(cw, ch) / 2)
+		StartPos = display.newCircle(event.target:GetCanvas(), 0, 0, min(cw, ch) / 2)
 
 		StartPos:setStrokeColor(1, 0, 0)
 

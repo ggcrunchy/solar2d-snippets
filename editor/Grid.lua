@@ -168,7 +168,7 @@ local function UpdateCoord (col, row, diff)
 		row = max(0, min(row, rrange))
 
 		--
-		local target = Grid.active:GetTarget()
+		local canvas = Grid.active:GetCanvas()
 		local cw, ch = GetCellDims()
 
 		To.x, To.y = nil
@@ -189,7 +189,7 @@ local function UpdateCoord (col, row, diff)
 
 			Hide.what, Hide.which = "col", hide
 
-			To.x, cdelta = target.x - dc * cw, dc
+			To.x, cdelta = canvas.x - dc * cw, dc
 		end
 
 		if row ~= Row then
@@ -208,13 +208,13 @@ local function UpdateCoord (col, row, diff)
 
 			Hide.what, Hide.which = "row", hide
 
-			To.y, rdelta = target.y - dr * ch, dr
+			To.y, rdelta = canvas.y - dr * ch, dr
 		end
 
 		--
 		if To.x or To.y then
 			for grid in pairs(Targets) do
-				transition.to(grid:GetTarget(), To)
+				transition.to(grid:GetCanvas(), To)
 			end
 		end
 	end

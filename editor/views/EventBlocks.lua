@@ -477,7 +477,7 @@ function Cell (event)
 
 			Blocks[id] = { col1 = col, row1 = row, col2 = col, row2 = row, info = Dialog("new_values", Types[which], id) }
 
-			AddImage(event.target:GetTarget(), key, id, event.x, event.y, event.target:GetCellDims())
+			AddImage(event.target:GetCanvas(), key, id, event.x, event.y, event.target:GetCellDims())
 			AddRep(Blocks[id], Types[which])
 
 			common.Dirty()
@@ -512,7 +512,7 @@ function Cell (event)
 	elseif Name == "fill" then
 		local w, h = event.target:GetCellDims()
 
-		AddImage(event.target:GetTarget(), key, ID, event.x, event.y, w, h, true)
+		AddImage(event.target:GetCanvas(), key, ID, event.x, event.y, w, h, true)
 
 	--
 	elseif CanFill then
