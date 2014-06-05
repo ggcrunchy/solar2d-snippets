@@ -180,7 +180,7 @@ function M.EditErase (dialog_wrapper, types)
 	function EditEraseGridView:Exit ()
 		dialog_wrapper("close")
 
-		common.SetChoice(option)
+		grid.SetChoice(option)
 		common.ShowCurrent(current, false)
 
 		tabs.isVisible = false
@@ -238,7 +238,7 @@ function M.EditErase (dialog_wrapper, types)
 		end, 300)
 
 		--
-		try_option = common.ChoiceTrier(choices)
+		try_option = grid.ChoiceTrier(choices)
 
 		--
 		tile_images = common.SpriteSetFromThumbs(prefix, types)

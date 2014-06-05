@@ -136,7 +136,7 @@ function M.Load (view)
 	end, 200)
 
 	--
-	TryOption = common.ChoiceTrier(choices)
+	TryOption = grid.ChoiceTrier(choices)
 
 	--
 	CurrentTile:Bind(TileImages, #TileNames - 4) -- 4 for (unimplemented) up, left, right, down...
@@ -167,7 +167,7 @@ end
 function M.Exit ()
 	Tabs.isVisible = false
 
-	common.SetChoice(Erase and "Erase" or "Paint")
+	grid.SetChoice(Erase and "Erase" or "Paint")
 	common.ShowCurrent(CurrentTile, false)
 	grid.Show(false)
 end

@@ -175,36 +175,6 @@ function M.BindRepAndValues (rep, values)
 	return prev
 end
 
--- (Sometimes) common view choice --
-local CurrentChoice
-
---- DOCME
-function M.ChoiceTrier (names)
-	local choices = {}
-
-	for _, v in ipairs(names) do
-		choices[#choices + 1] = v.label
-	end
-
-	return function(tabs, unless)
-		local index
-
-		for i, v in ipairs(choices) do
-			if CurrentChoice == v then
-				index = i
-
-				break
-			end
-		end
-
-		CurrentChoice = nil
-
-		if index and choices[index] ~= unless then
-			tabs:setSelected(index, true)
-		end
-	end
-end
-
 --- Cleans up various state used pervasively by the editor.
 function M.CleanUp ()
 	if Nets then
@@ -348,7 +318,7 @@ local CurrentX, CurrentY
 -- @uint ncols How many columns will be in the working level...
 -- @uint nrows ...and how many rows?
 function M.Init (ncols, nrows)
-	NCols, NRows, CurrentChoice, CurrentX, CurrentY = ncols, nrows
+	NCols, NRows, CurrentX, CurrentY = ncols, nrows
 
 	if Buttons.Save then
 		Buttons.Save.alpha = .4
@@ -498,11 +468,6 @@ function M.RemoveDups (list)
 			prev = list[i]
 		end
 	end
-end
-
---- DOCME
-function M.SetChoice (choice)
-	CurrentChoice = choice
 end
 
 --- DOCME

@@ -1,4 +1,4 @@
---- Grid shared by various editor views.
+--- Grid logic shared among various editor views.
 
 --
 -- Permission is hereby granted, free of charge, to any person obtaining
@@ -26,6 +26,7 @@
 -- Standard library imports --
 local ceil = math.ceil
 local format = string.format
+local ipairs = ipairs
 local max = math.max
 local min = math.min
 local pairs = pairs
@@ -55,6 +56,36 @@ local Targets
 --- Cleans up various state used by editor grid operations.
 function M.CleanUp ()
 	Grid, Offset, Targets = nil
+end
+
+-- (Sometimes) common view choice --
+local CurrentChoice
+
+--- DOCME
+function M.ChoiceTrier (names)
+	local choices = {}
+
+	for _, v in ipairs(names) do
+		choices[#choices + 1] = v
+	end
+
+	return function(tabs, unless)
+		local index
+
+		for i, v in ipairs(choices) do
+			if CurrentChoice == v then
+				index = i
+
+				break
+			end
+		end
+
+		CurrentChoice = nil
+
+		if index and choices[index] ~= unless then
+			tabs:setSelected(index, true)
+		end
+	end
 end
 
 --- DOCME
@@ -251,7 +282,7 @@ end
 --- Initializes various state used by editor grid operations.
 -- @pgroup view Map editor scene view.
 function M.Init (view)
-	Grid, Targets, Col, Row = {}, {}, 0, 0
+	Grid, Targets, Col, Row, CurrentChoice = {}, {}, 0, 0
 
 	local ncols, nrows = common.GetDims()
 
@@ -314,6 +345,11 @@ function M.NewGrid ()
 	Targets[grid] = true
 
 	return grid
+end
+
+--- DOCME
+function M.SetChoice (choice)
+	CurrentChoice = choice
 end
 
 ---DOCME

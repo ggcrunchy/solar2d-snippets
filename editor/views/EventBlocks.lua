@@ -342,7 +342,7 @@ function M.Load (view)
 	end, 360)
 
 	--
-	TryOption = common.ChoiceTrier(choices)
+	TryOption = grid.ChoiceTrier(choices)
 
 	--
 	Types = event_blocks.GetTypes()
@@ -547,7 +547,7 @@ function M.Exit ()
 
 	Tabs.isVisible = false
 
-	common.SetChoice(Option)
+	grid.SetChoice(Option)
 	common.ShowCurrent(CurrentEvent, false)
 	grid.Show(false)
 end
