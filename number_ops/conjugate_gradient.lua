@@ -23,53 +23,30 @@
 -- [ MIT license: http://www.opensource.org/licenses/mit-license.php ]
 --
 
+-- Modules --
+local linear_algebra = require("number_ops.linear_algebra")
+
 -- Exports --
 local M = {}
 
---
-local function Dot (v, w, n)
-	local sum = v[1] * w[1]
-
-	for i = 2, n do
-		sum = sum + v[i] * w[i]
-	end
-
-	return sum
-end
-
--- --
+-- Matrix-vector product --
 local Ax = {}
 
---
-local function MatrixTimesVector (A, x, n)
-	local j = 1
-
-	for i = 1, n do
-		local sum = 0
-		
-		for k = 1, n do
-			sum, j = sum + A[j] * x[k], j + 1
-		end
-
-		Ax[i] = sum
-	end
-end
-
--- --
+-- Residual; basis vector --
 local R, P = {}, {}
 
 --- DOCME
 -- @array out
--- @array A
+-- @array Symmetric _n_ x _n_ matrix.
 -- @array b
 -- @uint n
 -- @array[opt] x0
 function M.ConjugateGradient (out, A, b, n, x0)
-	-- Compute initial residual.
+	-- Compute initial residual and basis vector.
 	local rk2 = 0
 
 	if x0 then
-		MatrixTimesVector(A, x0, n)
+		linear_algebra.MatrixTimesVector(Ax, A, x0, n)
 
 		for i = 1, n do
 			local ri = b[i] - Ax[i]
@@ -84,12 +61,12 @@ function M.ConjugateGradient (out, A, b, n, x0)
 		end
 	end
 
-	--
+	-- Iterate until the residual is sufficiently small.
 	while true do
-		MatrixTimesVector(A, P, n)
+		linear_algebra.MatrixTimesVector(Ax, A, P, n)
 
 		--
-		local alpha, rnext = rk2 / Dot(P, Ax, n), 0
+		local alpha, rnext = rk2 / linear_algebra.Dot(P, Ax, n), 0
 
 		for i = 1, n do
 			out[i] = out[i] + alpha * P[i]
@@ -99,7 +76,7 @@ function M.ConjugateGradient (out, A, b, n, x0)
 			R[i], rnext = ri, rnext + ri^2
 		end
 
-		--
+		-- Small enough?
 		if rnext < 1e-3 then
 			break
 		end
@@ -118,46 +95,68 @@ end
 -- --
 local Z = {}
 
--- A 0 0 | A B D | x1 = z1
--- B C 0 | 0 C B | x2 = z2
--- D E F | 0 0 F | x3 = z3
-
--- a 0 0 | A 0 0 = 1 0 0 -> a * A = 1 -> a = ****1 / A****
--- d e 0 | B C 0 = 0 1 0 -> d * A + e * B = 0, e * C = 1, e = ****1 / C**** -> d * A = -B / C -> d = *****-B / (A * C)*****
--- g h i | D E F = 0 0 1 -> g * A + h * B + i * D = 0 -> i = *****1 / F*****, h = *****-E / (C * F)*****
-
--- Row i:
--- Solve diagonal = 1 / L[i,i]
--- Going left, solve for column k: sum over j in [k + 1, i]: inverse[i,j] * L[j,i], then inverse[i,k] * L[k,i] + sum = 0 -> inverse[i,k] = -sum / L[k,i]
-
--- (Looks a lot like the decomp...)
-
 --- DOCME
 -- @array out
--- @array MI
+-- @array L
 -- @array A
 -- @array b
 -- @uint n
 -- @array[opt] x0
-function M.ConjugateGradient_Precond (out, MI, A, b, n, x0)
---[[
-	r[0] = b - X * x[0]
-	z[0] = inverse(M) * r[0] (or M1 * M2 * z[0] = r[0]...)
-	p[0] = z[0]
-	k = 0
+function M.ConjugateGradient_PrecondLT (out, L, A, b, n, x0)
+	-- Compute initial residual.
+	if x0 then
+		linear_algebra.MatrixTimesVector(Ax, A, x0, n)
+
+		for i = 1, n do
+			R[i], out[i] = b[i] - Ax[i], x0[i]
+		end
+	else
+		for i = 1, n do
+			R[i], out[i] = b[i], 0
+		end
+	end
+
+	-- Compute initial z and basis vector.
+	linear_algebra.EvaluateLU_CompactTranspose(Z, L, R, n, true)
+
+	for i = 1, n do
+		P[i] = Z[i]
+	end
+
+	local zr = linear_algebra.Dot(Z, R, n)
+
+	-- Iterate until the residual is sufficiently small.
 	while true do
-		a[k] = (transpose(r[k]) * z[k]) / (transpose(p[k]) * A * p[k])
-		x[k+1] = x[k] + alpha[k] * p[k]
-		r[k+1] = r[k] - alpha[k] * A * p[k]
-		if IsSmall(r[k+1]) then
+		linear_algebra.MatrixTimesVector(Ax, A, P, n)
+
+		--
+		local alpha, rsqr = zr / linear_algebra.Dot(P, Ax, n), 0
+
+		for i = 1, n do
+			out[i] = out[i] + alpha * P[i]
+
+			local ri = R[i] - alpha * Ax[i]
+
+			R[i], rsqr = ri, rsqr + ri^2
+		end
+
+		-- Small enough?
+		if rsqr < 1e-3 then
 			break
 		end
-		z[k+1] = inverse(M) * r[k+1]
-		beta[k] = (tranpose(z[k+1]) * r[k+1]) / (transpose(z[k]) * r[k])
-		p[k+1]=z[k+1] + beta[k] * p[k]
-		k = k + 1
+
+		--
+		linear_algebra.EvaluateLU_CompactTranspose(Z, L, R, n)
+
+		local zrnext = linear_algebra.Dot(Z, R, n)
+		local beta = zrnext / zr
+
+		for i = 1, n do
+			P[i] = Z[i] + beta * P[i]
+		end
+
+		zr = zrnext
 	end
-]]
 end
 
 -- Export the module.

@@ -29,13 +29,16 @@ local sqrt = math.sqrt
 -- Exports --
 local M = {}
 
---
-local function ICCG (a, n)
-	local out, ri, di = {}, 0, 1
+--- DOCME
+-- @array out
+-- @array A Symmetric _n_ x _n_ matrix.
+-- @uint n Matrix dimension.
+function M.IncompleteLT (out, A, n)
+	local ri, di = 0, 1
 
 	for i = 1, n do
 		local index = ri + i
-		local sqr = a[index]
+		local sqr = A[index]
 
 		for j = 1, i - 1 do
 			sqr = sqr - out[di - j]^2
@@ -50,7 +53,7 @@ local function ICCG (a, n)
 		for j = i + 1, n do
 			ij, ji, vstep = ij + 1, ji + vstep, vstep + 1
 
-			local diff, ik, jk = a[ij], di - 1, ji - 1
+			local diff, ik, jk = A[ij], di - 1, ji - 1
 
 			for k = 1, i - 1 do
 				diff, ik, jk = diff - out[ik] * out[jk], ik - 1, jk - 1
