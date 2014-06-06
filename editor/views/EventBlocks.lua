@@ -76,13 +76,13 @@ local CanFill, Name, ID
 
 --
 local function FitTo (rep, ul, lr)
-	local x, y, w, h = common.Rect(ul)
+	local x, y, w, h = ul.x, ul.y, ul.width, ul.height
 
 	if lr then
-		local x2, y2, w2, h2 = common.Rect(lr)
+		local x2, y2, w2, h2 = lr.x, lr.y, lr.width, lr.height
 		local xr, yb = max(x + w, x2 + w2), max(y + h, y2 + h2)
 
-		x, y = min(x, x2), min(y, y2)
+		x, y = min(x - w, x2 - w2), min(y - h, y2 - h2)
 		w, h = xr - x, yb - y
 	end
 

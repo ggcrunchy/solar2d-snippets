@@ -479,15 +479,15 @@ params.time, params.onComplete = n * 120, Show
 		end
 
 		--
-		local x, y, w, h = common.Rect(object)
+		local x, y, w, h = object.x, object.y, object.width, object.height
 
 		Outline = display.newRoundedRect(object.parent, 0, 0, w + 10, h + 10, 15)
 
 		Outline:setFillColor(0, 0)
 		Outline:setStrokeColor(0, 1, 0)
 
-		Outline.anchorX, Outline.x = 0, x - 5
-		Outline.anchorY, Outline.y = 0, y - 5
+		Outline.anchorX, Outline.x = object.anchorX, x - 5
+		Outline.anchorY, Outline.y = object.anchorY, y - 5
 		Outline.strokeWidth = 7
 
 	-- Cleanup.

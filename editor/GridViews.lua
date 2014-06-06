@@ -85,7 +85,9 @@ setmetatable(tabs, {
 })
 GRIDHACK.isHitTestable = false
 tabs:addEventListener("finalize", function()
-	GRIDHACK:removeSelf()
+	if GRIDHACK.parent then
+		GRIDHACK:removeSelf()
+	end
 end)
 -- /HACK
 

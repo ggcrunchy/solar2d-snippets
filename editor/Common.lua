@@ -442,18 +442,6 @@ function M.ProxyRect (group, minx, miny, maxx, maxy)
 	return rect
 end
 
---- Gets the content rect of an object.
--- @pobject object Reference object.
--- @treturn number Upper-left x-coordinate...
--- @treturn number ...and y-coordinate.
--- @treturn number Object width...
--- @treturn number ...and height.
-function M.Rect (object)
-	local bounds = object.contentBounds
-
-	return bounds.xMin, bounds.yMin, bounds.xMax - bounds.xMin, bounds.yMax - bounds.yMin
-end
-
 --- DOCME
 function M.RemoveDups (list)
 	sort(list)

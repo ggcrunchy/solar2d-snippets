@@ -121,8 +121,9 @@ end
 -- @pgroup group Group to which frame is added; if absent, _object_'s parent.
 -- @treturn DisplayObject Rect object.
 function M.Frame (object, r, g, b, group)
-	local x, y, w, h = common.Rect(object)
-	local frame = common.NewRoundedRect(group or object.parent, x, y, w, h, 2)
+	local bounds = object.contentBounds
+	local w, h = bounds.xMax - bounds.xMin, bounds.yMax - bounds.yMin
+	local frame = common.NewRoundedRect(group or object.parent, bounds.xMin, bounds.yMin, w, h, 2)
 
 	frame:setFillColor(0, 0)
 	frame:setStrokeColor(r, g, b)
