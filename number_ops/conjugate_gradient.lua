@@ -35,12 +35,12 @@ local Ax = {}
 -- Residual; basis vector --
 local R, P = {}, {}
 
---- DOCME
--- @array out
--- @array Symmetric _n_ x _n_ matrix.
+--- Solves the system of linear equations _Ax_ = _b_.
+-- @array out Solution vector, i.e. _x_.
+-- @array A Symmetric _n_ x _n_ matrix.
 -- @array b
--- @uint n
--- @array[opt] x0
+-- @uint n Matrix dimension and number of elements in _out_, _b_, and _x0_.
+-- @array[opt] x0 Initial guess for _x_; if absent, a zero vector.
 function M.ConjugateGradient (out, A, b, n, x0)
 	-- Compute initial residual and basis vector.
 	local rk2 = 0
@@ -65,7 +65,7 @@ function M.ConjugateGradient (out, A, b, n, x0)
 	while true do
 		linear_algebra.MatrixTimesVector(Ax, A, P, n)
 
-		--
+		-- Perform gradient descent and find the new residue.
 		local alpha, rnext = rk2 / linear_algebra.Dot(P, Ax, n), 0
 
 		for i = 1, n do
@@ -81,7 +81,7 @@ function M.ConjugateGradient (out, A, b, n, x0)
 			break
 		end
 
-		--
+		-- Find the next basis vector.
 		local beta = rnext / rk2
 
 		for i = 1, n do
@@ -92,16 +92,21 @@ function M.ConjugateGradient (out, A, b, n, x0)
 	end
 end
 
--- --
+-- Preconditioner-mapped residual --
 local Z = {}
 
---- DOCME
--- @array out
--- @array L
--- @array A
+-- Upper-triangular factor --
+local UT = {}
+
+--- Variant of @{ConjugateGradient} that takes a [preconditioner](http://en.wikipedia.org/wiki/Preconditioner)
+-- matrix inverse(_M)_, where _M_ factors into _L_ * transpose(_L_).
+-- @array out Solution vector, i.e. _x_.
+-- @array L Lower-triangular part of factorization, stored as { _c11_, _c21_, _c22_, ...,
+-- _cn1_, ..., _cnn_ }, where each _cij_ is the element belonging to row _i_ and column _j_.
+-- @array A Symmetric _n_ x _n_ matrix.
 -- @array b
--- @uint n
--- @array[opt] x0
+-- @uint n Matrix dimension and number of elements in _out_, _b_, and _x0_.
+-- @array[opt] x0 Initial guess for _x_; if absent, a zero vector.
 function M.ConjugateGradient_PrecondLT (out, L, A, b, n, x0)
 	-- Compute initial residual.
 	if x0 then
@@ -117,7 +122,8 @@ function M.ConjugateGradient_PrecondLT (out, L, A, b, n, x0)
 	end
 
 	-- Compute initial z and basis vector.
-	linear_algebra.EvaluateLU_CompactTranspose(Z, L, R, n, true)
+	linear_algebra.CompactTranspose(L, UT, n)
+	linear_algebra.EvaluateLU_Compact(Z, L, UT, R, n)
 
 	for i = 1, n do
 		P[i] = Z[i]
@@ -129,7 +135,7 @@ function M.ConjugateGradient_PrecondLT (out, L, A, b, n, x0)
 	while true do
 		linear_algebra.MatrixTimesVector(Ax, A, P, n)
 
-		--
+		-- Perform gradient descent and find the new residue.
 		local alpha, rsqr = zr / linear_algebra.Dot(P, Ax, n), 0
 
 		for i = 1, n do
@@ -145,8 +151,8 @@ function M.ConjugateGradient_PrecondLT (out, L, A, b, n, x0)
 			break
 		end
 
-		--
-		linear_algebra.EvaluateLU_CompactTranspose(Z, L, R, n)
+		-- Find the next basis vector.
+		linear_algebra.EvaluateLU_Compact(Z, L, UT, R, n)
 
 		local zrnext = linear_algebra.Dot(Z, R, n)
 		local beta = zrnext / zr

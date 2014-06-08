@@ -38,60 +38,7 @@ Scene:addEventListener("create")
 
 --
 function Scene:show (e)
-if e.phase == "did" then return end
-local la = require("number_ops.linear_algebra")
-
-local m = { 4, 12, -16, 12, 37, -43, -16, -43, 98 }
-local l, u = { 2, 6, 1, -8, 5, 3 }, { 2, 6, -8, 1, 5, 3 }
-
-local x = { math.random(), math.random(), math.random() }
-
-print("RANDOM!")
-vdump(x)
-
-local b = {}
-
-la.MatrixTimesVector(b, m, x, 3)
-
-print("B")
-vdump(b)
-
-local xx = {}
-
-la.EvaluateLU_Compact (xx, l, u, b, 3)
-
-print("INVERTED")
-vdump(xx)
-
-local cg = require("number_ops.conjugate_gradient")
-
-	local X = {}
-	local M = { 4, 1, 1, 3 }
-	local DIM = 2
-	local B, X0 = { 1, 2 }, { 2, 1 }
-
-	cg.ConjugateGradient(X, M, B, DIM, X0)
-print(1/11,7/11)
-	vdump(X)
---[=[
-	--[[
-					 [4 1][x1] = [1]		[2]		[1/11]
-		Example Ax = [1 3][x2] = [2], x0 = 	[1], x =[7/11]
-	]]
---]=]
-
-print("Preconditioned...")
-
-local chol = require("number_ops.cholesky")
-
-local LT={}
-
-chol.IncompleteLT(LT, M, DIM) -- ??? (no real idea what to pick...)
-
-cg.ConjugateGradient_PrecondLT (X, LT, M, B, DIM, X0)
-
-vdump(X)
--- works... who knows how well...
+	--
 end
 
 Scene:addEventListener("show")

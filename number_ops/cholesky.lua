@@ -29,8 +29,9 @@ local sqrt = math.sqrt
 -- Exports --
 local M = {}
 
---- DOCME
--- @array out
+--- Performs an [incomplete Cholesky factorization](http://en.wikipedia.org/wiki/Incomplete_Cholesky_factorization).
+-- @array out Lower-triangular part of factorization, stored as { _c11_, _c21_, _c22_, ...,
+-- _cn1_, ..., _cnn_ }, where each _cij_ is the element belonging to row _i_ and column _j_.
 -- @array A Symmetric _n_ x _n_ matrix.
 -- @uint n Matrix dimension.
 function M.IncompleteLT (out, A, n)
