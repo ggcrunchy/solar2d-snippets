@@ -596,18 +596,17 @@ function Samplers:pure_sampler (radius)
 end
 
 --
+local function AuxUniform (us)
+	for _ = 1, floor(.75 / us.m_radius^2) do
+		AddPoint(us, RandomPoint(us))
+	end
+end
+
+--
 function Samplers:uniform (radius)
 	local u = MakeSampler(radius, false, false)
 
-	function u:Complete ()
-	--[[
-		int N = (int) (.75/(radius*radius));
-
-	for (int i=0; i<N; i++) {
-		addPoint(randomPoint());
-	}
-	]]
-	end
+	u.Complete = AuxUniform
 
 	return u
 end
