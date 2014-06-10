@@ -325,49 +325,7 @@ function M.SerialConvolve_2D (sn, kernel, scols, kcols, func, opts)
 	until not signal
 end
 
---[[
-	TODO:
-
-	Separable filters support for 2D?
-
-	http://en.wikipedia.org/wiki/Overlap-save_method
-
-(Overlap–save algorithm for linear convolution)
- h = FIR_impulse_response
- M = length(h)
- overlap = M-1
- N = 4*overlap    (or a nearby power-of-2)
- step_size = N-overlap
- H = DFT(h, N)
- position = 0
- while position+N <= length(x)
-     yt = IDFT( DFT( x(1+position : N+position), N ) * H, N )
-     y(1+position : step_size+position) = yt(M : N)    #discard M-1 y-values
-     position = position + step_size
- end
-
-	http://en.wikipedia.org/wiki/Overlap-add_method
-
-Algorithm 1 (OA for linear convolution)
-   Evaluate the best value of N and L (L>0, N = M+L-1 nearest to power of 2).
-   Nx = length(x);
-   H = FFT(h,N)       (zero-padded FFT)
-   i = 1
-   y = zeros(1, M+Nx-1)
-   while i <= Nx  (Nx: the last index of x[n])
-       il = min(i+L-1,Nx)
-       yt = IFFT( FFT(x(i:il),N) * H, N)
-       k  = min(i+N-1,M+Nx-1)
-       y(i:k) = y(i:k) + yt(1:k-i+1)    (add the overlapped output blocks)
-       i = i+L
-   end
-   
-Algorithm 2 (OA for circular convolution)
-   Evaluate Algorithm 1
-   y(1:M-1) = y(1:M-1) + y(Nx+1:Nx+M-1)
-   y = y(1:Nx)
-   end   
-]]
+-- TODO: Separable filters support for 2D?
 
 -- Export the module.
 return M
