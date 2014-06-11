@@ -39,11 +39,13 @@ Scene:addEventListener("create")
 --
 function Scene:show (e)
 	if e.phase == "will" then return end
+local cc = require("signal_ops.circular_convolution")
 local fc = require("signal_ops.fft_convolution")
-	--[[
-		http://en.wikipedia.org/wiki/Overlap-save_method
+local lc = require("signal_ops.linear_convolution")
 
-(Overlap–save algorithm for linear convolution)
+	--
+	local function OverlapSave (x, h)
+--[[
  h = FIR_impulse_response
  M = length(h)
  overlap = M-1
@@ -56,9 +58,27 @@ local fc = require("signal_ops.fft_convolution")
      y(1+position : step_size+position) = yt(M : N)    #discard M-1 y-values
      position = position + step_size
  end
+]]
+		local M = #h
+		local overlap = M - 1
+		local N = 4 * overlap
+		local step_size = N - overlap
+		local H = DFT(h, N)
+		
+		for pos = 1, #x - N + 1, step_size do
+			-- yt = IDFT( DFT( x(1+position : N+position), N ) * H, N )
 
-	http://en.wikipedia.org/wiki/Overlap-add_method
+			local dj = pos - M
 
+			for j = pos, pos + step_size do
+				y[j] = yt[j - dj]
+			end
+		end
+	end
+
+	--
+	local function OverlapAdd_Linear (x, h, N, L)
+--[[
 Algorithm 1 (OA for linear convolution)
    Evaluate the best value of N and L (L>0, N = M+L-1 nearest to power of 2).
    Nx = length(x);
@@ -72,13 +92,39 @@ Algorithm 1 (OA for linear convolution)
        y(i:k) = y(i:k) + yt(1:k-i+1)    (add the overlapped output blocks)
        i = i+L
    end
-   
+]]
+		local Nx = #x
+		local H = FFT(h, N)
+		local y = zeros(1, M + Nx - 1)
+
+		for i = 1, Nx, L do
+			local il = min(i + L - 1, Nx)
+			-- yt = IFFT( FFT(x(i:il),N) * H, N)
+			local k, di = min(i + N - 1, M + Nx - 1), i - 1
+
+			for j = i, k do
+				y[j] = y[j] + y[j - di]
+			end
+		end
+	end
+
+	--
+	local function OverlapAdd_Circular (x, h, N, L)
+--[[
 Algorithm 2 (OA for circular convolution)
    Evaluate Algorithm 1
    y(1:M-1) = y(1:M-1) + y(Nx+1:Nx+M-1)
    y = y(1:Nx)
-   end   
-	]]
+   end
+]]
+		local y, M, Nx = OverlapAdd_Linear(x, h, N, L)
+
+		for i = 1, M - 1 do
+			y[i] = y[i] + y[Nx + i]
+		end
+
+		return y, Nx
+	end
 end
 
 Scene:addEventListener("show")

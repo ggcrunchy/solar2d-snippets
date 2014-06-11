@@ -39,7 +39,6 @@ local fx = require("game.FX")
 local links = require_ex.Lazy("editor.Links")
 local markers = require("effect.Markers")
 local quantize = require("geom2d_ops.quantize")
-local tags = require_ex.Lazy("editor.Tags")
 
 -- Corona globals --
 local display = display
@@ -321,7 +320,7 @@ local function OnEditorEvent (what, arg1, arg2, arg3)
 	-- New Tag --
 	elseif what == "new_tag" then
 		--
-		local function Pair (warp, other, wsub, osub, link_to)
+		local function Pair (_, other, _, osub, link_to)
 			if links.GetTag(other) ~= "warp" then
 				return false, "Non-warp partner", true
 			elseif osub:GetName() ~= link_to then

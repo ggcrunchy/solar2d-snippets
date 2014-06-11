@@ -32,7 +32,6 @@ local collision = require("game.Collision")
 local dispatch_list = require("game.DispatchList")
 local powers_of_2 = require("bitwise_ops.powers_of_2")
 local links = require_ex.Lazy("editor.Links")
-local tags = require_ex.Lazy("editor.Tags")
 
 -- Corona globals --
 local display = display
