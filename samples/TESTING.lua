@@ -143,18 +143,21 @@ Scene:addEventListener("show")
 	- Do a CMV or Poisson MVC sample?
 	- Proceed with editor, finally implement some things like the background view
 	- Refine link system, make more linkables (FSM's? All those things I was making before...)
+	- Editor-wise, generally just make everything prettier, cleaner
 	- Improve custom widgets (Bitmap, Grid1D, Grid2D, Keyboard, Link, LinkGroup, etc.)
 	- Make some dialogs to stress-test the section feature
 	- Decouple dialogs from the editor
 	- Kill off redundant widgets (button, checkbox)
 	- Deprecate DispatchList? (perhaps add some helpers to main)
 	- Fix formatting, which is rather off on tablets and probably more high-definition phones
+	- To that end, do a REAL objects helper module, that digs in and deals with anchors and such
 	- The Great Migration! (i.e. move much of snippets into CrownJewels and Tektite submodules)
 	- Might even be worth making the submodules even more granular
 	- Kick off a couple extra programs to stress-test submodule approach
 	- Figure out if quaternions ARE working, if so promote them
 	- Make the resource system independent of Corona, then start using it more pervasively
 	- Figure out what's wrong with some of the code in collisions module (probably only practical from game side)
+	- Start something with geometric algebra, a la Lengyel
 ]]
 
 return Scene
