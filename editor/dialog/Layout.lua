@@ -30,7 +30,6 @@ local remove = table.remove
 local type = type
 
 -- Modules --
-local mask = require("utils.Mask")
 local utils = require("editor.dialog.Utils")
 
 -- Corona globals --

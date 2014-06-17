@@ -64,7 +64,7 @@ local lc = require("signal_ops.linear_convolution")
 		local N = 4 * overlap
 		local step_size = N - overlap
 		local H = DFT(h, N)
-		
+
 		for pos = 1, #x - N + 1, step_size do
 			-- yt = IDFT( DFT( x(1+position : N+position), N ) * H, N )
 
@@ -136,6 +136,7 @@ Scene:addEventListener("show")
 	- Finish off seams sample, including dealing with device-side problems
 	- Do the colored corners sample
 	- Embedded free list / ID-occupied array ops modules
+	- Do the "object helper" right
 	- Play with devices
 	- Finally finish mesh ops / Delaunay
 	- Finish up the dart-throwing stuff
@@ -147,6 +148,8 @@ Scene:addEventListener("show")
 	- Improve custom widgets (Bitmap, Grid1D, Grid2D, Keyboard, Link, LinkGroup, etc.)
 	- Make some dialogs to stress-test the section feature
 	- Decouple dialogs from the editor
+	- Decouple links / tags from editor? Instancing?
+	- Some sort of stuff for recurring UI tasks (save / load dialogs, listbox, etc. especially ones that recur outside the editor
 	- Kill off redundant widgets (button, checkbox)
 	- Deprecate DispatchList? (perhaps add some helpers to main)
 	- Fix formatting, which is rather off on tablets and probably more high-definition phones
