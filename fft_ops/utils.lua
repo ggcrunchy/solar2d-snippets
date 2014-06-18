@@ -62,9 +62,7 @@ function M.Multiply_2D (m1, m2, w, h, out)
 end
 
 --- Prepares a real vector for consumption, e.g. as setup for @{fft_ops.real_fft.RealFFT_1D}.
---
--- It is assumed that _out_ is distinct from _arr1_ and _arr2_.
--- @array out Real output vector, which will be populated from _arr1_ and padded with zeroes
+-- @array out Real output vector, which will be populated from _arr_ and padded with zeroes
 -- as needed...
 -- @uint size Power-of-2 size of _out_.
 -- @array arr Vector of real values.
@@ -83,8 +81,8 @@ end
 
 --- Prepares a real matrix for consumption, e.g. as setup for @{fft_ops.real_fft.RealFFT_2D}.
 --
--- It is assumed that _out_ is distinct from _arr1_ and _arr2_.
--- @array out Real output matrix, which will be populated from _arr1_ and padded with zeroes
+-- It is assumed that _out_ is distinct from _arr_.
+-- @array out Real output matrix, which will be populated from _arr_ and padded with zeroes
 -- as needed...
 -- @uint size Size of _out_, i.e. the product of its power-of-2 width and height.
 -- @array arr Matrix of real values.
