@@ -233,11 +233,10 @@ function M.OverlapSave_1D (signal, kernel, opts)
 	-- Detect sn <= kn, K * kn >= sn, etc.
 	-- For small sizes, do Goertzel?
 
+	--
 	local overlap = kn - 1
 	local _, n = LenPower(4 * overlap, kn)
-	local halfn, step = .5 * n, n - overlap
 
-	--
 	AuxPrecomputeKernel1D(C, n, kernel, kn)
 
 	--
@@ -247,26 +246,32 @@ function M.OverlapSave_1D (signal, kernel, opts)
 
 	--
 	local csignal, pk = opts and opts.into or {}, AuxMethod1D.precomputed_kernel
-	local size, nblocks, snp1 = step + overlap, 0, sn + 1
+	local size, nconv, halfn, step = 0, sn + kn - 1, .5 * n, n - overlap
 
-	for pos = 1, sn, step do
+	for pos = 1, nconv, step do
 		--
-		if nblocks > 0 then
-			local prev = pos - overlap - 1
+		if size > 0 then
+			local prev = pos - kn
 
 			for i = 1, overlap do
 				B[i] = signal[prev + i]
 			end
 		end
 
-		nblocks = nblocks + 1
+		size = size + step
 
 		--
-		local count, diff = size, snp1 - pos
+		local up_to = pos + step - 1
+		local count, diff = n, up_to - sn
 
-		if diff < step then
-			count = diff + overlap
-			-- TODO: Misses sample N - 1...
+		if diff > 0 then
+			count = n - diff
+
+			for i = 1, diff do
+				B[count + i] = signal[i]
+			end
+-- ^^ "Long" signal does not like this
+			up_to = nconv
 		end
 
 		for i = 0, count - kn do
@@ -275,21 +280,16 @@ function M.OverlapSave_1D (signal, kernel, opts)
 
 		-- Multiply the (complex) results...
 		pk(n, B, count, C, kn)
-
+-- ^^ But "short" one dislikes this
 		-- ...transform back to the time domain...
 		real_fft.RealIFFT_1D(B, halfn)
 
 		-- ...and get the requested part of the result.
 		local di = pos - kn
 
-		for i = pos, pos + step - 1 do
+		for i = pos, up_to do
 			csignal[i] = B[i - di]
 		end
-	end
-
-	--
-	for i = step * nblocks, sn + kn, -1 do
-		csignal[i] = nil
 	end
 
 	return csignal

@@ -283,6 +283,9 @@ end
 				break
 			end
 		end
+		print("SAME", #conv == #conv2)
+		BBBB=true
+		vdump(fft_convolution.OverlapSave_1D({3,0,-2,0,2,1,0,-2,-1,0}, {2,2,1}))
 	end
 
 	--
