@@ -33,9 +33,6 @@ local goertzel = require("fft_ops.goertzel")
 local real_fft = require("fft_ops.real_fft")
 local two_ffts = require("fft_ops.two_ffts")
 
--- Cached module references --
-local _PrecomputeKernel_1D_
-
 -- Exports --
 local M = {}
 
@@ -216,68 +213,87 @@ function M.Convolve_2D (signal, kernel, scols, kcols, opts)
 	return csignal
 end
 
+-- Common 1D precomputations
+local function AuxPrecomputeKernel1D (out, n, kernel, kn)
+	fft_utils.PrepareRealFFT_1D(out, n, kernel, kn)
+	real_fft.RealFFT_1D(out, n)
+
+	out.n = kn
+end
+
 --- DOCME
 -- @array signal Real discrete signal...
 -- @array kernel ...and kernel.
 -- @ptable[opt] opts Convolve options. ADDMORE
 -- @treturn array Convolution.
-function M.OverlapSave (signal, kernel, opts)
+function M.OverlapSave_1D (signal, kernel, opts)
 	--
 	local sn, kn = (opts and opts.sn) or #signal, #kernel
+
+	-- Detect sn <= kn, K * kn >= sn, etc.
+	-- For small sizes, do Goertzel?
+
 	local overlap = kn - 1
-	local blockn = 4 * overlap
-	local _, n = LenPower(blockn, kn)
-	local halfn, step = .5 * n, blockn - overlap
+	local _, n = LenPower(4 * overlap, kn)
+	local halfn, step = .5 * n, n - overlap
 
---[[
- h = FIR_impulse_response
- M = length(h)
- overlap = M-1
- N = 4*overlap    (or a nearby power-of-2)
- step_size = N-overlap
- H = DFT(h, N)
- position = 0
- while position+N <= length(x)
-     yt = IDFT( DFT( x(1+position : N+position), N ) * H, N )
-     y(1+position : step_size+position) = yt(M : N)    #discard M-1 y-values
-     position = position + step_size
- end
-]]
-		--
-		_PrecomputeKernel_1D_(C, blockn, kernel)
+	--
+	AuxPrecomputeKernel1D(C, n, kernel, kn)
 
-		--
-		local csignal, method, up_to = opts and opts.into or {}, AuxMethod1D.precomputed_kernel, sn - blockn + 1
-
-		for pos = 1, up_to, step do
-			--
-			local count = min(up_to - pos + 1, blockn)
-
-			for i = 0, count - 1 do
-				B[i + 1] = signal[pos + i]
-			end
-
-			-- Multiply the (complex) results...
-			method(n, B, count, C, kn)-- yt = IDFT( DFT( x(1+position : N+position), N ) * H, N )
-
-			-- ...transform back to the time domain...
-			real_fft.RealIFFT_1D(B, halfn)
-
-			-- ...and get the requested part of the result.
-			local di = pos - kn
-
-			for i = pos, pos + step do
-				csignal[i] = B[i - di]
-			end
-		end
-
-		--
-		for i = up_to, sn + kn, -1 do
-			csignal[i] = nil
-		end
-
-		return csignal
+	--
+	for i = 1, overlap do
+		B[i] = 0
 	end
+
+	--
+	local csignal, pk = opts and opts.into or {}, AuxMethod1D.precomputed_kernel
+	local size, nblocks, snp1 = step + overlap, 0, sn + 1
+
+	for pos = 1, sn, step do
+		--
+		if nblocks > 0 then
+			local prev = pos - overlap - 1
+
+			for i = 1, overlap do
+				B[i] = signal[prev + i]
+			end
+		end
+
+		nblocks = nblocks + 1
+
+		--
+		local count, diff = size, snp1 - pos
+
+		if diff < step then
+			count = diff + overlap
+			-- TODO: Misses sample N - 1...
+		end
+
+		for i = 0, count - kn do
+			B[kn + i] = signal[pos + i]
+		end
+
+		-- Multiply the (complex) results...
+		pk(n, B, count, C, kn)
+
+		-- ...transform back to the time domain...
+		real_fft.RealIFFT_1D(B, halfn)
+
+		-- ...and get the requested part of the result.
+		local di = pos - kn
+
+		for i = pos, pos + step - 1 do
+			csignal[i] = B[i - di]
+		end
+	end
+
+	--
+	for i = step * nblocks, sn + kn, -1 do
+		csignal[i] = nil
+	end
+
+	return csignal
+end
 
 --- Precomputes a kernel, e.g. for consumption by the **"precomputed_kernel"** option of
 -- @{Convolve_1D}.
@@ -288,10 +304,7 @@ function M.PrecomputeKernel_1D (out, sn, kernel)
 	local kn = #kernel
 	local _, n = LenPower(sn, kn)
 
-	fft_utils.PrepareRealFFT_1D(out, n, kernel, kn)
-	real_fft.RealFFT_1D(out, n)
-
-	out.n = kn
+	AuxPrecomputeKernel1D(out, n, kernel, kn)
 end
 
 --- Precomputes a kernel, e.g. for consumption by the **"precomputed_kernel"** option of
@@ -395,9 +408,6 @@ function M.SerialConvolve_2D (sn, kernel, scols, kcols, func, opts)
 end
 
 -- TODO: Separable filters support for 2D?
-
--- Cache module members.
-_PrecomputeKernel_1D_ = M.PrecomputeKernel_1D
 
 -- Export the module.
 return M

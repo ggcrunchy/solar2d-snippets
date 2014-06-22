@@ -259,6 +259,31 @@ do
 	end
 end
 
+	do
+		local S = {}
+		local K = {}
+
+		for i = 1, 50 do
+			S[i] = math.random(2, 9)
+		end
+
+		for i = 1, 4 do
+			K[i] = math.random(1, 7)
+		end
+
+		print("Convolution")
+		local conv = fft_convolution.Convolve_1D(S, K)
+		vdump(conv)
+		local conv2 = fft_convolution.OverlapSave_1D(S, K)
+		print("C2")
+		vdump(conv2)
+		for i = 1, math.min(#conv, #conv2) do
+			if math.abs(conv[i] - conv2[i]) > 1e-9 then
+				print("PROBLEM AT: ", i)
+				break
+			end
+		end
+	end
 
 	--
 	local function OverlapAdd_Linear (x, h, N, L)
