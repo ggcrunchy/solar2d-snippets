@@ -218,13 +218,105 @@ local function AuxPrecomputeKernel1D (out, n, kernel, kn)
 	out.n = kn
 end
 
+--[=[
+	--
+	local function OverlapAdd_Linear (x, h, N, L)
+--[[
+Algorithm 1 (OA for linear convolution)
+   Evaluate the best value of N and L (L>0, N = M+L-1 nearest to power of 2).
+   Nx = length(x);
+   H = FFT(h,N)       (zero-padded FFT)
+   i = 1
+   y = zeros(1, M+Nx-1)
+   while i <= Nx  (Nx: the last index of x[n])
+       il = min(i+L-1,Nx)
+       yt = IFFT( FFT(x(i:il),N) * H, N)
+       k  = min(i+N-1,M+Nx-1)
+       y(i:k) = y(i:k) + yt(1:k-i+1)    (add the overlapped output blocks)
+       i = i+L
+   end
+]]
+		local Nx = #x
+		local H = FFT(h, N)
+		local y = zeros(1, M + Nx - 1)
+
+		for i = 1, Nx, L do
+			local il = min(i + L - 1, Nx)
+			-- yt = IFFT( FFT(x(i:il),N) * H, N)
+			local k, di = min(i + N - 1, M + Nx - 1), i - 1
+
+			for j = i, k do
+				y[j] = y[j] + y[j - di]
+			end
+		end
+	end
+
+	--
+	local function OverlapAdd_Circular (x, h, N, L)
+--[[
+Algorithm 2 (OA for circular convolution)
+   Evaluate Algorithm 1
+   y(1:M-1) = y(1:M-1) + y(Nx+1:Nx+M-1)
+   y = y(1:Nx)
+   end
+]]
+		local y, M, Nx = OverlapAdd_Linear(x, h, N, L)
+
+		for i = 1, M - 1 do
+			y[i] = y[i] + y[Nx + i]
+		end
+
+		return y, Nx
+	end
+]=]
+
+--- DOCME
+-- @array signal Real discrete signal...
+-- @array kernel ...and kernel.
+-- @ptable[opt] opts Convolve options. ADDMORE
+-- @treturn array Convolution.
+function M.OverlapAdd_1D (signal, kernel, opts)
+	local sn, kn = (opts and opts.sn) or #signal, #kernel
+
+	if sn < kn then
+		signal, kernel, sn, kn = kernel, signal, kn, sn
+	end
+
+	-- Compute a reasonable block length and pretransform the kernel.
+	local _, n = LenPower(4 * (kn - 1), kn)
+
+	AuxPrecomputeKernel1D(C, n, kernel, kn)
+
+	--
+	for i = 1, kn + sn - 1 do
+		B[i] = 0
+	end
+
+	--
+	local blockn = n - kn + 1
+
+	for i = 1, sn, blockn do
+		local up_to = i + blockn - 1
+
+		if up_to > sn then
+			up_to = sn
+		end
+			--[[
+				see overlap-save stuff...
+			]]
+		--... etc.
+	end
+end
+
+-- TODO: 2D...
+
 -- Helper to wrap an array slot
 local function Wrap (x, n)
 	return x <= n and x or (x - 1) % n + 1
 end
 
 -- Read from a signal, using periodicity to account for out-of-range reads
-local function Read (out, n, to, signal, from, sn)
+local function PeriodicRead (out, n, to, signal, from, sn)
 	from = Wrap(from, sn)
 
 	-- If the signal wraps, split up the read count into how many samples to read until the
@@ -280,8 +372,13 @@ function M.OverlapSave_1D (signal, kernel, opts)
 	local is_periodic = not not (opts and opts.is_periodic)
 	-- ^^^ Periodicity = Guess, based on http://www.scribd.com/doc/219373222/Overlap-Save-Add...
 	-- Obviously, to actually support this would be a lot more logic...
+	-- Moreover, it's reasonable that signal is infinite, which would imply a callback
 
-	-- Detect sn <= kn, K * kn >= sn, etc. (might handle already...)
+	if sn < kn then
+		signal, kernel, sn, kn = kernel, signal, kn, sn
+	end
+
+	-- Detect K * kn >= sn, etc. (might handle already...)
 	-- For small sizes, do Goertzel?
 
 	-- Compute a reasonable block length and pretransform the kernel.
@@ -302,14 +399,13 @@ function M.OverlapSave_1D (signal, kernel, opts)
 	for pos = 1, nconv, step do
 		-- Carry over a few samples from the last block.
 		if pos > 1 then
-			Read(B, overlap, 1, signal, pos - overlap, sn)
+			PeriodicRead(B, overlap, 1, signal, pos - overlap, sn)
 		end
 
 		-- Read in the new portion of the block. If there are fewer than L samples for the final
 		-- block, pad it with zeroes and adjust the ranges.
-		local up_to = pos + step - 1
-		local count, diff = n, up_to - sn
-		local wi, ri = Read(B, n - overlap, kn, signal, pos, sn)
+		local count, up_to = n, pos + step - 1
+		local diff, wi, ri = up_to - sn, PeriodicRead(B, n - overlap, kn, signal, pos, sn)
 
 		if diff > 0 then
 			count, up_to = n - diff, nconv
@@ -338,6 +434,8 @@ function M.OverlapSave_1D (signal, kernel, opts)
 
 	return csignal
 end
+
+-- TODO: 2D...
 
 --- Precomputes a kernel, e.g. for consumption by the **"precomputed_kernel"** option of
 -- @{Convolve_1D}.
