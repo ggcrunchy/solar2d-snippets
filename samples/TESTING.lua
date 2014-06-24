@@ -284,8 +284,10 @@ end
 			end
 		end
 		print("SAME", #conv == #conv2)
-		BBBB=true
-		vdump(fft_convolution.OverlapSave_1D({3,0,-2,0,2,1,0,-2,-1,0}, {2,2,1}))
+
+		local S2, K2 = {3,0,-2,0,2,1,0,-2,-1,0}, {2,2,1}
+		vdump(fft_convolution.Convolve_1D(S2, K2))
+		vdump(fft_convolution.OverlapSave_1D(S2, K2))
 	end
 
 	--

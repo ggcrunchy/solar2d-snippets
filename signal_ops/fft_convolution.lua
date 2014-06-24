@@ -23,9 +23,6 @@
 -- [ MIT license: http://www.opensource.org/licenses/mit-license.php ]
 --
 
--- Standard library imports --
-local min = math.min
-
 -- Modules --
 local fft = require("fft_ops.fft")
 local fft_utils = require("fft_ops.utils")
@@ -221,66 +218,113 @@ local function AuxPrecomputeKernel1D (out, n, kernel, kn)
 	out.n = kn
 end
 
+-- Helper to wrap an array slot
+local function Wrap (x, n)
+	return x <= n and x or (x - 1) % n + 1
+end
+
+-- Read from a signal, using periodicity to account for out-of-range reads
+local function Read (out, n, to, signal, from, sn)
+	from = Wrap(from, sn)
+
+	-- If the signal wraps, split up the read count into how many samples to read until the
+	-- end of the buffer, and how far to read from its beginning. If instead the signal is
+	-- too short to be serviced by the full read, adjust its count to accommodate periodicity.
+	local raw_ut = from + n - 1
+	local up_to = Wrap(raw_ut, sn)
+	local wrapped = up_to < from
+
+	if wrapped then
+		n = n - up_to
+	elseif raw_ut ~= up_to then
+		n = sn - from + 1
+	end
+
+	-- Read the (possibly later part of) the signal.
+	for i = 0, n - 1 do
+		out[to + i] = signal[from + i]
+	end
+
+	-- If the signal wrapped, read in that part too. Supply the new read and write indices.
+	to = to + n
+
+	if wrapped then
+		for i = 0, up_to - 1 do
+			out[to + i] = signal[i + 1]
+		end
+
+		return to + up_to, up_to
+	else
+		return to, from + n
+	end
+end
+
+-- Fills the remainder of a buffer from a periodic signal
+local function Fill (out, to, last, signal, from, sn)
+	for i = to, last do
+		if from > sn then
+			from = 1
+		end
+
+		out[i], from = signal[from], from + 1
+	end
+end
+
 --- DOCME
 -- @array signal Real discrete signal...
 -- @array kernel ...and kernel.
 -- @ptable[opt] opts Convolve options. ADDMORE
 -- @treturn array Convolution.
 function M.OverlapSave_1D (signal, kernel, opts)
-	--
 	local sn, kn = (opts and opts.sn) or #signal, #kernel
+	local is_periodic = not not (opts and opts.is_periodic)
+	-- ^^^ Periodicity = Guess, based on http://www.scribd.com/doc/219373222/Overlap-Save-Add...
+	-- Obviously, to actually support this would be a lot more logic...
 
-	-- Detect sn <= kn, K * kn >= sn, etc.
+	-- Detect sn <= kn, K * kn >= sn, etc. (might handle already...)
 	-- For small sizes, do Goertzel?
 
-	--
+	-- Compute a reasonable block length and pretransform the kernel.
 	local overlap = kn - 1
 	local _, n = LenPower(4 * overlap, kn)
 
 	AuxPrecomputeKernel1D(C, n, kernel, kn)
 
-	--
+	-- The first "saved" samples are all zeroes.
 	for i = 1, overlap do
 		B[i] = 0
 	end
 
-	--
+	-- Read in each block, stepping slightly fewer than N samples to account for overlap.
 	local csignal, pk = opts and opts.into or {}, AuxMethod1D.precomputed_kernel
-	local size, nconv, halfn, step = 0, sn + kn - 1, .5 * n, n - overlap
+	local nconv, halfn, step = sn + kn - 1, .5 * n, n - overlap
 
 	for pos = 1, nconv, step do
-		--
-		if size > 0 then
-			local prev = pos - kn
-
-			for i = 1, overlap do
-				B[i] = signal[prev + i]
-			end
+		-- Carry over a few samples from the last block.
+		if pos > 1 then
+			Read(B, overlap, 1, signal, pos - overlap, sn)
 		end
 
-		size = size + step
-
-		--
+		-- Read in the new portion of the block. If there are fewer than L samples for the final
+		-- block, pad it with zeroes and adjust the ranges.
 		local up_to = pos + step - 1
 		local count, diff = n, up_to - sn
+		local wi, ri = Read(B, n - overlap, kn, signal, pos, sn)
 
 		if diff > 0 then
-			count = n - diff
+			count, up_to = n - diff, nconv
 
-			for i = 1, diff do
-				B[count + i] = signal[i]
+			if is_periodic then								
+				Fill(B, wi, n, signal, Wrap(ri, sn), sn)
+
+				count = n
 			end
--- ^^ "Long" signal does not like this
-			up_to = nconv
 		end
-
-		for i = 0, count - kn do
-			B[kn + i] = signal[pos + i]
-		end
+		-- ^^^ TODO: Could it possibly spill over into one more (degenerate?) block?
 
 		-- Multiply the (complex) results...
 		pk(n, B, count, C, kn)
--- ^^ But "short" one dislikes this
+
 		-- ...transform back to the time domain...
 		real_fft.RealIFFT_1D(B, halfn)
 
