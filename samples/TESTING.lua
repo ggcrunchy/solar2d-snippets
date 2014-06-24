@@ -68,17 +68,33 @@ local real_fft = require("fft_ops.real_fft")
 		local conv2 = fft_convolution.OverlapSave_1D(S, K)
 		print("C2")
 		vdump(conv2)
-		for i = 1, math.min(#conv, #conv2) do
+		local conv3 = fft_convolution.OverlapAdd_1D(S, K)
+		print("C3")
+		vdump(conv3)
+		for i = 1, math.min(#conv, #conv2, #conv3) do
 			if math.abs(conv[i] - conv2[i]) > 1e-9 then
 				print("PROBLEM AT: ", i)
 				break
 			end
+			if math.abs(conv[i] - conv3[i]) > 1e-9 then
+				print("PROBLEM AT: ", i)
+				break
+			end
 		end
-		print("SAME", #conv == #conv2)
+		print("SAME", #conv == #conv2 and #conv == #conv3)
 
 		local S2, K2 = {3,0,-2,0,2,1,0,-2,-1,0}, {2,2,1}
 		vdump(fft_convolution.Convolve_1D(S2, K2))
 		vdump(fft_convolution.OverlapSave_1D(S2, K2))
+		vdump(fft_convolution.OverlapAdd_1D(S2, K2))
+
+		local cconv = circular_convolution.Convolve_1D(S2, K2)
+
+		vdump(cconv)
+
+		local cconv2 = fft_convolution.OverlapAdd_1D(S2, K2, { is_circular = true })
+
+		vdump(cconv2)
 	end
 end
 
@@ -87,7 +103,6 @@ Scene:addEventListener("show")
 --[[
 	Near / not-too-far future TODO list:
 
-	- Implement overlap-add
 	- Finish off seams sample, including dealing with device-side problems
 	- Do the colored corners sample
 

@@ -23,6 +23,9 @@
 -- [ MIT license: http://www.opensource.org/licenses/mit-license.php ]
 --
 
+-- Standard library imports --
+local min = math.min
+
 -- Modules --
 local fft = require("fft_ops.fft")
 local fft_utils = require("fft_ops.utils")
@@ -250,30 +253,28 @@ Algorithm 1 (OA for linear convolution)
 			end
 		end
 	end
-
-	--
-	local function OverlapAdd_Circular (x, h, N, L)
---[[
-Algorithm 2 (OA for circular convolution)
-   Evaluate Algorithm 1
-   y(1:M-1) = y(1:M-1) + y(Nx+1:Nx+M-1)
-   y = y(1:Nx)
-   end
-]]
-		local y, M, Nx = OverlapAdd_Linear(x, h, N, L)
-
-		for i = 1, M - 1 do
-			y[i] = y[i] + y[Nx + i]
-		end
-
-		return y, Nx
-	end
 ]=]
 
---- DOCME
+-- Computes a reasonable block length and pretransforms the kernel
+local function TransformKernel1D (kernel, kn)
+	local overlap = kn - 1
+	local _, n = LenPower(4 * overlap, kn)
+
+	AuxPrecomputeKernel1D(C, n, kernel, kn)
+
+	return overlap, n, .5 * n
+end
+
+--- One-dimensional linear convolution using the [overlap-add method](http://en.wikipedia.org/wiki/Overlap–add_method).
+--
+-- When _signal_ is much longer than _kernel_, this can significantly improve performance.
 -- @array signal Real discrete signal...
 -- @array kernel ...and kernel.
--- @ptable[opt] opts Convolve options. ADDMORE
+-- @ptable[opt] opts Convolve options.  Fields:
+--
+-- * **into**: If provided, this table will receive the convolution.
+-- * **is_circular**: If true, circular convolution is performed instead.
+-- * **sn**: If provided, this is the length of _signal_; otherwise, #_signal_.
 -- @treturn array Convolution.
 function M.OverlapAdd_1D (signal, kernel, opts)
 	local sn, kn = (opts and opts.sn) or #signal, #kernel
@@ -282,30 +283,53 @@ function M.OverlapAdd_1D (signal, kernel, opts)
 		signal, kernel, sn, kn = kernel, signal, kn, sn
 	end
 
-	-- Compute a reasonable block length and pretransform the kernel.
-	local _, n = LenPower(4 * (kn - 1), kn)
+	-- Set up loop-invariant parts.
+	local overlap, n, halfn = TransformKernel1D(kernel, kn)
 
-	AuxPrecomputeKernel1D(C, n, kernel, kn)
+	-- Begin with an all-zeroes signal.
+	local csignal, nconv = opts and opts.into or {}, kn + sn - 1
 
-	--
-	for i = 1, kn + sn - 1 do
-		B[i] = 0
+	for i = 1, nconv do
+		csignal[i] = 0
 	end
 
-	--
-	local blockn = n - kn + 1
+	-- Read in and process each block.
+	local blockn, pk = n - overlap, AuxMethod1D.precomputed_kernel
 
-	for i = 1, sn, blockn do
-		local up_to = i + blockn - 1
+	for pos = 1, sn, blockn do
+		-- Read in the next part of the signal.
+		local count = min(pos + blockn - 1, sn) - pos + 1
 
-		if up_to > sn then
-			up_to = sn
+		for i = 0, count - 1 do
+			B[i + 1] = signal[pos + i]
 		end
-			--[[
-				see overlap-save stuff...
-			]]
-		--... etc.
+
+		-- Multiply the (complex) results...
+		pk(n, B, count, C, kn)
+
+		-- ...transform back to the time domain...
+		real_fft.RealIFFT_1D(B, halfn)
+
+		-- ...and get the requested part of the result.
+		local up_to, di = min(pos + n - 1, nconv), pos - 1
+
+		for i = pos, up_to do
+			csignal[i] = csignal[i] + B[i - di]
+		end
 	end
+
+	-- If requested, find the circular convolution.
+	if opts and opts.is_circular then
+		for i = 1, overlap do
+			csignal[i] = csignal[i] + csignal[sn + i]
+		end
+
+		for i = nconv, sn + 1, -1 do
+			csignal[i] = nil
+		end
+	end
+
+	return csignal
 end
 
 -- TODO: 2D...
@@ -362,10 +386,15 @@ local function Fill (out, to, last, signal, from, sn)
 	end
 end
 
---- DOCME
+--- One-dimensional linear convolution using the [overlap-save method](http://en.wikipedia.org/wiki/Overlap–save_method).
+--
+-- When _signal_ is much longer than _kernel_, this can significantly improve performance.
 -- @array signal Real discrete signal...
 -- @array kernel ...and kernel.
--- @ptable[opt] opts Convolve options. ADDMORE
+-- @ptable[opt] opts Convolve options.  Fields:
+--
+-- * **into**: If provided, this table will receive the convolution.
+-- * **sn**: If provided, this is the length of _signal_; otherwise, #_signal_.
 -- @treturn array Convolution.
 function M.OverlapSave_1D (signal, kernel, opts)
 	local sn, kn = (opts and opts.sn) or #signal, #kernel
@@ -381,11 +410,8 @@ function M.OverlapSave_1D (signal, kernel, opts)
 	-- Detect K * kn >= sn, etc. (might handle already...)
 	-- For small sizes, do Goertzel?
 
-	-- Compute a reasonable block length and pretransform the kernel.
-	local overlap = kn - 1
-	local _, n = LenPower(4 * overlap, kn)
-
-	AuxPrecomputeKernel1D(C, n, kernel, kn)
+	-- Set up loop-invariant parts.
+	local overlap, n, halfn = TransformKernel1D(kernel, kn)
 
 	-- The first "saved" samples are all zeroes.
 	for i = 1, overlap do
@@ -394,7 +420,7 @@ function M.OverlapSave_1D (signal, kernel, opts)
 
 	-- Read in each block, stepping slightly fewer than N samples to account for overlap.
 	local csignal, pk = opts and opts.into or {}, AuxMethod1D.precomputed_kernel
-	local nconv, halfn, step = sn + kn - 1, .5 * n, n - overlap
+	local nconv, step = sn + kn - 1, n - overlap
 
 	for pos = 1, nconv, step do
 		-- Carry over a few samples from the last block.
