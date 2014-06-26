@@ -65,7 +65,7 @@ function M.GetColor (color)
 	end
 end
 
--- Intermediate storage, used to pass varargs to line:set*Color() via unpack() --
+-- Intermediate storage, used to pass varargs to object:set*Color() via unpack() --
 local Color = {}
 
 --

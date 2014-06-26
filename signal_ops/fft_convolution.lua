@@ -221,40 +221,6 @@ local function AuxPrecomputeKernel1D (out, n, kernel, kn)
 	out.n = kn
 end
 
---[=[
-	--
-	local function OverlapAdd_Linear (x, h, N, L)
---[[
-Algorithm 1 (OA for linear convolution)
-   Evaluate the best value of N and L (L>0, N = M+L-1 nearest to power of 2).
-   Nx = length(x);
-   H = FFT(h,N)       (zero-padded FFT)
-   i = 1
-   y = zeros(1, M+Nx-1)
-   while i <= Nx  (Nx: the last index of x[n])
-       il = min(i+L-1,Nx)
-       yt = IFFT( FFT(x(i:il),N) * H, N)
-       k  = min(i+N-1,M+Nx-1)
-       y(i:k) = y(i:k) + yt(1:k-i+1)    (add the overlapped output blocks)
-       i = i+L
-   end
-]]
-		local Nx = #x
-		local H = FFT(h, N)
-		local y = zeros(1, M + Nx - 1)
-
-		for i = 1, Nx, L do
-			local il = min(i + L - 1, Nx)
-			-- yt = IFFT( FFT(x(i:il),N) * H, N)
-			local k, di = min(i + N - 1, M + Nx - 1), i - 1
-
-			for j = i, k do
-				y[j] = y[j] + y[j - di]
-			end
-		end
-	end
-]=]
-
 -- Computes a reasonable block length and pretransforms the kernel
 local function TransformKernel1D (kernel, kn)
 	local overlap = kn - 1

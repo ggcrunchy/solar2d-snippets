@@ -27,6 +27,7 @@
 local buttons = require("ui.Button")
 local common_ui = require("editor.CommonUI")
 local file = require("utils.File")
+local image_patterns = require("ui.patterns.image")
 local png = require("image_ops.png")
 
 -- Corona globals --
@@ -47,19 +48,8 @@ local CW, CH = display.contentWidth, display.contentHeight
 --
 function Scene:show (event)
 	if event.phase == "did" then
-		-- Make a small preview pane for the currently chosen image, and put a gradient behind it
-		-- so that solid colored images have a reasonable expectation of visibilty.
-		local backdrop = display.newGroup()
-
-		self.view:insert(backdrop)
-
-		local color = display.newRect(backdrop, 0, 0, 64, 64)
-		local frame = display.newRect(self.view, 0, 0, 64, 64)
-
-		color:setFillColor{ type = "gradient", color1 = { 0, 0, 1 }, color2 = { .3 }, direction = "down" }
-		frame:setFillColor(0, 0)
-
-		frame.strokeWidth = 3
+		-- Make a small preview pane for the currently chosen image.
+		local preview = image_patterns.Thumbnail(self.view, 64, 64)
 
 		-- TODO:
 		-- If database not empty, populate list (do file existence / integrity checks?)
@@ -96,23 +86,13 @@ function Scene:show (event)
 				-- Update the thumbnail in the preview pane.
 				chosen = dir .. images[index]
 
-				local _, w, h = png.GetInfo(system.pathForFile(chosen, params.base))
-
-				display.remove(thumbnail)
-
-				if w <= 64 and h <= 64 then
-					thumbnail = display.newImage(backdrop, chosen, params.base)
-				else
-					thumbnail = display.newImageRect(backdrop, chosen, params.base, 64, 64)
-				end
-
-				thumbnail.x, thumbnail.y = color.x, color.y
+				preview:SetImage(chosen, params.base)
 
 				-- On the first selection, add a button to launch the next step. When fired, the selected
 				-- image is read into memory; assuming that went well, the algorithm proceeds on to the
 				-- energy computation step. The option to cancel is available during loading (although
 				-- this is typically a quick process).
-				ok = ok or buttons.Button(self.view, nil, color.x + 90, color.y - 20, 100, 40, funcs.Action(function()
+				ok = ok or buttons.Button(self.view, nil, preview.x + 90, preview.y - 20, 100, 40, funcs.Action(function()
 					funcs.SetStatus("Loading image")
 
 					cancel.isVisible = true
@@ -156,10 +136,7 @@ function Scene:show (event)
 		end
 
 		-- Place the preview pane relative to the listbox.
-		local px, py = image_list.x + image_list.width / 2 + 55, image_list.y
-
-		color.x, color.y = px, py
-		frame.x, frame.y = px, py
+		preview.x, preview.y = image_list.x + image_list.width / 2 + 55, image_list.y
 	end
 end
 
