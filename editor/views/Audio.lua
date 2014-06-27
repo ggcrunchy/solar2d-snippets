@@ -305,7 +305,7 @@ function M.Unload ()
 
 	Songs:removeSelf()
 
-	Choice, Current, CurrentText, Group, Names, PlayOrStop, Songs, WatchMusicFolder = nil
+	Current, CurrentText, Group, Names, PlayOrStop, Songs, WatchMusicFolder = nil
 end
 
 -- Listen to events.
