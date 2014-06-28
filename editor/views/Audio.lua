@@ -46,6 +46,7 @@ local dispatch_list = require("game.DispatchList")
 local file_utils = require("utils.File")
 local lfs = require("lfs")
 local object_helper = require("utils.ObjectHelper")
+local table_view_patterns = require("ui.patterns.table_view")
 
 -- Corona globals --
 local display = display
@@ -99,12 +100,11 @@ local Names
 
 -- Helper to load or reload the music list
 local function Reload ()
-	Songs:deleteAllRows()
-
 	-- Populate the song list, checking what's still around.
 	Names = file_utils.EnumerateFiles("Music", { base = Base, exts = { ".mp3", ".ogg" } })
 
-	local add_row = common_ui.ListboxRowAdder()
+	Songs:AssignList(Names)
+
 	local current, offset, stream_found
 
 	for i, name in ipairs(Names) do
@@ -117,8 +117,6 @@ local function Reload ()
 		end
 
 		stream_found = stream_found or name == StreamName
-
-		Songs:insertRow(add_row)
 	end
 
 	-- If the stream file was removed while playing, try to close the stream before any
@@ -157,13 +155,7 @@ function M.Load (view)
 	local w, h = display.contentWidth, display.contentHeight
 
 	Group = display.newGroup()
-	Songs = common_ui.Listbox(Group, w - 350, 100, {
-		-- --
-		get_text = function(index)
-			return Names[index]
-		end,
-
-		-- --
+	Songs = table_view_patterns.Listbox(Group, w - 350, 100, {
 		press = function(index)
 			Offset = Names[index]
 		end

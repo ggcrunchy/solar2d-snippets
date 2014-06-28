@@ -23,7 +23,26 @@
 -- [ MIT license: http://www.opensource.org/licenses/mit-license.php ]
 --
 
---[=[
+-- Corona globals --
+local display = display
+local native = native
+
+-- Corona modules --
+local widget = require("widget")
+
+-- Exports --
+local M = {}
+
+-- --
+local RowAdder = {
+	isCategory = false,
+	lineHeight = 16,
+	lineColor = { .45, .45, .45 },
+	rowColor = {
+		default = { 1, 1, 1 },
+		over = { 0, 0, 1, .75 }
+	}
+}
 
 -- Each of the arguments is a function that takes _event_.**index** as argument, where
 -- _event_ is the parameter of **onEvent** or **onRender**.
@@ -43,19 +62,23 @@ function M.Listbox (group, x, y, options)
 	local lopts = { left = x, top = y, width = options.width or 300, height = options.height or 150 }
 
 	-- On Render --
-	local get_text = options.get_text
+	local stash
 
 	function lopts.onRowRender (event)
 		local text = display.newText(event.row, "", 0, 0, native.systemFont, 20)
 
 		text:setFillColor(0)
 
-		object_helper.AlignChildText_X(text, get_text(event.row.index), 15)
+text.text = (stash and stash[event.row.index]) or ""
+
+text.anchorX, text.x = 0, 15
+text.y = event.row.height / 2
+
+--		object_helper.AlignChildText_X(text, get_text(event.row.index), 15)
 	end
 
 	-- On Touch --
-	local press, release = options.press, options.release
-	local old_row
+	local press, release, old_row = options.press, options.release
 
 	function lopts.onRowTouch (event)
 		-- Listbox item pressed...
@@ -85,33 +108,50 @@ function M.Listbox (group, x, y, options)
 	end
 
 	--
-	local listbox = widget.newTableView(lopts)
+	local Listbox = widget.newTableView(lopts)
 
-	group:insert(listbox)
+	group:insert(Listbox)
 
-	listbox.isVisible = not options.hide
+	--- DOCME
+	function Listbox:Append (str)
+		stash = stash or {}
 
-	return listbox
+		stash[#stash + 1] = str
+
+		self:insertRow(RowAdder)
+	end
+
+	--- DOCME
+	function Listbox:AppendList (list)
+		stash = stash or {}
+
+		for i = 1, #list do
+			stash[#stash + 1] = list[i]
+
+			self:insertRow(RowAdder)
+		end
+	end
+
+	--- DOCME
+	function Listbox:AssignList (list)
+		self:Clear()
+		self:AppendList(list)
+	end
+
+	--- DOCME
+	function Listbox:Clear ()
+		stash = nil
+
+		self:deleteAllRows()
+	end
+
+	--
+	Listbox.isVisible = not options.hide
+
+	return Listbox
 end
 
--- --
-local RowAdder = {
-	isCategory = false,
-	lineHeight = 16,
-	lineColor = { .45, .45, .45 },
-	rowColor = {
-		default = { 1, 1, 1 },
-		over = { 0, 0, 1, .75 }
-	}
-}
+-- File chooser...
 
---- DOCME
-function M.ListboxRowAdder ()
-	return RowAdder
-end
-
-Incorporate frame?
-Some methods
-File support
-
-]=]
+-- Export the module.
+return M

@@ -29,10 +29,10 @@
 local exit = os.exit
 
 -- Modules --
-local common_ui = require("editor.CommonUI")
 local dispatch_list = require("game.DispatchList")
 local layout = require("ui.Layout")
 local scenes = require("utils.Scenes")
+local table_view_patterns = require("ui.patterns.table_view")
 
 -- Corona globals --
 local display = display
@@ -86,23 +86,13 @@ end
 --
 function Scene:create ()
 	local Current = display.newText(self.view, "", 0, 50, native.systemFont, 35)
-	local Choices = common_ui.Listbox(self.view, 20, 20, {
-		-- --
-		get_text = function(index)
-			return Names[index]
-		end,
-
-		-- --
+	local Choices = table_view_patterns.Listbox(self.view, 20, 20, {
 		press = function(index)
 			SetCurrent(Current, index)
 		end
 	})
 
-	local add_row = common_ui.ListboxRowAdder()
-
-	for _ = 1, #Names do
-		Choices:insertRow(add_row)
-	end
+	Choices:AssignList(Names)
 
 	Current.anchorX, Current.x = 0, Choices.contentBounds.xMax + 20
 
