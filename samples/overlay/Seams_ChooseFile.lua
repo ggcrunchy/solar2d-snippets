@@ -25,10 +25,10 @@
 
 -- Modules --
 local buttons = require("ui.Button")
-local common_ui = require("editor.CommonUI")
 local file = require("utils.File")
 local image_patterns = require("ui.patterns.image")
 local png = require("image_ops.png")
+local table_view_patterns = require("ui.patterns.table_view")
 
 -- Corona globals --
 local display = display
@@ -75,7 +75,7 @@ function Scene:show (event)
 			cancel.isVisible = false
 		end
 
-		local image_list = common_ui.Listbox(self.view, 295, 20, {
+		local image_list = table_view_patterns.Listbox(self.view, 295, 20, {
 			height = 120,
 
 			get_text = function(index)
@@ -122,14 +122,12 @@ function Scene:show (event)
 		})
 
 		-- Add any images in a certain size range to the list.
-		local add_row = common_ui.ListboxRowAdder()
-
 		for i = 1, #images do
 			local path = system.pathForFile(dir .. images[i], params.base)
 			local good, w, h = png.GetInfo(path)
 
 			if good and w >= 16 and w <= CW - 10 and h >= 16 and h <= CH - 150 then
-				image_list:insertRow(add_row)
+				image_list:Append(images[i])
 			end
 			-- TODO: More intelligent way to handle? Owing to restrictions of bitmaps (because of captures), need to ensure some
 			-- screen real estate for interface...

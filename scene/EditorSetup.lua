@@ -41,6 +41,7 @@ local keyboard = require("ui.Keyboard")
 local object_helper = require("utils.ObjectHelper")
 local persistence = require("game.Persistence")
 local scenes = require("utils.Scenes")
+local table_view_patterns = require("ui.patterns.table_view")
 
 -- Corona globals --
 local display = display
@@ -175,10 +176,10 @@ function Scene:show (event)
 				return level1.name < level2.name
 			end)
 
-			self.m_levels_list = common_ui.Listbox(self.view, display.contentWidth - 350, 20, {
+			self.m_levels_list = table_view_patterns.Listbox(self.view, display.contentWidth - 350, 20, {
 				--
-				get_text = function(index)
-					return levels[index].name
+				get_text = function(item)
+					return item.name
 				end,
 
 				--
@@ -191,11 +192,7 @@ function Scene:show (event)
 
 			self.m_frame = common_ui.Frame(self.m_levels_list, 0, 0, 1)
 
-			local add_row = common_ui.ListboxRowAdder()
-
-			for _ = 1, #levels do
-				self.m_levels_list:insertRow(add_row)
-			end
+			self.m_levels_list:AssignList(levels)
 
 			UpdateCurrent(self, levels, 1)
 
@@ -207,7 +204,7 @@ function Scene:show (event)
 
 				remove(levels, index)
 
-				self.m_levels_list:deleteRow(index)
+				self.m_levels_list:Delete(index)
 
 				-- Update the listbox selection to reflect the missing element, or remove all the load
 				-- elements entirely if no more levels exist.

@@ -34,6 +34,7 @@ local common = require("editor.Common")
 local common_ui = require("editor.CommonUI")
 local link_group = require("ui.LinkGroup")
 local links = require("editor.Links")
+local table_view_patterns = require("ui.patterns.table_view")
 local tags = require("editor.Tags")
 local touch = require("ui.Touch")
 
@@ -144,10 +145,9 @@ function Overlay:create ()
 	Backdrop(cgroup, 350, 225, 22)
 
 	--
-	self.m_choices = common_ui.Listbox(cgroup, 25, 50, {
+	self.m_choices = table_view_patterns.Listbox(cgroup, 25, 50, {
 		--
-		get_text = function(index)
-			local item = List[index]
+		get_text = function(item)
 			local count = List[item.object]
 
 			return item.text .. (count and (" - %i link%s"):format(count, count > 1 and "s" or "") or "")
@@ -251,13 +251,8 @@ local function Refresh (is_dirty)
 ]] -- ^^^ SHOULD be like this???
 
 -- TODO: Broken?
-Overlay.m_choices:deleteAllRows()
+Overlay.m_choices:AssignList(List)
 
-local add_row = common_ui.ListboxRowAdder()
-
-for _ = 1, #List do
-	Overlay.m_choices:insertRow(add_row)
-end
 -- and... reselect it...
 		common.Dirty()
 	end
@@ -573,11 +568,7 @@ function Overlay:show (event)
 				AddObject(link:GetOtherObject(Rep))
 			end
 
-			local add_row = common_ui.ListboxRowAdder()
-
-			for _ = 1, #List do
-				self.m_choices:insertRow(add_row)
-			end
+			Overlay.m_choices:AssignList(List)
 
 			self.m_choices.isVisible = true
 		end

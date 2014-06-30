@@ -23,6 +23,10 @@
 -- [ MIT license: http://www.opensource.org/licenses/mit-license.php ]
 --
 
+-- Standard library imports --
+local remove = table.remove
+local type = type
+
 -- Corona globals --
 local display = display
 local native = native
@@ -62,15 +66,24 @@ function M.Listbox (group, x, y, options)
 	local lopts = { left = x, top = y, width = options.width or 300, height = options.height or 150 }
 
 	-- On Render --
-	local stash
+	local get_text, stash = options.get_text
 
 	function lopts.onRowRender (event)
 		local text = display.newText(event.row, "", 0, 0, native.systemFont, 20)
 
 		text:setFillColor(0)
 
-text.text = (stash and stash[event.row.index]) or ""
+		--
+		local index = event.row.index
+		local item = stash and stash[index]
 
+		if get_text then
+			item = get_text(item) or item
+		end
+
+		text.text = item or ""
+
+		--
 text.anchorX, text.x = 0, 15
 text.y = event.row.height / 2
 
@@ -143,6 +156,15 @@ text.y = event.row.height / 2
 		stash = nil
 
 		self:deleteAllRows()
+	end
+
+	--- DOCME
+	function Listbox:Delete (index)
+		if stash then
+			remove(stash, index)
+		end
+
+		self:deleteRow(index)
 	end
 
 	--

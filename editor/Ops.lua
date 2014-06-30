@@ -36,7 +36,6 @@ local dispatch_list = require("game.DispatchList")
 local events = require("editor.Events")
 local keyboard = require("ui.Keyboard")
 local persistence = require("game.Persistence")
-local str_utils = require("utils.String")
 local timers = require("game.Timers")
 
 -- Corona globals --
@@ -50,13 +49,12 @@ local composer = require("composer")
 -- Is the level being saved or built temporary? --
 local IsTemp
 
--- Writes a blob to the database, saving a copy to the clipboard if possible
+-- Writes a blob to the database
 local function Write (name, func, wip)
 	M.SetLevelName(name)
 
 	local blob = persistence.Encode(func(), not wip)
 print(blob)
-	str_utils.SendToClipboard(blob)
 
 	persistence.SaveLevel(name, blob, true, wip, IsTemp)
 end

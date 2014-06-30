@@ -25,7 +25,6 @@
 
 -- Standard library imports --
 local format = string.format
-local popen = io.popen
 
 -- Corona globals --
 local system = system
@@ -79,19 +78,6 @@ function M.NewName ()
 	NameID = NameID + 1
 
 	return format("%s%i", Prefix, NameID - 1)
-end
-
---- Utility.
--- @string text If possible, this text is sent to the clipboard.
-function M.SendToClipboard (text)
-	if system.getInfo("platformName") == "Win" then
-		local clipboard = popen("clip", "w")
-
-		if clipboard then
-			clipboard:write(text)
-			clipboard:close()
-		end
-	end
 end
 
 -- Export the module.

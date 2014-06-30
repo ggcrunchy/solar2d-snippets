@@ -34,6 +34,7 @@ local button = require("ui.Button")
 local checkbox = require("ui.Checkbox")
 local common = require("editor.Common")
 local common_ui = require("editor.CommonUI")
+local table_view_patterns = require("ui.patterns.table_view")
 local utils = require("editor.dialog.Utils")
 
 -- Corona globals --
@@ -108,7 +109,7 @@ end
 --- DOCME
 -- @ptable options
 function M:AddListbox (options)
-	local listbox = common_ui.Listbox(self:ItemGroup(), 0, 0)
+	local listbox = table_view_patterns.Listbox(self:ItemGroup(), 0, 0)
 
 	utils.SetProperty(listbox, "type", "widget")
 
