@@ -146,7 +146,7 @@ end
 
 -- Additive primary and secondary colors: red -> magenta -> blue -> cyan -> green -> yellow -> red --
 local HueColors = {
-	{ 1, 0, 0 }, { 1, 0, 1 }, { 0, 0, 1 }, {0, 1, 1 }, { 0, 1, 0 }, { 1, 1, 0 }
+	{ 1, 0, 0 }, { 1, 0, 1 }, { 0, 0, 1 }, { 0, 1, 1 }, { 0, 1, 0 }, { 1, 1, 0 }
 }
 
 -- Close the loop.

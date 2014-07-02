@@ -24,8 +24,8 @@
 --
 
 -- Standard library imports --
-local setmetatable = setmetatable
 local pi = math.pi
+local setmetatable = setmetatable
 local sin = math.sin
 
 -- Cached module references --

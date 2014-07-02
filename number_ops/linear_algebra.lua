@@ -52,7 +52,7 @@ local Y = {}
 -- @array U Upper-triangular part, stored as { _c11_, ... _c1n_, _c22_, ..., _c2n_, ...,
 -- _cmm_, _cmn_, _cnn_ }, for _cij_ as per _L_ and _m_ = _n_ - 1.
 -- @array b Right-hand side vector.
--- @uint n Matrix dimension and number of elements in _out_, _b_, and _x0_.
+-- @uint n Matrix dimension and number of elements in _out_ and _b_.
 function M.EvaluateLU_Compact (out, L, U, b, n)
 	-- Forward solve Ly = b.
 	local index = 1

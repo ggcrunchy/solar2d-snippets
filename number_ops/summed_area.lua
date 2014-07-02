@@ -48,6 +48,16 @@ function M.GetDims (T)
 	return T.m_w, T.m_h
 end
 
+-- Computes an index, minding dummy cells
+local function Index (col, row, pitch)
+	return row * pitch + col + 1
+end
+
+-- Width to pitch helper
+local function Pitch (w)
+	return w + 1
+end
+
 --- Gets the value of a table cell, i.e. the pre-summed input as assigned in @{New_Grid},
 -- @{Set}, or @{Set_Multi}.
 -- @tparam SummedAreaTable T
@@ -81,16 +91,6 @@ function M.New (w, h)
 	end
 
 	return sat
-end
-
--- Computes an index, minding dummy cells
-local function Index (col, row, pitch)
-	return row * pitch + col + 1
-end
-
--- Width to pitch helper
-local function Pitch (w)
-	return w + 1
 end
 
 -- Converts a lower-right region of the table from value to sum form
@@ -168,7 +168,7 @@ end
 
 -- Converts a lower-right region of the table from sum to value form
 -- value(x, y) = sum(x, y) - sum(x - 1, y) - sum(x, y - 1) + sum(x - 1, y - 1)
-local function Unravel (sat, index, col, row, w)
+local function Unravel (sat, index, col, _, w)
 	local extra, pitch, last = w - col, Pitch(w), #sat
 
 	repeat
