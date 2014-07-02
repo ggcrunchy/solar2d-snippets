@@ -24,7 +24,7 @@
 --
 
 -- Modules --
-local core = require("fft_ops.core")
+local core = require("dft_ops.core")
 
 -- Imports --
 local BeginSines = core.BeginSines
@@ -103,7 +103,7 @@ end
 -- Afterward, this will be the products.
 -- @uint n Power-of-2 width of _v_ (i.e. count of elements in each real vector).
 -- @uint[opt=0] offset Offset in _v_ where data begins.
--- @see fft_ops.utils.Multiply_1D, fft_ops.utils.PrepareTwoFFTs_1D
+-- @see dft_ops.utils.Multiply_1D, dft_ops.utils.PrepareTwoFFTs_1D
 function M.TwoFFTsThenMultiply_1D (v, n, offset)
 	BeginSines(-n)
 
@@ -120,7 +120,7 @@ end
 -- Afterward, this will be the products.
 -- @uint w Power-of-2 width of _m_ (i.e. width in each real matrix)...
 -- @uint h ...and height.
--- @see fft_ops.utils.Multiply_2D, fft_ops.utils.PrepareTwoFFTs_2D
+-- @see dft_ops.utils.Multiply_2D, dft_ops.utils.PrepareTwoFFTs_2D
 function M.TwoFFTsThenMultiply_2D (m, w, h)
 	local w2 = 2 * w
 	local area, len = w2 * h, w2 + 2

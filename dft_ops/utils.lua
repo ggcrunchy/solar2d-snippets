@@ -61,7 +61,7 @@ function M.Multiply_2D (m1, m2, w, h, out)
 	end
 end
 
---- Prepares a real vector for consumption, e.g. as setup for @{fft_ops.real_fft.RealFFT_1D}.
+--- Prepares a real vector for consumption, e.g. as setup for @{dft_ops.real_fft.RealFFT_1D}.
 -- @array out Real output vector, which will be populated from _arr_ and padded with zeroes
 -- as needed...
 -- @uint size Power-of-2 size of _out_.
@@ -79,7 +79,7 @@ function M.PrepareRealFFT_1D (out, size, arr, n)
 	end
 end
 
---- Prepares a real matrix for consumption, e.g. as setup for @{fft_ops.real_fft.RealFFT_2D}.
+--- Prepares a real matrix for consumption, e.g. as setup for @{dft_ops.real_fft.RealFFT_2D}.
 --
 -- It is assumed that _out_ is distinct from _arr_.
 -- @array out Real output matrix, which will be populated from _arr_ and padded with zeroes
@@ -178,7 +178,7 @@ function M.PrepareSeparateFFTs_2D (out1, out2, m, n, arr1, cols1, arr2, cols2, n
 	end
 end
 
---- Prepares two real vectors to be processed in a single FFT, e.g. as setup for @{fft_ops.two_ffts.TwoFFTsThenMultiply_1D}.
+--- Prepares two real vectors to be processed in a single FFT, e.g. as setup for @{dft_ops.two_ffts.TwoFFTsThenMultiply_1D}.
 --
 -- It is assumed that _out_ is distinct from _arr1_ and _arr2_.
 -- @array out Complex output vector, which will be populated from _arr1_ and _arr2_ and
@@ -213,7 +213,7 @@ function M.PrepareTwoFFTs_1D (out, size, arr1, m, arr2, n)
 	return swapped
 end
 
---- Prepares two real matrices to be processed in a single FFT, e.g. as setup for @{fft_ops.two_ffts.TwoFFTsThenMultiply_2D}.
+--- Prepares two real matrices to be processed in a single FFT, e.g. as setup for @{dft_ops.two_ffts.TwoFFTsThenMultiply_2D}.
 --
 -- It is assumed that _out_ is distinct from _arr1_ and _arr2_.
 -- @array out Complex output matrix, which will be populated from _arr1_ and _arr2_ and
@@ -289,7 +289,7 @@ end
 
 -- Stuff for rolling signals? (to facilitate overlap convolve methods)
 
---- Prepares two real vectors to be processed in a single FFT, e.g. as setup for @{fft_ops.goertzel.TwoGoertzelsThenMultiply_1D}.
+--- Prepares two real vectors to be processed in a single FFT, e.g. as setup for @{dft_ops.goertzel.TwoGoertzelsThenMultiply_1D}.
 --
 -- Both _out1_ and _out2_ are assumed to be distinct from either _arr1_ or _arr2_.
 -- @array out1 Real output vector, which will be populated from _arr1_ and padded with
@@ -318,7 +318,7 @@ function M.PrepareTwoGoertzels_1D (out1, out2, size, arr1, m, arr2, n)
 	end
 end
 
---- Prepares two real vectors to be processed in a single FFT, e.g. as setup for @{fft_ops.goertzel.TwoGoertzelsThenMultiply_2D}.
+--- Prepares two real vectors to be processed in a single FFT, e.g. as setup for @{dft_ops.goertzel.TwoGoertzelsThenMultiply_2D}.
 --
 -- Both _out1_ and _out2_ are assumed to be distinct from either _arr1_ or _arr2_.
 -- @array out1 Real output matrix, which will be populated from _arr1_ and padded with

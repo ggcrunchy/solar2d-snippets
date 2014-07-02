@@ -26,7 +26,7 @@
 -- Modules --
 local buttons = require("ui.Button")
 local fft_convolution = require("signal_ops.fft_convolution")
-local fft_utils = require("fft_ops.utils")
+local fft_utils = require("dft_ops.utils")
 local flow = require("graph_ops.flow")
 local png = require("image_ops.png")
 local scenes = require("utils.Scenes")

@@ -27,11 +27,11 @@
 local min = math.min
 
 -- Modules --
-local fft = require("fft_ops.fft")
-local fft_utils = require("fft_ops.utils")
-local goertzel = require("fft_ops.goertzel")
-local real_fft = require("fft_ops.real_fft")
-local two_ffts = require("fft_ops.two_ffts")
+local fft = require("dft_ops.fft")
+local fft_utils = require("dft_ops.utils")
+local goertzel = require("dft_ops.goertzel")
+local real_fft = require("dft_ops.real_fft")
+local two_ffts = require("dft_ops.two_ffts")
 
 -- Exports --
 local M = {}

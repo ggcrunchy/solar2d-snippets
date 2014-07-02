@@ -29,8 +29,8 @@ local pi = math.pi
 local sin = math.sin
 
 -- Modules --
-local core = require("fft_ops.core")
-local two_ffts = require("fft_ops.two_ffts")
+local core = require("dft_ops.core")
+local two_ffts = require("dft_ops.two_ffts")
 
 -- Imports --
 local BeginSines = core.BeginSines
@@ -111,7 +111,7 @@ end)
 -- @array v2 ...and vector #2.
 -- @uint n Power-of-2 width of _v1_ and _v2_.
 -- @array[opt=v1] out Complex output vector (of size = 2 * _n_), i.e. the products.
--- @see fft_ops.utils.Multiply_1D
+-- @see dft_ops.utils.Multiply_1D
 function M.TwoGoertzelsThenMultiply_1D (v1, v2, n, out)
 	out = out or v1
 
@@ -160,7 +160,7 @@ local Column = {}
 -- @uint w Power-of-2 width of _v1_ and _v2_ (i.e. width in the real matrix)...
 -- @uint h ...and height.
 -- @array[opt=m1] out Complex output matrix (of size = 2 * _w_ * _h_), i.e. the products.
--- @see fft_ops.utils.Multiply_2D
+-- @see dft_ops.utils.Multiply_2D
 function M.TwoGoertzelsThenMultiply_2D (m1, m2, w, h, out)
 	out = out or m1
 

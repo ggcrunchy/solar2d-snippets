@@ -29,7 +29,7 @@ local pi = math.pi
 local sin = math.sin
 
 -- Modules --
-local core = require("fft_ops.core")
+local core = require("dft_ops.core")
 
 -- Imports --
 local BeginSines = core.BeginSines

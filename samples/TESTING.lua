@@ -46,8 +46,8 @@ local circular_convolution = require("signal_ops.circular_convolution")
 local fft_convolution = require("signal_ops.fft_convolution")
 local linear_convolution = require("signal_ops.linear_convolution")
 
-local fft = require("fft_ops.fft")
-local real_fft = require("fft_ops.real_fft")
+local fft = require("dft_ops.fft")
+local real_fft = require("dft_ops.real_fft")
 
 
 	do
