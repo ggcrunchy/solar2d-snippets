@@ -1,0 +1,15 @@
+[submodule "dft_ops"]
+	path = dft_ops
+	url = https://github.com/ggcrunchy/dft_ops.git
+[submodule "image_ops"]
+	path = image_ops
+	url = https://github.com/ggcrunchy/image_ops.git
+[submodule "signal_ops"]
+	path = signal_ops
+	url = https://github.com/ggcrunchy/signal_ops.git
+[submodule "spline_ops"]
+	path = spline_ops
+	url = https://github.com/ggcrunchy/spline_ops.git
+[submodule "bitwise_ops"]
+	path = bitwise_ops
+	url = https://github.com/ggcrunchy/bitwise_ops.git
