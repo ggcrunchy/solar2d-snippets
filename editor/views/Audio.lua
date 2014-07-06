@@ -146,7 +146,7 @@ local function SetText (button, text)
 	button.parent[2].text = text
 end
 
--- --
+-- Is this running on a device? --
 local OnDevice = system.getInfo("environment") == "device"
 
 ---

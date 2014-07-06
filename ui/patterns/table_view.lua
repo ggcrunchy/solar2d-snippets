@@ -25,17 +25,55 @@
 
 -- Standard library imports --
 local remove = table.remove
-local type = type
+
+-- Modules --
+local file_utils = require("utils.File")
 
 -- Corona globals --
 local display = display
 local native = native
+local timer = timer
 
 -- Corona modules --
 local widget = require("widget")
 
 -- Exports --
 local M = {}
+
+--
+function M.FileList (group, x, y, options) -- path, exts, base)
+	local FileList = M.Listbox(group, x, y, options)
+
+	--
+	local function Reload (how)
+		-- Enumerate!
+
+		if how then
+			-- Do other stuff (options.on_reload?)
+		end
+
+		-- Update list
+	end
+
+	--- DOCME
+	function FileList:GetPath ()
+		-- ???
+	end
+
+	--
+	Reload()
+
+	--
+	local watch = file_utils.WatchForFileModification(options.path, Reload, options.base)
+
+	FileList:addEventListener("finalize", function()
+		timer.cancel(watch)
+	end)
+
+	-- Extra credit: Directory navigation (requires some effort on the file utility side)
+
+	return FileList
+end
 
 -- --
 local RowAdder = {
