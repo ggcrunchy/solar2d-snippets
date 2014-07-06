@@ -24,6 +24,8 @@
 --
 
 -- Standard library imports --
+local concat = table.concat
+local gsub = string.gsub
 local ipairs = ipairs
 local open = io.open
 local type = type
@@ -37,6 +39,7 @@ local timer = timer
 
 -- Corona modules --
 local lfs = require("lfs")
+local sqlite3 = require("sqlite3")
 
 -- Exports --
 local M = {}
@@ -127,6 +130,11 @@ end
 -- Is this running on an Android device? --
 local OnAndroid = system.getInfo("platformName") == "Android"
 
+--
+local function GetDatabase (path)
+	return sqlite3.open(PathForFile(gsub(path, "/", "__")))
+end
+
 --- Enumerates files in a given directory.
 -- @string path Directory path.
 -- @ptable[opt] options Enumeration options. Fields:
@@ -151,10 +159,17 @@ function M.EnumerateFiles (path, options, into)
 	if path then
 		--
 		if OnAndroid and IsResourceDir(base) then
-			-- db = database(path)
-			-- exists? (and table too)
-				-- enum from database
-			-- enumerate, path = ...
+			local db, list = GetDatabase(path), {}
+
+			db:exec[[CREATE TABLE IF NOT EXISTS files (name);]]
+
+			for name in db:urows[[SELECT * FROM files;]] do
+				list[#list + 1] = name
+			end
+
+			db:close()
+
+			enumerate, path = ipairs, list
 		else
 			enumerate = lfs.attributes(path, "mode") == "directory" and lfs.dir
 		end
@@ -162,10 +177,6 @@ function M.EnumerateFiles (path, options, into)
 		--
 		if enumerate then
 			(EnumFiles[type(exts)] or EnumAll)(enumerate, into, path, exts)
-
-			if enumerate ~= lfs.dir then
-				-- Close database
-			end
 		end
 	end
 
@@ -188,6 +199,32 @@ function M.Exists (name, base)
 	return file ~= nil
 end
 
+--
+local function PopulateDatabase (path)
+	--
+	local db = GetDatabase(path)
+
+	db:exec[[
+		DROP TABLE IF EXISTS files;
+		CREATE TABLE files (name);
+	]]
+
+	--
+	local files = M.EnumerateFiles(path, base and { base = base })
+
+	if #files > 0 then
+		local add = {}
+
+		for i, file in ipairs(files) do
+			add[i] = [[INSERT INTO files VALUES(]] .. file .. [[);]]
+		end
+
+		db:exec(concat(files))
+	end
+
+	db:close()
+end
+
 --- Launches a timer to watch a file or directory for modifications.
 -- @string path File or directory path.
 -- @callable func On modification, this is called as `func(path, how)`, where _how_ is one of:
@@ -203,10 +240,17 @@ function M.WatchForFileModification (path, func, base)
 	if OnSimulator or not is_res_dir then
 		--
 		if is_res_dir then
-			-- Reset db = database(path)
-			-- EnumerateFiles(), put them in db
-			-- Capture "created" / "deleted" messages...
-			-- old_func = func; func = function() ... end
+			PopulateDatabase(path)
+
+			local old = func
+
+			function func (path, how)
+				if how == "created" or how == "deleted" then
+					PopulateDatabase(path)
+				end
+
+				old(path, how)
+			end
 		end
 
 		--
