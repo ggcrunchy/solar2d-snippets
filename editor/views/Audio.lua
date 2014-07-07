@@ -93,7 +93,7 @@ local function SetCurrent (what)
 end
 
 -- --
-local Base = system.getInfo("platformName") == "Android" and system.DocumentsDirectory or system.ResourceDirectory
+local Base = system.ResourceDirectory--system.getInfo("platformName") == "Android" and system.DocumentsDirectory or system.ResourceDirectory
 -- ^^ TODO: Documents -> Caches?
 -- --
 local Names
@@ -156,8 +156,8 @@ function M.Load (view)
 
 	Group = display.newGroup()
 	Songs = table_view_patterns.Listbox(Group, w - 350, 100, {
-		press = function(index)
-			Offset = Names[index]
+		press = function(_, name)--index)
+			Offset = name--Names[index]
 		end
 	})
 

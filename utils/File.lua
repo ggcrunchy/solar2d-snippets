@@ -131,8 +131,8 @@ end
 local OnAndroid = system.getInfo("platformName") == "Android"
 
 --
-local function GetDatabase (path)
-	return sqlite3.open(PathForFile(gsub(path, "/", "__")))
+local function DatabasePath (path)
+	return PathForFile(gsub(path, "/", "__")) .. ".sqlite3"
 end
 
 --- Enumerates files in a given directory.
@@ -154,29 +154,37 @@ function M.EnumerateFiles (path, options, into)
 	end
 
 	into = into or {}
-	path = PathForFile(path, base)
 
-	if path then
+	local respath = PathForFile(path, base)
+local AA=""
+	if respath then
 		--
 		if OnAndroid and IsResourceDir(base) then
-			local db, list = GetDatabase(path), {}
+AA=AA.."YEP: "
+			local db_path = DatabasePath(path)
+			local db_file = open(db_path)
 
-			db:exec[[CREATE TABLE IF NOT EXISTS files (name);]]
+			if db_file then
+				db_file:close()
 
-			for name in db:urows[[SELECT * FROM files;]] do
-				list[#list + 1] = name
+				local db, list = sqlite3.open(db_path), {}
+
+				for name in db:urows[[SELECT * FROM files;]] do
+					list[#list + 1] = name
+AA = AA .. name .. "; "
+				end
+
+				db:close()
+
+				enumerate, respath = #list > 0 and ipairs, list
 			end
-
-			db:close()
-
-			enumerate, path = ipairs, list
 		else
-			enumerate = lfs.attributes(path, "mode") == "directory" and lfs.dir
+			enumerate = lfs.attributes(respath, "mode") == "directory" and lfs.dir
 		end
-
+local tt=display.newText(AA, display.contentCenterX, display.contentCenterY, native.systemFontBold, 35)
 		--
 		if enumerate then
-			(EnumFiles[type(exts)] or EnumAll)(enumerate, into, path, exts)
+			(EnumFiles[type(exts)] or EnumAll)(enumerate, into, respath, exts)
 		end
 	end
 
@@ -200,9 +208,12 @@ function M.Exists (name, base)
 end
 
 --
+local PopOpts = OnSimulator and { base = system.ResourceDirectory }
+
+--
 local function PopulateDatabase (path)
 	--
-	local db = GetDatabase(path)
+	local db = sqlite3.open(DatabasePath(path))
 
 	db:exec[[
 		DROP TABLE IF EXISTS files;
@@ -210,16 +221,18 @@ local function PopulateDatabase (path)
 	]]
 
 	--
-	local files = M.EnumerateFiles(path, base and { base = base })
+	local files = M.EnumerateFiles(path, PopOpts)
 
 	if #files > 0 then
-		local add = {}
+		local command = {}
 
-		for i, file in ipairs(files) do
-			add[i] = [[INSERT INTO files VALUES(]] .. file .. [[);]]
+		for _, file in ipairs(files) do
+			if file ~= "." and file ~= ".." then
+				command[#command + 1] = [[INSERT INTO files VALUES(']] .. file .. [[');]]
+			end
 		end
 
-		db:exec(concat(files))
+		db:exec(concat(command, ""))
 	end
 
 	db:close()

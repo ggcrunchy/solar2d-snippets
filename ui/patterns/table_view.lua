@@ -86,6 +86,13 @@ local RowAdder = {
 	}
 }
 
+--
+local function GetText (event, stash)
+	local index = event.row.index
+
+	return stash and stash[index], index
+end
+
 -- Each of the arguments is a function that takes _event_.**index** as argument, where
 -- _event_ is the parameter of **onEvent** or **onRender**.
 -- @callable press Optional, called when a listbox row is pressed.
@@ -104,7 +111,17 @@ function M.Listbox (group, x, y, options)
 	local lopts = { left = x, top = y, width = options.width or 300, height = options.height or 150 }
 
 	-- On Render --
-	local get_text, stash = options.get_text
+	local get_text, stash = GetText
+
+	if options.get_text then
+		local getter = options.get_text
+
+		function get_text (event, stash)
+			local item, index = GetText(event, stash)
+
+			return getter(item) or item, index
+		end
+	end
 
 	function lopts.onRowRender (event)
 		local text = display.newText(event.row, "", 0, 0, native.systemFont, 20)
@@ -112,14 +129,7 @@ function M.Listbox (group, x, y, options)
 		text:setFillColor(0)
 
 		--
-		local index = event.row.index
-		local item = stash and stash[index]
-
-		if get_text then
-			item = get_text(item) or item
-		end
-
-		text.text = item or ""
+		text.text = get_text(event, stash) or ""
 
 		--
 text.anchorX, text.x = 0, 15
@@ -132,19 +142,21 @@ text.y = event.row.height / 2
 	local press, release, old_row = options.press, options.release
 
 	function lopts.onRowTouch (event)
+		local phase, str, index = event.phase, get_text(event, stash)
+
 		-- Listbox item pressed...
-		if event.phase == "press" then
+		if phase == "press" then
 			if press then
-				press(event.row.index)
+				press(index, str)
 			end
 
 			--
 			event.row.alpha = 1
 
 		-- ...and released.
-		elseif event.phase == "release" then
+		elseif phase == "release" then
 			if release then
-				release(event.row.index)
+				release(index, str)
 			end
 
 			--

@@ -381,6 +381,7 @@ local function MakeSampler (radius, is_tiled, uses_grid)
 ]]
 
 		sampler.m_grid = grid
+	end
 
 	return sampler
 end
