@@ -28,6 +28,7 @@ local concat = table.concat
 local gsub = string.gsub
 local ipairs = ipairs
 local open = io.open
+local pairs = pairs
 local type = type
 
 -- Modules --
@@ -132,7 +133,7 @@ local OnAndroid = system.getInfo("platformName") == "Android"
 
 --
 local function DatabasePath (path)
-	return PathForFile(gsub(path, "/", "__")) .. ".sqlite3"
+	return PathForFile(gsub(path, "/", "__") .. ".sqlite3")
 end
 
 --- Enumerates files in a given directory.
@@ -155,37 +156,34 @@ function M.EnumerateFiles (path, options, into)
 
 	into = into or {}
 
-	local respath = PathForFile(path, base)
-local AA=""
-	if respath then
-		--
-		if OnAndroid and IsResourceDir(base) then
-AA=AA.."YEP: "
-			local db_path = DatabasePath(path)
-			local db_file = open(db_path)
+	local respath
 
-			if db_file then
-				db_file:close()
+	--
+	if OnAndroid and IsResourceDir(base) then
+		local db_path = DatabasePath(path)
+		local db_file = db_path and open(db_path)
 
-				local db, list = sqlite3.open(db_path), {}
+		if db_file then
+			db_file:close()
 
-				for name in db:urows[[SELECT * FROM files;]] do
-					list[#list + 1] = name
-AA = AA .. name .. "; "
-				end
+			local db, list = sqlite3.open(db_path), {}
 
-				db:close()
-
-				enumerate, respath = #list > 0 and ipairs, list
+			for name in db:urows[[SELECT * FROM files;]] do
+				list[name] = true
 			end
-		else
-			enumerate = lfs.attributes(respath, "mode") == "directory" and lfs.dir
+
+			db:close()
+
+			enumerate, respath = pairs, list
 		end
-local tt=display.newText(AA, display.contentCenterX, display.contentCenterY, native.systemFontBold, 35)
-		--
-		if enumerate then
-			(EnumFiles[type(exts)] or EnumAll)(enumerate, into, respath, exts)
-		end
+	else
+		respath = PathForFile(path, base)
+		enumerate = respath and lfs.attributes(respath, "mode") == "directory" and lfs.dir
+	end
+
+	--
+	if enumerate then
+		(EnumFiles[type(exts)] or EnumAll)(enumerate, into, respath, exts)
 	end
 
 	return into
