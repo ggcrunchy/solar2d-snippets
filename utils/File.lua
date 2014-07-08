@@ -41,6 +41,9 @@ local timer = timer
 local lfs = require("lfs")
 local sqlite3 = require("sqlite3")
 
+-- Cached module references --
+local _EnumerateFiles_
+
 -- Exports --
 local M = {}
 
@@ -130,34 +133,33 @@ end
 -- Is this running on an Android device? --
 local OnAndroid = system.getInfo("platformName") == "Android"
 
---
+-- Helper to resolve a directory-associated database's path
 local function DatabasePath (path)
 	return PathForFile(gsub(path, "/", "__") .. ".sqlite3")
 end
 
 --- Enumerates files in a given directory.
 -- @string path Directory path.
--- @ptable[opt] options Enumeration options. Fields:
+-- @ptable[opt] opts Enumeration options. Fields:
 --
 -- * **exts**: Extensions filter. If this is a string, only files ending in the string are
 -- enumerated. If it is an array, only files ending in one of its strings (tried in order)
 -- are enumerated. Otherwise, all files are enumerated.
 -- * **base**: Directory base. If absent, **system.ResourcesDirectory**.
+-- * **get_blobs**: AAAA
+--
 -- @ptable into If provided, files are appended here. Otherwise, a table is provided.
 -- @treturn table Enumerated files.
-function M.EnumerateFiles (path, options, into)
-	local base, exts, enumerate
-
-	if options then
-		base = options.base
-		exts = options.exts
-	end
+-- @treturn table? File-blob pairs, where each _blob_ is a string with the contents of _file_.
+function M.EnumerateFiles (path, opts, into)
+	local base, exts = opts and opts.base, opts and opts.exts
 
 	into = into or {}
 
-	local respath
+	-- If this is the resource directory on Android, look for a database. If found, build up a
+	-- list of files and their blobs (which may be empty strings) to iterate.
+	local enumerate, respath, blobs
 
-	--
 	if OnAndroid and IsResourceDir(base) then
 		local db_path = DatabasePath(path)
 		local db_file = db_path and open(db_path)
@@ -167,26 +169,39 @@ function M.EnumerateFiles (path, options, into)
 
 			local db, list = sqlite3.open(db_path), {}
 
-			for name in db:urows[[SELECT * FROM files]] do
-				list[name] = true
+			for name, blob in db:urows[[SELECT * FROM files]] do
+				list[name] = blob
 			end
 
 			db:close()
 
 			enumerate, respath = pairs, list
 		end
+
+	-- Otherwise, read the directory if it exists.
 	else
 		respath = PathForFile(path, base)
 		enumerate = respath and lfs.attributes(respath, "mode") == "directory" and lfs.dir
 	end
 
-	--
+	-- Enumerate the files with the appropriate iterator. If this was done from a database,
+	-- build up the valid blob list as well, if requested.
 	if enumerate then
 		(EnumFiles[type(exts)] or EnumAll)(enumerate, into, respath, exts)
+
+		if enumerate == pairs and opts and opts.get_blobs then
+			blobs = {}
+
+			for _, name in ipairs(into) do
+				blobs[name] = respath[name]
+			end
+		end
 	end
 
-	return into
+	return into, blobs
 end
+
+-- ^^^ TODO: Recursion, etc.
 
 --- DOCME
 -- @string name
@@ -204,12 +219,10 @@ function M.Exists (name, base)
 	return file ~= nil
 end
 
---
-local PopOpts = OnSimulator and { base = system.ResourceDirectory }
-
---
-local function PopulateDatabase (path)
-	--
+-- Helper to populate a resource directory database
+local function PopulateDatabase (path, popts)
+	-- Open or create the database. If it already existed, erase the now-defunct files table.
+	-- Add a fresh files table.
 	local db = sqlite3.open(DatabasePath(path))
 
 	db:exec[[
@@ -217,8 +230,9 @@ local function PopulateDatabase (path)
 		CREATE TABLE files (name VARCHAR, blob VARCHAR);
 	]]
 
-	--
-	local files = M.EnumerateFiles(path, PopOpts)
+	-- Enumerate files in the resource directory and add all valid ones to the database,
+	-- including their contents if requested.
+	local files, blobs = _EnumerateFiles_(path, popts)
 
 	if #files > 0 then
 		local statement = db:prepare[[INSERT INTO files VALUES(?, ?)]]
@@ -226,7 +240,7 @@ local function PopulateDatabase (path)
 		for _, file in ipairs(files) do
 			if file ~= "." and file ~= ".." then
 				statement:bind(1, file)
-				statement:bind_blob(2, "")
+				statement:bind_blob(2, blobs and blobs[file] or "")
 				statement:step()
 				statement:reset()
 			end
@@ -238,6 +252,10 @@ local function PopulateDatabase (path)
 	db:close()
 end
 
+-- ^^ TODO: Get blobs
+
+-- @param[opt=system.ResourceDirectory] base Directory base.
+
 --- Launches a timer to watch a file or directory for modifications.
 -- @string path File or directory path.
 -- @callable func On modification, this is called as `func(path, how)`, where _how_ is one of:
@@ -245,26 +263,35 @@ end
 -- * **"created"**: File was created (or re-created) once watching was begun.
 -- * **"deleted"**: File was deleted once watching was begun.
 -- * **"modified"**: File was modified while being watched.
--- @param[opt=system.ResourceDirectory] base Directory base.
+-- @ptable[opt] opts Watch options. Fields:
+--
+-- * **exts**: As per @{EnumerateFiles}.
+-- * **base**: As per @{EnumerateFiles}.
+-- * **get_blobs**: DDDD
 -- @treturn TimerHandle A timer, which may be cancelled.
-function M.WatchForFileModification (path, func, base)
+function M.WatchForFileModification (path, func, opts)
+	local base = opts and opts.base
 	local is_res_dir, respath, modtime = IsResourceDir(base)
 
 	if OnSimulator or not is_res_dir then
-		--
+		-- If this is in the resource directory on the simulator, build up an initial database from
+		-- whatever is found in the directory. Hijack the on-modification function to make updates
+		-- to the database, as well.
 		if is_res_dir then
-			PopulateDatabase(path)
+			local popts = opts and { exts = opts.exts, get_blobs = opts.get_blobs }
+
+			PopulateDatabase(path, popts)
 
 			local old = func
 
 			function func (path, how)
-				PopulateDatabase(path)
+				PopulateDatabase(path, popts)
 
 				old(path, how)
 			end
 		end
 
-		--
+		-- Periodically check the file and respond to any modifications.
 		return timer.performWithDelay(50, function()
 			respath = respath or PathForFile(path, base)
 
@@ -292,12 +319,15 @@ function M.WatchForFileModification (path, func, base)
 				modtime = false
 			end
 		end, 0)
-
+		-- ^^ TODO: Some variety in how this is handled in file vs. directory, especially "modified"
 	-- Resource directory is read-only on device, so timer is a no-op.
 	else
 		return timer.performWithDelay(0, function() end)
 	end
 end
+
+-- Cache module members.
+_EnumerateFiles_ = M.EnumerateFiles
 
 -- Export the module.
 return M

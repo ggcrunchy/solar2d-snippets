@@ -56,6 +56,10 @@ function M.FileList (group, x, y, options) -- path, exts, base)
 	end
 
 	--- DOCME
+	function FileList:GetBlob ()
+	end
+
+	--- DOCME
 	function FileList:GetPath ()
 		-- ???
 	end
@@ -93,6 +97,11 @@ local function GetText (object, stash)
 	return stash and stash[index], index
 end
 
+--
+local function Highlight (row)
+	row.alpha = .5
+end
+
 -- Each of the arguments is a function that takes _event_.**index** as argument, where
 -- _event_ is the parameter of **onEvent** or **onRender**.
 -- @callable press Optional, called when a listbox row is pressed.
@@ -111,7 +120,7 @@ function M.Listbox (group, x, y, options)
 	local lopts = { left = x, top = y, width = options.width or 300, height = options.height or 150 }
 
 	-- On Render --
-	local get_text, stash = GetText
+	local get_text, selection, stash = GetText
 
 	if options.get_text then
 		local getter = options.get_text
@@ -125,17 +134,17 @@ function M.Listbox (group, x, y, options)
 
 	function lopts.onRowRender (event)
 		local text = display.newText(event.row, "", 0, 0, native.systemFont, 20)
+		local str, index = get_text(event.row, stash)
 
 		text:setFillColor(0)
 
-		--
-		text.text = get_text(event.row, stash) or ""
+		text.text = str or ""
+		text.anchorX, text.x = 0, 15
+		text.y = event.row.height / 2
 
-		--
-text.anchorX, text.x = 0, 15
-text.y = event.row.height / 2
-
---		object_helper.AlignChildText_X(text, get_text(event.row.index), 15)
+		if index == selection then
+			Highlight(event.row)
+		end
 	end
 
 	-- On Touch --
@@ -147,24 +156,26 @@ text.y = event.row.height / 2
 		-- Listbox item pressed...
 		if phase == "press" then
 			if press then
-				press(index, str)
+				press(index, str or "")
 			end
 
-			--
+			-- Show row at full opacity, while held.
 			event.row.alpha = 1
 
 		-- ...and released.
 		elseif phase == "release" then
 			if release then
-				release(index, str)
+				release(index, str or "")
 			end
 
-			--
-			if old_row and old_row ~= event.row then
+			-- Unmark the previously selected row (if any), and mark the new row.
+			if old_row then
 				old_row.alpha = 1
 			end
 
-			event.row.alpha, old_row = .5, event.row
+			Highlight(event.row)
+
+			selection, old_row = index, event.row
 		end
 
 		return true
@@ -203,7 +214,7 @@ text.y = event.row.height / 2
 
 	--- DOCME
 	function Listbox:Clear ()
-		stash = nil
+		selection, stash = nil
 
 		self:deleteAllRows()
 	end
@@ -214,6 +225,12 @@ text.y = event.row.height / 2
 			remove(stash, index)
 		end
 
+		if index == selection then
+			selection = nil
+		elseif selection and index < selection then
+			selection = selection - 1
+		end
+
 		self:deleteRow(index)
 	end
 
@@ -222,8 +239,6 @@ text.y = event.row.height / 2
 
 	return Listbox
 end
-
--- File chooser...
 
 -- Export the module.
 return M

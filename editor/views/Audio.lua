@@ -95,19 +95,17 @@ end
 -- --
 local Base = system.ResourceDirectory--system.getInfo("platformName") == "Android" and system.DocumentsDirectory or system.ResourceDirectory
 -- ^^ TODO: Documents -> Caches?
--- --
-local Names
 
 -- Helper to load or reload the music list
 local function Reload ()
 	-- Populate the song list, checking what's still around.
-	Names = file_utils.EnumerateFiles("Music", { base = Base, exts = { ".mp3", ".ogg" } })
+	local names = file_utils.EnumerateFiles("Music", { base = Base, exts = { ".mp3", ".ogg" } })
 
-	Songs:AssignList(Names)
+	Songs:AssignList(names)
 
 	local current, offset, stream_found
 
-	for i, name in ipairs(Names) do
+	for i, name in ipairs(names) do
 		if name == Current then
 			current = i
 		end
@@ -138,7 +136,7 @@ local function Reload ()
 		Songs:scrollToIndex(offset, 0)
 	end
 
-	Offset = Names[offset]
+	Offset = names[offset]
 end
 
 --
@@ -156,8 +154,8 @@ function M.Load (view)
 
 	Group = display.newGroup()
 	Songs = table_view_patterns.Listbox(Group, w - 350, 100, {
-		press = function(_, name)--index)
-			Offset = name--Names[index]
+		press = function(_, name)
+			Offset = name
 		end
 	})
 
