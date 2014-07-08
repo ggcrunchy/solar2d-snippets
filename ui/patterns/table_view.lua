@@ -87,8 +87,8 @@ local RowAdder = {
 }
 
 --
-local function GetText (event, stash)
-	local index = event.row.index
+local function GetText (object, stash)
+	local index = object.index
 
 	return stash and stash[index], index
 end
@@ -116,8 +116,8 @@ function M.Listbox (group, x, y, options)
 	if options.get_text then
 		local getter = options.get_text
 
-		function get_text (event, stash)
-			local item, index = GetText(event, stash)
+		function get_text (object, stash)
+			local item, index = GetText(object, stash)
 
 			return getter(item) or item, index
 		end
@@ -129,7 +129,7 @@ function M.Listbox (group, x, y, options)
 		text:setFillColor(0)
 
 		--
-		text.text = get_text(event, stash) or ""
+		text.text = get_text(event.row, stash) or ""
 
 		--
 text.anchorX, text.x = 0, 15
@@ -142,7 +142,7 @@ text.y = event.row.height / 2
 	local press, release, old_row = options.press, options.release
 
 	function lopts.onRowTouch (event)
-		local phase, str, index = event.phase, get_text(event, stash)
+		local phase, str, index = event.phase, get_text(event.target, stash)
 
 		-- Listbox item pressed...
 		if phase == "press" then

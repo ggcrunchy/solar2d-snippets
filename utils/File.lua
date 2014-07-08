@@ -24,7 +24,6 @@
 --
 
 -- Standard library imports --
-local concat = table.concat
 local gsub = string.gsub
 local ipairs = ipairs
 local open = io.open
@@ -168,7 +167,7 @@ function M.EnumerateFiles (path, options, into)
 
 			local db, list = sqlite3.open(db_path), {}
 
-			for name in db:urows[[SELECT * FROM files;]] do
+			for name in db:urows[[SELECT * FROM files]] do
 				list[name] = true
 			end
 
@@ -215,22 +214,25 @@ local function PopulateDatabase (path)
 
 	db:exec[[
 		DROP TABLE IF EXISTS files;
-		CREATE TABLE files (name);
+		CREATE TABLE files (name VARCHAR, blob VARCHAR);
 	]]
 
 	--
 	local files = M.EnumerateFiles(path, PopOpts)
 
 	if #files > 0 then
-		local command = {}
+		local statement = db:prepare[[INSERT INTO files VALUES(?, ?)]]
 
 		for _, file in ipairs(files) do
 			if file ~= "." and file ~= ".." then
-				command[#command + 1] = [[INSERT INTO files VALUES(']] .. file .. [[');]]
+				statement:bind(1, file)
+				statement:bind_blob(2, "")
+				statement:step()
+				statement:reset()
 			end
 		end
 
-		db:exec(concat(command, ""))
+		statement:finalize()
 	end
 
 	db:close()
@@ -256,9 +258,7 @@ function M.WatchForFileModification (path, func, base)
 			local old = func
 
 			function func (path, how)
-				if how == "created" or how == "deleted" then
-					PopulateDatabase(path)
-				end
+				PopulateDatabase(path)
 
 				old(path, how)
 			end
