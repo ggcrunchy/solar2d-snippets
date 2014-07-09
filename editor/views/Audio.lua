@@ -25,7 +25,6 @@
 
 -- Music
 
--- Pick background pattern?
 -- Song???
 
 -- Could add sound effects, other music with event_target tags
@@ -35,8 +34,6 @@
 
 -- Standard library imports --
 local ipairs = ipairs
-local lines = io.lines
-local open = io.open
 
 -- Modules --
 local button = require("ui.Button")
@@ -44,7 +41,6 @@ local common = require("editor.Common")
 local common_ui = require("editor.CommonUI")
 local dispatch_list = require("game.DispatchList")
 local file_utils = require("utils.File")
-local lfs = require("lfs")
 local object_helper = require("utils.ObjectHelper")
 local table_view_patterns = require("ui.patterns.table_view")
 
@@ -93,13 +89,31 @@ local function SetCurrent (what)
 end
 
 -- --
-local Base = system.ResourceDirectory--system.getInfo("platformName") == "Android" and system.DocumentsDirectory or system.ResourceDirectory
+local Base = system.ResourceDirectory
 -- ^^ TODO: Documents -> Caches?
 
+-- --
+local Opts = { base = Base, exts = { ".mp3", ".ogg" } }
+
 -- Helper to load or reload the music list
-local function Reload ()
+local function Reload (songs)
+	-- If the stream file was removed while playing, try to close the stream before any
+	-- problems arise.
+	if not songs:Find(StreamName) then
+		CloseStream()
+	end
+
+	-- Invalidate the current element, if its file was erased.
+	local current = songs:Find(Current)
+
+	if not current then
+		SetCurrent(nil)
+	end
+
+	return current
+--[[
 	-- Populate the song list, checking what's still around.
-	local names = file_utils.EnumerateFiles("Music", { base = Base, exts = { ".mp3", ".ogg" } })
+	local names = file_utils.EnumerateFiles("Music", Opts)
 
 	Songs:AssignList(names)
 
@@ -137,6 +151,7 @@ local function Reload ()
 	end
 
 	Offset = names[offset]
+	]]
 end
 
 --
@@ -152,24 +167,39 @@ local OnDevice = system.getInfo("environment") == "device"
 function M.Load (view)
 	local w, h = display.contentWidth, display.contentHeight
 
+	--
+	if OnDevice then
+		file_utils.AddDirectory("Music", system.DocumentsDirectory)
+	end
+
+	--
 	Group = display.newGroup()
-	Songs = table_view_patterns.Listbox(Group, w - 350, 100, {
-		press = function(_, name)
-			Offset = name
-		end
+
+	--
+	Songs = table_view_patterns.FileList--[[Listbox]](Group, w - 350, 100, {
+		path = "Music", base = Base, exts = { ".mp3", ".ogg" }, on_reload = Reload
+	--	press = function(_, name)
+	--		Offset = name
+	--	end
 	})
 
 	common_ui.Frame(Songs, 1, 0, 0)
 
+	--
+	CurrentText = display.newText(Group, "", 0, 0, native.systemFont, 24)
+
+	SetCurrent(nil)
+
+	--
 	PlayOrStop = button.Button(Group, nil, w - 410, h - 70, 120, 50, function(bgroup)
-		local was_streaming = Stream
+		local was_streaming, offset = Stream, Songs:GetSelection()
 
 		CloseStream()
 
 		if was_streaming then
 			SetText(bgroup, "Play")
-		elseif Offset then
-			Stream = audio.loadStream("Music/" .. Offset)
+		elseif offset then--Offset then
+			Stream = audio.loadStream("Music/" .. offset)--Offset)
 
 			if Stream then
 				StreamName = Offset
@@ -182,16 +212,12 @@ function M.Load (view)
 	end)
 
 	--
-	CurrentText = display.newText(Group, "", 0, 0, native.systemFont, 24)
-
-	SetCurrent(nil)
-
 	local widgets, n = {
 		current = CurrentText, list = Songs, play_or_stop = PlayOrStop
 	}, Group.numChildren
 
 	button.Button(Group, nil, w - 280, h - 70, 120, 50, function()
-		SetCurrent(Offset)
+		SetCurrent(Songs:GetSelection())--Offset)
 	end, "Set")
 
 	button.Button(Group, nil, w - 150, h - 70, 120, 50, function()
@@ -201,42 +227,8 @@ function M.Load (view)
 	widgets.set, widgets.clear = Group[n + 1], Group[n + 2]
 
 	--
-	if OnDevice then -- TODO: Make this handle non-Android intelligently too...
-		file_utils.AddDirectory("Music", system.DocumentsDirectory)
-
-		--
-		local ipath = system.pathForFile("MusicIndex.txt") -- TODO: Formalize in persistence?
-		local ifile = ipath and open(ipath, "rt")
-
-		if ifile then
-			for name in ifile:lines() do
-			--	if lfs.attributes(dpath .. name, "mode") ~= "file" then -- TODO: Compare some info to avoid copying?
-				name = "Music/" .. name
-
-				file_utils.CopyFile(name, nil, name, nil)
-			--	end
-			end
-
-			ifile:close()
-		end
-
-	--
-	else
-		button.Button(Group, nil, w - 320, h - 140, 280, 50, function()
-			local ifile = open(system.pathForFile("MusicIndex.txt"), "wt") -- TODO: Formalize in persistence?
-
-			if ifile then
-				for _, name in ipairs(Names) do
-					ifile:write(name, "\n")
-				end
-
-				ifile:close()
-			end
-		end, "Bake index file")
-
-		widgets.bake = Group[n + 3]
-	end
-
+--	Songs:Init()
+--[[
 	--
 	WatchMusicFolder = file_utils.WatchForFileModification("Music", function(how)
 		if Group.isVisible then
@@ -244,7 +236,7 @@ function M.Load (view)
 		else
 			Songs.is_consistent = false
 		end
-	end, Base)
+	end, Opts)]]
 
 	--
 	Group.isVisible = false
@@ -254,7 +246,6 @@ function M.Load (view)
 	--
 	common.AddHelp("Ambience", widgets)
 	common.AddHelp("Ambience", {
-		bake = "Bakes a list of available songs for Android, to account for no resource directory.",
 		current = "What is the 'current' selection?",
 		list = "A list of available songs.",
 		play_or_stop = "If music is playing, stops it. Otherwise, plays the 'current' selection, if available.",
@@ -266,11 +257,13 @@ end
 ---
 -- @pgroup view X
 function M.Enter (view)
+	Songs:Init()
+	--[[
 	if not Songs.is_consistent then
 		Reload()
 
 		Songs.is_consistent = true
-	end
+	end]]
 
 	-- Sample music (until switch view or option)
 	-- Background option, sample (scroll views, event block selector)
@@ -295,7 +288,7 @@ function M.Unload ()
 
 	Songs:removeSelf()
 
-	Current, CurrentText, Group, Names, PlayOrStop, Songs, WatchMusicFolder = nil
+	Current, CurrentText, Group, PlayOrStop, Songs, WatchMusicFolder = nil
 end
 
 -- Listen to events.

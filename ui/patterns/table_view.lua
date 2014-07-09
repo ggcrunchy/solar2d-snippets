@@ -24,6 +24,7 @@
 --
 
 -- Standard library imports --
+local ipairs = ipairs
 local remove = table.remove
 
 -- Modules --
@@ -41,34 +42,49 @@ local widget = require("widget")
 local M = {}
 
 --
-function M.FileList (group, x, y, options) -- path, exts, base)
+function M.FileList (group, x, y, options)
 	local FileList = M.Listbox(group, x, y, options)
 
 	--
-	local function Reload (how)
-		-- Enumerate!
+	local path, base, on_reload = options.path, options.base, options.on_reload
+	local opts = { base = base, exts = options.exts }
 
-		if how then
-			-- Do other stuff (options.on_reload?)
+	local function Reload ()
+		local selection = FileList:GetSelection()
+
+		-- Populate the list, checking what is still around.
+		local names, alt = file_utils.EnumerateFiles(path, opts)
+
+		FileList:AssignList(names)
+
+		--
+		if on_reload then
+			alt = on_reload(FileList)
 		end
 
-		-- Update list
+		-- If the selection still exists, scroll the listbox to it. Otherwise, fall back to an
+		-- alternate, if possible.
+		local offset = FileList:Find(selection) or FileList:Find(alt)
+
+		if offset then
+			FileList:scrollToIndex(offset, 0)
+		end
 	end
 
 	--- DOCME
-	function FileList:GetBlob ()
+	function FileList:GetContents ()
+		local file = self:GetSelection()
+
+		return file and file_utils.GetContents(file, base)
 	end
 
 	--- DOCME
-	function FileList:GetPath ()
-		-- ???
+	function FileList:Init ()
+		Reload()
 	end
 
 	--
-	Reload()
-
-	--
-	local watch = file_utils.WatchForFileModification(options.path, Reload, options.base)
+	local watch = file_utils.WatchForFileModification(path, Reload, opts)
 
 	FileList:addEventListener("finalize", function()
 		timer.cancel(watch)
@@ -91,10 +107,8 @@ local RowAdder = {
 }
 
 --
-local function GetText (object, stash)
-	local index = object.index
-
-	return stash and stash[index], index
+local function GetText (index, stash)
+	return stash and stash[index]
 end
 
 --
@@ -125,25 +139,26 @@ function M.Listbox (group, x, y, options)
 	if options.get_text then
 		local getter = options.get_text
 
-		function get_text (object, stash)
-			local item, index = GetText(object, stash)
+		function get_text (index, stash)
+			local item = GetText(index, stash)
 
-			return getter(item) or item, index
+			return getter(item) or item
 		end
 	end
 
 	function lopts.onRowRender (event)
-		local text = display.newText(event.row, "", 0, 0, native.systemFont, 20)
-		local str, index = get_text(event.row, stash)
+		local row = event.row
+		local text, index = display.newText(row, "", 0, 0, native.systemFont, 20), row.index
+		local str = get_text(index, stash)
 
 		text:setFillColor(0)
 
 		text.text = str or ""
 		text.anchorX, text.x = 0, 15
-		text.y = event.row.height / 2
+		text.y = row.height / 2
 
-		if index == selection then
-			Highlight(event.row)
+		if str == selection then
+			Highlight(row)
 		end
 	end
 
@@ -151,7 +166,8 @@ function M.Listbox (group, x, y, options)
 	local press, release, old_row = options.press, options.release
 
 	function lopts.onRowTouch (event)
-		local phase, str, index = event.phase, get_text(event.target, stash)
+		local index = event.target.index
+		local phase, str = event.phase, get_text(index, stash)
 
 		-- Listbox item pressed...
 		if phase == "press" then
@@ -175,7 +191,7 @@ function M.Listbox (group, x, y, options)
 
 			Highlight(event.row)
 
-			selection, old_row = index, event.row
+			selection, old_row = str, event.row
 		end
 
 		return true
@@ -222,16 +238,30 @@ function M.Listbox (group, x, y, options)
 	--- DOCME
 	function Listbox:Delete (index)
 		if stash then
+			if get_text(index, stash) == selection then
+				selection = nil
+			end
+
 			remove(stash, index)
 		end
 
-		if index == selection then
-			selection = nil
-		elseif selection and index < selection then
-			selection = selection - 1
+		self:deleteRow(index)
+	end
+
+	--- DOCME
+	function Listbox:Find (str)
+		for i = 1, #(str and stash or "") do
+			if get_text(i, stash) == str then
+				return i
+			end
 		end
 
-		self:deleteRow(index)
+		return nil
+	end
+
+	--- DOCME
+	function Listbox:GetSelection ()
+		return selection
 	end
 
 	--
