@@ -166,13 +166,14 @@ function M.Listbox (group, x, y, options)
 	local press, release, old_row = options.press, options.release
 
 	function lopts.onRowTouch (event)
-		local index = event.target.index
+		local listbox = event.target
+		local index = listbox.index
 		local phase, str = event.phase, get_text(index, stash)
 
 		-- Listbox item pressed...
 		if phase == "press" then
 			if press then
-				press(index, str or "")
+				press(index, str or "", listbox)
 			end
 
 			-- Show row at full opacity, while held.
@@ -181,7 +182,7 @@ function M.Listbox (group, x, y, options)
 		-- ...and released.
 		elseif phase == "release" then
 			if release then
-				release(index, str or "")
+				release(index, str or "", listbox)
 			end
 
 			-- Unmark the previously selected row (if any), and mark the new row.

@@ -32,9 +32,6 @@
 -- ^^ Wrap up audio stuff from this module into "music" object?
 -- ^^ Then use in game, hook up here in editor to events
 
--- Standard library imports --
-local ipairs = ipairs
-
 -- Modules --
 local button = require("ui.Button")
 local common = require("editor.Common")
@@ -45,8 +42,9 @@ local object_helper = require("utils.ObjectHelper")
 local table_view_patterns = require("ui.patterns.table_view")
 
 -- Corona globals --
-local display = display
 local audio = audio
+local display = display
+local native = native
 local system = system
 local timer = timer
 
@@ -54,7 +52,7 @@ local timer = timer
 local M = {}
 
 -- --
-local Current, Offset, CurrentText
+local Current, CurrentText
 
 -- --
 local Group
@@ -90,10 +88,8 @@ end
 
 -- --
 local Base = system.ResourceDirectory
--- ^^ TODO: Documents -> Caches?
+-- ^^ TODO: Add somewhere to pull down remote files... and, uh, support
 
--- --
-local Opts = { base = Base, exts = { ".mp3", ".ogg" } }
 
 -- Helper to load or reload the music list
 local function Reload (songs)
@@ -103,7 +99,8 @@ local function Reload (songs)
 		CloseStream()
 	end
 
-	-- Invalidate the current element, if its file was erased.
+	-- Invalidate the current element, if its file was erased. Otherwise, provide it as an
+	-- alternative in case the current selection was erased.
 	local current = songs:Find(Current)
 
 	if not current then
@@ -111,47 +108,6 @@ local function Reload (songs)
 	end
 
 	return current
---[[
-	-- Populate the song list, checking what's still around.
-	local names = file_utils.EnumerateFiles("Music", Opts)
-
-	Songs:AssignList(names)
-
-	local current, offset, stream_found
-
-	for i, name in ipairs(names) do
-		if name == Current then
-			current = i
-		end
-
-		if name == Offset then
-			offset = i
-		end
-
-		stream_found = stream_found or name == StreamName
-	end
-
-	-- If the stream file was removed while playing, try to close the stream before any
-	-- problems arise.
-	if not stream_found then
-		CloseStream()
-	end
-
-	-- Invalidate the current element, if its file was erased.
-	if not current then
-		SetCurrent(nil)
-	end
-
-	-- If the offset element is still there, scroll the listbox to it. Otherwise, fall
-	-- back to the current element, if possible. Update as necessary.
-	offset = offset or current
-
-	if offset then
-		Songs:scrollToIndex(offset, 0)
-	end
-
-	Offset = names[offset]
-	]]
 end
 
 --
@@ -159,16 +115,13 @@ local function SetText (button, text)
 	button.parent[2].text = text
 end
 
--- Is this running on a device? --
-local OnDevice = system.getInfo("environment") == "device"
-
 ---
 -- @pgroup view X
 function M.Load (view)
 	local w, h = display.contentWidth, display.contentHeight
 
 	--
-	if OnDevice then
+	if system.getInfo("environment") == "device" then
 		file_utils.AddDirectory("Music", system.DocumentsDirectory)
 	end
 
@@ -176,11 +129,8 @@ function M.Load (view)
 	Group = display.newGroup()
 
 	--
-	Songs = table_view_patterns.FileList--[[Listbox]](Group, w - 350, 100, {
+	Songs = table_view_patterns.FileList(Group, w - 350, 100, {
 		path = "Music", base = Base, exts = { ".mp3", ".ogg" }, on_reload = Reload
-	--	press = function(_, name)
-	--		Offset = name
-	--	end
 	})
 
 	common_ui.Frame(Songs, 1, 0, 0)
@@ -192,17 +142,17 @@ function M.Load (view)
 
 	--
 	PlayOrStop = button.Button(Group, nil, w - 410, h - 70, 120, 50, function(bgroup)
-		local was_streaming, offset = Stream, Songs:GetSelection()
+		local was_streaming, selection = Stream, Songs:GetSelection()
 
 		CloseStream()
 
 		if was_streaming then
 			SetText(bgroup, "Play")
-		elseif offset then--Offset then
-			Stream = audio.loadStream("Music/" .. offset)--Offset)
+		elseif selection then
+			Stream = audio.loadStream("Music/" .. selection)
 
 			if Stream then
-				StreamName = Offset
+				StreamName = selection
 
 				audio.play(Stream, { fadein = 1500, loops = -1 })
 
@@ -217,7 +167,7 @@ function M.Load (view)
 	}, Group.numChildren
 
 	button.Button(Group, nil, w - 280, h - 70, 120, 50, function()
-		SetCurrent(Songs:GetSelection())--Offset)
+		SetCurrent(Songs:GetSelection())
 	end, "Set")
 
 	button.Button(Group, nil, w - 150, h - 70, 120, 50, function()
@@ -225,18 +175,6 @@ function M.Load (view)
 	end, "Clear")
 
 	widgets.set, widgets.clear = Group[n + 1], Group[n + 2]
-
-	--
---	Songs:Init()
---[[
-	--
-	WatchMusicFolder = file_utils.WatchForFileModification("Music", function(how)
-		if Group.isVisible then
-			Reload()
-		else
-			Songs.is_consistent = false
-		end
-	end, Opts)]]
 
 	--
 	Group.isVisible = false
@@ -258,12 +196,6 @@ end
 -- @pgroup view X
 function M.Enter (view)
 	Songs:Init()
-	--[[
-	if not Songs.is_consistent then
-		Reload()
-
-		Songs.is_consistent = true
-	end]]
 
 	-- Sample music (until switch view or option)
 	-- Background option, sample (scroll views, event block selector)

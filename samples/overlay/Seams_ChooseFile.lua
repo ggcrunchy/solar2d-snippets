@@ -67,7 +67,7 @@ function Scene:show (event)
 
 		-- Add a listbox to be populated with some image choices.
 		local funcs, cancel, ok, thumbnail = params.funcs
-		local images, dir, chosen = file.EnumerateFiles(params.dir, { base = params.base, exts = "png" }), params.dir .. "/"
+		local images, dir, chosen = nil--[[file.EnumerateFiles(params.dir, { base = params.base, exts = "png" })]], params.dir .. "/"
 
 		local function Wait ()
 			funcs.SetStatus("Press OK to compute energy")
@@ -75,16 +75,14 @@ function Scene:show (event)
 			cancel.isVisible = false
 		end
 
-		local image_list = table_view_patterns.Listbox(self.view, 295, 20, {
+		local image_list = table_view_patterns.FileList--[[Listbox]](self.view, 295, 20, {
 			height = 120,
 
-			get_text = function(index)
-				return images[index]
-			end,
+			path = params.dir, base = params.base, exts = { ".png" },
 
-			press = function(index)
+			press = function(_, file, il)
 				-- Update the thumbnail in the preview pane.
-				chosen = dir .. images[index]
+				chosen = dir .. file
 
 				preview:SetImage(chosen, params.base)
 
@@ -97,7 +95,7 @@ function Scene:show (event)
 
 					cancel.isVisible = true
 
-					local image = png.Load(system.pathForFile(chosen, params.base), funcs.TryToYield)
+					local image = png.LoadString(il:GetContents()--[[system.pathForFile(chosen, params.base)]], funcs.TryToYield)
 
 					cancel.isVisible = false
 
@@ -121,6 +119,8 @@ function Scene:show (event)
 			end
 		})
 
+		image_list:Init()
+--[[
 		-- Add any images in a certain size range to the list.
 		for i = 1, #images do
 			local path = system.pathForFile(dir .. images[i], params.base)
@@ -132,7 +132,7 @@ function Scene:show (event)
 			-- TODO: More intelligent way to handle? Owing to restrictions of bitmaps (because of captures), need to ensure some
 			-- screen real estate for interface...
 		end
-
+--]]
 		-- Place the preview pane relative to the listbox.
 		preview.x, preview.y = image_list.x + image_list.width / 2 + 55, image_list.y
 	end

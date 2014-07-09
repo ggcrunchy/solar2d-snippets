@@ -216,7 +216,7 @@ function M.Exists (name, base)
 	return file ~= nil
 end
 
---
+-- Helper to find the next database that can be resolved from a given path
 local function FindDatabase (path, from)
 	repeat
 		local index = find(path, "/", from)
@@ -233,7 +233,7 @@ local function FindDatabase (path, from)
 	until not index
 end
 
---
+-- Attempts to read the binary contents of a file
 local function GetFileContents (name)
 	local file, contents = open(PathForFile(name), "rb")
 
@@ -248,6 +248,10 @@ end
 
 --- DOCME
 function M.GetContents (path, base)
+	-- If this is Android's resource directory, split the path up into name-key pairs: the name
+	-- identifies the database; if that exists, the key is used to look up an entry in its files
+	-- table. Try the combinations one by one, from shortest to longest name, returning the
+	-- associated contents on any hit.
 	if OnAndroid and IsResourceDir(base) then
 		local from = 1
 
@@ -272,6 +276,7 @@ function M.GetContents (path, base)
 		until not db
 	end
 
+	-- Otherwise, try to read the file directly.
 	return GetFileContents(PathForFile(path, base))
 end
 
@@ -309,6 +314,7 @@ local function PopulateDatabase (path, popts)
 end
 
 -- ^^ TODO: Assumes path is a directory...
+-- Should ignore non-troublesome extensions
 
 -- @param[opt=system.ResourceDirectory] base Directory base.
 
