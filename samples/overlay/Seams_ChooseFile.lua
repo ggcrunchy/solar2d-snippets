@@ -67,7 +67,6 @@ function Scene:show (event)
 
 		-- Add a listbox to be populated with some image choices.
 		local funcs, cancel, ok, thumbnail = params.funcs
-		local images, dir, chosen = nil--[[file.EnumerateFiles(params.dir, { base = params.base, exts = "png" })]], params.dir .. "/"
 
 		local function Wait ()
 			funcs.SetStatus("Press OK to compute energy")
@@ -75,16 +74,14 @@ function Scene:show (event)
 			cancel.isVisible = false
 		end
 
-		local image_list = table_view_patterns.FileList--[[Listbox]](self.view, 295, 20, {
+		local image_list = table_view_patterns.FileList(self.view, 295, 20, {
 			height = 120,
 
 			path = params.dir, base = params.base, exts = { ".png" },
 
 			press = function(_, file, il)
 				-- Update the thumbnail in the preview pane.
-				chosen = dir .. file
-
-				preview:SetImage(chosen, params.base)
+				preview:SetImage(params.dir .. "/" .. file, params.base)
 
 				-- On the first selection, add a button to launch the next step. When fired, the selected
 				-- image is read into memory; assuming that went well, the algorithm proceeds on to the
@@ -95,7 +92,7 @@ function Scene:show (event)
 
 					cancel.isVisible = true
 
-					local image = png.LoadString(il:GetContents()--[[system.pathForFile(chosen, params.base)]], funcs.TryToYield)
+					local image = png.LoadString(il:GetContents(), funcs.TryToYield)
 
 					cancel.isVisible = false
 

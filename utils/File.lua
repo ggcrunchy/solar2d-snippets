@@ -235,7 +235,7 @@ end
 
 -- Attempts to read the binary contents of a file
 local function GetFileContents (name)
-	local file, contents = open(PathForFile(name), "rb")
+	local file, contents = open(name, "rb")
 
 	if file then
 		contents = file:read("*a")
@@ -301,7 +301,7 @@ local function PopulateDatabase (path, popts)
 		for _, file in ipairs(files) do
 			if file ~= "." and file ~= ".." then
 				statement:bind(1, file)
-				statement:bind_blob(2, get_contents and GetFileContents(path .. "/" .. file) or "")
+				statement:bind_blob(2, get_contents and GetFileContents(PathForFile(path .. "/" .. file)) or "")
 				statement:step()
 				statement:reset()
 			end

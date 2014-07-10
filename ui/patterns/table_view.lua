@@ -75,7 +75,7 @@ function M.FileList (group, x, y, options)
 	function FileList:GetContents ()
 		local file = self:GetSelection()
 
-		return file and file_utils.GetContents(file, base)
+		return file and file_utils.GetContents(path .. "/" .. file, base)
 	end
 
 	--- DOCME
@@ -114,6 +114,11 @@ end
 --
 local function Highlight (row)
 	row.alpha = .5
+end
+
+--
+local function GetListbox (row)
+	return row.parent.parent
 end
 
 -- Each of the arguments is a function that takes _event_.**index** as argument, where
@@ -166,8 +171,8 @@ function M.Listbox (group, x, y, options)
 	local press, release, old_row = options.press, options.release
 
 	function lopts.onRowTouch (event)
-		local listbox = event.target
-		local index = listbox.index
+		local row = event.target
+		local index, listbox = row.index, GetListbox(row)
 		local phase, str = event.phase, get_text(index, stash)
 
 		-- Listbox item pressed...
