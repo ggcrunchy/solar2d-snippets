@@ -24,7 +24,6 @@
 --
 
 -- Standard library imports --
-local concat = table.concat
 local find = string.find
 local gsub = string.gsub
 local ipairs = ipairs
@@ -283,43 +282,37 @@ end
 
 -- Helper to populate a resource directory database
 local function PopulateDatabase (path, popts)
-	-- Open or create the database. If it already existed, erase the now-defunct files table.
-	-- Add a fresh files table.
+	-- Open or create the database. If already extant, erase the now-defunct files table. Add a
+	-- fresh files table. In general multiple files are added, so begin a compound transaction.
 	local db = sqlite3.open(DatabasePath(path))
-	local command = {
-		[[
-			DROP TABLE IF EXISTS files;
-			CREATE TABLE files (m_NAME VARCHAR, m_CONTENTS BLOB);
-			BEGIN;
-		]]
-	}
+	db:execute[[
+		DROP TABLE IF EXISTS files;
+		CREATE TABLE files (m_NAME VARCHAR, m_CONTENTS BLOB);
+		BEGIN;
+	]]
 
-	-- Enumerate files in the resource directory and add all valid ones to the database,
-	-- including their contents if requested.
+	-- Enumerate files in the resource directory and add all valid ones to the database, adding
+	-- their contents if requested. Such contents may be completely general, viz. to possibly
+	-- contain SQL, so a prepared statement is used to sanitize such input.
 	local files, get_contents = _EnumerateFiles_(path, popts), popts and popts.get_contents
 
 	if #files > 0 then
+		local statement = db:prepare[[INSERT INTO files VALUES(?, ?)]]
+
 		for _, file in ipairs(files) do
 			if file ~= "." and file ~= ".." then
-				command[#command + 1] = [[INSERT INTO files VALUES(']]
-				command[#command + 1] = file
-
-				local blob = get_contents and GetFileContents(PathForFile(path .. "/" .. file))
-
-				if blob then
-					command[#command + 1] = [[', ']]
-					command[#command + 1] = blob -- TODO: Are blobs sanitized? (3.8.1 on desktop...)
-					command[#command + 1] = [[');]]
-				else
-					command[#command + 1] = [[', '''');]]
-				end
+				statement:bind(1, file)
+				statement:bind_blob(2, get_contents and GetFileContents(PathForFile(path .. "/" .. file)) or "")
+				statement:step()
+				statement:reset()
 			end
 		end
+
+		statement:finalize()
 	end
 
-	command[#command + 1] = [[COMMIT;]]
-
-	db:exec(concat(command, ""))
+	-- Commit all inserts.
+	db:exec[[COMMIT;]]
 	db:close()
 end
 

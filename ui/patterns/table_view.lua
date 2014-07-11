@@ -47,13 +47,34 @@ function M.FileList (group, x, y, options)
 
 	--
 	local path, base, on_reload = options.path, options.base, options.on_reload
+	local filter, by_name = options.filter, not not options.filter_by_name_only
 	local opts = { base = base, exts = options.exts }
 
+	--
+	local function GetContents (file)
+		return file and file_utils.GetContents(path .. "/" .. file, base)
+	end
+
+	--
 	local function Reload ()
 		local selection = FileList:GetSelection()
 
-		-- Populate the list, checking what is still around.
+		-- Populate the list, checking what is still around. Perform filtering, if requested.
 		local names, alt = file_utils.EnumerateFiles(path, opts)
+
+		if filter then
+			local count = 0
+
+			for _, file in ipairs(names) do
+				if filter(file, not by_name and GetContents(file) or "", FileList) then
+					names[count + 1], count = file, count + 1
+				end
+			end
+
+			for i = #names, count + 1, -1 do
+				names[i] = nil
+			end
+		end
 
 		FileList:AssignList(names)
 
@@ -73,9 +94,7 @@ function M.FileList (group, x, y, options)
 
 	--- DOCME
 	function FileList:GetContents ()
-		local file = self:GetSelection()
-
-		return file and file_utils.GetContents(path .. "/" .. file, base)
+		return GetContents(self:GetSelection())
 	end
 
 	--- DOCME

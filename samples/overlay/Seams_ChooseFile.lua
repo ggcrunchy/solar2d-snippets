@@ -75,9 +75,18 @@ function Scene:show (event)
 		end
 
 		local image_list = table_view_patterns.FileList(self.view, 295, 20, {
+			path = params.dir, base = params.base, exts = { ".png" },
 			height = 120,
 
-			path = params.dir, base = params.base, exts = { ".png" },
+			filter = function(_, contents)
+				-- Add any images in a certain size range to the list.
+				local good, w, h = png.GetInfoString(contents)
+
+				return good and w >= 16 and w <= CW - 10 and h >= 16 and h <= CH - 150-- then
+					
+				-- TODO: More intelligent way to handle? Owing to restrictions of bitmaps (because of captures), need to ensure some
+				-- screen real estate for interface...
+			end,
 
 			press = function(_, file, il)
 				-- Update the thumbnail in the preview pane.
@@ -117,19 +126,7 @@ function Scene:show (event)
 		})
 
 		image_list:Init()
---[[
-		-- Add any images in a certain size range to the list.
-		for i = 1, #images do
-			local path = system.pathForFile(dir .. images[i], params.base)
-			local good, w, h = png.GetInfo(path)
 
-			if good and w >= 16 and w <= CW - 10 and h >= 16 and h <= CH - 150 then
-				image_list:Append(images[i])
-			end
-			-- TODO: More intelligent way to handle? Owing to restrictions of bitmaps (because of captures), need to ensure some
-			-- screen real estate for interface...
-		end
---]]
 		-- Place the preview pane relative to the listbox.
 		preview.x, preview.y = image_list.x + image_list.width / 2 + 55, image_list.y
 	end
