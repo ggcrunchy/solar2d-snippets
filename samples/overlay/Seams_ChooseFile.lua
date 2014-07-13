@@ -25,19 +25,15 @@
 
 -- Modules --
 local buttons = require("ui.Button")
-local file = require("utils.File")
 local image_patterns = require("ui.patterns.image")
 local png = require("image_ops.png")
 local table_view_patterns = require("ui.patterns.table_view")
 
 -- Corona globals --
 local display = display
-local system = system
 
 -- Corona modules --
 local composer = require("composer")
-local json = require("json")
-local sqlite3 = require("sqlite3")
 
 -- Choose File phase overlay (seam-carving demo) --
 local Scene = composer.newScene()
@@ -55,7 +51,7 @@ function Scene:show (event)
 		-- If database not empty, populate list (do file existence / integrity checks?)
 		-- Add remove option: removes current entry from list (closes list if empty)
 		-- Add resume option: load image, energy as usual (i.e. pretend to hit "OK"), but jump into seam generation (phase, index, prev, cost)
-		local resume
+	--	local resume
 
 		-- We may be coming from the energy view, in which case the bitmap, though maintained,
 		-- should be hidden.
@@ -66,7 +62,7 @@ function Scene:show (event)
 		end
 
 		-- Add a listbox to be populated with some image choices.
-		local funcs, cancel, ok, thumbnail = params.funcs
+		local funcs, cancel, ok = params.funcs
 
 		local function Wait ()
 			funcs.SetStatus("Press OK to compute energy")
@@ -88,7 +84,8 @@ function Scene:show (event)
 
 			press = function(_, file, il)
 				-- Update the thumbnail in the preview pane.
-				preview:SetImageString(il:GetContents(), params.dir .. "/" .. file, params.base)--(params.dir .. "/" .. file, params.base)
+				preview:SetImageString(il:GetContents(), params.dir .. "/" .. file, params.base)
+				-- TODO: ^^ This is sort of awkward...
 
 				-- On the first selection, add a button to launch the next step. When fired, the selected
 				-- image is read into memory; assuming that went well, the algorithm proceeds on to the

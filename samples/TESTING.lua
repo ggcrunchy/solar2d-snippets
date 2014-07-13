@@ -103,7 +103,7 @@ Scene:addEventListener("show")
 --[[
 	Near / not-too-far future TODO list:
 
-	- Finish off seams sample, including dealing with device-side problems
+	- Finish off seams sample, including dealing with device-side problems (PARTIAL)
 	- Do the colored corners sample
 
 	- Proceed with editor, finally implement some things like the background view
@@ -113,15 +113,15 @@ Scene:addEventListener("show")
 	- Make some dialogs to stress-test the section feature
 	- Decouple dialogs from the editor
 	- Decouple links / tags from editor? Instancing?
-	- Some sort of stuff for recurring UI tasks (save / load dialogs, listbox, etc. especially ones that recur outside the editor
+	- Some sort of stuff for recurring UI tasks: save / load dialogs, listbox, etc. especially ones that recur outside the editor (PARTIAL)
 	- Kill off redundant widgets (button, checkbox)
 
-	- Play with devices
+	- Play with input devices
 
 	- Fix formatting, which is rather off on tablets and probably more high-definition phones
 	- To that end, do a REAL objects helper module, that digs in and deals with anchors and such
 
-	- The Great Migration! (i.e. move much of snippets into CrownJewels and Tektite submodules)
+	- The Great Migration! (i.e. move much of snippets into CrownJewels and Tektite submodules) (PARTIAL)
 	- Might even be worth making the submodules even more granular
 	- Kick off a couple extra programs to stress-test submodule approach
 

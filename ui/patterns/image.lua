@@ -99,6 +99,7 @@ function M.Thumbnail (group, w, h, opts)
 	end
 
 	--- DOCME
+	-- TODO: Kind of clumsy, this one is under probation :/
 	function Thumbnail:SetImageString (str, name, base)
 		return AuxSetImage(self, name, base, png.GetInfoString(str))
 	end
