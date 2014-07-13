@@ -66,22 +66,15 @@ function M.Thumbnail (group, w, h, opts)
 		image = nil
 	end
 
-	--- DOCME
-	-- @string name Image filename.
-	-- @param[opt=system.ResourceDirectory] base Base directory.
-	-- @treturn boolean If true, the image was set.
-	function Thumbnail:SetImage (name, base)
-		base = base or system.ResourceDirectory
-
-		local exists, iw, ih = png.GetInfo(system.pathForFile(name, base))
-
+	--
+	local function AuxSetImage (into, name, base, exists, iw, ih)
 		if exists then
 			display.remove(image)
 
 			if iw <= w and ih <= h then
-				image = display.newImage(self, name, base)
+				image = display.newImage(into, name, base)
 			else
-				image = display.newImageRect(self, name, base, w, h)
+				image = display.newImageRect(into, name, base, w, h)
 			end
 
 			image.x, image.y = color.x, color.y
@@ -93,6 +86,21 @@ function M.Thumbnail (group, w, h, opts)
 		end
 
 		return exists
+	end
+
+	--- DOCME
+	-- @string name Image filename.
+	-- @param[opt=system.ResourceDirectory] base Base directory.
+	-- @treturn boolean If true, the image was set.
+	function Thumbnail:SetImage (name, base)
+		base = base or system.ResourceDirectory
+
+		return AuxSetImage(self, name, base, png.GetInfo(system.pathForFile(name, base)))
+	end
+
+	--- DOCME
+	function Thumbnail:SetImageString (str, name, base)
+		return AuxSetImage(self, name, base, png.GetInfoString(str))
 	end
 
 	return Thumbnail

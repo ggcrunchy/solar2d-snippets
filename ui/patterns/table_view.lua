@@ -47,8 +47,8 @@ function M.FileList (group, x, y, options)
 
 	--
 	local path, base, on_reload = options.path, options.base, options.on_reload
-	local filter, by_name = options.filter, not not options.filter_by_name_only
-	local opts = { base = base, exts = options.exts }
+	local filter, name_only = options.filter, not not options.name_only
+	local opts = { base = base, exts = options.exts, get_contents = not name_only }
 
 	--
 	local function GetContents (file)
@@ -66,7 +66,7 @@ function M.FileList (group, x, y, options)
 			local count = 0
 
 			for _, file in ipairs(names) do
-				if filter(file, not by_name and GetContents(file) or "", FileList) then
+				if filter(file, not name_only and GetContents(file) or "", FileList) then
 					names[count + 1], count = file, count + 1
 				end
 			end
@@ -196,6 +196,9 @@ function M.Listbox (group, x, y, options)
 
 		-- Listbox item pressed...
 		if phase == "press" then
+			--
+			selection = str
+
 			if press then
 				press(index, str or "", listbox)
 			end
@@ -216,7 +219,7 @@ function M.Listbox (group, x, y, options)
 
 			Highlight(event.row)
 
-			selection, old_row = str, event.row
+			old_row = event.row
 		end
 
 		return true

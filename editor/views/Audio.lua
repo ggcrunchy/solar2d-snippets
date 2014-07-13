@@ -46,7 +46,6 @@ local audio = audio
 local display = display
 local native = native
 local system = system
-local timer = timer
 
 -- Exports --
 local M = {}
@@ -65,9 +64,6 @@ local Songs
 
 -- --
 local Stream, StreamName
-
--- --
-local WatchMusicFolder
 
 --
 local function CloseStream ()
@@ -216,11 +212,9 @@ end
 
 --- DOCMAYBE
 function M.Unload ()
-	timer.cancel(WatchMusicFolder)
-
 	Songs:removeSelf()
 
-	Current, CurrentText, Group, PlayOrStop, Songs, WatchMusicFolder = nil
+	Current, CurrentText, Group, PlayOrStop, Songs = nil
 end
 
 -- Listen to events.
