@@ -138,7 +138,7 @@ end
 
 -- Draws the current (carved) image
 local function ImageUpdate (bitmap, w, h, image, usage)
-	local pixels, flat, fi = image("get_pixels"), usage.flat, 1
+	local pixels, flat, fi = image:GetPixels(), usage.flat, 1
 
 	for y = 0, h - 1 do
 		for x = 0, w - 1 do

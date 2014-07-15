@@ -128,7 +128,7 @@ function Scene:show (event)
 		tabs:setSelected(1, true)
 
 		-- Provide some control over seam density.
-		params.iw, params.ih = params.image("get_dims")
+		params.iw, params.ih = params.image:GetDims()
 
 		Slider(self.view, 20, params, "iw", "horz")
 		Slider(self.view, 70, params, "ih", "vert")
@@ -150,7 +150,7 @@ function Scene:show (event)
 
 		funcs.Action(function()
 			funcs.SetStatus("Computing energy")
-			energy.ComputeEnergy(values, params.image, params.iw, params.ih)
+			energy.ComputeEnergy(values, params.image)
 
 			DrawEnergy(image, funcs, values, params.iw, params.ih)
 

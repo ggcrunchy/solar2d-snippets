@@ -140,6 +140,7 @@ end
 function vdumpx (var, name, limit)
 	var_dump.Print(var, { hex_uints = true, name = name, limit = limit })
 end
-
+--local jpg = require("image_ops.jpg")
+--print(jpg.GetInfo(system.pathForFile("Acorn1.jpg", system.ResourceDirectory)))
 -- Kick off the app.
 scenes.GoToScene{ name = "scene.Intro" }
