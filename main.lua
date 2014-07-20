@@ -142,11 +142,9 @@ function vdumpx (var, name, limit)
 end
 --[=[
 local jpg = require("image_ops.jpg")
---local ok, w, h, info
-local JPG = jpg.Load --[[GetInfo]] (system.pathForFile("Acorn1.jpg", system.ResourceDirectory), true)
-if JPG then--ok then
-	print("YAY", JPG:GetDims())--w, h)
---	vdump(info)
+local JPG = jpg.Load(system.pathForFile("Acorn1.jpg", system.ResourceDirectory))
+if JPG then
+	print("YAY", JPG:GetDims())
 else
 	print(":(")
 end
