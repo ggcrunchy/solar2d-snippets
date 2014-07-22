@@ -141,10 +141,10 @@ function vdumpx (var, name, limit)
 	var_dump.Print(var, { hex_uints = true, name = name, limit = limit })
 end
 --[=[
-local jpg = require("image_ops.jpg")
-local JPG = jpg.Load(system.pathForFile("Acorn1.jpg", system.ResourceDirectory))
-if JPG then
-	print("YAY", JPG:GetDims())
+local jpeg = require("image_ops.jpeg")
+local JPEG = jpeg.Load(system.pathForFile("Acorn1.jpg", system.ResourceDirectory))
+if JPEG then
+	print("YAY", JPEG:GetDims())
 else
 	print(":(")
 end
