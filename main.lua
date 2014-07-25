@@ -148,6 +148,17 @@ if JPEG then
 else
 	print(":(")
 end
+local bmp = require("ui.Bitmap").Bitmap(display.getCurrentStage())
+local pixels, w, h = JPEG:GetPixels(), JPEG:GetDims()
+bmp:Resize(w, h)
+local index = 1
+for y = 0, h - 1 do
+	for x = 0, w - 1 do
+		bmp:SetPixel(x, y, pixels[index] / 255, pixels[index + 1] / 255, pixels[index + 2] / 255, 1)--pixels[index + 3])
+
+		index = index + 4
+	end
+end
 --]=]
 -- Kick off the app.
 scenes.GoToScene{ name = "scene.Intro" }
