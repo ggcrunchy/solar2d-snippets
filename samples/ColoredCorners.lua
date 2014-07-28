@@ -25,12 +25,10 @@
 
 -- Modules --
 local buttons = require("ui.Button")
-local fft_convolution = require("signal_ops.fft_convolution")
-local fft_utils = require("dft_ops.utils")
 local flow = require("graph_ops.flow")
-local png = require("image_ops.png")
+local image_patterns = require("ui.patterns.image")
 local scenes = require("utils.Scenes")
-local summed_area = require("number_ops.summed_area")
+local table_view_patterns = require("ui.patterns.table_view")
 
 -- Corona modules --
 local composer = require("composer")
@@ -95,15 +93,20 @@ function Scene:show (event)
 		-- Something to load pictures (pretty much available in seams sample)
 		-- Pick energy function? (Add one or both from paper)
 		-- Way to tune the randomness? (k = .001 to 1, as in the GC paper, say)
+		-- ^^^ Probably irrelevant, actually (though the stuff in the Kwatra paper would make for a nice sample itself...)
 		-- Choose 2, 3, 4 colors (n = num_colors^2)
 		-- Choose dimension per tile (up to max texture size / 2^num_colors)
-		-- Feathering / multiresolution splining options
+		-- Feathering / multiresolution splining options (EXTRA CREDIT)
 		-- Way to fire off the algorithm
 
 		-- Step 1: Choose all the stuff (files, num colors, size)
 		-- Step 2: Find the color patches
 		-- Step 3: For i = 1, n do (probably work from lower-left out, to accommodate each size)
 		-- 	 Solve patch
+		--     Build diamond grid
+		--     Run max flow over it
+		--     Replace colors inside the cut
+		--     Tidy up the seam (once implemented...)
 	end
 end
 

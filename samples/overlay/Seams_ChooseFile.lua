@@ -76,7 +76,7 @@ function Scene:show (event)
 			filter = function(_, contents)
 				-- Add any images in a certain size range to the list.
 				local good, w, h = png.GetInfoString(contents)
-
+				-- TODO: ^^^ May now be JPEG!
 				return good and w >= 16 and w <= CW - 10 and h >= 16 and h <= CH - 150
 				-- TODO: More intelligent way to handle? Owing to restrictions of bitmaps (because of captures), need to ensure some
 				-- screen real estate for interface...
@@ -84,7 +84,7 @@ function Scene:show (event)
 
 			press = function(_, file, il)
 				-- Update the thumbnail in the preview pane.
-				preview:SetImageString(il:GetContents(), params.dir .. "/" .. file, params.base)
+				preview:SetImageFromMemory(il:GetContents(), params.dir .. "/" .. file, params.base)
 				-- TODO: ^^ This is sort of awkward...
 
 				-- On the first selection, add a button to launch the next step. When fired, the selected
@@ -97,6 +97,7 @@ function Scene:show (event)
 					cancel.isVisible = true
 
 					local image = png.LoadString(il:GetContents(), funcs.TryToYield)
+					-- ^^^ TODO: Generalize to allow JPEG, too
 
 					cancel.isVisible = false
 
