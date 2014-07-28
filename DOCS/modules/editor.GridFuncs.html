@@ -163,13 +163,16 @@
   <li><a href="../modules/main.html">main</a></li>
   <li><a href="../modules/mask.MarchingSquares.html">MarchingSquares</a></li>
   <li><a href="../modules/mesh_ops.html">mesh_ops</a></li>
+  <li><a href="../modules/number_ops.cholesky.html">cholesky</a></li>
   <li><a href="../modules/number_ops.complex.html">complex</a></li>
+  <li><a href="../modules/number_ops.conjugate_gradient.html">conjugate_gradient</a></li>
   <li><a href="../modules/number_ops.divide.html">divide</a></li>
   <li><a href="../modules/number_ops.gray.html">gray</a></li>
   <li><a href="../modules/number_ops.hilbert.html">hilbert</a></li>
   <li><a href="../modules/number_ops.integrators.html">integrators</a></li>
   <li><a href="../modules/number_ops.morton.html">morton</a></li>
   <li><a href="../modules/number_ops.mwc_rng.html">mwc_rng</a></li>
+  <li><a href="../modules/number_ops.poisson.html">poisson</a></li>
   <li><a href="../modules/number_ops.range.html">range</a></li>
   <li><a href="../modules/number_ops.robust.html">robust</a></li>
   <li><a href="../modules/number_ops.simplex_noise.html">simplex_noise</a></li>
@@ -243,7 +246,6 @@
   <li><a href="../modules/ui.Sheet.html">Sheet</a></li>
   <li><a href="../modules/ui.Skin.html">Skin</a></li>
   <li><a href="../modules/ui.Touch.html">Touch</a></li>
-  <li><a href="../modules/ui.Utils.html">Utils</a></li>
   <li><a href="../modules/utils.Audio.html">Audio</a></li>
   <li><a href="../modules/utils.Bind.html">Bind</a></li>
   <li><a href="../modules/utils.Curves.html">Curves</a></li>
@@ -266,7 +268,7 @@
 <div id="content">
 
 <h1>Module <code>editor.GridFuncs</code></h1>
-<p>Various useful, somewhat general grid functions.</p>
+<p>Various useful, somewhat general grid view objects.</p>
 <p>
 
 </p>
@@ -277,6 +279,38 @@
 	<tr>
 	<td class="name" nowrap><a href="#EditErase">EditErase (dialog_wrapper, types)</a></td>
 	<td class="summary">Common logic for the <strong>PAINT</strong> / <strong>EDIT</strong> / <strong>ERASE</strong> combination of grid operations.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#View:Enter">View:Enter ()</a></td>
+	<td class="summary">DOCME</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#View:Exit">View:Exit ()</a></td>
+	<td class="summary">DOCME</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#View:GetCurrent">View:GetCurrent ()</a></td>
+	<td class="summary">DOCME</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#View:GetGrid">View:GetGrid ()</a></td>
+	<td class="summary">DOCME</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#View:GetTiles">View:GetTiles ()</a></td>
+	<td class="summary">DOCME</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#View:GetValues">View:GetValues ()</a></td>
+	<td class="summary">DOCME</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#View:Load">View:Load (group, prefix, title)</a></td>
+	<td class="summary">DOCME</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#View:Unload">View:Unload ()</a></td>
+	<td class="summary">DOCME</td>
 	</tr>
 </table>
 
@@ -308,27 +342,131 @@
     <h3>Returns:</h3>
     <ol>
 
-           <span class="types"><span class="type">function</span></span>
-
-<p> A "common ops" wrapper for an editor view. Its signature starts with a
- <em>what</em> parameter, then all grid function parameters, cf. <em>func</em> in <a href="../modules/ui.Grid2D.html#Grid2D">ui.Grid2D.Grid2D</a>.</p>
-
-<p> The following choices are available for <em>what</em>:</p>
-
-<ul>
-    <li><strong>"grid"</strong>: Boilerplate: editor grid function body.</li>
-    <li><strong>"load"</strong>: Boilerplate: editor view being loaded... (The assets directory prefix, viz.
-    in **"<em>prefix</em>_Assets/", is passed through <em>col</em>, and a title for the current tile
-    <a href="../modules/ui.Grid1D.html#">ui.Grid1D</a> is passed through <em>row</em>.)</li>
-    <li><strong>"enter"</strong>: ...entered... (The grid function is passed through <em>col</em>.)</li>
-    <li><strong>"exit"</strong>: ...exited...</li>
-    <li><strong>"unload"</strong>: ...or unloaded.</li>
-    <li><strong>"get_current"</strong>: Returns the current tile <a href="../modules/ui.Grid1D.html#">ui.Grid1D</a>.</li>
-    <li><strong>"get_values"</strong>: Returns the values table.</li>
-    <li><strong>"get<em>values</em>and_tiles"</strong>: Returns the values and tiles tables.</li>
-</ul>
-
+           <span class="types"><span class="type">GridView</span></span>
+        Editor grid view object.
     </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "View:Enter"></a>
+    <strong>View:Enter ()</strong>
+    </dt>
+    <dd>
+    DOCME
+
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "View:Exit"></a>
+    <strong>View:Exit ()</strong>
+    </dt>
+    <dd>
+    DOCME
+
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "View:GetCurrent"></a>
+    <strong>View:GetCurrent ()</strong>
+    </dt>
+    <dd>
+    DOCME
+
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "View:GetGrid"></a>
+    <strong>View:GetGrid ()</strong>
+    </dt>
+    <dd>
+    DOCME
+
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "View:GetTiles"></a>
+    <strong>View:GetTiles ()</strong>
+    </dt>
+    <dd>
+    DOCME
+
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "View:GetValues"></a>
+    <strong>View:GetValues ()</strong>
+    </dt>
+    <dd>
+    DOCME
+
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "View:Load"></a>
+    <strong>View:Load (group, prefix, title)</strong>
+    </dt>
+    <dd>
+    DOCME
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">group</span>
+
+
+
+        </li>
+        <li><span class="parameter">prefix</span>
+
+
+
+        </li>
+        <li><span class="parameter">title</span>
+
+
+
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "View:Unload"></a>
+    <strong>View:Unload ()</strong>
+    </dt>
+    <dd>
+    DOCME
+
+
 
 
 

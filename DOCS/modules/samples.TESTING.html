@@ -30,10 +30,6 @@
   <li><a href="../api.html">Index</a></li>
 </ul>
 
-<h2>Contents</h2>
-<ul>
-<li><a href="#Functions">Functions</a></li>
-</ul>
 
 
 <h2>Modules</h2>
@@ -72,6 +68,12 @@
   <li><a href="../modules/coroutine_ops.per_coroutine.html">per_coroutine</a></li>
   <li><a href="../modules/coroutine_ops.wrapper.html">wrapper</a></li>
   <li><a href="../modules/DEBUG.html">DEBUG</a></li>
+  <li><a href="../modules/dft_ops.core.html">core</a></li>
+  <li><a href="../modules/dft_ops.fft.html">fft</a></li>
+  <li><a href="../modules/dft_ops.goertzel.html">goertzel</a></li>
+  <li><a href="../modules/dft_ops.real_fft.html">real_fft</a></li>
+  <li><a href="../modules/dft_ops.two_ffts.html">two_ffts</a></li>
+  <li><a href="../modules/dft_ops.utils.html">utils</a></li>
   <li><a href="../modules/dot.Switch.html">Switch</a></li>
   <li><a href="../modules/dot.Warp.html">Warp</a></li>
   <li><a href="../modules/editor.Common.html">Common</a></li>
@@ -84,7 +86,7 @@
   <li><a href="../modules/editor.Dialog.html">Dialog</a></li>
   <li><a href="../modules/editor.Events.html">Events</a></li>
   <li><a href="../modules/editor.Grid.html">Grid</a></li>
-  <li><a href="../modules/editor.GridFuncs.html">GridFuncs</a></li>
+  <li><a href="../modules/editor.GridViews.html">GridViews</a></li>
   <li><a href="../modules/editor.Links.html">Links</a></li>
   <li><a href="../modules/editor.Ops.html">Ops</a></li>
   <li><a href="../modules/editor.Tags.html">Tags</a></li>
@@ -107,12 +109,6 @@
   <li><a href="../modules/effect.Stars.html">Stars</a></li>
   <li><a href="../modules/effect.Stash.html">Stash</a></li>
   <li><a href="../modules/event_block.Maze.html">Maze</a></li>
-  <li><a href="../modules/fft_ops.core.html">core</a></li>
-  <li><a href="../modules/fft_ops.fft.html">fft</a></li>
-  <li><a href="../modules/fft_ops.goertzel.html">goertzel</a></li>
-  <li><a href="../modules/fft_ops.real_fft.html">real_fft</a></li>
-  <li><a href="../modules/fft_ops.two_ffts.html">two_ffts</a></li>
-  <li><a href="../modules/fft_ops.utils.html">utils</a></li>
   <li><a href="../modules/fill.CellularAutomata.html">CellularAutomata</a></li>
   <li><a href="../modules/fill.Circle.html">Circle</a></li>
   <li><a href="../modules/FIXES.html">FIXES</a></li>
@@ -151,8 +147,11 @@
   <li><a href="../modules/hud.Action.html">Action</a></li>
   <li><a href="../modules/hud.Move.html">Move</a></li>
   <li><a href="../modules/image_ops.energy.html">energy</a></li>
+  <li><a href="../modules/image_ops.huffman.html">huffman</a></li>
+  <li><a href="../modules/image_ops.jpeg.html">jpeg</a></li>
   <li><a href="../modules/image_ops.png.html">png</a></li>
   <li><a href="../modules/image_ops.png_encode.html">png_encode</a></li>
+  <li><a href="../modules/image_ops.utils.html">utils</a></li>
   <li><a href="../modules/image_ops.zlib.html">zlib</a></li>
   <li><a href="../modules/image_ops.zlib_lut.html">zlib_lut</a></li>
   <li><a href="../modules/iterator_ops.args.html">args</a></li>
@@ -163,15 +162,20 @@
   <li><a href="../modules/main.html">main</a></li>
   <li><a href="../modules/mask.MarchingSquares.html">MarchingSquares</a></li>
   <li><a href="../modules/mesh_ops.html">mesh_ops</a></li>
+  <li><a href="../modules/number_ops.cholesky.html">cholesky</a></li>
   <li><a href="../modules/number_ops.complex.html">complex</a></li>
+  <li><a href="../modules/number_ops.conjugate_gradient.html">conjugate_gradient</a></li>
   <li><a href="../modules/number_ops.divide.html">divide</a></li>
   <li><a href="../modules/number_ops.gray.html">gray</a></li>
   <li><a href="../modules/number_ops.hilbert.html">hilbert</a></li>
   <li><a href="../modules/number_ops.integrators.html">integrators</a></li>
+  <li><a href="../modules/number_ops.linear_algebra.html">linear_algebra</a></li>
   <li><a href="../modules/number_ops.morton.html">morton</a></li>
   <li><a href="../modules/number_ops.mwc_rng.html">mwc_rng</a></li>
+  <li><a href="../modules/number_ops.poisson.html">poisson</a></li>
   <li><a href="../modules/number_ops.range.html">range</a></li>
   <li><a href="../modules/number_ops.robust.html">robust</a></li>
+  <li><a href="../modules/number_ops.scalloped_sector.html">scalloped_sector</a></li>
   <li><a href="../modules/number_ops.simplex_noise.html">simplex_noise</a></li>
   <li><a href="../modules/number_ops.summed_area.html">summed_area</a></li>
   <li><a href="../modules/number_ops.to_string.html">to_string</a></li>
@@ -240,10 +244,14 @@
   <li><a href="../modules/ui.LineEx.html">LineEx</a></li>
   <li><a href="../modules/ui.Lines.html">Lines</a></li>
   <li><a href="../modules/ui.LinkGroup.html">LinkGroup</a></li>
+  <li><a href="../modules/ui.patterns.button.html">patterns.button</a></li>
+  <li><a href="../modules/ui.patterns.editable.html">patterns.editable</a></li>
+  <li><a href="../modules/ui.patterns.image.html">patterns.image</a></li>
+  <li><a href="../modules/ui.patterns.table_view.html">patterns.table_view</a></li>
+  <li><a href="../modules/ui.patterns.tabs.html">patterns.tabs</a></li>
   <li><a href="../modules/ui.Sheet.html">Sheet</a></li>
   <li><a href="../modules/ui.Skin.html">Skin</a></li>
   <li><a href="../modules/ui.Touch.html">Touch</a></li>
-  <li><a href="../modules/ui.Utils.html">Utils</a></li>
   <li><a href="../modules/utils.Audio.html">Audio</a></li>
   <li><a href="../modules/utils.Bind.html">Bind</a></li>
   <li><a href="../modules/utils.Curves.html">Curves</a></li>
@@ -272,258 +280,11 @@
 </p>
 
 
-<h2><a href="#Functions">Functions</a></h2>
-<table class="function_list">
-	<tr>
-	<td class="name" nowrap><a href="#Grid2D">Grid2D (group, skin, x, y, w, h, cols, rows, func)</a></td>
-	<td class="summary">DOCME</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#ggroup:GetTarget">ggroup:GetTarget ()</a></td>
-	<td class="summary">DOCME</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#ggroup:SetMask">ggroup:SetMask (name, dir)</a></td>
-	<td class="summary">DOCME</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#ggroup:SetTarget">ggroup:SetTarget (target, reserve)</a></td>
-	<td class="summary">DOCME</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#ggroup:TouchCell">ggroup:TouchCell (col, row, cto, rto)</a></td>
-	<td class="summary">Manually performs a touch (or drag) on the grid.</td>
-	</tr>
-	<tr>
-	<td class="name" nowrap><a href="#ggroup:TouchXY">ggroup:TouchXY (x, y, xto, yto)</a></td>
-	<td class="summary">Variant of <a href="../modules/samples.TESTING.html#ggroup:TouchCell">ggroup:TouchCell</a> that uses x- and y-coordinates.</td>
-	</tr>
-</table>
 
 <br/>
 <br/>
 
 
-    <h2><a name="Functions"></a>Functions</h2>
-    <dl class="function">
-    <dt>
-    <a name = "Grid2D"></a>
-    <strong>Grid2D (group, skin, x, y, w, h, cols, rows, func)</strong>
-    </dt>
-    <dd>
-    DOCME
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">group</span>
-            <span class="types"><span class="type">DisplayGroup</span></span>
-         Group to which grid will be inserted.
-        </li>
-        <li><span class="parameter">skin</span>
-         Name of grid's skin.
-        </li>
-        <li><span class="parameter">x</span>
-            <span class="types"><span class="type">number</span></span>
-
-
-
-        </li>
-        <li><span class="parameter">y</span>
-            <span class="types"><span class="type">number</span></span>
-
-
-
-        </li>
-        <li><span class="parameter">w</span>
-            <span class="types"><span class="type">number</span></span>
-
-
-
-        </li>
-        <li><span class="parameter">h</span>
-            <span class="types"><span class="type">number</span></span>
-
-
-
-        </li>
-        <li><span class="parameter">cols</span>
-            <span class="types"><span class="type">uint</span></span>
-
-
-
-        </li>
-        <li><span class="parameter">rows</span>
-            <span class="types"><span class="type">uint</span></span>
-
-
-
-        </li>
-        <li><span class="parameter">func</span>
-            <span class="types"><span class="type">callable</span></span>
-
-
-
-        </li>
-    </ul>
-
-    <h3>Returns:</h3>
-    <ol>
-
-           <span class="types"><span class="type">DisplayGroup</span></span>
-        Child #1: the background; Child #2: the target + lines group.
-    </ol>
-
-
-    <h3>See also:</h3>
-    <ul>
-         <a href="../modules/ui.Skin.html#GetSkin">ui.Skin.GetSkin</a>
-    </ul>
-
-
-</dd>
-    <dt>
-    <a name = "ggroup:GetTarget"></a>
-    <strong>ggroup:GetTarget ()</strong>
-    </dt>
-    <dd>
-    DOCME
-
-
-    <h3>Returns:</h3>
-    <ol>
-
-           <span class="types"><span class="type">DisplayGroup</span></span>
-        X
-    </ol>
-
-
-
-
-</dd>
-    <dt>
-    <a name = "ggroup:SetMask"></a>
-    <strong>ggroup:SetMask (name, dir)</strong>
-    </dt>
-    <dd>
-    DOCME
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">name</span>
-            <span class="types"><a class="type" href="http://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
-
-
-
-        </li>
-        <li><span class="parameter">dir</span>
-            <span class="types"><a class="type" href="http://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
-
-
-
-        </li>
-    </ul>
-
-
-
-
-
-</dd>
-    <dt>
-    <a name = "ggroup:SetTarget"></a>
-    <strong>ggroup:SetTarget (target, reserve)</strong>
-    </dt>
-    <dd>
-    DOCME
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">target</span>
-            <span class="types"><span class="type">DisplayGroup</span></span>
-
-
-
-        </li>
-        <li><span class="parameter">reserve</span>
-            <span class="types"><span class="type">DisplayGroup</span></span>
-
-
-
-        </li>
-    </ul>
-
-
-
-
-
-</dd>
-    <dt>
-    <a name = "ggroup:TouchCell"></a>
-    <strong>ggroup:TouchCell (col, row, cto, rto)</strong>
-    </dt>
-    <dd>
-    Manually performs a touch (or drag) on the grid. </p>
-
-<p> This will trigger the grid's current touch behavior. Any in-progress touch state
- is preserved during this call.
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">col</span>
-            <span class="types"><span class="type">uint</span></span>
-         Initial touch column...
-        </li>
-        <li><span class="parameter">row</span>
-            <span class="types"><span class="type">uint</span></span>
-         ...and row.
-        </li>
-        <li><span class="parameter">cto</span>
-            <span class="types"><span class="type">uint</span></span>
-         Final column... (If absent, <em>col</em>.)
-        </li>
-        <li><span class="parameter">rto</span>
-            <span class="types"><span class="type">uint</span></span>
-         ...and row. (Ditto for <em>row</em>.)
-        </li>
-    </ul>
-
-
-
-
-
-</dd>
-    <dt>
-    <a name = "ggroup:TouchXY"></a>
-    <strong>ggroup:TouchXY (x, y, xto, yto)</strong>
-    </dt>
-    <dd>
-    Variant of <a href="../modules/samples.TESTING.html#ggroup:TouchCell">ggroup:TouchCell</a> that uses x- and y-coordinates.
-
-    <h3>Parameters:</h3>
-    <ul>
-        <li><span class="parameter">x</span>
-            <span class="types"><span class="type">number</span></span>
-         Initial touch x-coordinate.
-        </li>
-        <li><span class="parameter">y</span>
-            <span class="types"><span class="type">number</span></span>
-         ...and y-coordinate.
-        </li>
-        <li><span class="parameter">xto</span>
-            <span class="types"><span class="type">number</span></span>
-         Final x... (If absent, <em>x</em>.)
-        </li>
-        <li><span class="parameter">yto</span>
-            <span class="types"><span class="type">number</span></span>
-         ...and y. (Ditto for <em>y</em>.)
-        </li>
-    </ul>
-
-
-
-
-
-</dd>
-</dl>
 
 
 </div> <!-- id="content" -->

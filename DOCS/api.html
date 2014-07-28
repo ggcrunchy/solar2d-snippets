@@ -65,6 +65,12 @@
   <li><a href="modules/coroutine_ops.per_coroutine.html">per_coroutine</a></li>
   <li><a href="modules/coroutine_ops.wrapper.html">wrapper</a></li>
   <li><a href="modules/DEBUG.html">DEBUG</a></li>
+  <li><a href="modules/dft_ops.core.html">core</a></li>
+  <li><a href="modules/dft_ops.fft.html">fft</a></li>
+  <li><a href="modules/dft_ops.goertzel.html">goertzel</a></li>
+  <li><a href="modules/dft_ops.real_fft.html">real_fft</a></li>
+  <li><a href="modules/dft_ops.two_ffts.html">two_ffts</a></li>
+  <li><a href="modules/dft_ops.utils.html">utils</a></li>
   <li><a href="modules/dot.Switch.html">Switch</a></li>
   <li><a href="modules/dot.Warp.html">Warp</a></li>
   <li><a href="modules/editor.Common.html">Common</a></li>
@@ -77,7 +83,7 @@
   <li><a href="modules/editor.Dialog.html">Dialog</a></li>
   <li><a href="modules/editor.Events.html">Events</a></li>
   <li><a href="modules/editor.Grid.html">Grid</a></li>
-  <li><a href="modules/editor.GridFuncs.html">GridFuncs</a></li>
+  <li><a href="modules/editor.GridViews.html">GridViews</a></li>
   <li><a href="modules/editor.Links.html">Links</a></li>
   <li><a href="modules/editor.Ops.html">Ops</a></li>
   <li><a href="modules/editor.Tags.html">Tags</a></li>
@@ -100,12 +106,6 @@
   <li><a href="modules/effect.Stars.html">Stars</a></li>
   <li><a href="modules/effect.Stash.html">Stash</a></li>
   <li><a href="modules/event_block.Maze.html">Maze</a></li>
-  <li><a href="modules/fft_ops.core.html">core</a></li>
-  <li><a href="modules/fft_ops.fft.html">fft</a></li>
-  <li><a href="modules/fft_ops.goertzel.html">goertzel</a></li>
-  <li><a href="modules/fft_ops.real_fft.html">real_fft</a></li>
-  <li><a href="modules/fft_ops.two_ffts.html">two_ffts</a></li>
-  <li><a href="modules/fft_ops.utils.html">utils</a></li>
   <li><a href="modules/fill.CellularAutomata.html">CellularAutomata</a></li>
   <li><a href="modules/fill.Circle.html">Circle</a></li>
   <li><a href="modules/FIXES.html">FIXES</a></li>
@@ -144,8 +144,11 @@
   <li><a href="modules/hud.Action.html">Action</a></li>
   <li><a href="modules/hud.Move.html">Move</a></li>
   <li><a href="modules/image_ops.energy.html">energy</a></li>
+  <li><a href="modules/image_ops.huffman.html">huffman</a></li>
+  <li><a href="modules/image_ops.jpeg.html">jpeg</a></li>
   <li><a href="modules/image_ops.png.html">png</a></li>
   <li><a href="modules/image_ops.png_encode.html">png_encode</a></li>
+  <li><a href="modules/image_ops.utils.html">utils</a></li>
   <li><a href="modules/image_ops.zlib.html">zlib</a></li>
   <li><a href="modules/image_ops.zlib_lut.html">zlib_lut</a></li>
   <li><a href="modules/iterator_ops.args.html">args</a></li>
@@ -156,15 +159,20 @@
   <li><a href="modules/main.html">main</a></li>
   <li><a href="modules/mask.MarchingSquares.html">MarchingSquares</a></li>
   <li><a href="modules/mesh_ops.html">mesh_ops</a></li>
+  <li><a href="modules/number_ops.cholesky.html">cholesky</a></li>
   <li><a href="modules/number_ops.complex.html">complex</a></li>
+  <li><a href="modules/number_ops.conjugate_gradient.html">conjugate_gradient</a></li>
   <li><a href="modules/number_ops.divide.html">divide</a></li>
   <li><a href="modules/number_ops.gray.html">gray</a></li>
   <li><a href="modules/number_ops.hilbert.html">hilbert</a></li>
   <li><a href="modules/number_ops.integrators.html">integrators</a></li>
+  <li><a href="modules/number_ops.linear_algebra.html">linear_algebra</a></li>
   <li><a href="modules/number_ops.morton.html">morton</a></li>
   <li><a href="modules/number_ops.mwc_rng.html">mwc_rng</a></li>
+  <li><a href="modules/number_ops.poisson.html">poisson</a></li>
   <li><a href="modules/number_ops.range.html">range</a></li>
   <li><a href="modules/number_ops.robust.html">robust</a></li>
+  <li><a href="modules/number_ops.scalloped_sector.html">scalloped_sector</a></li>
   <li><a href="modules/number_ops.simplex_noise.html">simplex_noise</a></li>
   <li><a href="modules/number_ops.summed_area.html">summed_area</a></li>
   <li><a href="modules/number_ops.to_string.html">to_string</a></li>
@@ -233,10 +241,14 @@
   <li><a href="modules/ui.LineEx.html">LineEx</a></li>
   <li><a href="modules/ui.Lines.html">Lines</a></li>
   <li><a href="modules/ui.LinkGroup.html">LinkGroup</a></li>
+  <li><a href="modules/ui.patterns.button.html">patterns.button</a></li>
+  <li><a href="modules/ui.patterns.editable.html">patterns.editable</a></li>
+  <li><a href="modules/ui.patterns.image.html">patterns.image</a></li>
+  <li><a href="modules/ui.patterns.table_view.html">patterns.table_view</a></li>
+  <li><a href="modules/ui.patterns.tabs.html">patterns.tabs</a></li>
   <li><a href="modules/ui.Sheet.html">Sheet</a></li>
   <li><a href="modules/ui.Skin.html">Skin</a></li>
   <li><a href="modules/ui.Touch.html">Touch</a></li>
-  <li><a href="modules/ui.Utils.html">Utils</a></li>
   <li><a href="modules/utils.Audio.html">Audio</a></li>
   <li><a href="modules/utils.Bind.html">Bind</a></li>
   <li><a href="modules/utils.Curves.html">Curves</a></li>
@@ -406,6 +418,30 @@
 		<td class="summary">Debug options and helper utilities.</td>
 	</tr>
 	<tr>
+		<td class="name"  nowrap><a href="modules/dft_ops.core.html">dft_ops.core</a></td>
+		<td class="summary">Core routines used to build the various FFT modules.</td>
+	</tr>
+	<tr>
+		<td class="name"  nowrap><a href="modules/dft_ops.fft.html">dft_ops.fft</a></td>
+		<td class="summary">Operations for the Fast Fourier Transform.</td>
+	</tr>
+	<tr>
+		<td class="name"  nowrap><a href="modules/dft_ops.goertzel.html">dft_ops.goertzel</a></td>
+		<td class="summary">Fast Fourier Transform-related operations built upon the <a href="http://en.wikipedia.org/wiki/Goertzel_algorithm">Goertzel algorithm</a>.</td>
+	</tr>
+	<tr>
+		<td class="name"  nowrap><a href="modules/dft_ops.real_fft.html">dft_ops.real_fft</a></td>
+		<td class="summary">Operation for Fast Fourier Transforms of real data.</td>
+	</tr>
+	<tr>
+		<td class="name"  nowrap><a href="modules/dft_ops.two_ffts.html">dft_ops.two_ffts</a></td>
+		<td class="summary">Operations for real Fast Fourier Transforms performed as complex FFT's.</td>
+	</tr>
+	<tr>
+		<td class="name"  nowrap><a href="modules/dft_ops.utils.html">dft_ops.utils</a></td>
+		<td class="summary">Supplementary utilities for the Fast Fourier Transform modules.</td>
+	</tr>
+	<tr>
 		<td class="name"  nowrap><a href="modules/dot.Switch.html">dot.Switch</a></td>
 		<td class="summary">Switch-type dot.</td>
 	</tr>
@@ -451,11 +487,11 @@
 	</tr>
 	<tr>
 		<td class="name"  nowrap><a href="modules/editor.Grid.html">editor.Grid</a></td>
-		<td class="summary">Grid shared by various editor views.</td>
+		<td class="summary">Grid logic shared among various editor views.</td>
 	</tr>
 	<tr>
-		<td class="name"  nowrap><a href="modules/editor.GridFuncs.html">editor.GridFuncs</a></td>
-		<td class="summary">Various useful, somewhat general grid functions.</td>
+		<td class="name"  nowrap><a href="modules/editor.GridViews.html">editor.GridViews</a></td>
+		<td class="summary">Various useful, somewhat general grid view objects, and associated logic.</td>
 	</tr>
 	<tr>
 		<td class="name"  nowrap><a href="modules/editor.Links.html">editor.Links</a></td>
@@ -544,30 +580,6 @@
 	<tr>
 		<td class="name"  nowrap><a href="modules/event_block.Maze.html">event_block.Maze</a></td>
 		<td class="summary">Maze-type event block.</td>
-	</tr>
-	<tr>
-		<td class="name"  nowrap><a href="modules/fft_ops.core.html">fft_ops.core</a></td>
-		<td class="summary">Core routines used to build the various FFT modules.</td>
-	</tr>
-	<tr>
-		<td class="name"  nowrap><a href="modules/fft_ops.fft.html">fft_ops.fft</a></td>
-		<td class="summary">Operations for the Fast Fourier Transform.</td>
-	</tr>
-	<tr>
-		<td class="name"  nowrap><a href="modules/fft_ops.goertzel.html">fft_ops.goertzel</a></td>
-		<td class="summary">Fast Fourier Transform-related operations built upon the <a href="http://en.wikipedia.org/wiki/Goertzel_algorithm">Goertzel algorithm</a>.</td>
-	</tr>
-	<tr>
-		<td class="name"  nowrap><a href="modules/fft_ops.real_fft.html">fft_ops.real_fft</a></td>
-		<td class="summary">Operation for Fast Fourier Transforms of real data.</td>
-	</tr>
-	<tr>
-		<td class="name"  nowrap><a href="modules/fft_ops.two_ffts.html">fft_ops.two_ffts</a></td>
-		<td class="summary">Operations for real Fast Fourier Transforms performed as complex FFT's.</td>
-	</tr>
-	<tr>
-		<td class="name"  nowrap><a href="modules/fft_ops.utils.html">fft_ops.utils</a></td>
-		<td class="summary">Supplementary utilities for the Fast Fourier Transform modules.</td>
 	</tr>
 	<tr>
 		<td class="name"  nowrap><a href="modules/fill.CellularAutomata.html">fill.CellularAutomata</a></td>
@@ -728,12 +740,24 @@
 		<td class="summary">Various energy metrics for images.</td>
 	</tr>
 	<tr>
+		<td class="name"  nowrap><a href="modules/image_ops.huffman.html">image_ops.huffman</a></td>
+		<td class="summary">Utilities for Huffman codes.</td>
+	</tr>
+	<tr>
+		<td class="name"  nowrap><a href="modules/image_ops.jpeg.html">image_ops.jpeg</a></td>
+		<td class="summary">A JPEG loader and associated functionality.</td>
+	</tr>
+	<tr>
 		<td class="name"  nowrap><a href="modules/image_ops.png.html">image_ops.png</a></td>
 		<td class="summary">A PNG loader and associated functionality.</td>
 	</tr>
 	<tr>
 		<td class="name"  nowrap><a href="modules/image_ops.png_encode.html">image_ops.png_encode</a></td>
 		<td class="summary">A PNG encoder.</td>
+	</tr>
+	<tr>
+		<td class="name"  nowrap><a href="modules/image_ops.utils.html">image_ops.utils</a></td>
+		<td class="summary">Some utilities for image operations.</td>
 	</tr>
 	<tr>
 		<td class="name"  nowrap><a href="modules/image_ops.zlib.html">image_ops.zlib</a></td>
@@ -776,8 +800,16 @@
 		<td class="summary">Mesh utilities.</td>
 	</tr>
 	<tr>
+		<td class="name"  nowrap><a href="modules/number_ops.cholesky.html">number_ops.cholesky</a></td>
+		<td class="summary">Cholesky factorization and related operations.</td>
+	</tr>
+	<tr>
 		<td class="name"  nowrap><a href="modules/number_ops.complex.html">number_ops.complex</a></td>
 		<td class="summary">Some operations on complex numbers.</td>
+	</tr>
+	<tr>
+		<td class="name"  nowrap><a href="modules/number_ops.conjugate_gradient.html">number_ops.conjugate_gradient</a></td>
+		<td class="summary">Implementation of <a href="http://en.wikipedia.org/wiki/Conjugate_gradient_method">conjugate gradient method</a>.</td>
 	</tr>
 	<tr>
 		<td class="name"  nowrap><a href="modules/number_ops.divide.html">number_ops.divide</a></td>
@@ -796,6 +828,10 @@
 		<td class="summary">Various numerical integrators.</td>
 	</tr>
 	<tr>
+		<td class="name"  nowrap><a href="modules/number_ops.linear_algebra.html">number_ops.linear_algebra</a></td>
+		<td class="summary">Assorted linear algebra operations.</td>
+	</tr>
+	<tr>
 		<td class="name"  nowrap><a href="modules/number_ops.morton.html">number_ops.morton</a></td>
 		<td class="summary">Some Morton number utilities.</td>
 	</tr>
@@ -804,12 +840,20 @@
 		<td class="summary">This module implements a multiply-with-carry RNG.</td>
 	</tr>
 	<tr>
+		<td class="name"  nowrap><a href="modules/number_ops.poisson.html">number_ops.poisson</a></td>
+		<td class="summary">Utilities for Poisson-disk sampling.</td>
+	</tr>
+	<tr>
 		<td class="name"  nowrap><a href="modules/number_ops.range.html">number_ops.range</a></td>
 		<td class="summary">Some utilities related to number ranges.</td>
 	</tr>
 	<tr>
 		<td class="name"  nowrap><a href="modules/number_ops.robust.html">number_ops.robust</a></td>
 		<td class="summary">Numerical options that require special care, e.g.</td>
+	</tr>
+	<tr>
+		<td class="name"  nowrap><a href="modules/number_ops.scalloped_sector.html">number_ops.scalloped_sector</a></td>
+		<td class="summary">Implementation of <a href="http://www.cs.virginia.edu/~gfx/pubs/antimony/">scalloped sector</a> data structure.</td>
 	</tr>
 	<tr>
 		<td class="name"  nowrap><a href="modules/number_ops.simplex_noise.html">number_ops.simplex_noise</a></td>
@@ -1088,6 +1132,26 @@
 		<td class="summary">Nodes for building links.</td>
 	</tr>
 	<tr>
+		<td class="name"  nowrap><a href="modules/ui.patterns.button.html">ui.patterns.button</a></td>
+		<td class="summary">Some useful UI patterns based on buttons.</td>
+	</tr>
+	<tr>
+		<td class="name"  nowrap><a href="modules/ui.patterns.editable.html">ui.patterns.editable</a></td>
+		<td class="summary">Some useful UI patterns based around editable strings.</td>
+	</tr>
+	<tr>
+		<td class="name"  nowrap><a href="modules/ui.patterns.image.html">ui.patterns.image</a></td>
+		<td class="summary">Some useful UI patterns based on images.</td>
+	</tr>
+	<tr>
+		<td class="name"  nowrap><a href="modules/ui.patterns.table_view.html">ui.patterns.table_view</a></td>
+		<td class="summary">Some useful UI patterns based around table views.</td>
+	</tr>
+	<tr>
+		<td class="name"  nowrap><a href="modules/ui.patterns.tabs.html">ui.patterns.tabs</a></td>
+		<td class="summary">Some useful UI patterns based around tab bars.</td>
+	</tr>
+	<tr>
 		<td class="name"  nowrap><a href="modules/ui.Sheet.html">ui.Sheet</a></td>
 		<td class="summary">Image sheet UI utilities.</td>
 	</tr>
@@ -1098,10 +1162,6 @@
 	<tr>
 		<td class="name"  nowrap><a href="modules/ui.Touch.html">ui.Touch</a></td>
 		<td class="summary">UI touch utilites.</td>
-	</tr>
-	<tr>
-		<td class="name"  nowrap><a href="modules/ui.Utils.html">ui.Utils</a></td>
-		<td class="summary">UI utilities.</td>
 	</tr>
 	<tr>
 		<td class="name"  nowrap><a href="modules/utils.Audio.html">utils.Audio</a></td>
