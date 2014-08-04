@@ -24,11 +24,14 @@
 --
 
 -- Standard library imports --
+local assert = assert
 local ipairs = ipairs
 local remove = table.remove
 
 -- Modules --
 local file_utils = require("utils.File")
+local image_patterns = require("ui.patterns.image")
+local string_utils = require("utils.String")
 
 -- Corona globals --
 local display = display
@@ -41,14 +44,56 @@ local widget = require("widget")
 -- Exports --
 local M = {}
 
+-- --
+local Exts = {
+	audio = { ".mp3", ".ogg" },
+	image = { ".jpg", ".jpeg", ".png" }
+}
+
+--
+local function GetNames (names, filter, fl, get_contents, name_only)
+	local count = 0
+
+	for _, file in ipairs(names) do
+		if filter(file, not name_only and get_contents(file) or "", fl) then
+			names[count + 1], count = file, count + 1
+		end
+	end
+
+	return count
+end
+
+--
+local function GetNames_Info (names, filter, fl, get_contents)
+	local count = 0
+
+	for _, file in ipairs(names) do
+		local contents = get_contents(file)
+		local func = contents and image_patterns.GetFunc(file, "GetInfoString")
+
+		if func then
+			local good, w, h, data = func(contents)
+
+			if good and filter(file, w, h, data, fl) then
+				names[count + 1], count = file, count + 1
+			end
+		end
+	end
+
+	return count
+end
+
 --
 function M.FileList (group, x, y, options)
 	local FileList = M.Listbox(group, x, y, options)
 
 	--
+	assert(not options.filter_info or not options.name_only, "Incompatible options: info filter and name only listings")
+
 	local path, base, on_reload = options.path, options.base, options.on_reload
-	local filter, name_only = options.filter, not not options.name_only
-	local opts = { base = base, exts = options.exts, get_contents = not name_only }
+	local filter, name_only = options.filter_info or options.filter, not not options.name_only
+	local opts = { base = base, exts = Exts[options.file_kind] or options.exts, get_contents = not name_only }
+	local get_names = options.filter_info and GetNames_Info or GetNames
 
 	--
 	local function GetContents (file)
@@ -63,13 +108,7 @@ function M.FileList (group, x, y, options)
 		local names, alt = file_utils.EnumerateFiles(path, opts)
 
 		if filter then
-			local count = 0
-
-			for _, file in ipairs(names) do
-				if filter(file, not name_only and GetContents(file) or "", FileList) then
-					names[count + 1], count = file, count + 1
-				end
-			end
+			local count = get_names(names, filter, FileList, GetContents, name_only)
 
 			for i = #names, count + 1, -1 do
 				names[i] = nil
@@ -110,6 +149,7 @@ function M.FileList (group, x, y, options)
 	end)
 
 	-- Extra credit: Directory navigation (requires some effort on the file utility side)
+	-- Build preview logic in (for images, at least; audio?)
 
 	return FileList
 end

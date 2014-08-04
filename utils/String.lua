@@ -46,6 +46,20 @@ function M.BeginsWith (str, patt, get_suffix)
 	return begins_with, (get_suffix and begins_with) and str:sub(patt_len + 1) or ""
 end
 
+--- Case-insensitive variant of @{BeginsWith}.
+-- @string str Source string.
+-- @string patt Prefix pattern.
+-- @bool get_suffix Get the rest of the string as well?
+-- @treturn boolean _str_ begins with _patt_?
+-- @treturn string If _patt_ was found and _get\_suffix_ is true, the rest of the string;
+-- otherwise, the empty string.
+function M.BeginsWith_AnyCase (str, patt, get_suffix)
+	local patt_len = #patt
+	local begins_with = str:sub(1, patt_len):lower() == patt:lower()
+
+	return begins_with, (get_suffix and begins_with) and str:sub(patt_len + 1) or ""
+end
+
 --- Predicate.
 -- @string str Source string.
 -- @string patt Suffix pattern. (**n.b.** only supports exact "patterns")
@@ -56,6 +70,20 @@ end
 function M.EndsWith (str, patt, get_prefix)
 	local patt_len = #patt
 	local ends_with = str:sub(-patt_len) == patt
+
+	return ends_with, (get_prefix and ends_with) and str:sub(1, -patt_len - 1) or ""
+end
+
+--- Case-insensitive variant of @{EndsWith}.
+-- @string str Source string.
+-- @string patt Suffix pattern.
+-- @bool get_prefix Get the rest of the string as well?
+-- @treturn boolean _str_ ends with _patt_?
+-- @treturn string If _patt_ was found and _get\_prefix_ is true, the rest of the string;
+-- otherwise, the empty string.
+function M.EndsWith_AnyCase (str, patt, get_prefix)
+	local patt_len = #patt
+	local ends_with = str:sub(-patt_len):lower() == patt:lower()
 
 	return ends_with, (get_prefix and ends_with) and str:sub(1, -patt_len - 1) or ""
 end

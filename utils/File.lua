@@ -113,7 +113,7 @@ end
 -- Helper to enumerate files matching extension
 function EnumFiles.string (enumerate, into, path, ext)
 	for name in enumerate(path) do
-		if str_utils.EndsWith(name, ext) then
+		if str_utils.EndsWith_AnyCase(name, ext) then
 			into[#into + 1] = name
 		end
 	end	
@@ -123,7 +123,7 @@ end
 function EnumFiles.table (enumerate, into, path, exts)
 	for name in enumerate(path) do
 		for _, ext in ipairs(exts) do
-			if str_utils.EndsWith(name, ext) then
+			if str_utils.EndsWith_AnyCase(name, ext) then
 				into[#into + 1] = name
 
 				break

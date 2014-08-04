@@ -126,7 +126,7 @@ function M.Load (view)
 
 	--
 	Songs = table_view_patterns.FileList(Group, w - 350, 100, {
-		path = "Music", base = Base, exts = { ".mp3", ".ogg" }, on_reload = Reload
+		path = "Music", base = Base, file_kind = "audio", on_reload = Reload
 	})
 
 	common_ui.Frame(Songs, 1, 0, 0)

@@ -71,13 +71,10 @@ function Scene:show (event)
 		end
 
 		local image_list = table_view_patterns.FileList(self.view, 295, 20, {
-			path = params.dir, base = params.base, exts = { ".png" }, get_contents = true, height = 120,
+			path = params.dir, base = params.base, file_kind = "image", get_contents = true, height = 120,
 
-			filter = function(_, contents)
-				-- Add any images in a certain size range to the list.
-				local good, w, h = png.GetInfoString(contents)
-				-- TODO: ^^^ May now be JPEG!
-				return good and w >= 16 and w <= CW - 10 and h >= 16 and h <= CH - 150
+			filter_info = function(_, w, h) -- Add any images in a certain size range to the list.
+				return w >= 16 and w <= CW - 10 and h >= 16 and h <= CH - 150
 				-- TODO: More intelligent way to handle? Owing to restrictions of bitmaps (because of captures), need to ensure some
 				-- screen real estate for interface...
 			end,

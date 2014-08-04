@@ -71,7 +71,7 @@ end
 
 --
 local function AddExt (name)
-	if str_utils.EndsWith(name, "png") then
+	if str_utils.EndsWith_AnyCase(name, "png") then
 		return name
 	else
 		return name .. (str_utils.EndsWith(name, ".") and "png" or ".png")

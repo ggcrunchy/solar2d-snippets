@@ -32,6 +32,9 @@ local string_utils = require("utils.String")
 local display = display
 local system = system
 
+-- Cached module references --
+local _GetFunc_
+
 -- Exports --
 local M = {}
 
@@ -39,10 +42,10 @@ local M = {}
 local function Failure () return false end
 
 --
-local function GetFunc (name, func)
-	if string_utils.EndsWith(name, ".png") then
+function M.GetFunc (name, func)
+	if string_utils.EndsWith_AnyCase(name, ".png") then
 		return png[func]
-	elseif string_utils.EndsWith(name, ".jpg") or string_utils.EndsWith(name, ".jpeg") then
+	elseif string_utils.EndsWith_AnyCase(name, ".jpg") or string_utils.EndsWith_AnyCase(name, ".jpeg") then
 		return jpeg[func]
 	else
 		return Failure
@@ -111,17 +114,20 @@ function M.Thumbnail (group, w, h, opts)
 	function Thumbnail:SetImage (name, base)
 		base = base or system.ResourceDirectory
 
-		return AuxSetImage(self, name, base, GetFunc(name, "GetInfo")(system.pathForFile(name, base)))
+		return AuxSetImage(self, name, base, _GetFunc_(name, "GetInfo")(system.pathForFile(name, base)))
 	end
 
 	--- DOCME
 	-- TODO: Kind of clumsy, this one is under probation :/
 	function Thumbnail:SetImageFromMemory (stream, name, base)
-		return AuxSetImage(self, name, base, GetFunc(name, "GetInfoString")(stream))
+		return AuxSetImage(self, name, base, _GetFunc_(name, "GetInfoString")(stream))
 	end
 
 	return Thumbnail
 end
+
+-- Cache module members.
+_GetFunc_ = M.GetFunc
 
 -- Export the module.
 return M
