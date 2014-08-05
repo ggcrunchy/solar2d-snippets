@@ -31,8 +31,6 @@ local random = math.random
 
 -- Modules --
 local balloons = require("effect.Balloons")
-local buttons = require("ui.Button")
-local scenes = require("utils.Scenes")
 
 -- Corona globals --
 local display = display
@@ -270,8 +268,8 @@ local function See (word, prev)
 end
 
 --
-function Scene:create ()
-	buttons.Button(self.view, nil, 120, 75, 200, 50, scenes.Opener{ name = "scene.Choices" }, "Go Back")
+function Scene:create (event)
+	event.params.boilerplate(self.view)
 
 	-- Initialize Henley.
 	Words = {}

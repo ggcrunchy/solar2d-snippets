@@ -31,7 +31,6 @@ local yield = coroutine.yield
 
 -- Modules --
 local array_index = require("array_ops.index")
-local buttons = require("ui.Button")
 local ca = require("fill.CellularAutomata")
 local circle = require("fill.Circle")
 local curves = require("utils.Curves")
@@ -39,7 +38,6 @@ local divide = require("number_ops.divide")
 local flow = require("coroutine_ops.flow")
 local grid_iterators = require("iterator_ops.grid")
 local ms = require("mask.MarchingSquares")
-local scenes = require("utils.Scenes")
 local sheet = require("ui.Sheet")
 local timers = require("game.Timers")
 local transitions = require("game.Transitions")
@@ -57,12 +55,12 @@ local composer = require("composer")
 local Scene = composer.newScene()
 
 --
-function Scene:create ()
+function Scene:create (event)
 	self.background = display.newRect(self.view, 0, 0, display.contentWidth, display.contentHeight)
 
 	self.background:translate(display.contentCenterX, display.contentCenterY)
 
-	buttons.Button(self.view, nil, 120, 75, 200, 50, scenes.Opener{ name = "scene.Choices" }, "Go Back")
+	event.params.boilerplate(self.view)
 
 	self.action = display.newText(self.view, "", 250, 35, native.systemFontBold, 24)
 	self.effect = display.newText(self.view, "", 250, 65, native.systemFontBold, 24)

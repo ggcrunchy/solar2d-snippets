@@ -27,17 +27,13 @@
 --
 
 -- Standard library imports --
-local abs = math.abs
 local cos = math.cos
 local ipairs = ipairs
-local min = math.min
 local pi = math.pi
 local random = math.random
 local sin = math.sin
 
 -- Modules --
-local button = require("ui.Button")
-local scenes = require("utils.Scenes")
 local timers = require("game.Timers")
 
 -- Corona globals --
@@ -51,8 +47,8 @@ local composer = require("composer")
 local Scene = composer.newScene()
 
 --
-function Scene:create ()
-	button.Button(self.view, nil, 120, 75, 200, 50, scenes.Opener{ name = "scene.Choices" }, "Go Back")
+function Scene:create (event)
+	event.params.boilerplate(self.view)
 end
 
 Scene:addEventListener("create")
@@ -169,7 +165,7 @@ function Scene:show (event)
 		lgroup.alpha = .4
 
 		--
-		local circles, paths, mid = {}, {}
+		local circles, mid = {}
 
 		for _ = 1, 5 do
 			local circle = display.newCircle(self.view, 0, 0, 5)

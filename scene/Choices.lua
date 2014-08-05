@@ -29,6 +29,7 @@
 local exit = os.exit
 
 -- Modules --
+local button = require("ui.Button")
 local dispatch_list = require("game.DispatchList")
 local layout = require("ui.Layout")
 local scenes = require("utils.Scenes")
@@ -84,6 +85,16 @@ local function SetCurrent (current, index)
 end
 
 --
+local ReturnToChoices = scenes.Opener{ name = "scene.Choices" }
+
+-- --
+local Params = {
+	boilerplate = function(view)
+		button.Button(view, nil, 120, 75, 200, 50, ReturnToChoices, "Go Back")
+	end
+}
+
+--
 function Scene:create ()
 	local Current = display.newText(self.view, "", 0, 50, native.systemFont, 35)
 	local Choices = table_view_patterns.Listbox(self.view, 20, 20, {
@@ -107,7 +118,8 @@ function Scene:create ()
 			elseif name == "Editor" then
 				composer.gotoScene("scene.EditorSetup")
 			else
-				composer.gotoScene("samples." .. name)
+				scenes.SetListenFunc(ReturnToChoices)
+				composer.gotoScene("samples." .. name, { params = Params })
 			end
 		end, "Launch",
 		scenes.Opener{ name = "scene.Options", "zoomInOutFadeRotate", "fade", "fromTop" }, "Options",
@@ -124,6 +136,8 @@ Scene:addEventListener("create")
 --
 function Scene:show (event)
 	if event.phase == "did" then
+		scenes.SetListenFunc(nil)
+
 		-- First time on title screen, this session?
 		local prev = composer.getSceneName("previous")
 

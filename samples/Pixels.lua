@@ -24,7 +24,6 @@
 --
 
 -- Standard library imports --
-local abs = math.abs
 local ceil = math.ceil
 local cos = math.cos
 local floor = math.floor
@@ -37,13 +36,11 @@ local sin = math.sin
 local sqrt = math.sqrt
 
 -- Modules --
-local buttons = require("ui.Button")
 local checkbox = require("ui.Checkbox")
 local cubic_spline = require("spline_ops.cubic")
 local grid_iterators = require("iterator_ops.grid")
 local integrators = require("number_ops.integrators")
 local quaternion_ops = require("quaternion_ops")
-local scenes = require("utils.Scenes")
 local timers = require("game.Timers")
 
 -- Corona globals --
@@ -61,8 +58,8 @@ local Scene = composer.newScene()
 local PixelWidth, PixelHeight = 2, 2
 
 --
-function Scene:create ()
-	buttons.Button(self.view, nil, 120, 75, 200, 50, scenes.Opener{ name = "scene.Choices" }, "Go Back")
+function Scene:create (event)
+	event.params.boilerplate(self.view)
 end
 
 Scene:addEventListener("create")

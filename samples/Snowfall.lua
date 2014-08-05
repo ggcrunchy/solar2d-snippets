@@ -24,8 +24,6 @@
 --
 
 -- Modules --
-local buttons = require("ui.Button")
-local scenes = require("utils.Scenes")
 local snowfall = require("effect.Snowfall")
 
 -- Corona modules --
@@ -35,8 +33,8 @@ local composer = require("composer")
 local Scene = composer.newScene()
 
 --
-function Scene:create ()
-	buttons.Button(self.view, nil, 120, 75, 200, 50, scenes.Opener{ name = "scene.Choices" }, "Go Back")
+function Scene:create (event)
+	event.params.boilerplate(self.view)
 end
 
 Scene:addEventListener("create")

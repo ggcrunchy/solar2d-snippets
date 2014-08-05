@@ -31,9 +31,7 @@ local random = math.random
 local sin = math.sin
 
 -- Modules --
-local buttons = require("ui.Button")
 local line_ex = require("ui.LineEx")
-local scenes = require("utils.Scenes")
 
 -- Corona globals --
 local display = display
@@ -47,8 +45,8 @@ local composer = require("composer")
 local Scene = composer.newScene()
 
 --
-function Scene:create ()
-	buttons.Button(self.view, nil, 120, 75, 200, 50, scenes.Opener{ name = "scene.Choices" }, "Go Back")
+function Scene:create (event)
+	event.params.boilerplate(self.view)
 end
 
 Scene:addEventListener("create")

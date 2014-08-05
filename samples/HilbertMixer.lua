@@ -32,7 +32,6 @@ local random = math.random
 local sin = math.sin
 
 -- Modules --
-local buttons = require("ui.Button")
 local checkbox = require("ui.Checkbox")
 local common_ui = require("editor.CommonUI")
 local cubic_spline = require("spline_ops.cubic")
@@ -40,8 +39,6 @@ local curves = require("utils.Curves")
 local hilbert = require("number_ops.hilbert")
 local line_ex = require("ui.LineEx")
 local range = require("number_ops.range")
-local scenes = require("utils.Scenes")
-local timers = require("game.Timers")
 
 -- Corona globals --
 local display = display
@@ -55,8 +52,8 @@ local widget = require("widget")
 local Scene = composer.newScene()
 
 --
-function Scene:create ()
-	buttons.Button(self.view, nil, 120, 75, 200, 50, scenes.Opener{ name = "scene.Choices" }, "Go Back")
+function Scene:create (event)
+	event.params.boilerplate(self.view)
 end
 
 Scene:addEventListener("create")
@@ -373,14 +370,14 @@ function Scene:show (event)
 				trail = trail
 			}
 
-			for i = 1, nparts do
+			for pi = 1, nparts do
 				local rect = display.newRect(self.igroup, 0, 0, 3, 3)
-				local scale = (i - 1) / nparts
+				local scale = (pi - 1) / nparts
 
 				rect.alpha = .6 - .4 * scale
 				rect.isVisible = false
 
-				trail[i] = rect
+				trail[pi] = rect
 			end
 
 			points[i].x, points[i].y = GetXY(points[i].start, points[i].div)

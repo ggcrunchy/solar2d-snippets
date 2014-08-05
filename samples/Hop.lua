@@ -28,13 +28,10 @@ local abs = math.abs
 local ceil = math.ceil
 local floor = math.floor
 local ipairs = ipairs
-local max = math.max
 local random = math.random
 local yield = coroutine.yield
 
 -- Modules --
-local buttons = require("ui.Button")
-local scenes = require("utils.Scenes")
 local timers = require("game.Timers")
 
 -- Corona modules --
@@ -51,8 +48,8 @@ local transition = transition
 local Scene = composer.newScene()
 
 --
-function Scene:create ()
-	buttons.Button(self.view, nil, 120, 75, 200, 50, scenes.Opener{ name = "scene.Choices" }, "Go Back")
+function Scene:create (event)
+	event.params.boilerplate(self.view)
 end
 
 Scene:addEventListener("create")
@@ -142,7 +139,7 @@ local function Launch ()
 			ymin = DH - 225 + (i - 1) * 5
 		end
 
-		for j = 1, 9 + i * 4 do
+		for _ = 1, 9 + i * 4 do
 			local r = display.newRect(group, 0, 0, 27 - i * 3.5, 200 + (i - 1) * 15)
 
 			r.anchorX, r.x = 0, 10 + random(DW - 20)
@@ -234,7 +231,7 @@ local function TakeOff (hopper)
 	Scene.take_off = timer.performWithDelay(1000, function()
 		physics.removeBody(hopper)
 
-		for i, group in ipairs(Layers) do
+		for _, group in ipairs(Layers) do
 			transition.to(group, HalfScaleParams)
 		end
 

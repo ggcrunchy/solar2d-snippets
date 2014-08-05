@@ -27,12 +27,11 @@
 local sort = table.sort
  
 -- Modules --
-local buttons = require("ui.Button")
 local lines = require("ui.Lines")
-local scenes = require("utils.Scenes")
 local touch = require("ui.Touch")
  
 -- Corona globals --
+local display = display
 local transition = transition
  
  -- Corona modules --
@@ -42,8 +41,8 @@ local composer = require("composer")
 local Scene = composer.newScene()
 
 --
-function Scene:create ()
-	buttons.Button(self.view, nil, 120, 75, 200, 50, scenes.Opener{ name = "scene.Choices" }, "Go Back")
+function Scene:create (event)
+	event.params.boilerplate(self.view)
 end
 
 Scene:addEventListener("create")
@@ -181,7 +180,7 @@ end, function(event, link)
 	Temp.x, Temp.y = event.x, event.y
 
 	UpdateOver(link, event.x, event.y)
-end, function(event, link)
+end, function(_, link)
 	if Over --[[ and not AlreadyLinked(link, Over)]] then
 		Highlight(Over, false)
 

@@ -33,10 +33,8 @@ local sqrt = math.sqrt
 local yield = coroutine.yield
 
 -- Modules --
-local buttons = require("ui.Button")
 local line_ex = require("ui.LineEx")
 local mesh_ops = require("mesh_ops")
-local scenes = require("utils.Scenes")
 local timers = require("game.Timers")
 
 -- Corona globals --
@@ -53,8 +51,8 @@ local composer = require("composer")
 local Scene = composer.newScene()
 
 --
-function Scene:create ()
-	buttons.Button(self.view, nil, 120, 75, 200, 50, scenes.Opener{ name = "scene.Choices" }, "Go Back")
+function Scene:create (event)
+	event.params.boilerplate(self.view)
 end
 
 Scene:addEventListener("create")

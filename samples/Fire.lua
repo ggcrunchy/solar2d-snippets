@@ -27,7 +27,6 @@
 
 -- Standard library imports --
 local ipairs = ipairs
-local max = math.max
 local min = math.min
 local random = math.random
 
@@ -35,9 +34,7 @@ local random = math.random
 local round = math.round
 
 -- Modules --
-local buttons = require("ui.Button")
 local hsv = require("ui.HSV")
-local scenes = require("utils.Scenes")
 local timers = require("game.Timers")
 
 -- Corona globals --
@@ -51,8 +48,8 @@ local widget = require("widget")
 -- Fire demo scene --
 local Scene = composer.newScene()
 --
-function Scene:create ()
-	buttons.Button(self.view, nil, 120, 75, 200, 50, scenes.Opener{ name = "scene.Choices" }, "Go Back")
+function Scene:create (event)
+	event.params.boilerplate(self.view)
 
 	self.sliders = {}
 

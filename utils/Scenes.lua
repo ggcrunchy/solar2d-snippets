@@ -122,10 +122,15 @@ do
 	--- Variant of @{SetListenFunc} for the common case of only handling "go back to the
 	-- previous scene" behavior.
 	-- @string name Name of return scene; if absent, uses `composer.getSceneName("previous")`.
-	-- @string[opt="fade"] effect Effect to play on going back.
+	-- @string[opt="fade"] effect Effect to play on going back, or **"none"** to go immediately.
 	function M.SetListenFunc_GoBack (name, effect)
 		Name = name or composer.getSceneName("previous")
-		Effect = effect or "fade"
+
+		if effect == "none" then
+			Effect = nil
+		else
+			Effect = effect or "fade"
+		end
 
 		M.SetListenFunc(GoBack)
 	end

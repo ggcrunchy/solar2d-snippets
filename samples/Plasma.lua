@@ -24,13 +24,9 @@
 --	
 
 -- Standard library imports --
-local abs = math.abs
-local floor = math.floor
 local ipairs = ipairs
 local ldexp = math.ldexp
-local min = math.min
 local pi = math.pi
-local random = math.random
 local sin = math.sin
 local sqrt = math.sqrt
 
@@ -38,8 +34,6 @@ local sqrt = math.sqrt
 local round = math.round
 
 -- Modules --
-local buttons = require("ui.Button")
-local scenes = require("utils.Scenes")
 local timers = require("game.Timers")
 
 -- Corona globals --
@@ -66,8 +60,8 @@ local PixelWidth, PixelHeight = 3, 3
 local Right = BoxX + NCols * PixelWidth
 
 --
-function Scene:create ()
-	buttons.Button(self.view, nil, 120, 75, 200, 50, scenes.Opener{ name = "scene.Choices" }, "Go Back")
+function Scene:create (event)
+	event.params.boilerplate(self.view)
 
 	self.sliders = {}
 

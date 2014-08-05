@@ -27,12 +27,11 @@
 local pi = math.pi
 local random = math.random
 local remove = table.remove
+local yield = coroutine.yield
 
 -- Modules --
-local buttons = require("ui.Button")
 local hilbert = require("number_ops.hilbert")
 local line_ex = require("ui.LineEx")
-local scenes = require("utils.Scenes")
 local timers = require("game.Timers")
 
 -- Corona globals --
@@ -46,8 +45,8 @@ local composer = require("composer")
 local Scene = composer.newScene()
 
 --
-function Scene:create ()
-	buttons.Button(self.view, nil, 120, 75, 200, 50, scenes.Opener{ name = "scene.Choices" }, "Go Back")
+function Scene:create (event)
+	event.params.boilerplate(self.view)
 end
 
 Scene:addEventListener("create")
@@ -61,12 +60,12 @@ end
 function Scene:show (event)
 	if event.phase == "did" then
 		self.trail = display.newGroup()
-		self.text = display.newText("", 130, 100, native.systemFontBold, 30)
+		self.text = display.newText("", 130, 120, native.systemFontBold, 30)
 
 		self.view:insert(self.trail)
 
 		self.timer = timers.WrapEx(function()
-			local cache, px, py = {}
+			local cache = {}
 
 			local trail_params = {
 				time = 1100, alpha = .2,
@@ -107,9 +106,9 @@ function Scene:show (event)
 				transition.to(image, trail_params)
 
 				-- Update progress text.
-				self.text.text = string.format("(%i, %i), %i, %s", x, y, s, way)
+				self.text.text = ("(%i, %i), %i, %s"):format(x, y, s, way)
 
-				coroutine.yield()
+				yield()
 			end)
 		end, 15)
 	end

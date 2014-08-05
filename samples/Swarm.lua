@@ -36,9 +36,7 @@ local sqrt = math.sqrt
 
 -- Modules --
 local array_index = require("array_ops.index")
-local buttons = require("ui.Button")
 local hsv = require("ui.HSV")
-local scenes = require("utils.Scenes")
 local simplex_noise = require("number_ops.simplex_noise")
 local touch = require("ui.Touch")
 
@@ -47,7 +45,6 @@ local display = display
 local native = native
 local system = system
 local timer = timer
-local transition = transition
 
 -- Corona modules --
 local composer = require("composer")
@@ -57,8 +54,8 @@ local widget = require("widget")
 local Scene = composer.newScene()
 
 --
-function Scene:create ()
-	buttons.Button(self.view, nil, 120, 75, 200, 50, scenes.Opener{ name = "scene.Choices" }, "Go Back")
+function Scene:create (event)
+	event.params.boilerplate(self.view)
 
 	self.panel = display.newGroup()
 
