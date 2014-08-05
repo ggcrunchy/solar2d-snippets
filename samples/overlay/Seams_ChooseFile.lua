@@ -25,8 +25,6 @@
 
 -- Modules --
 local buttons = require("ui.Button")
-local image_patterns = require("ui.patterns.image")
-local png = require("image_ops.png")
 local table_view_patterns = require("ui.patterns.table_view")
 
 -- Corona globals --
@@ -45,7 +43,7 @@ local CW, CH = display.contentWidth, display.contentHeight
 function Scene:show (event)
 	if event.phase == "did" then
 		-- Make a small preview pane for the currently chosen image.
-		local preview = image_patterns.Thumbnail(self.view, 64, 64)
+	--	local preview = image_patterns.Thumbnail(self.view, 64, 64)
 
 		-- TODO:
 		-- If database not empty, populate list (do file existence / integrity checks?)
@@ -62,7 +60,7 @@ function Scene:show (event)
 		end
 
 		-- Add a listbox to be populated with some image choices.
-		local funcs, cancel, ok = params.funcs
+		local funcs, cancel, ok, preview = params.funcs
 
 		local function Wait ()
 			funcs.SetStatus("Press OK to compute energy")
@@ -71,7 +69,7 @@ function Scene:show (event)
 		end
 
 		local image_list = table_view_patterns.FileList(self.view, 295, 20, {
-			path = params.dir, base = params.base, file_kind = "image", get_contents = true, height = 120,
+			path = params.dir, base = params.base, file_kind = "image", height = 120, add_preview = true,
 
 			filter_info = function(_, w, h) -- Add any images in a certain size range to the list.
 				return w >= 16 and w <= CW - 10 and h >= 16 and h <= CH - 150
@@ -79,11 +77,7 @@ function Scene:show (event)
 				-- screen real estate for interface...
 			end,
 
-			press = function(_, file, il)
-				-- Update the thumbnail in the preview pane.
-				preview:SetImageFromMemory(il:GetContents(), params.dir .. "/" .. file, params.base)
-				-- TODO: ^^ This is sort of awkward...
-
+			press = function(_, _, il)
 				-- On the first selection, add a button to launch the next step. When fired, the selected
 				-- image is read into memory; assuming that went well, the algorithm proceeds on to the
 				-- energy computation step. The option to cancel is available during loading (although
@@ -93,8 +87,7 @@ function Scene:show (event)
 
 					cancel.isVisible = true
 
-					local image = png.LoadString(il:GetContents(), funcs.TryToYield)
-					-- ^^^ TODO: Generalize to allow JPEG, too
+					local image = il:LoadImage(funcs.TryToYield)
 
 					cancel.isVisible = false
 
@@ -121,6 +114,8 @@ function Scene:show (event)
 		image_list:Init()
 
 		-- Place the preview pane relative to the listbox.
+		preview = image_list:GetPreview()
+
 		preview.x, preview.y = image_list.x + image_list.width / 2 + 55, image_list.y
 	end
 end

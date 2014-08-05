@@ -26,6 +26,7 @@
 -- Standard library imports --
 local assert = assert
 local ipairs = ipairs
+local pairs = pairs
 local remove = table.remove
 
 -- Modules --
@@ -47,7 +48,8 @@ local M = {}
 -- --
 local Exts = {
 	audio = { ".mp3", ".ogg" },
-	image = { ".jpg", ".jpeg", ".png" }
+	image = { ".jpg", ".jpeg", ".png" },
+	video = { ".mov", ".mp4", ".m4v", ".3gp" }
 }
 
 --
@@ -83,22 +85,62 @@ local function GetNames_Info (names, filter, fl, get_contents)
 	return count
 end
 
+-- TODO: Info filters for .ogg, .mp3? Video? Other?
+-- In that case, above tests in GetNames_Info() are obviously inadequate
+-- Maybe some API to extend this?
+
 --
 function M.FileList (group, x, y, options)
-	local FileList = M.Listbox(group, x, y, options)
-
-	--
-	assert(not options.filter_info or not options.name_only, "Incompatible options: info filter and name only listings")
-
-	local path, base, on_reload = options.path, options.base, options.on_reload
-	local filter, name_only = options.filter_info or options.filter, not not options.name_only
-	local opts = { base = base, exts = Exts[options.file_kind] or options.exts, get_contents = not name_only }
-	local get_names = options.filter_info and GetNames_Info or GetNames
+	local path, base, on_reload, kind, preview = options.path, options.base, options.on_reload, options.file_kind
 
 	--
 	local function GetContents (file)
 		return file and file_utils.GetContents(path .. "/" .. file, base)
 	end
+
+	if kind == "audio" then
+		-- Probably some generalization of what's in the Audio editor view
+	elseif kind == "image" then
+		if options.add_preview or options.preview_width or options.preview_height then
+			local press, new_opts = options.press, {}, options.path, options.base
+
+			for k, v in pairs(options) do
+				new_opts[k] = v
+			end
+
+			options = new_opts
+
+			-- Updates the thumbnail in the preview pane.
+			local function Press (_, file, il)
+				preview:SetImageFromMemory(il:GetContents(), path .. "/" .. file, base)
+				-- TODO: ^^ This is sort of awkward...
+			end
+
+			if press then
+				new_opts.press = function(_, file, il)
+					Press(_, file, il)
+					press(_, file, il)
+				end
+			else
+				new_opts.press = Press
+			end
+
+			-- Make a small preview pane for the currently chosen image.
+			preview = image_patterns.Thumbnail(group, options.preview_width or 64, options.preview_height or 64)
+		end
+	elseif kind == "video" then
+		-- Probably a hybrid, e.g. like images but with some of the controls of audio?
+	end
+
+	--
+	local FileList = M.Listbox(group, x, y, options)
+
+	--
+	assert(not options.filter_info or not options.name_only, "Incompatible options: info filter and name only listings")
+
+	local filter, name_only = options.filter_info or options.filter, not not options.name_only
+	local opts = { base = base, exts = Exts[kind] or options.exts, get_contents = not name_only }
+	local get_names = options.filter_info and GetNames_Info or GetNames
 
 	--
 	local function Reload ()
@@ -136,20 +178,36 @@ function M.FileList (group, x, y, options)
 		return GetContents(self:GetSelection())
 	end
 
+	if preview then
+		--- DOCME
+		function FileList:GetPreview ()
+			return preview
+		end
+	end
+
 	--- DOCME
 	function FileList:Init ()
 		Reload()
 	end
 
 	--
+	if kind == "image" then
+		function FileList:LoadImage (yfunc)
+			local selection = self:GetSelection() or ""
+
+			return image_patterns.GetFunc(selection, "LoadString")(GetContents(selection), yfunc)
+		end
+	end
+
+	--
 	local watch = file_utils.WatchForFileModification(path, Reload, opts)
 
 	FileList:addEventListener("finalize", function()
+		display.remove(preview)
 		timer.cancel(watch)
 	end)
 
 	-- Extra credit: Directory navigation (requires some effort on the file utility side)
-	-- Build preview logic in (for images, at least; audio?)
 
 	return FileList
 end
