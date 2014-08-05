@@ -23,17 +23,22 @@
 -- [ MIT license: http://www.opensource.org/licenses/mit-license.php ]
 --
 
+-- Standard library imports --
+local pairs = pairs
+
 -- Modules --
+local require_ex = require("tektite.require_ex")
 local jpeg = require("image_ops.jpeg")
 local png = require("image_ops.png")
 local string_utils = require("utils.String")
+local table_view_patterns = require_ex.Lazy("ui.patterns.table_view")
 
 -- Corona globals --
 local display = display
 local system = system
 
 -- Cached module references --
-local _GetFunc_
+local _Thumbnail_
 
 -- Exports --
 local M = {}
@@ -42,7 +47,7 @@ local M = {}
 local function Failure () return false end
 
 --
-function M.GetFunc (name, func)
+local function GetFunc (name, func)
 	if string_utils.EndsWith_AnyCase(name, ".png") then
 		return png[func]
 	elseif string_utils.EndsWith_AnyCase(name, ".jpg") or string_utils.EndsWith_AnyCase(name, ".jpeg") then
@@ -50,6 +55,87 @@ function M.GetFunc (name, func)
 	else
 		return Failure
 	end
+end
+
+-- --
+local Exts = { ".jpg", ".jpeg", ".png" }
+
+--- DOCME
+function M.ImageList (group, x, y, options)
+	--
+	local new_opts = {}
+
+	for k, v in pairs(options) do
+		new_opts[k] = v
+	end
+
+	new_opts.exts = Exts
+
+	options = new_opts
+
+	--
+	local path, base, preview = options.path, options.base
+
+	if options.add_preview or options.preview_width or options.preview_height then
+		local press = options.press
+
+		-- Updates the thumbnail in the preview pane.
+		local function Press (_, file, il)
+			preview:SetImageFromMemory(il:GetContents(), path .. "/" .. file, base)
+			-- TODO: ^^ This is sort of awkward...
+		end
+
+		if press then
+			options.press = function(_, file, il)
+				Press(_, file, il)
+				press(_, file, il)
+			end
+		else
+			options.press = Press
+		end
+
+		-- Make a small preview pane for the currently chosen image.
+		preview = _Thumbnail_(group, options.preview_width or 64, options.preview_height or 64)
+	end
+
+	--
+	local filter_info = options.filter_info
+
+	if filter_info then
+		function options.filter (file, contents, fl)
+			local func = contents and GetFunc(file, "GetInfoString")
+
+			if func then
+				local good, w, h, data = func(contents)
+
+				return good and filter_info(file, w, h, data, fl)
+			end
+		end
+	end
+
+	--
+	local ImageList = table_view_patterns.FileList(group, x, y, options)
+
+	--
+	if preview then
+		--- DOCME
+		function ImageList:GetPreview ()
+			return preview
+		end
+
+		ImageList:addEventListener("finalize", function()
+			if preview.parent then
+				preview:removeSelf()
+			end
+		end)
+	end
+
+	--- DOCME
+	function ImageList:LoadImage (yfunc)
+		return GetFunc(self:GetSelection() or "", "LoadString")(self:GetContents(), yfunc)
+	end
+
+	return ImageList
 end
 
 --- DOCME
@@ -114,20 +200,20 @@ function M.Thumbnail (group, w, h, opts)
 	function Thumbnail:SetImage (name, base)
 		base = base or system.ResourceDirectory
 
-		return AuxSetImage(self, name, base, _GetFunc_(name, "GetInfo")(system.pathForFile(name, base)))
+		return AuxSetImage(self, name, base, GetFunc(name, "GetInfo")(system.pathForFile(name, base)))
 	end
 
 	--- DOCME
 	-- TODO: Kind of clumsy, this one is under probation :/
 	function Thumbnail:SetImageFromMemory (stream, name, base)
-		return AuxSetImage(self, name, base, _GetFunc_(name, "GetInfoString")(stream))
+		return AuxSetImage(self, name, base, GetFunc(name, "GetInfoString")(stream))
 	end
 
 	return Thumbnail
 end
 
 -- Cache module members.
-_GetFunc_ = M.GetFunc
+_Thumbnail_ = M.Thumbnail
 
 -- Export the module.
 return M

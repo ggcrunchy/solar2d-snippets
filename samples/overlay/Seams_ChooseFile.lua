@@ -25,7 +25,7 @@
 
 -- Modules --
 local buttons = require("ui.Button")
-local table_view_patterns = require("ui.patterns.table_view")
+local image_patterns = require("ui.patterns.image")
 
 -- Corona globals --
 local display = display
@@ -68,8 +68,8 @@ function Scene:show (event)
 			cancel.isVisible = false
 		end
 
-		local image_list = table_view_patterns.FileList(self.view, 295, 20, {
-			path = params.dir, base = params.base, file_kind = "image", height = 120, add_preview = true,
+		local image_list = image_patterns.ImageList(self.view, 295, 20, {
+			path = params.dir, base = params.base, height = 120, add_preview = true,
 
 			filter_info = function(_, w, h) -- Add any images in a certain size range to the list.
 				return w >= 16 and w <= CW - 10 and h >= 16 and h <= CH - 150

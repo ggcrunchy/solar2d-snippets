@@ -26,13 +26,10 @@
 -- Standard library imports --
 local assert = assert
 local ipairs = ipairs
-local pairs = pairs
 local remove = table.remove
 
 -- Modules --
 local file_utils = require("utils.File")
-local image_patterns = require("ui.patterns.image")
-local string_utils = require("utils.String")
 
 -- Corona globals --
 local display = display
@@ -47,100 +44,27 @@ local M = {}
 
 -- --
 local Exts = {
-	audio = { ".mp3", ".ogg" },
-	image = { ".jpg", ".jpeg", ".png" },
+	audio = { ".mp3", ".m4a", ".ogg" },
 	video = { ".mov", ".mp4", ".m4v", ".3gp" }
 }
 
---
-local function GetNames (names, filter, fl, get_contents, name_only)
-	local count = 0
-
-	for _, file in ipairs(names) do
-		if filter(file, not name_only and get_contents(file) or "", fl) then
-			names[count + 1], count = file, count + 1
-		end
-	end
-
-	return count
-end
-
---
-local function GetNames_Info (names, filter, fl, get_contents)
-	local count = 0
-
-	for _, file in ipairs(names) do
-		local contents = get_contents(file)
-		local func = contents and image_patterns.GetFunc(file, "GetInfoString")
-
-		if func then
-			local good, w, h, data = func(contents)
-
-			if good and filter(file, w, h, data, fl) then
-				names[count + 1], count = file, count + 1
-			end
-		end
-	end
-
-	return count
-end
-
--- TODO: Info filters for .ogg, .mp3? Video? Other?
--- In that case, above tests in GetNames_Info() are obviously inadequate
--- Maybe some API to extend this?
+-- TODO: Add image lists for audio, video? Other?
 
 --
 function M.FileList (group, x, y, options)
-	local path, base, on_reload, kind, preview = options.path, options.base, options.on_reload, options.file_kind
-
-	--
-	local function GetContents (file)
-		return file and file_utils.GetContents(path .. "/" .. file, base)
-	end
-
-	if kind == "audio" then
-		-- Probably some generalization of what's in the Audio editor view
-	elseif kind == "image" then
-		if options.add_preview or options.preview_width or options.preview_height then
-			local press, new_opts = options.press, {}, options.path, options.base
-
-			for k, v in pairs(options) do
-				new_opts[k] = v
-			end
-
-			options = new_opts
-
-			-- Updates the thumbnail in the preview pane.
-			local function Press (_, file, il)
-				preview:SetImageFromMemory(il:GetContents(), path .. "/" .. file, base)
-				-- TODO: ^^ This is sort of awkward...
-			end
-
-			if press then
-				new_opts.press = function(_, file, il)
-					Press(_, file, il)
-					press(_, file, il)
-				end
-			else
-				new_opts.press = Press
-			end
-
-			-- Make a small preview pane for the currently chosen image.
-			preview = image_patterns.Thumbnail(group, options.preview_width or 64, options.preview_height or 64)
-		end
-	elseif kind == "video" then
-		-- Probably a hybrid, e.g. like images but with some of the controls of audio?
-	end
-
-	--
 	local FileList = M.Listbox(group, x, y, options)
 
 	--
 	assert(not options.filter_info or not options.name_only, "Incompatible options: info filter and name only listings")
 
-	local filter, name_only = options.filter_info or options.filter, not not options.name_only
+	local filter, name_only = options.filter, not not options.name_only
+	local path, base, on_reload, kind = options.path, options.base, options.on_reload, options.file_kind
 	local opts = { base = base, exts = Exts[kind] or options.exts, get_contents = not name_only }
-	local get_names = options.filter_info and GetNames_Info or GetNames
+
+	--
+	local function GetContents (file)
+		return file and file_utils.GetContents(path .. "/" .. file, base)
+	end
 
 	--
 	local function Reload ()
@@ -150,7 +74,13 @@ function M.FileList (group, x, y, options)
 		local names, alt = file_utils.EnumerateFiles(path, opts)
 
 		if filter then
-			local count = get_names(names, filter, FileList, GetContents, name_only)
+			local count = 0
+
+			for _, file in ipairs(names) do
+				if filter(file, not name_only and GetContents(file) or "", FileList) then
+					names[count + 1], count = file, count + 1
+				end
+			end
 
 			for i = #names, count + 1, -1 do
 				names[i] = nil
@@ -178,32 +108,15 @@ function M.FileList (group, x, y, options)
 		return GetContents(self:GetSelection())
 	end
 
-	if preview then
-		--- DOCME
-		function FileList:GetPreview ()
-			return preview
-		end
-	end
-
 	--- DOCME
 	function FileList:Init ()
 		Reload()
 	end
 
 	--
-	if kind == "image" then
-		function FileList:LoadImage (yfunc)
-			local selection = self:GetSelection() or ""
-
-			return image_patterns.GetFunc(selection, "LoadString")(GetContents(selection), yfunc)
-		end
-	end
-
-	--
 	local watch = file_utils.WatchForFileModification(path, Reload, opts)
 
 	FileList:addEventListener("finalize", function()
-		display.remove(preview)
 		timer.cancel(watch)
 	end)
 
