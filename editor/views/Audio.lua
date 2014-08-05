@@ -33,13 +33,13 @@
 -- ^^ Then use in game, hook up here in editor to events
 
 -- Modules --
+local audio_patterns = require("ui.patterns.audio")
 local button = require("ui.Button")
 local common = require("editor.Common")
 local common_ui = require("editor.CommonUI")
 local dispatch_list = require("game.DispatchList")
 local file_utils = require("utils.File")
 local object_helper = require("utils.ObjectHelper")
-local table_view_patterns = require("ui.patterns.table_view")
 
 -- Corona globals --
 local audio = audio
@@ -125,7 +125,7 @@ function M.Load (view)
 	Group = display.newGroup()
 
 	--
-	Songs = table_view_patterns.FileList(Group, w - 350, 100, {
+	Songs = audio_patterns.AudioList(Group, w - 350, 100, {
 		path = "Music", base = Base, file_kind = "audio", on_reload = Reload
 	})
 

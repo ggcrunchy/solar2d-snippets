@@ -42,14 +42,6 @@ local widget = require("widget")
 -- Exports --
 local M = {}
 
--- --
-local Exts = {
-	audio = { ".mp3", ".m4a", ".ogg" },
-	video = { ".mov", ".mp4", ".m4v", ".3gp" }
-}
-
--- TODO: Add image lists for audio, video? Other?
-
 --
 function M.FileList (group, x, y, options)
 	local FileList = M.Listbox(group, x, y, options)
@@ -57,9 +49,8 @@ function M.FileList (group, x, y, options)
 	--
 	assert(not options.filter_info or not options.name_only, "Incompatible options: info filter and name only listings")
 
-	local filter, name_only = options.filter, not not options.name_only
-	local path, base, on_reload, kind = options.path, options.base, options.on_reload, options.file_kind
-	local opts = { base = base, exts = Exts[kind] or options.exts, get_contents = not name_only }
+	local path, base, name_only = options.path, options.base, not not options.name_only
+	local opts = { base = base, exts = options.exts, get_contents = not name_only }
 
 	--
 	local function GetContents (file)
@@ -67,6 +58,8 @@ function M.FileList (group, x, y, options)
 	end
 
 	--
+	local filter, on_reload = options.filter, options.on_reload
+
 	local function Reload ()
 		local selection = FileList:GetSelection()
 
