@@ -23,13 +23,22 @@
 -- [ MIT license: http://www.opensource.org/licenses/mit-license.php ]
 --
 
+-- Standard library imports --
+local floor = math.floor
+
 -- Modules --
 local flow = require("graph_ops.flow")
 local image_patterns = require("ui.patterns.image")
 local scenes = require("utils.Scenes")
 
+-- Corona globals --
+local display = display
+local native = native
+local system = system
+
 -- Corona modules --
 local composer = require("composer")
+local widget = require("widget")
 
 -- Colored corners demo scene --
 local Scene = composer.newScene()
@@ -86,14 +95,167 @@ local Colors = {
 }
 
 --
+local function C (index)
+	local color = Colors[index]
+
+	if color == R then
+		return "R"
+	elseif color == Y then
+		return "Y"
+	elseif color == G then
+		return "G"
+	else
+		return "B"
+	end
+end
+
+--
+local function TraverseColors (n)
+	local row1, row2, dim = #Colors - 15, 1, n^2
+
+	for _ = 1, dim do
+		for j = 1, dim do
+			local offset1, offset2 = j - 1, j < 16 and j or 0
+
+			print(C(row1 + offset1) .. "+" .. C(row1 + offset2))
+			print("+ +")
+			print(C(row2 + offset1) .. "+" .. C(row2 + offset2))
+			print("")
+
+			-- Seems to work, now use this to build up tiles
+		end
+
+		row1, row2 = row1 - 16, row1
+	end
+end
+
+TraverseColors(4)
+
+-- --
+local MaxSize = system.getInfo("maxTextureSize")
+
+-- --
+local NumColors = "# Colors: %i"
+
+-- --
+local Size = "Tile size: %i"
+
+-- --
+local MinDim = 16
+
+--
+local function ToSize (num)
+	return (2 + num) * MinDim
+end
+
+-- --
+local function SizeStepper (num_colors, left, top, size_text)
+	local max_size = MaxSize / 2^num_colors
+	local max_steps = floor((max_size - MinDim) / MinDim) - 1
+
+	size_text.text = Size:format(ToSize(0))
+
+	return widget.newStepper{
+		left = left, top = top, maximumValue = max_steps, timerIncrementSpeed = 250, changeSpeedAtIncrement = 3,
+
+		onPress = function(event)
+			local phase = event.phase
+
+			if phase == "increment" or phase == "decrement" then
+				size_text.text = Size:format(ToSize(event.value))
+			end
+		end
+	}
+end
+
+--
 function Scene:show (event)
 	if event.phase == "did" then
-		-- Something to load pictures (pretty much available in seams sample)
+		-- Add a listbox to be populated with some image choices.
+		local preview
+
+		local image_list = image_patterns.ImageList(self.view, 295, 20, {
+			path = "Background_Assets", base = system.ResourceDirectory, height = 120, preview_width = 96, preview_height = 96,
+
+			filter_info = function(_, w, h) -- Add any "big enough" images to the list.
+				return w >= MinDim and h >= MinDim
+			end,
+
+			press = function(_, _, il)
+--[=[
+				-- On the first selection, add a button to launch the next step. When fired, the selected
+				-- image is read into memory; assuming that went well, the algorithm proceeds on to the
+				-- energy computation step. The option to cancel is available during loading (although
+				-- this is typically a quick process).
+				ok = ok or buttons.Button(self.view, nil, preview.x + 90, preview.y - 20, 100, 40, funcs.Action(function()
+					funcs.SetStatus("Loading image")
+
+					cancel.isVisible = true
+
+					local image = il:LoadImage(funcs.TryToYield)
+
+					cancel.isVisible = false
+
+					if image then
+						return function()
+							params.ok_x = ok.x
+							params.ok_y = ok.y
+							params.cancel_y = cancel.y
+							params.image = image
+
+							funcs.ShowOverlay("samples.overlay.Seams_Energy", params)
+						end
+					else
+						funcs.SetStatus("Choose an image")
+					end
+				end), "OK")
+
+				cancel = cancel or buttons.Button(self.view, nil, ok.x, ok.y + 100, 100, 40, Wait, "Cancel")
+
+				Wait()
+--]=]
+			end
+		})
+
+		image_list:Init()
+
+		-- Place the preview pane relative to the listbox.
+		preview = image_list:GetPreview()
+
+		preview.x, preview.y = image_list.x + image_list.width / 2 + 85, image_list.y
+
+		--
+		local color_text, size_stepper, size_text = display.newText(self.view, NumColors:format(2), 0, 0, native.systemFont, 28)
+		local stepper = widget.newStepper{
+			left = 25, top = image_list.y + image_list.height / 2 + 20, initialValue = 2, minimumValue = 2, maximumValue = 4,
+
+			onPress = function(event)
+				local phase = event.phase
+
+				if phase == "increment" or phase == "decrement" then
+					color_text.text = NumColors:format(event.value) -- n = num_colors^2
+
+					size_stepper:removeSelf()
+
+					local target = event.target
+
+					size_stepper = SizeStepper(event.value, 25, target.y + target.height / 2 + 20, size_text)
+				end
+			end
+		}
+
+		color_text.anchorX, color_text.x, color_text.y = 0, stepper.x + stepper.width / 2 + 20, stepper.y
+
+		self.view:insert(stepper)
+
+		size_text = display.newText(self.view, "", 0, 0, native.systemFont, 28)
+		size_stepper = SizeStepper(2, 25, stepper.y + stepper.height / 2 + 20, size_text)
+
+		size_text.anchorX, size_text.x, size_text.y = 0, size_stepper.x + size_stepper.width / 2 + 20, size_stepper.y
+
 		-- Pick energy function? (Add one or both from paper)
 		-- Way to tune the randomness? (k = .001 to 1, as in the GC paper, say)
 		-- ^^^ Probably irrelevant, actually (though the stuff in the Kwatra paper would make for a nice sample itself...)
-		-- Choose 2, 3, 4 colors (n = num_colors^2)
-		-- Choose dimension per tile (up to max texture size / 2^num_colors)
 		-- Feathering / multiresolution splining options (EXTRA CREDIT)
 		-- Way to fire off the algorithm
 
