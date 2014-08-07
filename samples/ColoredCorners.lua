@@ -210,12 +210,14 @@ function Scene:show (event)
 					local px, py = preview:GetPos()
 					local pw, ph = preview:GetDims()
 					local fw, fh, x0, y0 = tile_dim / pw, tile_dim / ph, px - .5 * pw, py - .5 * ph
-					local rw, rh = max(floor(fw), 7), max(floor(fh), 7)
+					local rw, rh = max(floor(fw), 5), max(floor(fh), 5)
+
+					-- local image = event.lisbox:LoadImage()
+					local pixels = {} -- image:GetPixels(Wait)
 
 					for i = 1, stepper:getValue() do
-						local x = random(0, w - tile_dim)
-						local y = random(0, h - tile_dim)
-						local rect, stroke = display.newRect(self.view, floor(x0 + x * fw), floor(y0 + y * fh), rw, rh), Strokes[i]
+						local x, y, stroke = random(0, w - tile_dim), random(0, h - tile_dim), Strokes[i]
+						local rect = display.newRect(self.view, floor(x0 + x * fw), floor(y0 + y * fh), rw, rh)
 
 						rect.strokeWidth = 2
 
@@ -223,6 +225,23 @@ function Scene:show (event)
 						rect:setStrokeColor(stroke[1], stroke[2], stroke[3], .7)
 
 						-- Grab pixels there...
+						local exemplar, index, ypos = {}, 1, 4 * (y * w + x)
+
+						for _ = 1, tile_dim do
+							local xpos = ypos
+
+							for _ = 1, tile_dim do
+								local r, g, b = pixels[xpos + 1], pixels[xpos + 2], pixels[xpos + 3]
+
+								exemplar[index], exemplar[index + 1], exemplar[index + 2], exemplar[index + 3] = r, g, b, 1
+
+								xpos, index = xpos + 4, index + 4
+							end
+
+							ypos = ypos + 4 * w
+						end
+
+						Exemplars[i] = exemplar
 					end
 --[[
 					funcs.SetStatus("Loading image")
@@ -262,10 +281,10 @@ function Scene:show (event)
 		preview.x, preview.y = layout.RightOf(image_list, 85), image_list.y
 
 		--
-		local color_text, size_text = display.newText(self.view, NumColors:format(2), 0, 0, native.systemFont, 28)
+		local color_text, size_text
 
 		stepper = widget.newStepper{
-			left = 25, top = layout.Below(image_list, 20), initialValue = 2, minimumValue = 2, maximumValue = 4,
+			left = 25, top = layout.Below(image_list, 20), initialValue = 4, minimumValue = 2, maximumValue = 4,
 
 			onPress = function(event)
 				local phase = event.phase
@@ -282,6 +301,8 @@ function Scene:show (event)
 			end
 		}
 
+		color_text = display.newText(self.view, NumColors:format(stepper:getValue()), 0, 0, native.systemFont, 28)
+
 		color_text.anchorX, color_text.x, color_text.y = 0, layout.RightOf(stepper, 20), stepper.y
 
 		self.view:insert(stepper)
@@ -295,12 +316,10 @@ function Scene:show (event)
 		-- Way to tune the randomness? (k = .001 to 1, as in the GC paper, say)
 		-- ^^^ Probably irrelevant, actually (though the stuff in the Kwatra paper would make for a nice sample itself...)
 		-- Feathering / multiresolution splining options (EXTRA CREDIT)
-		-- Way to fire off the algorithm
 
 		-- Step 1: Choose all the stuff (files, num colors, size)
 		-- Step 2: Find the color patches (TODO)
 		-- Step 3: Synthesize()
-
 	end
 end
 
