@@ -145,15 +145,9 @@ local function GetListbox (row)
 end
 
 ---
-local Event = {}
-
 local function TouchEvent (func, listbox, index, str)
 	if func then
-		Event.listbox, Event.index, Event.str = listbox, index, str or ""
-
-		func(Event)
-
-		Event.listbox = nil
+		func{ listbox = listbox, index = index, str = str or "" }
 	end
 end
 

@@ -182,6 +182,16 @@ function M.Thumbnail (group, w, h, opts)
 		image = nil
 	end
 
+	--- DOCME
+	function Thumbnail:GetDims ()
+		return w, h
+	end
+
+	--- DOCME
+	function Thumbnail:GetPos ()
+		return self:localToContent(color.x, color.y)
+	end
+
 	--
 	local function AuxSetImage (into, name, base, exists, iw, ih)
 		if exists then

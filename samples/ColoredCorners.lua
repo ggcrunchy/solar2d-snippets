@@ -25,11 +25,15 @@
 
 -- Standard library imports --
 local floor = math.floor
+local max = math.max
+local min = math.min
+local random = math.random
 
 -- Modules --
 local button = require("ui.Button")
 local flow = require("graph_ops.flow")
 local image_patterns = require("ui.patterns.image")
+local layout = require("utils.Layout")
 local scenes = require("utils.Scenes")
 
 -- Corona globals --
@@ -74,6 +78,9 @@ Scene:addEventListener("create")
 
 -- Numeric values of red, yellow, green, blue --
 local R, Y, G, B = 0, 1, 2, 3
+
+-- --
+local Strokes = { { 1, 0, 0 }, { 1, 1, 0 }, { 0, 1, 0 }, { 0, 0, 1 } }
 
 -- Recursive tile packing --
 local Colors = {
@@ -148,14 +155,13 @@ local function ToSize (num)
 end
 
 -- --
-local function SizeStepper (num_colors, left, top, size_text)
-	local max_size = MaxSize / 2^num_colors
-	local max_steps = floor((max_size - MinDim) / MinDim) - 1
+local function SizeStepper (num_colors, left, ref, size_text)
+	local max_steps = floor((MaxSize / 2^num_colors - MinDim) / MinDim) - 1
 
 	size_text.text = Size:format(ToSize(0))
 
-	return widget.newStepper{
-		left = left, top = top, maximumValue = max_steps, timerIncrementSpeed = 250, changeSpeedAtIncrement = 3,
+	local size_stepper = widget.newStepper{
+		left = left, top = layout.Below(ref, 20), maximumValue = max_steps, timerIncrementSpeed = 250, changeSpeedAtIncrement = 3,
 
 		onPress = function(event)
 			local phase = event.phase
@@ -165,13 +171,17 @@ local function SizeStepper (num_colors, left, top, size_text)
 			end
 		end
 	}
+
+	ref.parent:insert(size_stepper)
+
+	return size_stepper
 end
 
 --
 function Scene:show (event)
 	if event.phase == "did" then
 		-- Add a listbox to be populated with some image choices.
-		local preview, ok, size_stepper
+		local preview, ok, size_stepper, stepper
 
 		local image_list = image_patterns.ImageList(self.view, 295, 20, {
 			path = "Background_Assets", base = system.ResourceDirectory, height = 120, preview_width = 96, preview_height = 96,
@@ -186,10 +196,34 @@ function Scene:show (event)
 				-- image is read into memory; assuming that went well, the algorithm proceeds on to the
 				-- energy computation step. The option to cancel is available during loading (although
 				-- this is typically a quick process).
-				ok = ok or button.Button(self.view, nil, preview.x, preview.y + 100, 100, 40, function()--funcs.Action(function()
+				ok = ok or button.Button(self.view, nil, preview.x, layout.Below(preview, 30), 100, 40, function()--funcs.Action(function()
+					--
 					local w, h = event.listbox:GetDims()
+					local tile_dim = min(w, h)
 
-					-- Choose min size among w, h, or ToSize(size_stepper:getValue()) as dimension
+					if tile_dim % 2 ~= 0 then
+						tile_dim = tile_dim - 1
+					end
+
+					tile_dim = min(tile_dim, .5 * ToSize(size_stepper:getValue()))
+
+					local px, py = preview:GetPos()
+					local pw, ph = preview:GetDims()
+					local fw, fh, x0, y0 = tile_dim / pw, tile_dim / ph, px - .5 * pw, py - .5 * ph
+					local rw, rh = max(floor(fw), 7), max(floor(fh), 7)
+
+					for i = 1, stepper:getValue() do
+						local x = random(0, w - tile_dim)
+						local y = random(0, h - tile_dim)
+						local rect, stroke = display.newRect(self.view, floor(x0 + x * fw), floor(y0 + y * fh), rw, rh), Strokes[i]
+
+						rect.strokeWidth = 2
+
+						rect:setFillColor(0, 0)
+						rect:setStrokeColor(stroke[1], stroke[2], stroke[3], .7)
+
+						-- Grab pixels there...
+					end
 --[[
 					funcs.SetStatus("Loading image")
 
@@ -225,12 +259,13 @@ function Scene:show (event)
 		-- Place the preview pane relative to the listbox.
 		preview = image_list:GetPreview()
 
-		preview.x, preview.y = image_list.x + image_list.width / 2 + 85, image_list.y
+		preview.x, preview.y = layout.RightOf(image_list, 85), image_list.y
 
 		--
 		local color_text, size_text = display.newText(self.view, NumColors:format(2), 0, 0, native.systemFont, 28)
-		local stepper = widget.newStepper{
-			left = 25, top = image_list.y + image_list.height / 2 + 20, initialValue = 2, minimumValue = 2, maximumValue = 4,
+
+		stepper = widget.newStepper{
+			left = 25, top = layout.Below(image_list, 20), initialValue = 2, minimumValue = 2, maximumValue = 4,
 
 			onPress = function(event)
 				local phase = event.phase
@@ -242,19 +277,19 @@ function Scene:show (event)
 
 					local target = event.target
 
-					size_stepper = SizeStepper(event.value, 25, target.y + target.height / 2 + 20, size_text)
+					size_stepper = SizeStepper(event.value, 25, target, size_text)
 				end
 			end
 		}
 
-		color_text.anchorX, color_text.x, color_text.y = 0, stepper.x + stepper.width / 2 + 20, stepper.y
+		color_text.anchorX, color_text.x, color_text.y = 0, layout.RightOf(stepper, 20), stepper.y
 
 		self.view:insert(stepper)
 
 		size_text = display.newText(self.view, "", 0, 0, native.systemFont, 28)
-		size_stepper = SizeStepper(2, 25, stepper.y + stepper.height / 2 + 20, size_text)
+		size_stepper = SizeStepper(2, 25, stepper, size_text)
 
-		size_text.anchorX, size_text.x, size_text.y = 0, size_stepper.x + size_stepper.width / 2 + 20, size_stepper.y
+		size_text.anchorX, size_text.x, size_text.y = 0, layout.RightOf(size_stepper, 20), size_stepper.y
 
 		-- Pick energy function? (Add one or both from paper)
 		-- Way to tune the randomness? (k = .001 to 1, as in the GC paper, say)
