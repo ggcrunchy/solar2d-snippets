@@ -180,14 +180,14 @@ function Scene:show (event)
 				return w >= MinDim and h >= MinDim
 			end,
 
-			press = function(_, _, il)
+			press = function(event)
 
 				-- On the first selection, add a button to launch the next step. When fired, the selected
 				-- image is read into memory; assuming that went well, the algorithm proceeds on to the
 				-- energy computation step. The option to cancel is available during loading (although
 				-- this is typically a quick process).
 				ok = ok or button.Button(self.view, nil, preview.x, preview.y + 100, 100, 40, function()--funcs.Action(function()
-					local w, h = il:GetDims()
+					local w, h = event.listbox:GetDims()
 
 					-- Choose min size among w, h, or ToSize(size_stepper:getValue()) as dimension
 --[[

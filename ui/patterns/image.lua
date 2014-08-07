@@ -80,15 +80,15 @@ function M.ImageList (group, x, y, options)
 		local press = options.press
 
 		-- Updates the thumbnail in the preview pane.
-		local function Press (_, file, il)
-			preview:SetImageFromMemory(il:GetContents(), path .. "/" .. file, base)
+		local function Press (event)
+			preview:SetImageFromMemory(event.listbox:GetContents(), path .. "/" .. event.str, base)
 			-- TODO: ^^ This is sort of awkward...
 		end
 
 		if press then
-			options.press = function(_, file, il)
-				Press(_, file, il)
-				press(_, file, il)
+			options.press = function(event)
+				Press(event)
+				press(event)
 			end
 		else
 			options.press = Press

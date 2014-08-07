@@ -77,7 +77,7 @@ function Scene:show (event)
 				-- screen real estate for interface...
 			end,
 
-			press = function(_, _, il)
+			press = function(event)
 				-- On the first selection, add a button to launch the next step. When fired, the selected
 				-- image is read into memory; assuming that went well, the algorithm proceeds on to the
 				-- energy computation step. The option to cancel is available during loading (although
@@ -87,7 +87,7 @@ function Scene:show (event)
 
 					cancel.isVisible = true
 
-					local image = il:LoadImage(funcs.TryToYield)
+					local image = event.listbox:LoadImage(funcs.TryToYield)
 
 					cancel.isVisible = false
 

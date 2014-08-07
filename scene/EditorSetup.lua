@@ -183,8 +183,8 @@ function Scene:show (event)
 				end,
 
 				--
-				press = function(index)
-					UpdateCurrent(self, levels, index)
+				press = function(event)
+					UpdateCurrent(self, levels, event.index)
 				end
 			})
 

@@ -144,6 +144,19 @@ local function GetListbox (row)
 	return row.parent.parent
 end
 
+---
+local Event = {}
+
+local function TouchEvent (func, listbox, index, str)
+	if func then
+		Event.listbox, Event.index, Event.str = listbox, index, str or ""
+
+		func(Event)
+
+		Event.listbox = nil
+	end
+end
+
 -- Each of the arguments is a function that takes _event_.**index** as argument, where
 -- _event_ is the parameter of **onEvent** or **onRender**.
 -- @callable press Optional, called when a listbox row is pressed.
@@ -203,18 +216,14 @@ function M.Listbox (group, x, y, options)
 			--
 			selection = str
 
-			if press then
-				press(index, str or "", listbox)
-			end
+			TouchEvent(press, listbox, index, str)
 
 			-- Show row at full opacity, while held.
 			event.row.alpha = 1
 
 		-- ...and released.
 		elseif phase == "release" then
-			if release then
-				release(index, str or "", listbox)
-			end
+			TouchEvent(release, listbox, index, str)
 
 			-- Unmark the previously selected row (if any), and mark the new row.
 			if old_row then

@@ -154,8 +154,8 @@ function Overlay:create ()
 		end,
 
 		--
-		press = function(index)
-			SetCurrent(self.view, List[index].object, Node)
+		press = function(event)
+			SetCurrent(self.view, List[event.index].object, Node)
 		end
 	})
 
