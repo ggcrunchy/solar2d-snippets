@@ -116,6 +116,17 @@ function M.ImageList (group, x, y, options)
 	--
 	local ImageList = table_view_patterns.FileList(group, x, y, options)
 
+	--- DOCME
+	function ImageList:GetDims ()
+		local ok, w, h = GetFunc(self:GetSelection() or "", "GetInfoString")(self:GetContents())
+
+		if ok then
+			return w, h
+		else
+			return 0, 0
+		end
+	end
+
 	--
 	if preview then
 		--- DOCME

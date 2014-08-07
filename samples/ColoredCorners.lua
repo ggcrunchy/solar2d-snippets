@@ -27,6 +27,7 @@
 local floor = math.floor
 
 -- Modules --
+local button = require("ui.Button")
 local flow = require("graph_ops.flow")
 local image_patterns = require("ui.patterns.image")
 local scenes = require("utils.Scenes")
@@ -94,42 +95,40 @@ local Colors = {
 	R, R, R, Y, R, R, R, Y, Y, R, R, R, R, Y, R, G
 }
 
---
-local function C (index)
-	local color = Colors[index]
+-- --
+local Exemplars = {}
 
-	if color == R then
-		return "R"
-	elseif color == Y then
-		return "Y"
-	elseif color == G then
-		return "G"
-	else
-		return "B"
-	end
+--
+local function GetExemplar (index)
+	return Exemplars[Colors[index] + 1]
 end
 
 --
-local function TraverseColors (n)
+local function Synthesize (n, tdim)
 	local row1, row2, dim = #Colors - 15, 1, n^2
+	local y = tdim * (dim - 1)
 
 	for _ = 1, dim do
+		local x = 0
+
 		for j = 1, dim do
 			local offset1, offset2 = j - 1, j < 16 and j or 0
 
-			print(C(row1 + offset1) .. "+" .. C(row1 + offset2))
-			print("+ +")
-			print(C(row2 + offset1) .. "+" .. C(row2 + offset2))
-			print("")
+			local ul, ur = GetExemplar(row1 + offset1), GetExemplar(row1 + offset2)
+			local ll, lr = GetExemplar(row2 + offset1), GetExemplar(row2 + offset2)
 
-			-- Seems to work, now use this to build up tiles
+			-- 	 Solve patch
+			--     Build diamond grid - how to handle edges? For the rest, just connect most of the 4 sides... (maybe use a LUT)
+			--     Run max flow over it
+			--     Replace colors inside the cut
+			--     Tidy up the seam (once implemented...)
+
+			x = x + tdim
 		end
 
-		row1, row2 = row1 - 16, row1
+		row1, row2, y = row1 - 16, row1, y - tdim
 	end
 end
-
-TraverseColors(4)
 
 -- --
 local MaxSize = system.getInfo("maxTextureSize")
@@ -138,7 +137,7 @@ local MaxSize = system.getInfo("maxTextureSize")
 local NumColors = "# Colors: %i"
 
 -- --
-local Size = "Tile size: %i"
+local Size = "Maximum tile size: %i"
 
 -- --
 local MinDim = 16
@@ -172,7 +171,7 @@ end
 function Scene:show (event)
 	if event.phase == "did" then
 		-- Add a listbox to be populated with some image choices.
-		local preview
+		local preview, ok, size_stepper
 
 		local image_list = image_patterns.ImageList(self.view, 295, 20, {
 			path = "Background_Assets", base = system.ResourceDirectory, height = 120, preview_width = 96, preview_height = 96,
@@ -182,12 +181,16 @@ function Scene:show (event)
 			end,
 
 			press = function(_, _, il)
---[=[
+
 				-- On the first selection, add a button to launch the next step. When fired, the selected
 				-- image is read into memory; assuming that went well, the algorithm proceeds on to the
 				-- energy computation step. The option to cancel is available during loading (although
 				-- this is typically a quick process).
-				ok = ok or buttons.Button(self.view, nil, preview.x + 90, preview.y - 20, 100, 40, funcs.Action(function()
+				ok = ok or button.Button(self.view, nil, preview.x, preview.y + 100, 100, 40, function()--funcs.Action(function()
+					local w, h = il:GetDims()
+
+					-- Choose min size among w, h, or ToSize(size_stepper:getValue()) as dimension
+--[[
 					funcs.SetStatus("Loading image")
 
 					cancel.isVisible = true
@@ -208,12 +211,12 @@ function Scene:show (event)
 					else
 						funcs.SetStatus("Choose an image")
 					end
-				end), "OK")
+]]
+				end--[[)]], "OK")
 
-				cancel = cancel or buttons.Button(self.view, nil, ok.x, ok.y + 100, 100, 40, Wait, "Cancel")
+--				cancel = cancel or buttons.Button(self.view, nil, ok.x, ok.y + 100, 100, 40, Wait, "Cancel")
 
-				Wait()
---]=]
+--				Wait()
 			end
 		})
 
@@ -225,7 +228,7 @@ function Scene:show (event)
 		preview.x, preview.y = image_list.x + image_list.width / 2 + 85, image_list.y
 
 		--
-		local color_text, size_stepper, size_text = display.newText(self.view, NumColors:format(2), 0, 0, native.systemFont, 28)
+		local color_text, size_text = display.newText(self.view, NumColors:format(2), 0, 0, native.systemFont, 28)
 		local stepper = widget.newStepper{
 			left = 25, top = image_list.y + image_list.height / 2 + 20, initialValue = 2, minimumValue = 2, maximumValue = 4,
 
@@ -233,7 +236,7 @@ function Scene:show (event)
 				local phase = event.phase
 
 				if phase == "increment" or phase == "decrement" then
-					color_text.text = NumColors:format(event.value) -- n = num_colors^2
+					color_text.text = NumColors:format(event.value)
 
 					size_stepper:removeSelf()
 
@@ -260,13 +263,9 @@ function Scene:show (event)
 		-- Way to fire off the algorithm
 
 		-- Step 1: Choose all the stuff (files, num colors, size)
-		-- Step 2: Find the color patches
-		-- Step 3: For i = 1, n do (probably work from lower-left out, to accommodate each size)
-		-- 	 Solve patch
-		--     Build diamond grid
-		--     Run max flow over it
-		--     Replace colors inside the cut
-		--     Tidy up the seam (once implemented...)
+		-- Step 2: Find the color patches (TODO)
+		-- Step 3: Synthesize()
+
 	end
 end
 
