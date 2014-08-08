@@ -208,5 +208,22 @@ function M.YieldEach (n)
 	end
 end
 
+--- DOCME
+function M.YieldOnTimeout (timeout)
+	local since
+
+	return function(what)
+		local now = system.getTimer()
+
+		if what == "begin" or not since then
+			since = now
+		elseif now - since > timeout then
+			since = now
+
+			yield()
+		end
+	end
+end
+
 -- Export the module.
 return M

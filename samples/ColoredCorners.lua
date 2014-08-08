@@ -34,6 +34,7 @@ local button = require("ui.Button")
 local flow = require("graph_ops.flow")
 local image_patterns = require("ui.patterns.image")
 local layout = require("utils.Layout")
+local long_running = require("samples.utils.LongRunning")
 local scenes = require("utils.Scenes")
 
 -- Corona globals --
@@ -177,6 +178,9 @@ local function SizeStepper (num_colors, left, ref, size_text)
 	return size_stepper
 end
 
+-- --
+local Funcs = long_running.GetFuncs(Scene)
+
 --
 function Scene:show (event)
 	if event.phase == "did" then
@@ -191,12 +195,13 @@ function Scene:show (event)
 			end,
 
 			press = function(event)
-
 				-- On the first selection, add a button to launch the next step. When fired, the selected
 				-- image is read into memory; assuming that went well, the algorithm proceeds on to the
 				-- energy computation step. The option to cancel is available during loading (although
 				-- this is typically a quick process).
-				ok = ok or button.Button(self.view, nil, preview.x, layout.Below(preview, 30), 100, 40, function()--funcs.Action(function()
+				ok = ok or button.Button(self.view, nil, preview.x, layout.Below(preview, 30), 100, 40, Funcs.Action(function()
+					-- funcs.SetStatus("Loading image")
+
 					--
 					local w, h = event.listbox:GetDims()
 					local tile_dim = min(w, h)
@@ -212,9 +217,6 @@ function Scene:show (event)
 					local fw, fh, x0, y0 = tile_dim / pw, tile_dim / ph, px - .5 * pw, py - .5 * ph
 					local rw, rh = max(floor(fw), 5), max(floor(fh), 5)
 
-					-- local image = event.lisbox:LoadImage()
-					local pixels = {} -- image:GetPixels(Wait)
-
 					for i = 1, stepper:getValue() do
 						local x, y, stroke = random(0, w - tile_dim), random(0, h - tile_dim), Strokes[i]
 						local rect = display.newRect(self.view, floor(x0 + x * fw), floor(y0 + y * fh), rw, rh)
@@ -224,35 +226,16 @@ function Scene:show (event)
 						rect:setFillColor(0, 0)
 						rect:setStrokeColor(stroke[1], stroke[2], stroke[3], .7)
 
-						-- Grab pixels there...
-						local exemplar, index, ypos = {}, 1, 4 * (y * w + x)
-
-						for _ = 1, tile_dim do
-							local xpos = ypos
-
-							for _ = 1, tile_dim do
-								local r, g, b = pixels[xpos + 1], pixels[xpos + 2], pixels[xpos + 3]
-
-								exemplar[index], exemplar[index + 1], exemplar[index + 2], exemplar[index + 3] = r, g, b, 1
-
-								xpos, index = xpos + 4, index + 4
-							end
-
-							ypos = ypos + 4 * w
-						end
-
-						Exemplars[i] = exemplar
+						Exemplars[i] = 4 * (y * w + x)
 					end
---[[
-					funcs.SetStatus("Loading image")
 
-					cancel.isVisible = true
+					-- Could ask if selections are ok, spread across multiple overlays
+					local image = event.listbox:LoadImage(Funcs.TryToYield)
 
-					local image = il:LoadImage(funcs.TryToYield)
-
-					cancel.isVisible = false
+				--	cancel.isVisible = false
 
 					if image then
+					--[[
 						return function()
 							params.ok_x = ok.x
 							params.ok_y = ok.y
@@ -261,11 +244,32 @@ function Scene:show (event)
 
 							funcs.ShowOverlay("samples.overlay.Seams_Energy", params)
 						end
+					]]
+						local pixels = image:GetPixels()
+
+						for i = 1, stepper:getValue() do
+							local exemplar, index, ypos = {}, 1, Exemplars[i]
+
+							for _ = 1, tile_dim do
+								local xpos = ypos
+
+								for _ = 1, tile_dim do
+									local r, g, b = pixels[xpos + 1], pixels[xpos + 2], pixels[xpos + 3]
+
+									exemplar[index], exemplar[index + 1], exemplar[index + 2], exemplar[index + 3] = r, g, b, 1
+
+									xpos, index = xpos + 4, index + 4
+								end
+
+								ypos = ypos + 4 * w
+							end
+
+							Exemplars[i] = exemplar
+						end
 					else
-						funcs.SetStatus("Choose an image")
+					--	funcs.SetStatus("Choose an image")
 					end
-]]
-				end--[[)]], "OK")
+				end), "OK")
 
 --				cancel = cancel or buttons.Button(self.view, nil, ok.x, ok.y + 100, 100, 40, Wait, "Cancel")
 
@@ -328,7 +332,7 @@ Scene:addEventListener("show")
 --
 function Scene:hide (event)
 	if event.phase == "did" then
-		--
+		Funcs.Finish()
 	end
 end
 

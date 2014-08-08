@@ -23,17 +23,13 @@
 -- [ MIT license: http://www.opensource.org/licenses/mit-license.php ]
 --
 
--- Standard library imports --
-local yield = coroutine.yield
-
 -- Modules --
-local timers = require("game.Timers")
+local long_running = require("samples.utils.LongRunning")
 
 -- Corona globals --
 local display = display
 local native = native
 local system = system
-local timer = timer
 
 -- Corona modules --
 local composer = require("composer")
@@ -59,68 +55,8 @@ local Base = system.ResourceDirectory
 local Dir = "UI_Assets"
 			--"Background_Assets"
 
--- Previous yield time --
-local Since
-
 -- --
-local Funcs = {
-	-- Launches a long-running action, providing for some follow-up (which may itself be such an action)
-	Action = function(func)
-		return function()
-			native.setActivityIndicator(true)
-
-			Since = system.getTimer()
-
-			Scene.busy = timers.WrapEx(function()
-				local after = func()
-
-				native.setActivityIndicator(false)
-
-				Scene.busy = nil
-
-				if after then
-					after()
-				end
-			end)
-		end
-	end,
-
-	-- Cancels any action in progress
-	Cancel = function()
-		if Scene.busy then
-			timer.cancel(Scene.busy)
-			native.setActivityIndicator(false)
-
-			Scene.busy = nil
-		end
-	end,
-
-	-- Sets the status text
-	SetStatus = function(str, arg1, arg2)
-		Scene.about.text = str:format(arg1, arg2)
-	end,
-
-	-- Launches an overlay, accounting for state to be maintained between overlays
-	ShowOverlay = function(name, params)
-		if params.bitmap then
-			params.bitmap:Cancel()
-			Scene.view:insert(params.bitmap)
-		end
-
-		composer.showOverlay(name, { params = params })
-	end,
-
-	-- Yields if sufficient time has passed
-	TryToYield = function()
-		local now = system.getTimer()
-
-		if now - Since > 100 then
-			Since = now
-
-			yield()
-		end
-	end
-}
+local Funcs = long_running.GetFuncs(Scene)
 
 --
 function Scene:show (event)
@@ -136,8 +72,9 @@ Scene:addEventListener("show")
 --
 function Scene:hide (event)
 	if event.phase == "did" then
-		Funcs.Cancel()
-		composer.hideOverlay()
+	--	Funcs.Cancel()
+	--	composer.hideOverlay()
+		Funcs.Finish()
 	end
 end
 
