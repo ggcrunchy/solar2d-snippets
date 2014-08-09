@@ -148,6 +148,9 @@ local NumColors = "# Colors: %i"
 local Size = "Maximum tile size: %i"
 
 -- --
+-- N.B. only a quarter of each exemplar is used per tile, so any valid dimension must be a
+-- multiple of 2. (For similar reasons, the maximum dimension must be a multiple of 4.) In
+-- addition, this constraint ensures symmetry for the diamond-shaped patch.
 local MinDim = 16
 
 --
@@ -182,10 +185,17 @@ end
 local Funcs = long_running.GetFuncs(Scene)
 
 --
+local function TextSetup (text, stepper)
+	text.anchorX, text.y = 0, stepper.y
+
+	layout.PutRightOf(text, stepper, 20)
+end
+
+--
 function Scene:show (event)
 	if event.phase == "did" then
 		-- Add a listbox to be populated with some image choices.
-		local preview, ok, size_stepper, stepper
+		local preview, ok, colors_stepper, size_stepper
 
 		local image_list = image_patterns.ImageList(self.view, 295, 20, {
 			path = "Background_Assets", base = system.ResourceDirectory, height = 120, preview_width = 96, preview_height = 96,
@@ -217,7 +227,7 @@ function Scene:show (event)
 					local fw, fh, x0, y0 = tile_dim / pw, tile_dim / ph, px - .5 * pw, py - .5 * ph
 					local rw, rh = max(floor(fw), 5), max(floor(fh), 5)
 
-					for i = 1, stepper:getValue() do
+					for i = 1, colors_stepper:getValue() do
 						local x, y, stroke = random(0, w - tile_dim), random(0, h - tile_dim), Strokes[i]
 						local rect = display.newRect(self.view, floor(x0 + x * fw), floor(y0 + y * fh), rw, rh)
 
@@ -247,18 +257,16 @@ function Scene:show (event)
 					]]
 						local pixels = image:GetPixels()
 
-						for i = 1, stepper:getValue() do
+						for i = 1, colors_stepper:getValue() do
 							local exemplar, index, ypos = {}, 1, Exemplars[i]
 
 							for _ = 1, tile_dim do
 								local xpos = ypos
 
 								for _ = 1, tile_dim do
-									local r, g, b = pixels[xpos + 1], pixels[xpos + 2], pixels[xpos + 3]
+									local sum = pixels[xpos + 1] + pixels[xpos + 2] + pixels[xpos + 3]
 
-									exemplar[index], exemplar[index + 1], exemplar[index + 2], exemplar[index + 3] = r, g, b, 1
-
-									xpos, index = xpos + 4, index + 4
+									exemplar[index], xpos, index = sum, xpos + 4, index + 1
 								end
 
 								ypos = ypos + 4 * w
@@ -287,7 +295,7 @@ function Scene:show (event)
 		--
 		local color_text, size_text
 
-		stepper = widget.newStepper{
+		colors_stepper = widget.newStepper{
 			left = 25, top = layout.Below(image_list, 20), initialValue = 4, minimumValue = 2, maximumValue = 4,
 
 			onPress = function(event)
@@ -305,16 +313,16 @@ function Scene:show (event)
 			end
 		}
 
-		color_text = display.newText(self.view, NumColors:format(stepper:getValue()), 0, 0, native.systemFont, 28)
+		color_text = display.newText(self.view, NumColors:format(colors_stepper:getValue()), 0, 0, native.systemFont, 28)
 
-		color_text.anchorX, color_text.x, color_text.y = 0, layout.RightOf(stepper, 20), stepper.y
+		TextSetup(color_text, colors_stepper)
 
-		self.view:insert(stepper)
+		self.view:insert(colors_stepper)
 
 		size_text = display.newText(self.view, "", 0, 0, native.systemFont, 28)
-		size_stepper = SizeStepper(2, 25, stepper, size_text)
+		size_stepper = SizeStepper(2, 25, colors_stepper, size_text)
 
-		size_text.anchorX, size_text.x, size_text.y = 0, layout.RightOf(size_stepper, 20), size_stepper.y
+		TextSetup(size_text, size_stepper)
 
 		-- Pick energy function? (Add one or both from paper)
 		-- Way to tune the randomness? (k = .001 to 1, as in the GC paper, say)

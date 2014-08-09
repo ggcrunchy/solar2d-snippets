@@ -56,7 +56,17 @@ local Dir = "UI_Assets"
 			--"Background_Assets"
 
 -- --
-local Funcs = long_running.GetFuncs(Scene)
+local Funcs = long_running.GetFuncs(Scene, function(view, params)
+	if params.bitmap then
+		params.bitmap:Cancel()
+		view:insert(params.bitmap)
+	end
+end)
+
+-- Sets the status text
+function Funcs.SetStatus (str, arg1, arg2)
+	Scene.about.text = str:format(arg1, arg2)
+end
 
 --
 function Scene:show (event)
@@ -72,8 +82,6 @@ Scene:addEventListener("show")
 --
 function Scene:hide (event)
 	if event.phase == "did" then
-	--	Funcs.Cancel()
-	--	composer.hideOverlay()
 		Funcs.Finish()
 	end
 end

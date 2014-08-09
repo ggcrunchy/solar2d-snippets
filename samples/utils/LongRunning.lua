@@ -37,7 +37,7 @@ local composer = require("composer")
 local M = {}
 
 --- DOCME
-function M.GetFuncs (scene)
+function M.GetFuncs (scene, on_show)
 	local Funcs = {}
 
 	--- DOCMEMORE
@@ -46,7 +46,6 @@ function M.GetFuncs (scene)
 		return function()
 			native.setActivityIndicator(true)
 
-			--Since = system.getTimer()
 			Funcs.TryToYield("begin")
 
 			scene.busy = timers.WrapEx(function()
@@ -80,17 +79,10 @@ function M.GetFuncs (scene)
 		composer.hideOverlay()
 	end
 
-	--- DOCMEMORE
-	-- Sets the status text
-	function Funcs.SetStatus (str, arg1, arg2)
-		scene.about.text = str:format(arg1, arg2)
-	end
-
 	-- Launches an overlay, accounting for state to be maintained between overlays
 	function Funcs.ShowOverlay (name, params)
-		if params.bitmap then
-			params.bitmap:Cancel()
-			scene.view:insert(params.bitmap)
+		if on_show then
+			on_show(scene.view, params)
 		end
 
 		composer.showOverlay(name, { params = params })

@@ -98,10 +98,7 @@ end
 
 --- DOCME
 function M.Above (ref, dy)
-end
-
---- DOCME
-function M.Above_Object (object, ref, dy)
+	-- TODO
 end
 
 --- DOCME
@@ -110,18 +107,18 @@ function M.Below (ref, dy)
 end
 
 --- DOCME
-function M.Below_Object (object, ref, dy)
-	local y = AnchorY(ref, 1 - ref.anchorY)
-
-	return floor(y + object.anchorY * object.height + DY(dy))
-end
-
---- DOCME
 function M.LeftOf (ref, dx)
+	-- TODO
 end
 
 --- DOCME
-function M.LeftOf_Object (object, ref, dx)
+function M.MoveX (object, dx)
+	object.x = floor(object.x + DX(dx))
+end
+
+--- DOCME
+function M.MoveY (object, dy)
+	object.y = floor(object.y + DY(dy))
 end
 
 --- DOCME
@@ -189,25 +186,32 @@ function M.PutAtTopRight (object, dx, dy)
 end
 
 --- DOCME
-function M.PutAbove (object, ref, dx, dy)
+function M.PutAbove (object, ref, dy)
+	-- TODO
 end
 
 --- DOCME
-function M.PutLeftOf (object, ref, dx, dy)
+function M.PutBelow (object, ref, dy)
+	local y = AnchorY(ref, 1 - ref.anchorY)
+
+	object.y = floor(y + object.anchorY * object.height + DY(dy))
 end
 
 --- DOCME
-function M.PutRightOf (object, ref, dx, dy)
+function M.PutLeftOf (object, ref, dx)
+	-- TODO
+end
+
+--- DOCME
+function M.PutRightOf (object, ref, dx)
+	local x = AnchorX(ref, 1 - ref.anchorX)
+
+	object.x = floor(x + object.anchorX * object.width + DX(dx))
 end
 
 --- DOCME
 function M.RightOf (ref, dx)
 	return (AnchorX(ref, 1 - ref.anchorX) + DX(dx))
-end
-
---- DOCME
-function M.RightOf_Object (object, ref, dx)
-	--
 end
 
 -- Export the module.
