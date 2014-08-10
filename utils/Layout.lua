@@ -65,7 +65,7 @@ local function Delta (n, dim)
 	if type(n) ~= "string" then
 		return n or 0
 	elseif sub(n, -1) == "%" then
-		return tonumber(sub(n, 1, -2)) * display[dim]
+		return tonumber(sub(n, 1, -2)) * display[dim] / 100
 	else
 		return tonumber(n)
 	end
@@ -107,6 +107,11 @@ function M.Below (ref, dy)
 end
 
 --- DOCME
+function M.CenterAt (object, x, y)
+	-- TODO
+end
+
+--- DOCME
 function M.LeftOf (ref, dx)
 	-- TODO
 end
@@ -133,7 +138,8 @@ end
 function M.PutAtBottomLeft (object, dx, dy)
 	local x, y = 0, display.contentHeight
 
-	-- TODO
+	M.PutRightOfX(object, x, dx)
+	M.PutAboveY(object, y, dy)
 end
 
 --- DOCME
@@ -185,28 +191,64 @@ function M.PutAtTopRight (object, dx, dy)
 	-- TODO
 end
 
+--
+local function AuxPutAbove (object, y, dy)
+	return floor(y - (1 - object.anchorY) * object.height + DY(dy)) -- ??
+end
+
 --- DOCME
 function M.PutAbove (object, ref, dy)
-	-- TODO
+	object.y = AuxPutAbove(object, AnchorY(ref, -ref.anchorY), dy) -- TODO: Test
+end
+
+--- DOCME
+function M.PutAboveY (object, y, dy)
+	object.y = AuxPutAbove(object, DY(y), dy)
+end
+
+--
+local function AuxPutBelow (object, y, dy)
+	return floor(y + object.anchorY * object.height + DY(dy))
 end
 
 --- DOCME
 function M.PutBelow (object, ref, dy)
-	local y = AnchorY(ref, 1 - ref.anchorY)
+	object.y = AuxPutBelow(object, AnchorY(ref, 1 - ref.anchorY), dy)
+end
 
-	object.y = floor(y + object.anchorY * object.height + DY(dy))
+--- DOCME
+function M.PutBelowY (object, y, dy)
+	object.y = AuxPutBelow(object, DY(y), dy)
+end
+
+--
+local function AuxPutLeftOf (object, x, dx)
+	return floor(x - (1 - object.anchorX) * object.width + DX(dx)) -- ??
 end
 
 --- DOCME
 function M.PutLeftOf (object, ref, dx)
-	-- TODO
+	object.x = AuxPutLeftOf(object, AnchorX(ref, -ref.anchorX), dx) -- TODO: Test
+end
+
+--- DOCME
+function M.PutLeftOfX (object, x, dx)
+	object.x = AuxPutLeftOf(object, DX(x), dx)
+end
+
+--
+local function AuxPutRightOf (object, x, dx)
+	return floor(x + object.anchorX * object.width + DX(dx))
 end
 
 --- DOCME
 function M.PutRightOf (object, ref, dx)
-	local x = AnchorX(ref, 1 - ref.anchorX)
+	object.x = AuxPutRightOf(object, AnchorX(ref, 1 - ref.anchorX), dx)
+end
 
-	object.x = floor(x + object.anchorX * object.width + DX(dx))
+--- DOCME
+function M.PutRightOfX (object, x, dx)
+	object.x = AuxPutRightOf(object, DX(x), dx)
 end
 
 --- DOCME

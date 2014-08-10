@@ -27,8 +27,6 @@
 local long_running = require("samples.utils.LongRunning")
 
 -- Corona globals --
-local display = display
-local native = native
 local system = system
 
 -- Corona modules --
@@ -40,10 +38,6 @@ local Scene = composer.newScene()
 --
 function Scene:create (event)
 	event.params.boilerplate(self.view)
-
-	self.about = display.newText(self.view, "", 0, 130, native.systemFontBold, 20)
-
-	self.about.anchorX, self.about.x = 0, 20
 end
 
 Scene:addEventListener("create")
@@ -56,17 +50,12 @@ local Dir = "UI_Assets"
 			--"Background_Assets"
 
 -- --
-local Funcs = long_running.GetFuncs(Scene, function(view, params)
+local Funcs = long_running.GetFuncs(Scene, 20, 130, function(view, params)
 	if params.bitmap then
 		params.bitmap:Cancel()
 		view:insert(params.bitmap)
 	end
 end)
-
--- Sets the status text
-function Funcs.SetStatus (str, arg1, arg2)
-	Scene.about.text = str:format(arg1, arg2)
-end
 
 --
 function Scene:show (event)

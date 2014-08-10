@@ -26,12 +26,108 @@
 -- Standard library imports --
 
 -- Modules --
+local flow = require("graph_ops.flow")
 
 -- Corona modules --
 local composer = require("composer")
 
 --
 local Scene = composer.newScene()
+
+--[[
+	From "An Alternative for Wang Tiles: Colored Edges versus Colored Corners":
+
+	"With the backtracking algorithm, we are able to compute Wang and corner tile packings for
+	two, three, and four colors. A solution for C colors can often be found more quickly by
+	starting from a solution of C − 1 colors. This way, a recursive tile packing is obtained.
+	A recursive corner tile packing for four colors is shown in Figure 9. Some of these tile
+	packings took almost one year of CPU time to compute on a cluster with 400 2.4 GHz CPUs.
+	More solutions and a description of the implementation of our parallel backtracking
+	algorithm can be found in Lagae and Dutré [2006b]."
+
+	Corner weights:
+
+	1 --- 16
+	|      |
+	2 ---  4
+
+	To obtain the numeric tile values shown in the paper, the numeric values associated with a
+	given tile's colors are multiplied by the corresponding corner weights and summed.
+]]
+
+-- Numeric values of red, yellow, green, blue --
+local R, Y, G, B = 0, 1, 2, 3
+
+-- Recursive tile packing --
+local Colors = {
+	R, R, Y, R, R, G, R, G, G, R, B, B, R, B, R, B, -- N.B. Last row, column wrap
+	G, B, G, B, Y, B, B, Y, B, G, B, G, Y, G, B, B,
+	B, R, B, Y, B, G, B, Y, B, R, B, Y, B, Y, B, Y,
+	G, G, G, B, Y, Y, Y, G, B, R, B, R, B, G, Y, Y,
+	G, B, G, B, B, B, G, B, B, Y, B, B, G, B, G, B,
+	Y, R, G, Y, G, Y, G, G, R, B, B, B, B, G, R, G,
+	B, G, B, B, B, R, B, Y, B, Y, B, R, B, G, B, G,
+	R, R, Y, R, R, G, R, G, G, R, Y, B, R, Y, G, G,
+	Y, G, G, G, G, G, R, G, G, Y, B, R, B, Y, B, B,
+	Y, G, R, G, Y, G, G, Y, R, Y, Y, G, Y, R, G, G,
+	Y, Y, Y, G, Y, R, Y, Y, G, Y, B, R, B, B, R, B,
+	G, Y, G, Y, G, Y, G, R, G, G, R, R, Y, Y, R, G,
+	R, R, Y, R, R, G, R, G, R, R, B, G, B, Y, B, B,
+	Y, R, Y, Y, Y, R, Y, Y, G, Y, Y, R, R, Y, R, Y,
+	R, Y, Y, Y, R, G, R, G, G, R, B, Y, B, R, B, B,
+	R, R, R, Y, R, R, R, Y, Y, R, R, R, R, Y, R, G
+}
+
+--
+local function GetExemplar (exemplars, index)
+	return exemplars[Colors[index] + 1]
+end
+
+--
+local function Synthesize (exemplars, n, tdim)
+	local row1, row2, dim = #Colors - 15, 1, n^2
+	local y = tdim * (dim - 1)
+
+	for _ = 1, dim do
+		local x = 0
+
+		for j = 1, dim do
+			local offset1, offset2 = j - 1, j < 16 and j or 0
+
+			local ul, ur = GetExemplar(exemplars, row1 + offset1), GetExemplar(exemplars, row1 + offset2)
+			local ll, lr = GetExemplar(exemplars, row2 + offset1), GetExemplar(exemplars, row2 + offset2)
+
+			-- ul : choose lower-right
+			-- ur : choose lower-left
+			-- ll : choose upper-right
+			-- lr : choose upper-left
+
+			-- 	 Solve patch
+			--     Build diamond grid - how to handle edges? For the rest, just connect most of the 4 sides... (maybe use a LUT)
+			--     Run max flow over it
+			--     Replace colors inside the cut
+			--     Tidy up the seam (once implemented...)
+
+			x = x + tdim
+		end
+
+		row1, row2, y = row1 - 16, row1, y - tdim
+	end
+end
+
+--
+function Scene:show (event)
+	if event.phase == "did" then
+		local params = event.params
+
+		--
+		local funcs = params.funcs
+
+		funcs.SetStatus("Synthesizing")
+	end
+end
+
+Scene:addEventListener("show")
 
 
 return Scene

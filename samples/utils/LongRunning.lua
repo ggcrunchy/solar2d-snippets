@@ -27,6 +27,7 @@
 local timers = require("game.Timers")
 
 -- Corona globals --
+local display = display
 local native = native
 local timer = timer
 
@@ -37,8 +38,8 @@ local composer = require("composer")
 local M = {}
 
 --- DOCME
-function M.GetFuncs (scene, on_show)
-	local Funcs = {}
+function M.GetFuncs (scene, left, y, on_show)
+	local Funcs, about = {}
 
 	--- DOCMEMORE
 	-- Launches a long-running action, providing for some follow-up (which may itself be such an action)
@@ -77,6 +78,22 @@ function M.GetFuncs (scene, on_show)
 	function Funcs.Finish ()
 		Funcs.Cancel()
 		composer.hideOverlay()
+
+		display.remove(about)
+
+		about = nil
+	end
+
+	--- DOCMEMORE
+	-- Sets the status text
+	function Funcs.SetStatus (str, arg1, arg2)
+		if not about then
+			about = display.newText(scene.view, "", 0, y, native.systemFontBold, 20)
+
+			about.anchorX, about.x = 0, left
+		end
+
+		about.text = str:format(arg1, arg2)
 	end
 
 	-- Launches an overlay, accounting for state to be maintained between overlays

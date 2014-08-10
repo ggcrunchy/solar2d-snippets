@@ -127,6 +127,16 @@ function M.ImageList (group, x, y, options)
 		end
 	end
 
+	--- DOCME
+	function ImageList:GetImageLoader (yfunc)
+		local func = GetFunc(self:GetSelection() or "", "LoadString")
+		local contents = func ~= Failure and self:GetContents()
+
+		return function()
+			return func(contents, yfunc)
+		end
+	end
+
 	--
 	if preview then
 		--- DOCME

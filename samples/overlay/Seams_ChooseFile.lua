@@ -42,9 +42,6 @@ local CW, CH = display.contentWidth, display.contentHeight
 --
 function Scene:show (event)
 	if event.phase == "did" then
-		-- Make a small preview pane for the currently chosen image.
-	--	local preview = image_patterns.Thumbnail(self.view, 64, 64)
-
 		-- TODO:
 		-- If database not empty, populate list (do file existence / integrity checks?)
 		-- Add remove option: removes current entry from list (closes list if empty)
@@ -67,6 +64,8 @@ function Scene:show (event)
 
 			cancel.isVisible = false
 		end
+
+		funcs.SetStatus("Choose an image")
 
 		local image_list = image_patterns.ImageList(self.view, 295, 20, {
 			path = params.dir, base = params.base, height = 120, add_preview = true,
