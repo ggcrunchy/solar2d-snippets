@@ -84,9 +84,30 @@ local function GetExemplar (exemplars, index)
 end
 
 --
-local function Synthesize (exemplars, n, tdim)
-	local row1, row2, dim = #Colors - 15, 1, n^2
-	local y = tdim * (dim - 1)
+local function LoadHalf (exemplars, row, offset1, offset2, lpos, rpos, half_tdim, tdim)
+	local lq, rq = GetExemplar(exemplars, row + offset1), GetExemplar(exemplars, row + offset2)
+
+	for _ = 1, half_tdim do
+		for i = 1, half_tdim do
+			-- lq[lpos + i]
+		end
+
+		for i = 1, half_tdim do
+			-- rq[rpos + i]
+		end
+
+		lpos, rpos = lpos + tdim, rpos + tdim
+	end
+end
+
+--
+local function Synthesize (exemplars, n, tdim, yfunc)
+	local dim, mid, half_tdim = n^2, .5 * tdim^2, .5 * tdim
+	local y, row1, row2 = tdim * (dim - 1),  #Colors - 15, 1 
+
+	-- For a given corner, choose the "opposite" quadrant: for the upper-right tile, draw from
+	-- the lower-right; for the upper-right, from the lower-left, etc.
+	local ul_pos, ur_pos, ll_pos, lr_pos = mid + half_tdim, mid, half_tdim, 0
 
 	for _ = 1, dim do
 		local x = 0
@@ -94,18 +115,20 @@ local function Synthesize (exemplars, n, tdim)
 		for j = 1, dim do
 			local offset1, offset2 = j - 1, j < 16 and j or 0
 
-			local ul, ur = GetExemplar(exemplars, row1 + offset1), GetExemplar(exemplars, row1 + offset2)
-			local ll, lr = GetExemplar(exemplars, row2 + offset1), GetExemplar(exemplars, row2 + offset2)
+			LoadHalf(exemplars, row1, offset1, offset2, ul_pos, ur_pos, half_tdim, tdim)
+			LoadHalf(exemplars, row2, offset1, offset2, ll_pos, lr_pos, half_tdim, tdim)
 
-			-- ul : choose lower-right
-			-- ur : choose lower-left
-			-- ll : choose upper-right
-			-- lr : choose upper-left
+			yfunc()
 
 			-- 	 Solve patch
 			--     Build diamond grid - how to handle edges? For the rest, just connect most of the 4 sides... (maybe use a LUT)
 			--     Run max flow over it
 			--     Replace colors inside the cut
+				-- M(s, t, A, B): A, B: old, new patches; s, t: adjacent pixels
+				-- Basic
+					-- | A(s) - B(s) | + | A(t) - B(t) |
+				-- Better, M':
+					-- M(s, t, A, B) / (| Gd[A](s) | + | Gd[A](t) | + | Gd[B](s) | + | Gd[B](t) |)
 			--     Tidy up the seam (once implemented...)
 
 			x = x + tdim
@@ -124,6 +147,10 @@ function Scene:show (event)
 		local funcs = params.funcs
 
 		funcs.SetStatus("Synthesizing")
+
+		funcs.Action(function()
+--			Synthesize(params.exemplars, params.num_colors, params.tile_dim, funcs.TryToYield)
+		end)()
 	end
 end
 
