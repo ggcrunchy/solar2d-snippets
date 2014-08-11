@@ -67,7 +67,7 @@ function Scene:show (event)
 			composer.showOverlay("samples.overlay.CC_ChooseFile", { params = params })
 		end, "Cancel")
 
-		layout.PutBelowY(cancel, params.ok_y, 30)
+		layout.PutBelow(cancel, params.ok_y, 30)
 
 		funcs.Action(function()
 			funcs.SetStatus("Loading image")
@@ -77,12 +77,12 @@ function Scene:show (event)
 
 			funcs.SetStatus("Generating exemplars")
 
-			local exemplars, tile_dim, prev = {}, params.tile_dim
+			local exemplars, tile_dim, prev = params.exemplars, params.tile_dim
 
 			for i = 1, params.num_colors do
 				--
-				local exemplar, move_bitmaps, index, ypos = {}, {}, 1, params.color_pos[i]
-				local color_image = bitmap.Bitmap(self.view)
+				local exemplar, move_bitmaps, index = params.exemplars[i], {}, 1
+				local color_image, ypos = bitmap.Bitmap(self.view), 4 * (exemplar.y * w + exemplar.x)
 
 				color_image:Resize(tile_dim, tile_dim) -- Needs some care to not run up against screen?
 
@@ -109,11 +109,7 @@ function Scene:show (event)
 				--
 				local cury = color_image.y
 
-				if prev then
-					layout.PutBelow(color_image, prev, "2%")
-				else
-					layout.PutBelowY(color_image, 0, "2%")
-				end
+				layout.PutBelow(color_image, prev or 0, "2%")
 
 				MoveParams.y, color_image.y, exemplars[i], prev = color_image.y, cury, exemplar, color_image
 
@@ -137,7 +133,6 @@ function Scene:show (event)
 
 			button.Button(self.view, nil, params.ok_x, params.ok_y, 100, 40, function()
 --				params.bitmap, params.energy, params.gray = image, values, energy.ToGray
-				params.exemplars = exemplars
 
 				funcs.ShowOverlay("samples.overlay.CC_Synthesize", params)
 			end, "OK")

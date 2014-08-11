@@ -32,6 +32,12 @@ local type = type
 -- Corona globals --
 local display = display
 
+-- Cached module references --
+local _PutAbove_
+local _PutBelow_
+local _PutLeftOf_
+local _PutRightOf_
+
 -- Exports --
 local M = {}
 
@@ -43,21 +49,6 @@ end
 --
 local function AnchorY (object, t)
 	return object.y + t * object.height
-end
-
---
-local function BottomToAnchorY (object, y)
-	return AnchorY(object, 1 - object.anchorY)
-end
-
---
-local function CenterToAnchorX (object, x)
-	return AnchorX(object, .5 - object.anchorX)
-end
-
---
-local function CenterToAnchorY (object, y)
-	return AnchorY(object, .5 - object.anchorY)
 end
 
 --
@@ -82,38 +73,106 @@ local function DY (n)
 end
 
 --
-local function LeftToAnchorX (object, x)
-	return AnchorX(object, -object.anchorX)
+local function NonGroup (object)
+	return object.anchorChildren == nil
 end
 
 --
-local function RightToAnchorX (object, x)
-	return AnchorX(object, 1 - object.anchorX)
+local function Number (object)
+	local otype = type(object)
+
+	return object == nil or otype == "string" or otype == "number"
 end
 
 --
-local function TopToAnchorY (object, y)
-	return AnchorY(object, -object.anchorY)
+local function BottomY (object)
+	if Number(object) then
+		return DY(object)
+	elseif NonGroup(object) then
+		return AnchorY(object, 1 - object.anchorY)
+	else
+		return object.contentBounds.yMax
+	end
+end
+
+--
+local function LeftX (object)
+	if Number(object) then
+		return DX(object)
+	elseif NonGroup(object) then
+		return AnchorY(object, -object.anchorY)
+	else
+		return object.contentBounds.xMin
+	end
+end
+
+--
+local function RightX (object)
+	if Number(object) then
+		return DX(object)
+	elseif NonGroup(object) then
+		return AnchorX(object, 1 - object.anchorX)
+	else
+		return object.contentBounds.xMax
+	end
+end
+
+--
+local function ToCenterX (object) -- TEST!
+	local x = display.contentCenterX
+
+	if NonGroup(object) then
+		return x - AnchorX(object, .5 - object.anchorX)
+	else
+		local bounds = object.contentBounds
+
+		return x - .5 * (bounds.xMin + bounds.xMax)
+	end
+end
+
+--
+local function ToCenterY (object) -- TEST!
+	local y = display.contentCenterY
+
+	if NonGroup(object) then
+		return y - AnchorY(object, .5 - object.anchorY)
+	else
+		local bounds = object.contentBounds
+
+		return y - .5 * (bounds.yMin + bounds.yMax)
+	end
+end
+
+--
+local function TopY (object)
+	if Number(object) then
+		return DY(object)
+	elseif NonGroup(object) then
+		return AnchorY(object, -object.anchorY)
+	else
+		return object.contentBounds.yMin
+	end
 end
 
 --- DOCME
 function M.Above (ref, dy)
-	-- TODO
+	return floor(TopY(ref) + DY(dy))
 end
 
 --- DOCME
 function M.Below (ref, dy)
-	return (AnchorY(ref, 1 - ref.anchorY) + DY(dy))
+	return floor(BottomY(ref) + DY(dy))
 end
 
 --- DOCME
 function M.CenterAt (object, x, y)
-	-- TODO
+	object.x = object.x + ToCenterX(object) + x - display.contentCenterX
+	object.y = object.y + ToCenterY(object) + y - display.contentCenterY
 end
 
 --- DOCME
 function M.LeftOf (ref, dx)
-	-- TODO
+	return floor(LeftX(ref) + DX(dx))
 end
 
 --- DOCME
@@ -127,134 +186,125 @@ function M.MoveY (object, dy)
 end
 
 --- DOCME
-function M.PutAtBottomCenter (object, dx, dy)
-	local x, y = display.contentCenterX, display.contentHeight
+function M.PutAbove (object, ref, dy)
+	local y = TopY(ref)
 
-	object.x = floor(CenterToAnchorX(object, x) + DX(dx))
-	object.y = floor(BottomToAnchorY(object, y) + DY(dy))
+	if NonGroup(object) then
+		y = y - (1 - object.anchorY) * object.height
+	else
+		y = y - (object.contentBounds.yMax - object.y)
+	end
+
+	object.y = floor(y + DY(dy))
+end
+
+--- DOCME
+function M.PutAtBottomCenter (object, dx, dy)
+	object.x = floor(object.x + ToCenterX(object) + DX(dx))
+
+	_PutAbove_(object, display.contentHeight, dy)
 end
 
 --- DOCME
 function M.PutAtBottomLeft (object, dx, dy)
-	local x, y = 0, display.contentHeight
-
-	M.PutRightOfX(object, x, dx)
-	M.PutAboveY(object, y, dy)
+	_PutRightOf_(object, 0, dx)
+	_PutAbove_(object, display.contentHeight, dy)
 end
 
 --- DOCME
 function M.PutAtBottomRight (object, dx, dy)
-	local x, y = display.contentWidth, display.contentHeight
-
-	-- TODO
+	_PutLeftOf_(object, display.contentWidth, dx)
+	_PutAbove_(object, display.contentHeight, dy)
 end
 
 --- DOCME
 function M.PutAtCenter (object, dx, dy)
-	local x, y = display.contentCenterX, display.contentCenterY
-
-	-- TODO
+	object.x = floor(object.x + ToCenterX(object) + DX(dx))
+	object.y = floor(object.y + ToCenterY(object) + DY(dy))
 end
 
 --- DOCME
 function M.PutAtCenterLeft (object, dx, dy)
-	local x, y = 0, display.contentCenterY
+	_PutRightOf_(object, 0, dx)
 
-	-- TODO
+	object.y = floor(object.x + ToCenterY(object) + DY(dy))
 end
 
 --- DOCME
 function M.PutAtCenterRight (object, dx, dy)
-	local x, y = display.contentWidth, display.contentCenterY
+	_PutLeftOf_(object, display.contentWidth, dx)
 
-	-- TODO
+	object.y = floor(object.x + ToCenterY(object) + DY(dy))
 end
 
 --- DOCME
 function M.PutAtTopCenter (object, dx, dy)
-	local x, y = display.contentCenterX, 0
+	object.x = floor(object.x + ToCenterX(object) + DX(dx))
 
-	-- TODO
+	_PutAbove_(object, 0, dy)
 end
 
 --- DOCME
 function M.PutAtTopLeft (object, dx, dy)
-	local x, y = 0, 0
-
-	-- TODO
+	_PutRightOf_(object, 0, dx)
+	_PutBelow_(object, 0, dy)
 end
 
 --- DOCME
 function M.PutAtTopRight (object, dx, dy)
-	local x, y = display.contentWidth, 0
-
-	-- TODO
-end
-
---
-local function AuxPutAbove (object, y, dy)
-	return floor(y - (1 - object.anchorY) * object.height + DY(dy)) -- ??
-end
-
---- DOCME
-function M.PutAbove (object, ref, dy)
-	object.y = AuxPutAbove(object, AnchorY(ref, -ref.anchorY), dy) -- TODO: Test
-end
-
---- DOCME
-function M.PutAboveY (object, y, dy)
-	object.y = AuxPutAbove(object, DY(y), dy)
-end
-
---
-local function AuxPutBelow (object, y, dy)
-	return floor(y + object.anchorY * object.height + DY(dy))
+	_PutLeftOf_(object, display.contentWidth, dx)
+	_PutBelow_(object, 0, dy)
 end
 
 --- DOCME
 function M.PutBelow (object, ref, dy)
-	object.y = AuxPutBelow(object, AnchorY(ref, 1 - ref.anchorY), dy)
-end
+	local y = BottomY(ref)
 
---- DOCME
-function M.PutBelowY (object, y, dy)
-	object.y = AuxPutBelow(object, DY(y), dy)
-end
+	if NonGroup(object) then
+		y = y + object.anchorY * object.height
+	else
+		y = y + (object.y - object.contentBounds.yMin)
+	end
 
---
-local function AuxPutLeftOf (object, x, dx)
-	return floor(x - (1 - object.anchorX) * object.width + DX(dx)) -- ??
+	object.y = floor(y + DY(dy))
 end
 
 --- DOCME
 function M.PutLeftOf (object, ref, dx)
-	object.x = AuxPutLeftOf(object, AnchorX(ref, -ref.anchorX), dx) -- TODO: Test
-end
+	local x = LeftX(ref)
 
---- DOCME
-function M.PutLeftOfX (object, x, dx)
-	object.x = AuxPutLeftOf(object, DX(x), dx)
-end
+	if NonGroup(object) then
+		x = x - (1 - object.anchorX) * object.width
+	else
+		x = x - (object.contentBounds.xMax - object.x)
+	end
 
---
-local function AuxPutRightOf (object, x, dx)
-	return floor(x + object.anchorX * object.width + DX(dx))
+	object.x = floor(x + DX(dx))
 end
 
 --- DOCME
 function M.PutRightOf (object, ref, dx)
-	object.x = AuxPutRightOf(object, AnchorX(ref, 1 - ref.anchorX), dx)
-end
+	local x = RightX(ref)
 
---- DOCME
-function M.PutRightOfX (object, x, dx)
-	object.x = AuxPutRightOf(object, DX(x), dx)
+	if NonGroup(object) then
+		x = x + object.anchorX * object.width
+	else
+		x = x + (object.x - object.contentBounds.xMin)
+	end
+
+	object.x = floor(x + DX(dx))
 end
 
 --- DOCME
 function M.RightOf (ref, dx)
-	return (AnchorX(ref, 1 - ref.anchorX) + DX(dx))
+	return floor(RightX(ref) + DX(dx))
 end
+
+-- Cache module members.
+_PutAbove_ = M.PutAbove
+_PutBelow_ = M.PutBelow
+_PutLeftOf_ = M.PutLeftOf
+_PutRightOf_ = M.PutRightOf
 
 -- Export the module.
 return M

@@ -125,7 +125,7 @@ function Scene:show (event)
 					local samples, retry = {}
 
 					local function FindPatches ()
-						local pos, w, h = params.color_pos or {}, event.listbox:GetDims()
+						local exemplars, w, h = {}, event.listbox:GetDims()
 						local tile_dim = min(w, h)
 
 						if tile_dim % 2 ~= 0 then
@@ -153,10 +153,10 @@ function Scene:show (event)
 							rect:setFillColor(0, 0)
 							rect:setStrokeColor(stroke[1], stroke[2], stroke[3], .7)
 
-							pos[i], samples[i] = 4 * (y * w + x), rect
+							exemplars[i], samples[i] = { x = x, y = y }, rect
 						end
 
-						params.color_pos, params.tile_dim = pos, tile_dim
+						params.exemplars, params.tile_dim = exemplars, tile_dim
 					end
 
 					ok = button.Button(self.view, nil, preview.x, layout.Below(preview, 30), 100, 40, funcs.Action(function()

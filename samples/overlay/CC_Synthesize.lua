@@ -124,12 +124,15 @@ local function Synthesize (exemplars, n, tdim, yfunc)
 			--     Build diamond grid - how to handle edges? For the rest, just connect most of the 4 sides... (maybe use a LUT)
 			--     Run max flow over it
 			--     Replace colors inside the cut
-				-- M(s, t, A, B): A, B: old, new patches; s, t: adjacent pixels
-				-- Basic
-					-- | A(s) - B(s) | + | A(t) - B(t) |
-				-- Better, M':
-					-- M(s, t, A, B) / (| Gd[A](s) | + | Gd[A](t) | + | Gd[B](s) | + | Gd[B](t) |)
+			-- M(s, t, A, B): A, B: old, new patches; s, t: adjacent pixels
+			-- Basic
+				-- | A(s) - B(s) | + | A(t) - B(t) |
+			-- Better, M':
+				-- M(s, t, A, B) / (| Gd[A](s) | + | Gd[A](t) | + | Gd[B](s) | + | Gd[B](t) |)
 			--     Tidy up the seam (once implemented...)
+
+			-- local _, _, cut = flow.MaxFlow(edges_cap, s, t, { compute_mincut = true })
+			-- How to do s and t? Virtual nodes? (Sinha shows ALL nodes connected to each... maybe only for diamond, though?)
 
 			x = x + tdim
 		end
