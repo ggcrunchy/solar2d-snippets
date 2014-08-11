@@ -37,6 +37,7 @@ local easing = easing
 local transition = transition
 
 -- Corona modules --
+local common_ui = require("editor.CommonUI")
 local composer = require("composer")
 
 --
@@ -131,8 +132,14 @@ function Scene:show (event)
 
 			funcs.SetStatus("Press OK to synthesize")
 
+			--
+			local tabs = common_ui.TabBar(self.view, {
+				{ label = "Random" }, { label = "Entire Patch" }, { label = "Sub-Patch" }
+			}, { top = display.contentHeight - 50, left = 5, width = 250 })
+
 			button.Button(self.view, nil, params.ok_x, params.ok_y, 100, 40, function()
---				params.bitmap, params.energy, params.gray = image, values, energy.ToGray
+				-- params.method = from tabs...
+				-- Currently assumed to be Random (other two entail lots of setup)
 
 				funcs.ShowOverlay("samples.overlay.CC_Synthesize", params)
 			end, "OK")

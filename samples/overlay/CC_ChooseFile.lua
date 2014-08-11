@@ -67,7 +67,7 @@ local function ToSize (num)
 end
 
 -- --
-local function SizeStepper (num_colors, left, ref, size_text)
+local function SizeStepper (num_colors, left, ref, size_text, reset)
 	local max_steps = floor((MaxSize / 2^num_colors - MinDim) / MinDim) - 1
 
 	size_text.text = Size:format(ToSize(0))
@@ -80,6 +80,8 @@ local function SizeStepper (num_colors, left, ref, size_text)
 
 			if phase == "increment" or phase == "decrement" then
 				size_text.text = Size:format(ToSize(event.value))
+
+				reset()
 			end
 		end
 	}
@@ -101,8 +103,25 @@ function Scene:show (event)
 	if event.phase == "did" then
 		local params = event.params
 
+		--		
+		local funcs, samples, retry = params.funcs, {}
+
+		local function Reset ()
+			funcs.SetStatus("Press OK to pick patches")
+
+			for i = 1, #samples do
+				samples[i]:removeSelf()
+
+				samples[i] = nil
+			end
+
+			if retry then
+				retry.isVisible = false
+			end
+		end
+
 		-- Add a listbox to be populated with some image choices.
-		local funcs, preview, ok, colors_stepper, size_stepper = params.funcs
+		local preview, ok, colors_stepper, size_stepper
 
 		funcs.SetStatus("Choose an image")
 
@@ -119,11 +138,9 @@ function Scene:show (event)
 				-- energy computation step. The option to cancel is available during loading (although
 				-- this is typically a quick process).
 				if not ok then
-					funcs.SetStatus("Press OK to pick patches")
+					Reset()
 
 					--
-					local samples, retry = {}
-
 					local function FindPatches ()
 						local exemplars, w, h = {}, event.listbox:GetDims()
 						local tile_dim = min(w, h)
@@ -167,13 +184,17 @@ function Scene:show (event)
 
 						--
 						if retry then
-							return function()
-								params.ok_x = ok.x
-								params.ok_y = ok.y
-								params.load_image = event.listbox:GetImageLoader(funcs.TryToYield)
-								params.num_colors = colors_stepper:getValue()
+							if retry.isVisible then
+								return function()
+									params.ok_x = ok.x
+									params.ok_y = ok.y
+									params.load_image = event.listbox:GetImageLoader(funcs.TryToYield)
+									params.num_colors = colors_stepper:getValue()
 
-								funcs.ShowOverlay("samples.overlay.CC_GenColors", params)
+									funcs.ShowOverlay("samples.overlay.CC_GenColors", params)
+								end
+							else
+								retry.isVisible = true
 							end
 						else
 							retry = button.Button(self.view, nil, ok.x, 0, 100, 40, FindPatches, "Retry")
@@ -208,9 +229,9 @@ function Scene:show (event)
 
 					size_stepper:removeSelf()
 
-					local target = event.target
+					size_stepper = SizeStepper(event.value, 25, event.target, size_text, Reset)
 
-					size_stepper = SizeStepper(event.value, 25, target, size_text)
+					Reset()
 				end
 			end
 		}
@@ -223,7 +244,7 @@ function Scene:show (event)
 
 		--
 		size_text = display.newText(self.view, "", 0, 0, native.systemFont, 28)
-		size_stepper = SizeStepper(2, 25, colors_stepper, size_text)
+		size_stepper = SizeStepper(2, 25, colors_stepper, size_text, Reset)
 
 		TextSetup(size_text, size_stepper)
 	end
