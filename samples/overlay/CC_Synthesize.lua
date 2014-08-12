@@ -24,6 +24,7 @@
 --
 
 -- Standard library imports --
+local huge = math.huge
 
 -- Modules --
 local flow = require("graph_ops.flow")
@@ -33,6 +34,79 @@ local composer = require("composer")
 
 --
 local Scene = composer.newScene()
+
+--
+local function AddTriple (ec, u, v, cap)
+	local n = #ec
+
+	ec[n + 1], ec[n + 2], ec[n + 3] = u, v, cap
+end
+
+--
+local function HorzEdge (ec, cur, w)
+	cur = cur - w
+
+	for i = 1, 2 * w - 1 do
+		AddTriple(ec, cur + i, cur + i + 1, false)
+	end
+end
+
+--
+local function VertEdge (ec, prev, cur, w)
+	for i = 1, w do
+		AddTriple(ec, prev + i, cur + i, false)
+	end
+
+	prev, cur = prev + 1, cur + 1
+
+	for i = 1, w do
+		AddTriple(ec, prev - i, cur - i, false)
+	end
+end
+
+--
+local function CreatePatch (half_tdim)
+	local edges_cap, nverts, prev = {}, 2 * (half_tdim + 1) * half_tdim, 0
+
+	--
+	for w = 1, half_tdim do
+		local cur = prev + 2 * w - 1
+
+		HorzEdge(edges_cap, cur, w)
+
+		if prev > 0 then
+			VertEdge(edges_cap, prev, cur, w - 1)
+		end
+
+		prev = cur
+	end
+
+	--
+	for w = half_tdim, 1, -1 do
+		local cur, prev_dim = prev + 2 * w, w
+
+		if w < half_tdim then
+			cur, prev_dim = cur + 3, prev_dim + 1
+		end
+
+		HorzEdge(edges_cap, cur, w)
+		VertEdge(edges_cap, prev, cur, prev_dim)
+
+		prev = cur
+	end
+
+	-- print(nverts == prev + 2)
+
+	--
+	for i = 1, nverts do
+		AddTriple(edges_cap, i, nverts + 1, 1)
+		AddTriple(edges_cap, i, nverts + 2, 1)
+	end
+
+	AddTriple(edges_cap, nverts + 2, nverts + 3, huge)
+
+	return edges_cap
+end
 
 --[[
 	From "An Alternative for Wang Tiles: Colored Edges versus Colored Corners":
@@ -105,6 +179,9 @@ local function Synthesize (exemplars, n, tdim, yfunc)
 	local dim, mid, half_tdim = n^2, .5 * tdim^2, .5 * tdim
 	local y, row1, row2 = tdim * (dim - 1),  #Colors - 15, 1 
 
+	--
+	local edges_cap = CreatePatch(half_tdim)
+
 	-- For a given corner, choose the "opposite" quadrant: for the upper-right tile, draw from
 	-- the lower-right; for the upper-right, from the lower-left, etc.
 	local ul_pos, ur_pos, ll_pos, lr_pos = mid + half_tdim, mid, half_tdim, 0
@@ -133,6 +210,11 @@ local function Synthesize (exemplars, n, tdim, yfunc)
 
 			-- local _, _, cut = flow.MaxFlow(edges_cap, s, t, { compute_mincut = true })
 			-- How to do s and t? Virtual nodes? (Sinha shows ALL nodes connected to each... maybe only for diamond, though?)
+			-- Plan-of-attack:
+			--	- s, t each connected to all nodes in diamond (i.e. the candidate patch)
+			--	- t also connected to some node along boundary (with infinite weight to neighbor)
+			--  - The latter condition would be used to disambiguate sets
+			-- Just give each capacity of 1? (Literature seems to suggest these can be anything...)
 
 			x = x + tdim
 		end
