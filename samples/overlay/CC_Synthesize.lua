@@ -65,12 +65,12 @@ local function VertEdge (ec, prev, cur, w)
 end
 
 --
-local function CreatePatch (half_tdim)
+local function CreatePatch (half_tdim, yfunc)
 	local edges_cap, nverts, prev = {}, 2 * (half_tdim + 1) * half_tdim, 0
 
 	--
 	for w = 1, half_tdim do
-		local cur = prev + 2 * w - 1
+		local cur = w^2
 
 		HorzEdge(edges_cap, cur, w)
 
@@ -78,29 +78,35 @@ local function CreatePatch (half_tdim)
 			VertEdge(edges_cap, prev, cur, w - 1)
 		end
 
+		yfunc()
+
 		prev = cur
 	end
 
 	--
+	local qdim = .5 * prev
+
 	for w = half_tdim, 1, -1 do
-		local cur, prev_dim = prev + 2 * w, w
+		local cur = prev + 2 * w
 
 		if w < half_tdim then
-			cur, prev_dim = cur + 3, prev_dim + 1
+			cur = cur + 1
 		end
 
 		HorzEdge(edges_cap, cur, w)
-		VertEdge(edges_cap, prev, cur, prev_dim)
+		VertEdge(edges_cap, prev, cur, w)
+
+		yfunc()
 
 		prev = cur
 	end
-
-	-- print(nverts == prev + 2)
 
 	--
 	for i = 1, nverts do
 		AddTriple(edges_cap, i, nverts + 1, 1)
 		AddTriple(edges_cap, i, nverts + 2, 1)
+
+		yfunc()
 	end
 
 	AddTriple(edges_cap, nverts + 2, nverts + 3, huge)
@@ -177,10 +183,10 @@ end
 --
 local function Synthesize (exemplars, n, tdim, yfunc)
 	local dim, mid, half_tdim = n^2, .5 * tdim^2, .5 * tdim
-	local y, row1, row2 = tdim * (dim - 1),  #Colors - 15, 1 
+	local y, row1, row2 = tdim * (dim - 1), #Colors - 15, 1 
 
 	--
-	local edges_cap = CreatePatch(half_tdim)
+	local edges_cap = CreatePatch(half_tdim, yfunc)
 
 	-- For a given corner, choose the "opposite" quadrant: for the upper-right tile, draw from
 	-- the lower-right; for the upper-right, from the lower-left, etc.
@@ -234,7 +240,7 @@ function Scene:show (event)
 		funcs.SetStatus("Synthesizing")
 
 		funcs.Action(function()
---			Synthesize(params.exemplars, params.num_colors, params.tile_dim, funcs.TryToYield)
+			Synthesize(params.exemplars, params.num_colors, params.tile_dim, funcs.TryToYield)
 		end)()
 	end
 end
