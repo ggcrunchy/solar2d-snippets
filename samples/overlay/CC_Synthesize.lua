@@ -24,16 +24,64 @@
 --
 
 -- Standard library imports --
+local abs = math.abs
 local huge = math.huge
+local random = math.random
 
 -- Modules --
+local bitmap = require("ui.Bitmap")
 local flow = require("graph_ops.flow")
+local layout = require("utils.Layout")
 
 -- Corona modules --
 local composer = require("composer")
 
 --
 local Scene = composer.newScene()
+
+--
+local function FindPatch (patch, image, tdim, method, funcs)
+	local w, h = image:GetDims()
+
+	if method ~= "SUBPATCH" then
+		patch.x, patch.y = random(0, w - tdim), random(0, h - tdim)
+	else
+		-- TODO: Implement these (probably need to yield a LOT)
+		-- Scanning, convolution, etc...
+	end
+
+	funcs.SetStatus("Building patch")
+
+	local ypos, pixels, index = 4 * (patch.y * w + patch.x), image:GetPixels(), 1
+
+	for y = 0, tdim - 1 do
+		local xpos = ypos
+
+		for x = 0, tdim - 1 do
+			local sum = pixels[xpos + 1] + pixels[xpos + 2] + pixels[xpos + 3]
+
+			patch[index], xpos, index = sum, xpos + 4, index + 1
+
+			funcs.TryToYield()
+		end
+
+		ypos = ypos + 4 * w
+	end
+end
+
+--
+local function FindWeights (edges_cap, background, patch, tdim, funcs)
+	-- As per PreparePatchRegion(), but compute x, y offsets
+	-- Stash grays into an array
+	-- Resolve edges_cap to each array slot, compute, fill
+end
+
+--
+local function Resolve (composite, x, y, image, tdim, cut, background, patch, funcs)
+	-- Choose s stuff from patch
+	-- Choose t stuff from background
+	-- Recolor
+end
 
 --
 local function AddTriple (ec, u, v, cap)
@@ -65,8 +113,8 @@ local function VertEdge (ec, prev, cur, w)
 end
 
 --
-local function CreatePatch (half_tdim, yfunc)
-	local edges_cap, nverts, prev = {}, 2 * (half_tdim + 1) * half_tdim, 0
+local function PreparePatchRegion (half_tdim, nverts, yfunc)
+	local edges_cap, prev = {}, 0
 
 	--
 	for w = 1, half_tdim do
@@ -84,8 +132,6 @@ local function CreatePatch (half_tdim, yfunc)
 	end
 
 	--
-	local qdim = .5 * prev
-
 	for w = half_tdim, 1, -1 do
 		local cur = prev + 2 * w
 
@@ -164,33 +210,51 @@ local function GetExemplar (exemplars, index)
 end
 
 --
-local function LoadHalf (exemplars, row, offset1, offset2, lpos, rpos, half_tdim, tdim)
+local function LoadHalf (exemplars, into, row, offset1, offset2, lpos, rpos, half_tdim, tdim, index)
 	local lq, rq = GetExemplar(exemplars, row + offset1), GetExemplar(exemplars, row + offset2)
 
 	for _ = 1, half_tdim do
 		for i = 1, half_tdim do
-			-- lq[lpos + i]
+			into[index], index = lq[lpos + i], index + 1
 		end
 
 		for i = 1, half_tdim do
-			-- rq[rpos + i]
+			into[index], index = rq[rpos + i], index + 1
 		end
 
 		lpos, rpos = lpos + tdim, rpos + tdim
 	end
+
+	-- TODO: Add x, y for recovery of original image
 end
 
+-- --
+local FlowOpts = { compute_mincut = true }
+
 --
-local function Synthesize (exemplars, n, tdim, yfunc)
-	local dim, mid, half_tdim = n^2, .5 * tdim^2, .5 * tdim
-	local y, row1, row2 = tdim * (dim - 1), #Colors - 15, 1 
+local function Synthesize (view, params)
+	--
+	local composite, tdim, dim = bitmap.Bitmap(view), params.tile_dim, params.num_colors^2
+
+	composite:Resize(dim * tdim, dim * tdim) -- Needs some care to not run up against screen?
+
+	layout.PutAtBottomLeft(composite, "1%", "-2%")
 
 	--
-	local edges_cap = CreatePatch(half_tdim, yfunc)
+	local funcs, half_tdim = params.funcs, .5 * tdim
+
+	funcs.SetStatus("Preprocessing patch")
+
+	local nverts = 2 * (half_tdim + 1) * half_tdim
+	local edges_cap, background, patch, image = PreparePatchRegion(half_tdim, nverts, funcs.TryToYield), {}, {}, params.image
+
+	-- TODO: If patch-based method, build summed area tables...
 
 	-- For a given corner, choose the "opposite" quadrant: for the upper-right tile, draw from
 	-- the lower-right; for the upper-right, from the lower-left, etc.
+	local exemplars, method, mid = params.exemplars, params.method, .5 * tdim^2
 	local ul_pos, ur_pos, ll_pos, lr_pos = mid + half_tdim, mid, half_tdim, 0
+	local y, row1, row2 = tdim * (dim - 1), #Colors - 15, 1
 
 	for _ = 1, dim do
 		local x = 0
@@ -198,11 +262,37 @@ local function Synthesize (exemplars, n, tdim, yfunc)
 		for j = 1, dim do
 			local offset1, offset2 = j - 1, j < 16 and j or 0
 
-			LoadHalf(exemplars, row1, offset1, offset2, ul_pos, ur_pos, half_tdim, tdim)
-			LoadHalf(exemplars, row2, offset1, offset2, ll_pos, lr_pos, half_tdim, tdim)
+			--
+			funcs.SetStatus("Compositing colors")
 
-			yfunc()
+			LoadHalf(exemplars, background, row1, offset1, offset2, ul_pos, ur_pos, half_tdim, tdim, 1)
+			LoadHalf(exemplars, background, row2, offset1, offset2, ll_pos, lr_pos, half_tdim, tdim, mid + 1)
 
+			funcs.TryToYield()
+
+			--
+			local index = 1
+
+			for iy = 0, tdim - 1 do
+				for ix = 0, tdim - 1 do
+					composite:SetPixel(x + ix, y + iy, background[index] / (3 * 255))
+
+					index = index + 1
+				end
+
+				funcs.TryToYield()
+			end
+
+			composite:WaitForPendingSets()
+
+			--
+			FindPatch(patch, image, tdim, method, funcs)
+			FindWeights(edges_cap, background, patch, tdim, funcs)
+--[[
+			local _, _, cut = flow.MaxFlow(edges_cap, nverts + 1, nverts + 2, FlowOpts)
+
+			Resolve(composite, x, y, image, tdim, cut, background, patch, funcs)
+]]
 			-- 	 Solve patch
 			--     Build diamond grid - how to handle edges? For the rest, just connect most of the 4 sides... (maybe use a LUT)
 			--     Run max flow over it
@@ -240,7 +330,9 @@ function Scene:show (event)
 		funcs.SetStatus("Synthesizing")
 
 		funcs.Action(function()
-			Synthesize(params.exemplars, params.num_colors, params.tile_dim, funcs.TryToYield)
+			Synthesize(self.view, params)
+
+			funcs.SetStatus("Done")
 		end)()
 	end
 end

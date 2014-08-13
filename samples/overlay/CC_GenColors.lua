@@ -138,6 +138,7 @@ function Scene:show (event)
 			}, { top = display.contentHeight - 50, left = 5, width = 250 })
 
 			button.Button(self.view, nil, params.ok_x, params.ok_y, 100, 40, function()
+				params.image = image
 				-- params.method = from tabs...
 				-- Currently assumed to be Random (other two entail lots of setup)
 
