@@ -92,9 +92,18 @@ end
 -- Edge cache --
 local Cache = {}
 
--- Helper to add an edge to the network
-local function AddEdge (u, v, cap, size)
+-- Helper to add an edge to the network, handling overwrites
+local function AddEdge (u, v, cap, size, overwrite)
 	local edge = Edges[u] or remove(Cache) or {}
+	local pos = edge[v]
+
+	if pos then
+		if overwrite then
+			Residues[pos + 1] = cap
+		end
+
+		return size
+	end
 
 	Residues[size + 1] = 0
 	Residues[size + 2] = cap
@@ -140,8 +149,8 @@ local function DriveFlow (edges_cap, n, s, t, prep_mincut)
 	for i = 1, n, 3 do
 		local u, v, cap = edges_cap[i], edges_cap[i + 1], edges_cap[i + 2]
 
-		size = AddEdge(u, v, cap, size)
-		size = AddEdge(v, u, 0, size)
+		size = AddEdge(u, v, cap, size, true)
+		size = AddEdge(v, u, 0, size, false)
 		umax = max(umax, u, v)
 
 		-- If a mincut is to be performed, prepare for it, since the information is at hand.
@@ -319,8 +328,11 @@ function M.MaxFlow_Labels (graph, ks, kt, opts)
 	end
 
 	-- Compute the flow and build the flow network (and any mincut), then restore labels.
+	local rn, flow, cut
+
 	if s and t then
-		local rn, flow, cut = {}, DriveFlow(Buf, n, s, t, opts and opts.compute_mincut)
+		rn, flow, cut = {}, DriveFlow(Buf, n, s, t, opts and opts.compute_mincut)
+
 		local _, count = BuildMatrix(Buf, opts)
 
 		for i = 1, count, 3 do

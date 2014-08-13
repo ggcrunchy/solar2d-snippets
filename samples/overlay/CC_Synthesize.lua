@@ -78,21 +78,23 @@ local function FindWeights (edges_cap, indices, background, patch, nverts, funcs
 	-- M(s, t, A, B) = | A(s) - B(s) | + | A(t) - B(t) |
 	-- A and B are old and new patches, respectively; s and t being adjacent pixels.
 	-- Patch values, norm, etc.
-				
-	local index = 1
 
-	for _ = 1, nverts do
-		local s, t = edges_cap[index], edges_cap[index + 1]
+	local index, s, t = 1, edges_cap[1], edges_cap[2]
+
+	repeat
 		local as, bs = background[indices[s]], patch[s]
 		local at, bt = background[indices[t]], patch[t]
+		local weight = abs(as - bs) + abs(at - bt)
 
-		edges_cap[index + 2] = abs(as - bs) + abs(at - bt)
+		edges_cap[index + 2] = weight
+		edges_cap[index + 5] = weight
 
 		-- TODO, M' (add frequency information, via gradients):
 		-- M(s, t, A, B) / (| Gd[A](s) | + | Gd[A](t) | + | Gd[B](s) | + | Gd[B](t) |)
 
-		index = index + 3
-	end
+		index = index + 6
+		s, t = edges_cap[index], edges_cap[index + 1]
+	until s > nverts
 end
 
 --
@@ -145,24 +147,30 @@ local function AddTriple (ec, u, v, cap)
 end
 
 --
+local function AddTriples_BothWays (ec, u, v, cap)
+	AddTriple(ec, u, v, false)
+	AddTriple(ec, u, v, false)
+end
+
+--
 local function HorzEdge (ec, cur, w)
 	cur = cur - w
 
 	for i = 1, 2 * w - 1 do
-		AddTriple(ec, cur + i, cur + i + 1, false)
+		AddTriples_BothWays(ec, cur + i, cur + i + 1, false)
 	end
 end
 
 --
 local function VertEdge (ec, prev, cur, w)
 	for i = 1, w do
-		AddTriple(ec, prev + i, cur + i, false)
+		AddTriples_BothWays(ec, prev + i, cur + i, false)
 	end
 
 	prev, cur = prev + 1, cur + 1
 
 	for i = 1, w do
-		AddTriple(ec, prev - i, cur - i, false)
+		AddTriples_BothWays(ec, prev - i, cur - i, false)
 	end
 end
 
@@ -206,13 +214,13 @@ local function PreparePatchRegion (half_tdim, tdim, nverts, yfunc)
 
 	--
 	for i = 1, nverts do
-		AddTriple(edges_cap, i, nverts + 1, 1)
+		AddTriple(edges_cap, nverts + 1, i, 1)
 		AddTriple(edges_cap, i, nverts + 2, 1)
 
 		yfunc()
 	end
 
-	AddTriple(edges_cap, nverts + 2, nverts + 3, huge)
+	AddTriple(edges_cap, nverts + 3, nverts + 2, huge)
 
 	return edges_cap, indices
 end
