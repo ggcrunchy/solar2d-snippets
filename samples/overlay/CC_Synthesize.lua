@@ -26,6 +26,7 @@
 -- Standard library imports --
 local abs = math.abs
 local huge = math.huge
+local ipairs = ipairs
 local random = math.random
 
 -- Modules --
@@ -70,17 +71,70 @@ local function FindPatch (patch, image, tdim, method, funcs)
 end
 
 --
-local function FindWeights (edges_cap, background, patch, tdim, funcs)
-	-- As per PreparePatchRegion(), but compute x, y offsets
-	-- Stash grays into an array
-	-- Resolve edges_cap to each array slot, compute, fill
+local function FindWeights (edges_cap, indices, background, patch, nverts, funcs)
+	funcs.SetStatus("Assigning weights")
+
+	-- STUFF
+	-- M(s, t, A, B) = | A(s) - B(s) | + | A(t) - B(t) |
+	-- A and B are old and new patches, respectively; s and t being adjacent pixels.
+	-- Patch values, norm, etc.
+				
+	local index = 1
+
+	for _ = 1, nverts do
+		local s, t = edges_cap[index], edges_cap[index + 1]
+		local as, bs = background[indices[s]], patch[s]
+		local at, bt = background[indices[t]], patch[t]
+
+		edges_cap[index + 2] = abs(as - bs) + abs(at - bt)
+
+		-- TODO, M' (add frequency information, via gradients):
+		-- M(s, t, A, B) / (| Gd[A](s) | + | Gd[A](t) | + | Gd[B](s) | + | Gd[B](t) |)
+
+		index = index + 3
+	end
 end
 
 --
-local function Resolve (composite, x, y, image, tdim, cut, background, patch, funcs)
-	-- Choose s stuff from patch
-	-- Choose t stuff from background
-	-- Recolor
+local function Resolve (composite, x, y, image, tdim, cut, background, patch, nverts, funcs)
+
+	-- Choose s stuff from patch (ignore s itself, i.e. index > nverts)
+	-- Choose t stuff from background (ditto for t)
+	-- Recolor (ugh...)
+
+	funcs.SetStatus("Integrating new samples")
+
+	for _, index in ipairs(cut.s) do
+		if index < nverts then
+			-- ??
+			-- Get indices?
+		end
+	end
+
+	funcs.SetStatus("Restoring old samples")
+
+	for _, index in ipairs(cut.t) do
+		if index < nverts then
+			-- ??
+			-- Ditto?
+		end
+	end
+
+	funcs.SetStatus("Restoring color")
+
+	-- TODO: Feathering or multi-resolution spline
+
+	-- ??
+	-- Look indices up in image again, dump into composite...
+end
+
+--
+local function AddIndices (indices, cur, ypos, w)
+	local offset, xpos = cur - w, ypos - w
+
+	for i = 1, 2 * w do
+		indices[offset + i] = xpos + i
+	end
 end
 
 --
@@ -113,13 +167,14 @@ local function VertEdge (ec, prev, cur, w)
 end
 
 --
-local function PreparePatchRegion (half_tdim, nverts, yfunc)
-	local edges_cap, prev = {}, 0
+local function PreparePatchRegion (half_tdim, tdim, nverts, yfunc)
+	local edges_cap, indices, prev, ypos = {}, {}, 0, 0
 
 	--
 	for w = 1, half_tdim do
 		local cur = w^2
 
+		AddIndices(indices, cur, ypos + half_tdim, w)
 		HorzEdge(edges_cap, cur, w)
 
 		if prev > 0 then
@@ -128,23 +183,25 @@ local function PreparePatchRegion (half_tdim, nverts, yfunc)
 
 		yfunc()
 
-		prev = cur
+		prev, ypos = cur, ypos + tdim
 	end
 
 	--
 	for w = half_tdim, 1, -1 do
 		local cur = prev + 2 * w
+		local offset = cur - w
 
 		if w < half_tdim then
 			cur = cur + 1
 		end
 
+		AddIndices(indices, cur, ypos + half_tdim, w)
 		HorzEdge(edges_cap, cur, w)
 		VertEdge(edges_cap, prev, cur, w)
 
 		yfunc()
 
-		prev = cur
+		prev, ypos = cur, ypos + tdim
 	end
 
 	--
@@ -157,7 +214,7 @@ local function PreparePatchRegion (half_tdim, nverts, yfunc)
 
 	AddTriple(edges_cap, nverts + 2, nverts + 3, huge)
 
-	return edges_cap
+	return edges_cap, indices
 end
 
 --[[
@@ -246,8 +303,8 @@ local function Synthesize (view, params)
 	funcs.SetStatus("Preprocessing patch")
 
 	local nverts = 2 * (half_tdim + 1) * half_tdim
-	local edges_cap, background, patch, image = PreparePatchRegion(half_tdim, nverts, funcs.TryToYield), {}, {}, params.image
-
+	local edges_cap, indices = PreparePatchRegion(half_tdim, tdim, nverts, funcs.TryToYield)
+	local background, patch, image = {}, {}, params.image
 	-- TODO: If patch-based method, build summed area tables...
 
 	-- For a given corner, choose the "opposite" quadrant: for the upper-right tile, draw from
@@ -287,21 +344,17 @@ local function Synthesize (view, params)
 
 			--
 			FindPatch(patch, image, tdim, method, funcs)
-			FindWeights(edges_cap, background, patch, tdim, funcs)
---[[
+			FindWeights(edges_cap, indices, background, patch, nverts, funcs)
+
 			local _, _, cut = flow.MaxFlow(edges_cap, nverts + 1, nverts + 2, FlowOpts)
 
-			Resolve(composite, x, y, image, tdim, cut, background, patch, funcs)
-]]
+			Resolve(composite, x, y, image, tdim, cut, background, patch, nverts, funcs)
+
 			-- 	 Solve patch
 			--     Build diamond grid - how to handle edges? For the rest, just connect most of the 4 sides... (maybe use a LUT)
 			--     Run max flow over it
 			--     Replace colors inside the cut
-			-- M(s, t, A, B): A, B: old, new patches; s, t: adjacent pixels
-			-- Basic
-				-- | A(s) - B(s) | + | A(t) - B(t) |
-			-- Better, M':
-				-- M(s, t, A, B) / (| Gd[A](s) | + | Gd[A](t) | + | Gd[B](s) | + | Gd[B](t) |)
+			
 			--     Tidy up the seam (once implemented...)
 
 			-- local _, _, cut = flow.MaxFlow(edges_cap, s, t, { compute_mincut = true })
