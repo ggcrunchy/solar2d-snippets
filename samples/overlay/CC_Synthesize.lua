@@ -106,6 +106,12 @@ local function Resolve (composite, x, y, image, tdim, cut, background, patch, nv
 
 	funcs.SetStatus("Integrating new samples")
 
+if VVV == 86 then
+	print("S-cut")
+	vdump(cut.s)
+	print("")
+end
+
 	for _, index in ipairs(cut.s) do
 		if index < nverts then
 			-- ??
@@ -114,7 +120,11 @@ local function Resolve (composite, x, y, image, tdim, cut, background, patch, nv
 	end
 
 	funcs.SetStatus("Restoring old samples")
-
+if VVV == 86 then
+	print("T-cut")
+	vdump(cut.t)
+	print("")
+end
 	for _, index in ipairs(cut.t) do
 		if index < nverts then
 			-- ??
@@ -123,7 +133,7 @@ local function Resolve (composite, x, y, image, tdim, cut, background, patch, nv
 	end
 
 	funcs.SetStatus("Restoring color")
-
+VVV=(VVV or 0) + 1
 	-- TODO: Feathering or multi-resolution spline
 
 	-- ??

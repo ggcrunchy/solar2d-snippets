@@ -118,7 +118,11 @@ function Scene:create ()
 			elseif name == "Editor" then
 				composer.gotoScene("scene.EditorSetup")
 			else
-				scenes.SetListenFunc(ReturnToChoices)
+				scenes.SetListenFunc(function(what)
+					if what == "message:wants_to_go_back" then
+						ReturnToChoices()
+					end
+				end)
 				composer.gotoScene("samples." .. name, { params = Params })
 			end
 		end, "Launch",
