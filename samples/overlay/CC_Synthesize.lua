@@ -29,6 +29,7 @@ local huge = math.huge
 local ipairs = ipairs
 local max = math.max
 local random = math.random
+local sort = table.sort
 
 -- Modules --
 local bitmap = require("ui.Bitmap")
@@ -40,6 +41,11 @@ local composer = require("composer")
 
 --
 local Scene = composer.newScene()
+
+--
+local function QuadPos (x, y, w)
+	return 4 * (y * w + x)
+end
 
 --
 local function FindPatch (patch, image, tdim, method, funcs)
@@ -54,7 +60,7 @@ local function FindPatch (patch, image, tdim, method, funcs)
 
 	funcs.SetStatus("Building patch")
 
-	local ypos, pixels, index = 4 * (patch.y * w + patch.x), image:GetPixels(), 1
+	local ypos, pixels, index = QuadPos(patch.x, patch.y, w), image:GetPixels(), 1
 
 	for y = 0, tdim - 1 do
 		local xpos = ypos
@@ -118,13 +124,13 @@ end
 
 --
 local function Resolve (composite, x, y, image, tdim, cut, background, patch, nverts, funcs)
-
 	-- Choose s stuff from patch (ignore s itself, i.e. index > nverts)
 	-- Choose t stuff from background (ditto for t)
 	-- Recolor (ugh...)
 
 	funcs.SetStatus("Integrating new samples")
 
+	sort(cut.s)
 if VVV == 86 then
 	print("S-cut")
 	vdump(cut.s)
@@ -139,6 +145,8 @@ end
 	end
 
 	funcs.SetStatus("Restoring old samples")
+
+	sort(cut.t)
 if VVV == 86 then
 	print("T-cut")
 	vdump(cut.t)
@@ -157,6 +165,47 @@ VVV=(VVV or 0) + 1
 
 	-- ??
 	-- Look indices up in image again, dump into composite...
+end
+
+--
+local function RestoreRow (composite, pixels, x, y, half_tdim, lq, rq, lpos, rpos)
+	for _ = 1, half_tdim do
+		composite:SetPixel(x, y, pixels[lpos] / 255, pixels[lpos + 1] / 255, pixels[lpos + 2] / 255)
+
+		x, lpos = x + 1, lpos + 4
+	end
+
+	for _ = 1, half_tdim do
+		composite:SetPixel(x, y, pixels[rpos] / 255, pixels[rpos + 1] / 255, pixels[rpos + 2] / 255)
+
+		x, rpos = x + 1, rpos + 4
+	end
+end
+
+--
+local function RestoreColor (composite, x, y, half_tdim, image, ul, ur, ll, lr, funcs)
+	local w, pixels = image:GetDims(), image:GetPixels()
+	local ul_pos = QuadPos(ul.x + half_tdim, ul.y + half_tdim, w) + 1
+	local ur_pos = QuadPos(ur.x, ur.y + half_tdim, w) + 1
+	local ll_pos = QuadPos(ll.x + half_tdim, ll.y, w) + 1
+	local lr_pos = QuadPos(lr.x, lr.y, w) + 1
+	local stride = 4 * w
+
+	for _ = 1, half_tdim do
+		RestoreRow(composite, pixels, x, y, half_tdim, ul, ur, ul_pos, ur_pos)
+
+		y, ul_pos, ur_pos = y + 1, ul_pos + stride, ur_pos + stride
+
+		funcs.TryToYield()
+	end
+
+	for _ = 1, half_tdim do
+		RestoreRow(composite, pixels, x, y, half_tdim, ll, lr, ll_pos, lr_pos)
+
+		y, ll_pos, lr_pos = y + 1, ll_pos + stride, lr_pos + stride
+
+		funcs.TryToYield()
+	end
 end
 
 --
@@ -320,6 +369,7 @@ local function LoadHalf (exemplars, into, row, offset1, offset2, lpos, rpos, hal
 	end
 
 	-- TODO: Add x, y for recovery of original image
+	return lq, rq
 end
 
 -- --
@@ -359,8 +409,8 @@ local function Synthesize (view, params)
 			--
 			funcs.SetStatus("Compositing colors")
 
-			LoadHalf(exemplars, background, row1, offset1, offset2, ul_pos, ur_pos, half_tdim, tdim, 1)
-			LoadHalf(exemplars, background, row2, offset1, offset2, ll_pos, lr_pos, half_tdim, tdim, mid + 1)
+			local ul, ur = LoadHalf(exemplars, background, row1, offset1, offset2, ul_pos, ur_pos, half_tdim, tdim, 1)
+			local ll, lr = LoadHalf(exemplars, background, row2, offset1, offset2, ll_pos, lr_pos, half_tdim, tdim, mid + 1)
 
 			funcs.TryToYield()
 
@@ -383,8 +433,11 @@ local function Synthesize (view, params)
 			FindPatch(patch, image, tdim, method, funcs)
 			FindWeights(edges_cap, indices, background, patch, nverts, funcs)
 
+			funcs.SetStatus("Computing mincut")
+
 			local _, extra = flow.MaxFlow(edges_cap, nverts + 1, nverts + 2, FlowOpts)
 
+			RestoreColor(composite, x, y, half_tdim, image, ul, ur, ll, lr, funcs)
 			Resolve(composite, x, y, image, tdim, extra.mincut, background, patch, nverts, funcs)
 
 			-- 	 Solve patch
