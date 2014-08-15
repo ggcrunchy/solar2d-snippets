@@ -27,6 +27,7 @@
 local abs = math.abs
 local huge = math.huge
 local ipairs = ipairs
+local max = math.max
 local random = math.random
 
 -- Modules --
@@ -71,8 +72,16 @@ local function FindPatch (patch, image, tdim, method, funcs)
 end
 
 --
+local Sum = {}
+
+--
 local function FindWeights (edges_cap, indices, background, patch, nverts, funcs)
 	funcs.SetStatus("Assigning weights")
+
+	--
+	for i = 1, nverts do
+		Sum[i] = 0
+	end
 
 	-- STUFF
 	-- M(s, t, A, B) = | A(s) - B(s) | + | A(t) - B(t) |
@@ -82,12 +91,15 @@ local function FindWeights (edges_cap, indices, background, patch, nverts, funcs
 	local index, s, t = 1, edges_cap[1], edges_cap[2]
 
 	repeat
-		local as, bs = background[indices[s]], patch[s]
-		local at, bt = background[indices[t]], patch[t]
+		local as, bs, u = background[indices[s]], patch[s], edges_cap[index]
+		local at, bt, v = background[indices[t]], patch[t], edges_cap[index + 1]
 		local weight = abs(as - bs) + abs(at - bt)
 
 		edges_cap[index + 2] = weight
 		edges_cap[index + 5] = weight
+
+		Sum[u] = Sum[u] + weight
+		Sum[v] = Sum[v] + weight
 
 		-- TODO, M' (add frequency information, via gradients):
 		-- M(s, t, A, B) / (| Gd[A](s) | + | Gd[A](t) | + | Gd[B](s) | + | Gd[B](t) |)
@@ -95,6 +107,13 @@ local function FindWeights (edges_cap, indices, background, patch, nverts, funcs
 		index = index + 6
 		s, t = edges_cap[index], edges_cap[index + 1]
 	until s > nverts
+
+	--
+	for _ = 1, 2 do
+		for i = 1, nverts do
+			edges_cap[index + 2], index = Sum[i], index + 3
+		end
+	end
 end
 
 --
@@ -224,8 +243,8 @@ local function PreparePatchRegion (half_tdim, tdim, nverts, yfunc)
 
 	--
 	for i = 1, nverts do
-		AddTriple(edges_cap, nverts + 1, i, 1)
-		AddTriple(edges_cap, i, nverts + 2, 1)
+		AddTriple(edges_cap, nverts + 1, i, huge)
+		AddTriple(edges_cap, i, nverts + 2, huge)
 
 		yfunc()
 	end
@@ -304,7 +323,7 @@ local function LoadHalf (exemplars, into, row, offset1, offset2, lpos, rpos, hal
 end
 
 -- --
-local FlowOpts = { compute_mincut = true }
+local FlowOpts = { compute_mincut = true, into = {} }
 
 --
 local function Synthesize (view, params)
@@ -364,9 +383,9 @@ local function Synthesize (view, params)
 			FindPatch(patch, image, tdim, method, funcs)
 			FindWeights(edges_cap, indices, background, patch, nverts, funcs)
 
-			local _, _, cut = flow.MaxFlow(edges_cap, nverts + 1, nverts + 2, FlowOpts)
+			local _, extra = flow.MaxFlow(edges_cap, nverts + 1, nverts + 2, FlowOpts)
 
-			Resolve(composite, x, y, image, tdim, cut, background, patch, nverts, funcs)
+			Resolve(composite, x, y, image, tdim, extra.mincut, background, patch, nverts, funcs)
 
 			-- 	 Solve patch
 			--     Build diamond grid - how to handle edges? For the rest, just connect most of the 4 sides... (maybe use a LUT)

@@ -27,6 +27,7 @@
 
 -- Standard library imports --
 local assert = assert
+local huge = math.huge
 local max = math.max
 local min = math.min
 local pairs = pairs
@@ -34,6 +35,7 @@ local remove = table.remove
 
 -- Modules --
 local labels = require("graph_ops.labels")
+local mincut = require("graph_ops.mincut")
 local ring_buffer = require("array_ops.ring_buffer")
 
 -- Exports --
@@ -114,8 +116,8 @@ local function AddEdge (u, v, cap, size, overwrite)
 end
 
 -- Clean up the edges, building up the flow matrix
-local function BuildMatrix (rn, opts)
-	local ri, emin = 0, (opts and opts.include_zero) and -1 or 0
+local function BuildMatrix (rn, fmin)--opts)
+	local ri = 0--, emin = 0, (opts and opts.include_zero) and -1 or 0
 
 	for u = #Edges, 1, -1 do
 		local edge = Edges[u]
@@ -124,27 +126,27 @@ local function BuildMatrix (rn, opts)
 			for v, offset in pairs(edge) do
 				local eflow = Residues[offset]
 
-				if eflow > emin then
+				if eflow > fmin then--emin then
 					rn[ri + 1], rn[ri + 2], rn[ri + 3], ri = u, v, eflow, ri + 3
 				end
 
-				edge[v] = nil
+			--	edge[v] = nil
 			end
 
-			Cache[#Cache + 1] = edge
+		--	Cache[#Cache + 1] = edge
 		end
 
-		Edges[u] = nil
+	--	Edges[u] = nil
 	end
 
 	return rn, ri
 end
 
 -- Helper to do edge setup and drive flow
-local function DriveFlow (edges_cap, n, s, t, prep_mincut)
+local function DriveFlow (edges_cap, n, s, t)--, prep_mincut)
 	-- Put the edges and capacity into an easy-to-iterate form.
 	local flow, umax, size = 0, -1, 0
-	local cut = prep_mincut and { s = s, t = t }
+--	local cut = prep_mincut and { s = s, t = t }
 
 	for i = 1, n, 3 do
 		local u, v, cap = edges_cap[i], edges_cap[i + 1], edges_cap[i + 2]
@@ -152,13 +154,14 @@ local function DriveFlow (edges_cap, n, s, t, prep_mincut)
 		size = AddEdge(u, v, cap, size, true)
 		size = AddEdge(v, u, 0, size, false)
 		umax = max(umax, u, v)
-
+--[[
 		-- If a mincut is to be performed, prepare for it, since the information is at hand.
 		if cut then
 			local to = cut[u] or {}
 
 			to[v], cut[u], cut.umax = cap, to, umax
 		end
+]]
 	end
 
 	-- Add dummy edges to facilitate array iteration.
@@ -192,11 +195,13 @@ local function DriveFlow (edges_cap, n, s, t, prep_mincut)
 		end
 	end
 
-	return flow, cut
+	return flow--, cut
 end
 
 -- Resolve a mincut, given flow state
-local function Mincut (rn, cut, count)
+--[=[
+	old:
+
 	local s, t = cut.s, cut.t
 	local sarr, tarr = {}, {}
 
@@ -256,6 +261,36 @@ local function Mincut (rn, cut, count)
 	cut.s, cut.t = sarr, tarr
 
 	return cut
+]=]
+
+--
+local function MinFlow (opts)
+	local how = opts.compute_rn
+
+	if how == "all" then
+		return -huge
+	elseif how == "include_zero" then
+		return -1
+	elseif how then
+		return 0
+	end
+end
+
+--
+local function RemoveEdges ()
+	for u = #Edges, 1, -1 do
+		local edge = Edges[u]
+
+		if edge then
+			for v in pairs(edge) do
+				edge[v] = nil
+			end
+
+			Cache[#Cache + 1] = edge
+		end
+
+		Edges[u] = nil
+	end
 end
 
 --- Computes the maximum flow along a network.
@@ -277,10 +312,27 @@ end
 -- ..., _tvertex1_, _tvertex2_, ... } }, where the _svertex?_ and _tvertex?_ are as above,
 -- under either key _s_ or key _t_. If the mincut was not requested, **nil**.
 function M.MaxFlow (edges_cap, s, t, opts)
-	local flow, cut = DriveFlow(edges_cap, #edges_cap, s, t, opts and opts.compute_mincut)
-	local rn, count = BuildMatrix({}, opts)
+	local extra, flow--[[, cut]] = nil, DriveFlow(edges_cap, #edges_cap, s, t)--, opts and opts.compute_mincut)
 
-	return flow, rn, cut and Mincut(rn, cut, count)
+	if opts then
+		local fmin = MinFlow(opts)
+
+		if fmin or opts.compute_mincut then
+			extra = opts.into or {}
+
+			if fmin then
+				extra.rn = BuildMatrix({}, fmin)--opts)
+			end
+
+			if opts.compute_mincut then
+				extra.mincut = mincut.FromAdjacencyAndParent(Edges, Parent)
+			end
+		end
+	end
+--	local rn, count = BuildMatrix({}, opts)
+	RemoveEdges()
+
+	return flow, extra--rn, cut and Mincut(rn, cut, count)
 end
 
 -- Current label state --
@@ -328,41 +380,58 @@ function M.MaxFlow_Labels (graph, ks, kt, opts)
 	end
 
 	-- Compute the flow and build the flow network (and any mincut), then restore labels.
-	local rn, flow, cut
+	local flow, extra--rn, flow, cut
 
 	if s and t then
-		rn, flow, cut = {}, DriveFlow(Buf, n, s, t, opts and opts.compute_mincut)
+	
+--		rn, flow, cut = {}, 
+		flow = DriveFlow(Buf, n, s, t)--, opts and opts.compute_mincut)
 
-		local _, count = BuildMatrix(Buf, opts)
+		if opts then
+			local fmin = MinFlow(opts)
 
-		for i = 1, count, 3 do
-			local u, v, eflow = IndexToLabel[Buf[i]], IndexToLabel[Buf[i + 1]], Buf[i + 2]
-			local to = rn[u] or {}
+			if fmin or opts.compute_mincut then
+				extra = opts.into or {}
 
-			rn[u], to[v] = to, eflow
-		end
+				if fmin then
+					local rn, _, count = {}, BuildMatrix(Buf, opts)
 
-		if cut then
-			cut = Mincut(Buf, cut, count)
+					for i = 1, count, 3 do
+						local u, v, eflow = IndexToLabel[Buf[i]], IndexToLabel[Buf[i + 1]], Buf[i + 2]
+						local to = rn[u] or {}
 
-			local s, t = cut.s, cut.t
+						rn[u], to[v] = to, eflow
+					end
 
-			for i = 1, #s do
-				s[i] = IndexToLabel[s[i]]
-			end
+					extra.rn = rn
+				end
 
-			for i = 1, #t do
-				t[i] = IndexToLabel[t[i]]
+				if opts.compute_mincut then--cut then
+					local cut = mincut.FromAdjacencyAndParent(Edges, Parent)--Buf, cut, count)
+
+					local s, t = cut.s, cut.t
+
+					for i = 1, #s do
+						s[i] = IndexToLabel[s[i]]
+					end
+
+					for i = 1, #t do
+						t[i] = IndexToLabel[t[i]]
+					end
+
+					extra.mincut = cut
+				end
 			end
 		end
 	end
 
+	RemoveEdges()
 	CleanUp()
 
 	assert(s, "Missing source")
 	assert(t, "Missing sink")
 
-	return flow, rn, cut
+	return flow, extra--rn, cut
 end
 
 -- Export the module.

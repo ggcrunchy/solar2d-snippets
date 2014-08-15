@@ -30,6 +30,36 @@ local remove = table.remove
 -- Exports --
 local M = {}
 
+--
+local function TryToAdd (parents, sarr, tarr, index)
+	local visited = parents[index]
+
+	if visited ~= nil then
+		local arr = visited and sarr or tarr
+
+		arr[#arr + 1], parents[index] = index
+	end
+end
+
+-- --
+function M.FromAdjacencyAndParent (adj, parents, max_vert)
+	local sarr, tarr = {}, {}
+
+	for u = max_vert or #adj, 1, -1 do
+		local edge = adj[u]
+
+		if edge then
+			TryToAdd(parents, sarr, tarr, u)
+
+			for v in pairs(edge) do
+				TryToAdd(parents, sarr, tarr, v)
+			end
+		end
+	end
+
+	return { s = sarr, t = tarr }
+end
+
 -- --
 local Stack = {}
 

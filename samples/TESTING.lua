@@ -51,17 +51,19 @@ local mf=require("graph_ops.flow")
 -- Source = a, sink = g
 do
 	-- s = 1, x = 2, y = 3, t = 4
---[[
-	local a, b, c = mf.MaxFlow({
+---[[
+	local flow, extra = mf.MaxFlow({
 		1, 2, 1,
 		1, 3, 3,
 		2, 3, 1,
 		3, 2, 1,
 		2, 4, 3,
 		3, 4, 1
-	}, 1, 4, { compute_mincut = true })]]
+	}, 1, 4, { compute_mincut = true })
+--]]
 	-- a .. j = 1 .. 10
-	local a, b, c = mf.MaxFlow({
+--[[
+	local flow, extra = mf.MaxFlow({
 		1, 2, 1,
 		1, 3, 1,
 		1, 4, 1,
@@ -76,9 +78,9 @@ do
 		8, 10, 1,
 		9, 10, 1
 	}, 1, 10, { compute_mincut = true })
-	print("Max flow = " .. tostring(a))
-	vdump(b)
-	vdump(c)
+--]]
+	print("Max flow = " .. tostring(flow))
+	vdump(extra)
 end
 
 end
