@@ -121,7 +121,7 @@ function Scene:show (event)
 		end
 
 		-- Add a listbox to be populated with some image choices.
-		local preview, ok, colors_stepper, size_stepper
+		local preview, ok, colors_stepper, size_stepper, current
 
 		funcs.SetStatus("Choose an image")
 
@@ -132,14 +132,27 @@ function Scene:show (event)
 				return w >= MinDim and h >= MinDim
 			end,
 
+			on_lost_selection = function()
+				Reset()
+
+				current = nil
+			end,
+
 			press = function(event)
+				-- Respond to any change in the selection.
+				local selection = event.listbox:GetSelection()
+
+				if current ~= selection then
+					Reset()
+
+					current = selection
+				end
+
 				-- On the first selection, add a button to launch the next step. When fired, the selected
 				-- image is read into memory; assuming that went well, the algorithm proceeds on to the
 				-- energy computation step. The option to cancel is available during loading (although
 				-- this is typically a quick process).
 				if not ok then
-					Reset()
-
 					--
 					local function FindPatches ()
 						local exemplars, w, h = {}, event.listbox:GetDims()
@@ -148,7 +161,7 @@ function Scene:show (event)
 						if tile_dim % 2 ~= 0 then
 							tile_dim = tile_dim - 1
 						end
-
+ 
 						tile_dim = min(tile_dim, .5 * ToSize(size_stepper:getValue()))
 
 						local px, py = preview:GetPos()

@@ -27,9 +27,7 @@
 local abs = math.abs
 local huge = math.huge
 local ipairs = ipairs
-local max = math.max
 local random = math.random
-local sort = table.sort
 
 -- Modules --
 local bitmap = require("ui.Bitmap")
@@ -62,10 +60,10 @@ local function FindPatch (patch, image, tdim, method, funcs)
 
 	local ypos, pixels, index = QuadPos(patch.x, patch.y, w), image:GetPixels(), 1
 
-	for y = 0, tdim - 1 do
+	for _ = 0, tdim - 1 do
 		local xpos = ypos
 
-		for x = 0, tdim - 1 do
+		for _ = 0, tdim - 1 do
 			local sum = pixels[xpos + 1] + pixels[xpos + 2] + pixels[xpos + 3]
 
 			patch[index], xpos, index = sum, xpos + 4, index + 1
@@ -123,60 +121,35 @@ local function FindWeights (edges_cap, indices, background, patch, nverts, funcs
 end
 
 --
-local function Resolve (composite, x, y, image, tdim, cut, background, patch, nverts, funcs)
-	-- Choose s stuff from patch (ignore s itself, i.e. index > nverts)
-	-- Choose t stuff from background (ditto for t)
-	-- Recolor (ugh...)
+local function Resolve (composite, x, y, image, tdim, cut, patch, indices, nverts, funcs)
+	local w, pixels, px, py = image:GetDims(), image:GetPixels(), patch.x, patch.y
 
 	funcs.SetStatus("Integrating new samples")
 
-	sort(cut.s)
-if VVV == 86 then
-	print("S-cut")
-	vdump(cut.s)
-	print("")
-end
-
 	for _, index in ipairs(cut.s) do
 		if index < nverts then
-			-- ??
-			-- Get indices?
+			local im1 = indices[index] - 1
+			local col = im1 % tdim
+			local row = (im1 - col) / tdim
+			local pos = QuadPos(px + col, py + row, w)
+
+			composite:SetPixel(x + col, y + row, pixels[pos + 1] / 255, pixels[pos + 2] / 255, pixels[pos + 3] / 255)
 		end
 	end
 
-	funcs.SetStatus("Restoring old samples")
-
-	sort(cut.t)
-if VVV == 86 then
-	print("T-cut")
-	vdump(cut.t)
-	print("")
-end
-	for _, index in ipairs(cut.t) do
-		if index < nverts then
-			-- ??
-			-- Ditto?
-		end
-	end
-
-	funcs.SetStatus("Restoring color")
-VVV=(VVV or 0) + 1
 	-- TODO: Feathering or multi-resolution spline
-
-	-- ??
-	-- Look indices up in image again, dump into composite...
 end
 
 --
-local function RestoreRow (composite, pixels, x, y, half_tdim, lq, rq, lpos, rpos)
+local function RestoreRow (composite, pixels, x, y, half_tdim, lpos, rpos)
 	for _ = 1, half_tdim do
-		composite:SetPixel(x, y, pixels[lpos] / 255, pixels[lpos + 1] / 255, pixels[lpos + 2] / 255)
+		composite:SetPixel(x, y, pixels[lpos + 1] / 255, pixels[lpos + 2] / 255, pixels[lpos + 3] / 255)
 
 		x, lpos = x + 1, lpos + 4
 	end
 
 	for _ = 1, half_tdim do
-		composite:SetPixel(x, y, pixels[rpos] / 255, pixels[rpos + 1] / 255, pixels[rpos + 2] / 255)
+		composite:SetPixel(x, y, pixels[rpos + 1] / 255, pixels[rpos + 2] / 255, pixels[rpos + 3] / 255)
 
 		x, rpos = x + 1, rpos + 4
 	end
@@ -184,15 +157,17 @@ end
 
 --
 local function RestoreColor (composite, x, y, half_tdim, image, ul, ur, ll, lr, funcs)
+	funcs.SetStatus("Restoring background color")
+
 	local w, pixels = image:GetDims(), image:GetPixels()
-	local ul_pos = QuadPos(ul.x + half_tdim, ul.y + half_tdim, w) + 1
-	local ur_pos = QuadPos(ur.x, ur.y + half_tdim, w) + 1
-	local ll_pos = QuadPos(ll.x + half_tdim, ll.y, w) + 1
-	local lr_pos = QuadPos(lr.x, lr.y, w) + 1
+	local ul_pos = QuadPos(ul.x + half_tdim, ul.y + half_tdim, w)
+	local ur_pos = QuadPos(ur.x, ur.y + half_tdim, w)
+	local ll_pos = QuadPos(ll.x + half_tdim, ll.y, w)
+	local lr_pos = QuadPos(lr.x, lr.y, w)
 	local stride = 4 * w
 
 	for _ = 1, half_tdim do
-		RestoreRow(composite, pixels, x, y, half_tdim, ul, ur, ul_pos, ur_pos)
+		RestoreRow(composite, pixels, x, y, half_tdim, ul_pos, ur_pos)
 
 		y, ul_pos, ur_pos = y + 1, ul_pos + stride, ur_pos + stride
 
@@ -200,7 +175,7 @@ local function RestoreColor (composite, x, y, half_tdim, image, ul, ur, ll, lr, 
 	end
 
 	for _ = 1, half_tdim do
-		RestoreRow(composite, pixels, x, y, half_tdim, ll, lr, ll_pos, lr_pos)
+		RestoreRow(composite, pixels, x, y, half_tdim, ll_pos, lr_pos)
 
 		y, ll_pos, lr_pos = y + 1, ll_pos + stride, lr_pos + stride
 
@@ -225,7 +200,7 @@ local function AddTriple (ec, u, v, cap)
 end
 
 --
-local function AddTriples_BothWays (ec, u, v, cap)
+local function AddTriples_BothWays (ec, u, v)
 	AddTriple(ec, u, v, false)
 	AddTriple(ec, u, v, false)
 end
@@ -235,20 +210,20 @@ local function HorzEdge (ec, cur, w)
 	cur = cur - w
 
 	for i = 1, 2 * w - 1 do
-		AddTriples_BothWays(ec, cur + i, cur + i + 1, false)
+		AddTriples_BothWays(ec, cur + i, cur + i + 1)
 	end
 end
 
 --
 local function VertEdge (ec, prev, cur, w)
 	for i = 1, w do
-		AddTriples_BothWays(ec, prev + i, cur + i, false)
+		AddTriples_BothWays(ec, prev + i, cur + i)
 	end
 
 	prev, cur = prev + 1, cur + 1
 
 	for i = 1, w do
-		AddTriples_BothWays(ec, prev - i, cur - i, false)
+		AddTriples_BothWays(ec, prev - i, cur - i)
 	end
 end
 
@@ -275,7 +250,6 @@ local function PreparePatchRegion (half_tdim, tdim, nverts, yfunc)
 	--
 	for w = half_tdim, 1, -1 do
 		local cur = prev + 2 * w
-		local offset = cur - w
 
 		if w < half_tdim then
 			cur = cur + 1
@@ -292,8 +266,8 @@ local function PreparePatchRegion (half_tdim, tdim, nverts, yfunc)
 
 	--
 	for i = 1, nverts do
-		AddTriple(edges_cap, nverts + 1, i, huge)
-		AddTriple(edges_cap, i, nverts + 2, huge)
+		AddTriple(edges_cap, nverts + 1, i, false)
+		AddTriple(edges_cap, i, nverts + 2, false)
 
 		yfunc()
 	end
@@ -382,7 +356,7 @@ local function Synthesize (view, params)
 
 	composite:Resize(dim * tdim, dim * tdim) -- Needs some care to not run up against screen?
 
-	layout.PutAtBottomLeft(composite, "1%", "-2%")
+	layout.PutAtBottomLeft(composite, "35%", "-2%")
 
 	--
 	local funcs, half_tdim = params.funcs, .5 * tdim
@@ -392,6 +366,7 @@ local function Synthesize (view, params)
 	local nverts = 2 * (half_tdim + 1) * half_tdim
 	local edges_cap, indices = PreparePatchRegion(half_tdim, tdim, nverts, funcs.TryToYield)
 	local background, patch, image = {}, {}, params.image
+
 	-- TODO: If patch-based method, build summed area tables...
 
 	-- For a given corner, choose the "opposite" quadrant: for the upper-right tile, draw from
@@ -438,22 +413,7 @@ local function Synthesize (view, params)
 			local _, extra = flow.MaxFlow(edges_cap, nverts + 1, nverts + 2, FlowOpts)
 
 			RestoreColor(composite, x, y, half_tdim, image, ul, ur, ll, lr, funcs)
-			Resolve(composite, x, y, image, tdim, extra.mincut, background, patch, nverts, funcs)
-
-			-- 	 Solve patch
-			--     Build diamond grid - how to handle edges? For the rest, just connect most of the 4 sides... (maybe use a LUT)
-			--     Run max flow over it
-			--     Replace colors inside the cut
-			
-			--     Tidy up the seam (once implemented...)
-
-			-- local _, _, cut = flow.MaxFlow(edges_cap, s, t, { compute_mincut = true })
-			-- How to do s and t? Virtual nodes? (Sinha shows ALL nodes connected to each... maybe only for diamond, though?)
-			-- Plan-of-attack:
-			--	- s, t each connected to all nodes in diamond (i.e. the candidate patch)
-			--	- t also connected to some node along boundary (with infinite weight to neighbor)
-			--  - The latter condition would be used to disambiguate sets
-			-- Just give each capacity of 1? (Literature seems to suggest these can be anything...)
+			Resolve(composite, x, y, image, tdim, extra.mincut, patch, indices, nverts, funcs)
 
 			x = x + tdim
 		end

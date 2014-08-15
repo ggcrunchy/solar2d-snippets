@@ -58,7 +58,7 @@ function M.FileList (group, x, y, options)
 	end
 
 	--
-	local filter, on_reload = options.filter, options.on_reload
+	local filter, on_lost_selection, on_reload = options.filter, options.on_lost_selection, options.on_reload
 
 	local function Reload ()
 		local selection = FileList:GetSelection()
@@ -88,8 +88,18 @@ function M.FileList (group, x, y, options)
 		end
 
 		-- If the selection still exists, scroll the listbox to it. Otherwise, fall back to an
-		-- alternate, if possible.
-		local offset = FileList:Find(selection) or FileList:Find(alt)
+		-- alternate, if possible. Report any dropped selection, if being tracked.
+		local offset = FileList:Find(selection)
+
+		if not offset then
+			FileList:ClearSelection()
+
+			if selection and on_lost_selection then
+				on_lost_selection{ listbox = FileList, selection = selection }
+			end
+
+			offset = FileList:Find(alt)
+		end
 
 		if offset then
 			FileList:scrollToIndex(offset, 0)
@@ -268,6 +278,11 @@ function M.Listbox (group, x, y, options)
 		selection, stash = nil
 
 		self:deleteAllRows()
+	end
+
+	--- DOCME
+	function Listbox:ClearSelection ()
+		selection = nil
 	end
 
 	--- DOCME
