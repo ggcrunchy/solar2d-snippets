@@ -39,12 +39,44 @@ local M = {}
 
 	Corner weights:
 
-	1 --- 16
+	1 --- 64
 	|      |
-	2 ---  4
+	4 --- 16
+
+	These corresponds to the following, with C = 4:
+
+	"Most applications of corner tiles require an enumeration of all tiles in a tile set. We
+	found the following scheme to be convenient. Corner tiles are uniquely determined by their
+	corner colors cNE, cSE, cSW, and cNW. Corner tiles can thus be represented as the 4-digit
+	base-C numbers cNE cSE cSW cNW, or decimal integers 0, 1, ..., C^4 − 1. A base conversion
+	switches between the corner colors and tile index. For example, the tile index of the tile
+	with corner colors cNE, cSE, cSW, and cNW is given by
+
+	((cNEC + cSE)C + cSW)C + cNW."
 
 	To obtain the numeric tile values shown in the paper, the numeric values associated with a
 	given tile's colors are multiplied by the corresponding corner weights and summed.
+
+	The hash is computed as follows:
+
+	"We present the following algorithm for corner tiles. Without loss of generality, assume
+	that the tiles are placed with their corners on the integer lattice points, and that the
+	coordinates of a tile are the coordinates of its SW corner. Similar to direct stochastic
+	tiling algorithms for Wang tiles, the algorithm for corner tiles is based on a hash function
+	h(x, y) that associates a random color with each integer lattice point. The corner colors of
+	the tile at coordinates (x, y) are given by h(x + 1, y + 1), h(x + 1, y), h(x, y), and h(x,
+	y + 1). The tile index is obtained with a base conversion, as explained in the previous
+	section. We commonly use a hash function based on a permutation table [Perlin 2002; Ebert et
+	al. 2002] because such hash functions are both easy to implement and efficient, but in
+	practice, any hash function can be used. If P is a zero-based table containing a random
+	permutation of the integers 0, 1, ..., N − 1, then the hash function is defined as
+
+		h(x, y)	= P[(P[x % N] + y) % N] % C, (2)
+	
+	in which % is the modulo division and N is the permutation table size. Moderate table sizes
+	(256 or less) are commonly used. Note that with this particular choice of hash function, the
+	tiling will have a period of (N, N). This is not necessarily a disadvantage, as it allows
+	tilings over cylindric and toroidal topologies."
 ]]
 
 -- Numeric values of red, yellow, green, blue --
@@ -72,22 +104,45 @@ local Colors = {
 
 --- DOCME
 function M.GetDim (ncolors)
-	--
+	return ncolors^2
+end
+
+--
+local function Lookup (perm, x, n)
+	return perm[(x < n and x or x % n) + 1]
 end
 
 --- DOCME
-function M.GetHash (perm, ul, ur, ll, lr, w, h)
-	-- GetIndex()...
+function M.GetHash (perm, x, y, n)
+	n = n or #perm
+
+	return Lookup(perm, Lookup(perm, x, n) + y, n) % 4
+end
+
+--- DOCME
+function M.GetHash4 (perm, x, y, n)
+	n = n or #perm
+
+	local xmn, xp1mn = Lookup(perm, x, n), Lookup(perm, x + 1, n)
+	local ul = Lookup(perm, xmn + y, n) % 4
+	local ur = Lookup(perm, xp1mn + y, n) % 4
+	local ll = Lookup(perm, xmn + y + 1, n) % 4
+	local lr = Lookup(perm, xp1mn + y + 1, n) % 4
+
+	return ul, ur, ll, lr
 end
 
 --- DOCME
 function M.GetIndex (ul, ur, ll, lr)
-	-- As per paper
+	return ul + 4 * (ll + 4 * (lr + 4 * ur))
 end
 
 --- DOCME
-function M.TraverseGrid (func, dim, tdim)
-	local y, row1, row2 = tdim * (dim - 1), #Colors - 15, 1
+function M.TraverseGrid (func, ncolors, tdim)
+	tdim = tdim or 0
+
+	local dim, row1, row2 = ncolors^2, #Colors - 15, 1
+	local y = tdim * (dim - 1)
 
 	for _ = 1, dim do
 		local x = 0
@@ -95,9 +150,7 @@ function M.TraverseGrid (func, dim, tdim)
 		for j = 1, dim do
 			local offset1, offset2 = j - 1, j < 16 and j or 0
 
-			func(x, y, Colors[row1 + offset1] + 1, Colors[row1 + offset2] + 1, Colors[row2 + offset1] + 1, Colors[row2 + offset2] + 1)
-
-			-- More?
+			func(x, y, Colors[row1 + offset1], Colors[row1 + offset2], Colors[row2 + offset1], Colors[row2 + offset2])
 
 			x = x + tdim
 		end

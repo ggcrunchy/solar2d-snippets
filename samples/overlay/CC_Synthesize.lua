@@ -31,6 +31,7 @@ local random = math.random
 
 -- Modules --
 local bitmap = require("ui.Bitmap")
+local colored_corners = require("image_fx.colored_corners")
 local flow = require("graph_ops.flow")
 local layout = require("utils.Layout")
 
@@ -138,6 +139,8 @@ local function Resolve (composite, x, y, image, tdim, cut, patch, indices, nvert
 	end
 
 	-- TODO: Feathering or multi-resolution spline
+
+	composite:WaitForPendingSets()
 end
 
 --
@@ -181,6 +184,8 @@ local function RestoreColor (composite, x, y, half_tdim, image, ul, ur, ll, lr, 
 
 		funcs.TryToYield()
 	end
+
+	composite:WaitForPendingSets()
 end
 
 --
@@ -277,59 +282,8 @@ local function PreparePatchRegion (half_tdim, tdim, nverts, yfunc)
 	return edges_cap, indices
 end
 
---[[
-	From "An Alternative for Wang Tiles: Colored Edges versus Colored Corners":
-
-	"With the backtracking algorithm, we are able to compute Wang and corner tile packings for
-	two, three, and four colors. A solution for C colors can often be found more quickly by
-	starting from a solution of C − 1 colors. This way, a recursive tile packing is obtained.
-	A recursive corner tile packing for four colors is shown in Figure 9. Some of these tile
-	packings took almost one year of CPU time to compute on a cluster with 400 2.4 GHz CPUs.
-	More solutions and a description of the implementation of our parallel backtracking
-	algorithm can be found in Lagae and Dutré [2006b]."
-
-	Corner weights:
-
-	1 --- 16
-	|      |
-	2 ---  4
-
-	To obtain the numeric tile values shown in the paper, the numeric values associated with a
-	given tile's colors are multiplied by the corresponding corner weights and summed.
-]]
-
--- Numeric values of red, yellow, green, blue --
-local R, Y, G, B = 0, 1, 2, 3
-
--- Recursive tile packing --
-local Colors = {
-	R, R, Y, R, R, G, R, G, G, R, B, B, R, B, R, B, -- N.B. Last row, column wrap
-	G, B, G, B, Y, B, B, Y, B, G, B, G, Y, G, B, B,
-	B, R, B, Y, B, G, B, Y, B, R, B, Y, B, Y, B, Y,
-	G, G, G, B, Y, Y, Y, G, B, R, B, R, B, G, Y, Y,
-	G, B, G, B, B, B, G, B, B, Y, B, B, G, B, G, B,
-	Y, R, G, Y, G, Y, G, G, R, B, B, B, B, G, R, G,
-	B, G, B, B, B, R, B, Y, B, Y, B, R, B, G, B, G,
-	R, R, Y, R, R, G, R, G, G, R, Y, B, R, Y, G, G,
-	Y, G, G, G, G, G, R, G, G, Y, B, R, B, Y, B, B,
-	Y, G, R, G, Y, G, G, Y, R, Y, Y, G, Y, R, G, G,
-	Y, Y, Y, G, Y, R, Y, Y, G, Y, B, R, B, B, R, B,
-	G, Y, G, Y, G, Y, G, R, G, G, R, R, Y, Y, R, G,
-	R, R, Y, R, R, G, R, G, R, R, B, G, B, Y, B, B,
-	Y, R, Y, Y, Y, R, Y, Y, G, Y, Y, R, R, Y, R, Y,
-	R, Y, Y, Y, R, G, R, G, G, R, B, Y, B, R, B, B,
-	R, R, R, Y, R, R, R, Y, Y, R, R, R, R, Y, R, G
-}
-
 --
-local function GetExemplar (exemplars, index)
-	return exemplars[Colors[index] + 1]
-end
-
---
-local function LoadHalf (exemplars, into, row, offset1, offset2, lpos, rpos, half_tdim, tdim, index)
-	local lq, rq = GetExemplar(exemplars, row + offset1), GetExemplar(exemplars, row + offset2)
-
+local function LoadHalf (exemplars, into, lq, rq, lpos, rpos, half_tdim, tdim, index)
 	for _ = 1, half_tdim do
 		for i = 1, half_tdim do
 			into[index], index = lq[lpos + i], index + 1
@@ -341,9 +295,6 @@ local function LoadHalf (exemplars, into, row, offset1, offset2, lpos, rpos, hal
 
 		lpos, rpos = lpos + tdim, rpos + tdim
 	end
-
-	-- TODO: Add x, y for recovery of original image
-	return lq, rq
 end
 
 -- --
@@ -352,7 +303,7 @@ local FlowOpts = { compute_mincut = true, into = {} }
 --
 local function Synthesize (view, params)
 	--
-	local composite, tdim, dim = bitmap.Bitmap(view), params.tile_dim, params.num_colors^2
+	local composite, tdim, dim = bitmap.Bitmap(view), params.tile_dim, colored_corners.GetDim(params.num_colors)
 
 	composite:Resize(dim * tdim, dim * tdim) -- Needs some care to not run up against screen?
 
@@ -373,53 +324,45 @@ local function Synthesize (view, params)
 	-- the lower-right; for the upper-right, from the lower-left, etc.
 	local exemplars, method, mid = params.exemplars, params.method, .5 * tdim^2
 	local ul_pos, ur_pos, ll_pos, lr_pos = mid + half_tdim, mid, half_tdim, 0
-	local y, row1, row2 = tdim * (dim - 1), #Colors - 15, 1
 
-	for _ = 1, dim do
-		local x = 0
+	colored_corners.TraverseGrid(function(x, y, ul, ur, ll, lr)
+		--
+		funcs.SetStatus("Compositing colors")
 
-		for j = 1, dim do
-			local offset1, offset2 = j - 1, j < 16 and j or 0
+		ul, ur = exemplars[ul + 1], exemplars[ur + 1]
+		ll, lr = exemplars[ll + 1], exemplars[lr + 1]
 
-			--
-			funcs.SetStatus("Compositing colors")
+		LoadHalf(exemplars, background, ul, ur, ul_pos, ur_pos, half_tdim, tdim, 1)
+		LoadHalf(exemplars, background, ul, ur, ll_pos, lr_pos, half_tdim, tdim, mid + 1)
 
-			local ul, ur = LoadHalf(exemplars, background, row1, offset1, offset2, ul_pos, ur_pos, half_tdim, tdim, 1)
-			local ll, lr = LoadHalf(exemplars, background, row2, offset1, offset2, ll_pos, lr_pos, half_tdim, tdim, mid + 1)
+		funcs.TryToYield()
 
-			funcs.TryToYield()
+		--
+		local index = 1
 
-			--
-			local index = 1
+		for iy = 0, tdim - 1 do
+			for ix = 0, tdim - 1 do
+				composite:SetPixel(x + ix, y + iy, background[index] / (3 * 255))
 
-			for iy = 0, tdim - 1 do
-				for ix = 0, tdim - 1 do
-					composite:SetPixel(x + ix, y + iy, background[index] / (3 * 255))
-
-					index = index + 1
-				end
-
-				funcs.TryToYield()
+				index = index + 1
 			end
 
-			composite:WaitForPendingSets()
-
-			--
-			FindPatch(patch, image, tdim, method, funcs)
-			FindWeights(edges_cap, indices, background, patch, nverts, funcs)
-
-			funcs.SetStatus("Computing mincut")
-
-			local _, extra = flow.MaxFlow(edges_cap, nverts + 1, nverts + 2, FlowOpts)
-
-			RestoreColor(composite, x, y, half_tdim, image, ul, ur, ll, lr, funcs)
-			Resolve(composite, x, y, image, tdim, extra.mincut, patch, indices, nverts, funcs)
-
-			x = x + tdim
+			funcs.TryToYield()
 		end
 
-		row1, row2, y = row1 - 16, row1, y - tdim
-	end
+		composite:WaitForPendingSets()
+
+		--
+		FindPatch(patch, image, tdim, method, funcs)
+		FindWeights(edges_cap, indices, background, patch, nverts, funcs)
+
+		funcs.SetStatus("Computing mincut")
+
+		local _, extra = flow.MaxFlow(edges_cap, nverts + 1, nverts + 2, FlowOpts)
+
+		RestoreColor(composite, x, y, half_tdim, image, ul, ur, ll, lr, funcs)
+		Resolve(composite, x, y, image, tdim, extra.mincut, patch, indices, nverts, funcs)
+	end, params.num_colors, tdim)
 end
 
 --
