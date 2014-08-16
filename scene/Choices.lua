@@ -31,6 +31,7 @@ local exit = os.exit
 -- Modules --
 local button = require("ui.Button")
 local dispatch_list = require("game.DispatchList")
+local file_utils = require("utils.File")
 local layout = require("ui.Layout")
 local scenes = require("utils.Scenes")
 local table_view_patterns = require("ui.patterns.table_view")
@@ -42,6 +43,10 @@ local system = system
 
 -- Corona modules --
 local composer = require("composer")
+local sqlite3 = require("sqlite3")
+
+-- Is this running on the simulator? --
+local OnSimulator = system.getInfo("environment") == "simulator"
 
 -- Use graceful exit method on Android.
 if system.getInfo("platformName") == "Android" then
@@ -56,6 +61,7 @@ local Names = {
 	"TESTING",
 	"ColoredCorners",
 	"Delaunay",
+	"Endless",
 	"Fire",
 	"Hilbert",
 	"HilbertMixer",
@@ -77,9 +83,24 @@ local Names = {
 	"Editor"
 }
 
+-- TODO: Show descriptions in a marquee...
+
+-- --
+local DescriptionsDB = "Descriptions.sqlite3"
+
 --
 local function SetCurrent (current, index)
 	current.text = "Current: " .. Names[index]
+
+	if index ~= current.m_id and file_utils.Exists(DescriptionsDB) then
+		local db = sqlite3.open(file_utils.PathForFile(DescriptionsDB))
+
+		for _, desc in db:urows([[SELECT * FROM descriptions WHERE m_NAME = ']] .. ("samples." .. Names[index]) .. [[']]) do
+			-- Add to marquee (check if already current)
+		end
+
+		db:close()
+	end
 
 	current.m_id = index
 end
@@ -91,6 +112,20 @@ local ReturnToChoices = scenes.Opener{ name = "scene.Choices" }
 local Params = {
 	boilerplate = function(view)
 		button.Button(view, nil, 120, 75, 200, 50, ReturnToChoices, "Go Back")
+
+		if OnSimulator then
+			local db, name = sqlite3.open(file_utils.PathForFile(DescriptionsDB)), composer.getSceneName("current")
+			local scene = composer.getScene(name)
+
+			if scene and scene.m_description then
+				db:exec([[
+					CREATE TABLE IF NOT EXISTS descriptions (m_NAME VARCHAR, m_DESCRIPTION VARCHAR);
+					INSERT OR REPLACE INTO descriptions VALUES(']] .. name .. [[', ']] .. scene.m_description .. [[');
+				]])
+			end
+
+			db:close()
+		end
 	end
 }
 

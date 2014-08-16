@@ -47,6 +47,7 @@ local widget = require("widget")
 
 -- Fire demo scene --
 local Scene = composer.newScene()
+
 --
 function Scene:create (event)
 	event.params.boilerplate(self.view)

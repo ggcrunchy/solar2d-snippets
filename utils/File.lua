@@ -285,6 +285,7 @@ local function PopulateDatabase (path, popts)
 	-- Open or create the database. If already extant, erase the now-defunct files table. Add a
 	-- fresh files table. In general multiple files are added, so begin a compound transaction.
 	local db = sqlite3.open(DatabasePath(path))
+
 	db:exec[[
 		DROP TABLE IF EXISTS files;
 		CREATE TABLE files (m_NAME VARCHAR, m_CONTENTS BLOB);
@@ -315,6 +316,9 @@ local function PopulateDatabase (path, popts)
 	db:exec[[COMMIT;]]
 	db:close()
 end
+
+--- DOCME
+M.PathForFile = PathForFile
 
 -- ^^ TODO: Assumes path is a directory...
 -- Should ignore non-troublesome extensions
