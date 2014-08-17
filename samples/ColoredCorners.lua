@@ -84,4 +84,7 @@ Scene:addEventListener("hide")
 -- ^^^ Probably irrelevant, actually (though the stuff in the Kwatra paper would make for a nice sample itself...)
 -- Feathering / multiresolution splining options (EXTRA CREDIT)
 
+--
+Scene.m_description = "This demo / utility implements a texture synthesis algorithm, for generating textures that can be tiled with extremely long periods."
+
 return Scene

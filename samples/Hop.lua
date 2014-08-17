@@ -368,4 +368,7 @@ end
 
 Scene:addEventListener("hide")
 
+--
+Scene.m_description = "This demo was made as a prototype for a game level in a separate project."
+
 return Scene

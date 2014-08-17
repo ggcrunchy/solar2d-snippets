@@ -447,4 +447,8 @@ end
 
 Scene:addEventListener("hide")
 
+--
+Scene.m_description = "This demo was a proof-of-concept for thought balloons, plus demonstrates the so-called Henley `AI`."
+
+
 return Scene

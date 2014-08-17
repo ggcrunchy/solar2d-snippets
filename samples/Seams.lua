@@ -77,4 +77,7 @@ end
 
 Scene:addEventListener("hide")
 
+--
+Scene.m_description = "This demo / utility implements a seam-carving algorithm, for reducing texture sizes without appreciable quality loss."
+
 return Scene

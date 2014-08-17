@@ -57,4 +57,7 @@ end
 
 Scene:addEventListener("hide")
 
+--
+Scene.m_description = "(VERY INCOMPLETE. DEPRECATED?) This demo was meant to show various snowflakes falling and spinning around."
+
 return Scene

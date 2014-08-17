@@ -133,4 +133,7 @@ end
 
 Scene:addEventListener("hide")
 
+--
+Scene.m_description = "(MISNAMED) This demo shows a way of performing motion blur involving multiple objects."
+
 return Scene

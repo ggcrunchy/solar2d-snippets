@@ -40,6 +40,7 @@ local table_view_patterns = require("ui.patterns.table_view")
 local display = display
 local native = native
 local system = system
+local transition = transition
 
 -- Corona modules --
 local composer = require("composer")
@@ -88,6 +89,29 @@ local Names = {
 -- --
 local DescriptionsDB = "Descriptions.sqlite3"
 
+-- --
+local MarqueeText
+
+-- --
+local ScrollParams, Scrolling = { iterations = -1 }
+
+--
+local function ScrollText ()
+	if Scrolling then
+		transition.cancel(Scrolling)
+
+		Scrolling = nil	
+	end
+
+	if #MarqueeText.text > 0 then
+		local w = MarqueeText.width + 15
+
+		MarqueeText.x, ScrollParams.x, ScrollParams.time = display.contentWidth, -w, w * 12
+
+		Scrolling = transition.to(MarqueeText, ScrollParams)
+	end
+end
+
 --
 local function SetCurrent (current, index)
 	current.text = "Current: " .. Names[index]
@@ -95,9 +119,13 @@ local function SetCurrent (current, index)
 	if index ~= current.m_id and file_utils.Exists(DescriptionsDB) then
 		local db = sqlite3.open(file_utils.PathForFile(DescriptionsDB))
 
+		MarqueeText.text = ""
+
 		for _, desc in db:urows([[SELECT * FROM descriptions WHERE m_NAME = ']] .. ("samples." .. Names[index]) .. [[']]) do
-			-- Add to marquee (check if already current)
+			MarqueeText.text = desc .. " "
 		end
+
+		ScrollText()
 
 		db:close()
 	end
@@ -106,7 +134,16 @@ local function SetCurrent (current, index)
 end
 
 --
-local ReturnToChoices = scenes.Opener{ name = "scene.Choices" }
+local ReturnToChoices
+
+do
+	local opener = scenes.Opener{ name = "scene.Choices" }
+
+	function ReturnToChoices ()
+		opener()
+		ScrollText()
+	end
+end
 
 -- --
 local Params = {
@@ -138,6 +175,8 @@ function Scene:create ()
 		end
 	})
 
+	MarqueeText = display.newText(self.view, "", 0, 0, native.systemFontBold, 28)
+
 	Choices:AssignList(Names)
 
 	Current.anchorX, Current.x = 0, Choices.contentBounds.xMax + 20
@@ -168,6 +207,17 @@ function Scene:create ()
 			end
 		end, "Exit"
 	)
+
+	local marquee = display.newRoundedRect(self.view, 0, 0, display.contentWidth - 4, 50, 5)
+
+	marquee.anchorX, marquee.x = 0, 2
+	marquee.anchorY, marquee.y = 1, display.contentHeight - 2
+	marquee.strokeWidth = 3
+
+	marquee:setFillColor(0, 0)
+	marquee:setStrokeColor(1, 0, 0)
+
+	MarqueeText.anchorX, MarqueeText.anchorY, MarqueeText.y = 0, 1, marquee.y
 end
 
 Scene:addEventListener("create")

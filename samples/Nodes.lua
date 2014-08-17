@@ -295,4 +295,7 @@ end
 
 Scene:addEventListener("hide")
 
+--
+Scene.m_description = "This demo was a proof-of-concept for a UI mechanism that allows users to link objects together."
+
 return Scene

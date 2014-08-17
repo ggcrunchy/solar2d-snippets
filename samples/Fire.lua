@@ -205,4 +205,7 @@ end
 
 Scene:addEventListener("hide")
 
+--
+Scene.m_description = "(INCOMPLETE) This demo is an implementation of the famous `demo`-ish fire effect."
+
 return Scene

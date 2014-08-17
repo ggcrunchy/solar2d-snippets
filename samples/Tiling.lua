@@ -481,4 +481,7 @@ end
 
 Scene:addEventListener("hide")
 
+--
+Scene.m_description = "This demo shows an on-the-fly image sheet being generated on an image, followed by assorted tile operations using various patterns."
+
 return Scene

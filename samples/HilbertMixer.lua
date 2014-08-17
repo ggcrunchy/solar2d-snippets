@@ -474,4 +474,7 @@ end
 
 Scene:addEventListener("hide")
 
+--
+Scene.m_description = "This demo follows several vertices as they trace Hilbert curves, and the polygon formed between them."
+
 return Scene

@@ -197,4 +197,7 @@ end
 
 Scene:addEventListener("hide")
 
+--
+Scene.m_description = "(DEPRECATED? REDESIGN?) This demo is meant to show the timer modules in action (note that it does much of this via the console)."
+
 return Scene

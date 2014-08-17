@@ -141,4 +141,8 @@ end
 
 Scene:addEventListener("hide")
 
+--
+Scene.m_description = "(DEPRECATED?) This demo was meant to interact with a REST API to show a cryptocurrency ticker."
+
+
 return Scene

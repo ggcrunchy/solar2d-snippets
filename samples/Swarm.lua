@@ -537,4 +537,8 @@ end
 
 Scene:addEventListener("hide")
 
+--
+Scene.m_description = "(INCOMPLETE) This demo is meant to show swarming and / or flocking behaviors."
+
+
 return Scene

@@ -208,4 +208,7 @@ end
 
 Scene:addEventListener("hide")
 
+--
+Scene.m_description = "(MISNAMED) This demo shows an interesting `demo`-ish effect using several parameter-laden sine waves."
+
 return Scene

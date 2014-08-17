@@ -141,4 +141,8 @@ end
 
 Scene:addEventListener("hide")
 
+--
+Scene.m_description = "This demo shows a superformula-based curve (sans symmetry) as it cycles through various parameters at random."
+
+
 return Scene

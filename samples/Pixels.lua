@@ -410,4 +410,7 @@ end
 
 Scene:addEventListener("hide")
 
+--
+Scene.m_description = "This demo was an experiment with per-pixel updates: currently it shows a triangle filler and a pseudo-3D ball-on-sphere."
+
 return Scene

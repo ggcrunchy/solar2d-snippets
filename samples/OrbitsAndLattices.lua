@@ -241,4 +241,7 @@ end
 
 Scene:addEventListener("hide")
 
+--
+Scene.m_description = "This demo follows several orbiting (and sometimes translating) points, and traces out their center of gravity over time."
+
 return Scene

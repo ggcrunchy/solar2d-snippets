@@ -189,6 +189,6 @@ end
 Scene:addEventListener("hide")
 
 --
-Scene.m_description = "Wow!"
+Scene.m_description = "This demo shows an endless tiling, using a texture generated via colored corners-based synthesis."
 
 return Scene

@@ -405,6 +405,6 @@ end
 Scene:addEventListener("hide")
 
 --
-Scene.m_description = "Spiffy"
+Scene.m_description = "(INCOMPLETE) This demo shows a step-by-step generation of a Delaunay triangulation."
 
 return Scene
