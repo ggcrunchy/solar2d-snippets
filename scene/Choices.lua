@@ -163,7 +163,7 @@ function Scene:create ()
 		end, "Launch",
 		scenes.Opener{ name = "scene.Options", "zoomInOutFadeRotate", "fade", "fromTop" }, "Options",
 		function()
-			if system.getInfo("environment") == "device" then
+			if not OnSimulator then
 				exit()
 			end
 		end, "Exit"

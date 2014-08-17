@@ -133,9 +133,19 @@ function Scene:show (event)
 			funcs.SetStatus("Press OK to synthesize")
 
 			--
-			local tabs = common_ui.TabBar(self.view, {
+			local method = common_ui.TabBar(self.view, {
 				{ label = "Random" }, { label = "Entire Patch" }, { label = "Sub-Patch" }
 			}, { top = display.contentHeight - 50, left = 5, width = 250 })
+
+			local touch_up = common_ui.TabBar(self.view, {
+				{ label = "Multi-Res Spline" }, { label = "Feathering" }, { label = "Nothing" }
+			}, { width = 350 })
+
+			layout.PutAtBottomRight(touch_up, "-.5%", 0)
+
+			-- TODO: Hack!
+			common_ui.TabsHack(self.view, touch_up, 3)
+			-- /TODO
 
 			button.Button(self.view, nil, params.ok_x, params.ok_y, 100, 40, function()
 				params.image = image

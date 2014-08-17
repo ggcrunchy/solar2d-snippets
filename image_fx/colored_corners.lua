@@ -23,6 +23,10 @@
 -- [ MIT license: http://www.opensource.org/licenses/mit-license.php ]
 --
 
+-- Cached module references --
+local _GetHash4_
+local _GetIndex_
+
 -- Exports --
 local M = {}
 
@@ -138,6 +142,11 @@ function M.GetIndex (ul, ur, ll, lr)
 end
 
 --- DOCME
+function M.GetIndexFromHash4 (perm, x, y, n)
+	return _GetIndex_(_GetHash4_(perm, x, y, n))
+end
+
+--- DOCME
 function M.TraverseGrid (func, ncolors, tdim)
 	tdim = tdim or 0
 
@@ -158,6 +167,10 @@ function M.TraverseGrid (func, ncolors, tdim)
 		row1, row2, y = row1 - 16, row1, y - tdim
 	end
 end
+
+-- Cache module members.
+_GetHash4_ = M.GetHash4
+_GetIndex_ = M.GetIndex
 
 -- Export the module.
 return M

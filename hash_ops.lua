@@ -50,6 +50,33 @@ local bxor = operators.bxor
 -- Exports --
 local M = {}
 
+--- [32-bit FNV 1-A hash](http://www.isthe.com/chongo/tech/comp/fnv/#FNV-1a).
+-- @string str String to hash.
+-- @treturn int 32-bit hash value.
+function M.FNV32_1A (str)
+	local hash = 2166136261
+
+	for char in gmatch(str, ".") do
+		hash = bxor(hash, byte(char))
+		hash = band(hash * 16777619, 2^32 - 1)
+	end
+
+	return hash
+end
+
+-- Permute an array of 255 unique values
+local function Permute255 (state, k)
+	for i = 1, 256 do
+		local s = state[i] or i - 1
+
+		k = band(k + s, 255)
+
+		state[i], state[k + 1] = state[k + 1] or k, s
+	end
+
+	return k
+end
+
 do
 	local State, T
 
@@ -62,13 +89,7 @@ do
 		local k, state = 7, {}
 
 		for _ = 1, 4 do
-			for i = 1, 256 do
-				local s = state[i] or i - 1
-
-				k = band(k + s, 255)
-
-				state[i], state[k + 1] = state[k + 1] or k, s
-			end
+			k = Permute255(state, k)
 		end
 
 		State, T = state, {}
@@ -113,18 +134,20 @@ do
 	end
 end
 
---- [32-bit FNV 1-A hash](http://www.isthe.com/chongo/tech/comp/fnv/#FNV-1a).
--- @string str String to hash.
--- @treturn int 32-bit hash value.
-function M.FNV32_1A (str)
-	local hash = 2166136261
+--- Creates a permutation of bytes in [0, 255].
+-- @uint[opt=7] k Permutation seed.
+-- @uint[opt=1] n Number of mixing cycles.
+-- @treturn array 256-element permutation.
+function M.Permutation (k, n)
+	k = k or 7
 
-	for char in gmatch(str, ".") do
-		hash = bxor(hash, byte(char))
-		hash = band(hash * 16777619, 2^32 - 1)
+	local perm = {}
+
+	for _ = 1, n or 1 do
+		k = Permute255(perm, k)
 	end
 
-	return hash
+	return perm
 end
 
 -- Export the module.

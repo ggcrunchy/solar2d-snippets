@@ -51,9 +51,6 @@ local composer = require("composer")
 local Scene = composer.newScene()
 
 --
-Scene.m_description = "Spiffy"
-
---
 function Scene:create (event)
 	event.params.boilerplate(self.view)
 end
@@ -406,5 +403,8 @@ function Scene:hide (event)
 end
 
 Scene:addEventListener("hide")
+
+--
+Scene.m_description = "Spiffy"
 
 return Scene

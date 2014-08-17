@@ -31,9 +31,13 @@ local random = math.random
 
 -- Modules --
 local bitmap = require("ui.Bitmap")
+local button = require("ui.Button")
 local colored_corners = require("image_fx.colored_corners")
 local flow = require("graph_ops.flow")
 local layout = require("utils.Layout")
+
+-- Corona globals --
+local display = display
 
 -- Corona modules --
 local composer = require("composer")
@@ -363,6 +367,8 @@ local function Synthesize (view, params)
 		RestoreColor(composite, x, y, half_tdim, image, ul, ur, ll, lr, funcs)
 		Resolve(composite, x, y, image, tdim, extra.mincut, patch, indices, nverts, funcs)
 	end, params.num_colors, tdim)
+
+	return composite
 end
 
 --
@@ -376,9 +382,17 @@ function Scene:show (event)
 		funcs.SetStatus("Synthesizing")
 
 		funcs.Action(function()
-			Synthesize(self.view, params)
+			local result = Synthesize(self.view, params)
 
 			funcs.SetStatus("Done")
+
+			local ok = button.Button(self.view, nil, 0, 0, 100, 40, function()
+				display.save(result, { filename = "Out.png", isFullResolution = true })
+				-- TODO: Add some file input stuff...
+				-- What to do on device?
+			end, "OK")
+
+			layout.PutAtBottomLeft(ok, "2%", "-2%")
 		end)()
 	end
 end
