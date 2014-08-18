@@ -1,4 +1,8 @@
---- Interface between colored corners client and implementation.
+--- Interface between [colored corners](http://graphics.cs.kuleuven.be/publications/LD06AWTCECC/) client and implementation.
+--
+-- Four colors are supported, as per the non-Poisson disk part of the original paper.
+-- **N.B.** The algorithm itself has no notion of "color", but these help to show, say in
+-- the original paper, which corners are allowed to match up, e.g. red with red.
 
 --
 -- Permission is hereby granted, free of charge, to any person obtaining
@@ -106,24 +110,40 @@ local Colors = {
 	R, R, R, Y, R, R, R, Y, Y, R, R, R, R, Y, R, G
 }
 
---- DOCME
+--- Gets the (square) dimension of the grid for a given color count.
+-- @uint ncolors Number of corner colors, &isin; [2, 4].
+-- @treturn uint Width / height, in tiles, of grid.
 function M.GetDim (ncolors)
 	return ncolors^2
 end
 
---
+-- Helper to look up a permutation value, given some index modulo n
 local function Lookup (perm, x, n)
 	return perm[(x < n and x or x % n) + 1]
 end
 
---- DOCME
+--- Converts a position into a color value.
+-- @array perm Permutation of bytes in [0, _n_].
+-- @int x Column or x-coordinate...
+-- @int y ...and row or y-coordinate.
+-- @uint[opt=#perm] n
+-- @treturn byte Color value, &isin; [0, 3] (corresponding to red, yellow, green, blue).
 function M.GetHash (perm, x, y, n)
 	n = n or #perm
 
 	return Lookup(perm, Lookup(perm, x, n) + y, n) % 4
 end
 
---- DOCME
+--- Variant of @{GetHash} that supplies the color values for corners (_x_, _y_), (_x_ + 1,
+-- _y_), (_x_, _y_ + 1), and (_x_ + 1, _y_ + 1) all at once. 
+-- @array perm Permutation of bytes in [0, _n_].
+-- @int x Column or x-coordinate...
+-- @int y ...and row or y-coordinate.
+-- @uint[opt=#perm] n
+-- @treturn byte Upper-left color value, &isin; [0, 3]...
+-- @treturn byte ...upper-right color value...
+-- @treturn byte ...lower-left color value...
+-- @treturn byte ...and lower-right color value.
 function M.GetHash4 (perm, x, y, n)
 	n = n or #perm
 
@@ -136,17 +156,37 @@ function M.GetHash4 (perm, x, y, n)
 	return ul, ur, ll, lr
 end
 
---- DOCME
+--- Maps corner color values uniquely to an index.
+-- @byte ul Upper-left color value, &isin; [0, 3]...
+-- @byte ur ...upper-right color value...
+-- @byte ll ...lower-left color value...
+-- @byte lr ...and lower-right color value.
+-- @treturn byte Tile index, &isin; [0, 255].
 function M.GetIndex (ul, ur, ll, lr)
 	return ul + 4 * (ll + 4 * (lr + 4 * ur))
 end
 
---- DOCME
+--- Converts a position directly to an index. This is a convenience wrapper around the
+-- combination of @{GetHash4} and @{GetIndex}.
+-- @array perm Permutation of bytes in [0, _n_].
+-- @int x Column or x-coordinate...
+-- @int y ...and row or y-coordinate.
+-- @uint[opt=#perm] n
+-- @treturn byte Tile index, &isin; [0, 255].
 function M.GetIndexFromHash4 (perm, x, y, n)
 	return _GetIndex_(_GetHash4_(perm, x, y, n))
 end
 
---- DOCME
+--- Traverses the grid, starting from the lower-left. Each column in the row is iterated
+-- before moving up one row. The number of columns / rows to iterate is given by @{GetDim}.
+-- @callable func Called, on each cell, as
+--    func(x, y, ul, ur, ll, lr)
+-- where _x_ and _y_ are the upper-left coordinate of the current cell (for reference, _x_
+-- and _y_ are both 0 for the upper-left cell), and _ul_, _ur_, _ll_, and _lr_ are the color values
+-- &isin; [0, 3] corresponding to the upper-left, upper-right, lower-left, and lower-right
+-- corners of the cell, respectively.
+-- @uint ncolors Number of corner colors, &isin; [2, 4].
+-- @uint[opt=0] tdim Tile width / height.
 function M.TraverseGrid (func, ncolors, tdim)
 	tdim = tdim or 0
 
