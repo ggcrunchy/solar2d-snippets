@@ -133,7 +133,7 @@ function Scene:hide (event)
 end
 
 --
-Scene.m_description = "This demo generates a 6th-order (i.e. 2^6 = 1024 cells) Hilbert curve."
+Scene.m_description = "This demo generates a 6th-order Hilbert curve."
 
 Scene:addEventListener("hide")
 
