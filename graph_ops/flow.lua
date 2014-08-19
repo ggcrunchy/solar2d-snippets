@@ -245,7 +245,9 @@ function M.MaxFlow (edges_cap, s, t, opts)
 			end
 
 			if opts.compute_mincut then
-				extra.mincut = mincut.FromAdjacencyAndParent(Edges, Parent)
+				local fkey = opts.st_only and "FromAdjacencyAndParent_Bidir" or "FromAdjacencyAndParent_BidirEdges"
+
+				extra.mincut = mincut[fkey](Edges, Parent)
 			end
 		end
 	end
@@ -312,7 +314,7 @@ function M.MaxFlow_Labels (graph, ks, kt, opts)
 				extra = opts.into or {}
 
 				if fmin then
-					local rn, _, count = {}, BuildMatrix(Buf, opts)
+					local rn, _, count = {}, BuildMatrix(Buf, fmin)
 
 					for i = 1, count, 3 do
 						local u, v, eflow = IndexToLabel[Buf[i]], IndexToLabel[Buf[i + 1]], Buf[i + 2]
@@ -325,9 +327,9 @@ function M.MaxFlow_Labels (graph, ks, kt, opts)
 				end
 
 				if opts.compute_mincut then
-					local cut = mincut.FromAdjacencyAndParent(Edges, Parent)
-
-					local s, t = cut.s, cut.t
+					local fkey = opts.st_only and "FromAdjacencyAndParent_Bidir" or "FromAdjacencyAndParent_BidirEdges"
+					local st_cut = mincut[fkey](Edges, Parent)
+					local s, t = st_cut.s, st_cut.t
 
 					for i = 1, #s do
 						s[i] = IndexToLabel[s[i]]
@@ -337,7 +339,20 @@ function M.MaxFlow_Labels (graph, ks, kt, opts)
 						t[i] = IndexToLabel[t[i]]
 					end
 
-					extra.mincut = cut
+					if not opts.st_only then
+						local cut, lcut = st_cut.cut, {}
+
+						for i = 1, #cut, 2 do
+							local u, v = IndexToLabel[cut[i]], IndexToLabel[cut[i + 1]]
+							local to = lcut[u] or {}
+
+							lcut[u], to[u] = to, v
+						end
+
+						st_cut.cut = lcut
+					end
+
+					extra.mincut = st_cut
 				end
 			end
 		end

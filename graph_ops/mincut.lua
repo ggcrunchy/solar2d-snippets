@@ -24,6 +24,7 @@
 --
 
 -- Standard library imports --
+local ipairs = ipairs
 local pairs = pairs
 local remove = table.remove
 
@@ -58,6 +59,51 @@ function M.FromAdjacencyAndParent (adj, parents, max_vert)
 	end
 
 	return { s = sarr, t = tarr }
+end
+
+-- --
+function M.FromAdjacencyAndParent_Bidir (adj, parents, max_vert)
+	local sarr, tarr = {}, {}
+
+	for u = max_vert or #adj, 1, -1 do
+		if adj[u] then
+			TryToAdd(parents, sarr, tarr, u)
+		end
+	end
+
+	return { s = sarr, t = tarr }
+end
+
+-- --
+function M.FromAdjacencyAndParent_BidirEdges (adj, parents, max_vert)
+	local sarr = {}
+
+	for u = max_vert or #adj, 1, -1 do
+		if adj[u] and parents[u] then
+			sarr[#sarr + 1], parents[u] = u
+		end
+	end
+
+	--
+	local cut = {}
+
+	for _, u in ipairs(sarr) do
+		for v in pairs(adj[u]) do
+			if parents[v] == false then
+				cut[#cut + 1] = u
+				cut[#cut + 1] = v
+			end
+		end
+	end
+
+	--
+	local tarr = {}
+
+	for v in pairs(parents) do
+		tarr[#tarr + 1] = v
+	end
+
+	return { s = sarr, t = tarr, cut = cut }
 end
 
 -- GomoryHu?
