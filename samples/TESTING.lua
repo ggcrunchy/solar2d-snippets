@@ -44,24 +44,44 @@ function Scene:show (e)
 	local t1=oc()
 	local A={}
 	local B={}
-	for i = 1, 400*400 do
+	local M, N = 81, 25
+	for i = 1, M^2 do
 		A[i]=math.random(256)
 	end
-	for i = 1, 25 * 25 do
+	for i = 1, N^2 do
 		B[i]=math.random(256)
 	end
 	local t2=oc()
 	local opts={into = {}}
-	overlap.OverlapAdd_2D(A, B, 400, 25, opts)
+	overlap.OverlapAdd_2D(A, B, M, N, opts)
 	local t3=oc()
+	--[[
 	local tt=0
 	for i = 1, 40 do
-		overlap.OverlapAdd_2D(A, B, 400, 25, opts)
+		overlap.OverlapAdd_2D(A, B, M, N, opts)
 		local t4=oc()
 		tt=tt+t4-t3
 		t3=t4
 	end
-	print("T", t2-t1, t3-t2, tt / 40)
+	print("T", t2-t1, t3-t2, tt / 41)
+	]]
+	local abs=math.abs
+	local max=0
+	local out = require("signal_ops.fft_convolution").Convolve_2D(A, B, M, N)
+	print("N", #opts.into, #out)
+	local into,n=opts.into,0
+	for i = 1, #into do
+		local d = abs(into[i]-out[i])
+		if d > 1 then
+			print(i, into[i], out[i])
+			n=n+1
+			if n == 25 then
+				break
+			end
+		end
+	end
+	local t4=oc()
+	print("OK", t3-t2,t4-t3)
 end
 
 Scene:addEventListener("show")
