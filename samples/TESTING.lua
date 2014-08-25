@@ -39,6 +39,29 @@ Scene:addEventListener("create")
 --
 function Scene:show (e)
 	if e.phase == "will" then return end
+	local oc=os.clock
+	local overlap=require("signal_ops.overlap")
+	local t1=oc()
+	local A={}
+	local B={}
+	for i = 1, 400*400 do
+		A[i]=math.random(256)
+	end
+	for i = 1, 25 * 25 do
+		B[i]=math.random(256)
+	end
+	local t2=oc()
+	local opts={into = {}}
+	overlap.OverlapAdd_2D(A, B, 400, 25, opts)
+	local t3=oc()
+	local tt=0
+	for i = 1, 40 do
+		overlap.OverlapAdd_2D(A, B, 400, 25, opts)
+		local t4=oc()
+		tt=tt+t4-t3
+		t3=t4
+	end
+	print("T", t2-t1, t3-t2, tt / 40)
 end
 
 Scene:addEventListener("show")
