@@ -210,8 +210,8 @@ Syntax
 cumsum()
 Cumulative sum
 Syntax
-	B = cumsum(A)example
-	B = cumsum(A,dim)example
+	B = cumsum(A)
+	B = cumsum(A,dim)
 	Description
 	example
 	B = cumsum(A) returns an array of the same size as the array A containing the cumulative sum.
@@ -355,33 +355,13 @@ X{1}
 
 	A = C{4,7,2}
 	For more information, see Cell Arrays
-
-	Dot — .
-	The single dot operator has the following different uses in MATLAB.
-
-	Decimal Point
-
-	MATLAB uses a period to separate the integral and fractional parts of a number.
-
-	Structure Field Definition
-
-	Add fields to a MATLAB structure by following the structure name with a dot and then a field name:
-
-	funds(5,2).bondtype = 'Corporate';
-	For more information, see Structures
-
-	Object Method Specifier
-
-	Specify the properties of an instance of a MATLAB class using the object name followed by a dot, and then the property name:
-
-	val = asset.current_value
 ]]
 
 --[[
  \
 Solve systems of linear equations Ax = B for x
 Syntax
-	x = A\Bexample
+	x = A\B
 	x = mldivide(A,B)
 	Description
 	example
@@ -410,20 +390,10 @@ Syntax
 ]]
 
 --[[
-ndims()
-Number of array dimensions
-Syntax
-	N = ndims(A)example
-	Description
-	example
-	N = ndims(A) returns the number of dimensions in the array A. The number of dimensions is always greater than or equal to 2. The function ignores trailing singleton dimensions, for which size(A,dim) = 1.
-]]
-
---[[
 numel()
 Number of array elements
 Syntax
-	n = numel(A)example
+	n = numel(A)
 	Description
 	example
 	n = numel(A) returns the number of elements, n, in array A, equivalent to prod(size(A)).
@@ -455,42 +425,6 @@ Syntax
 	n > ndims(X)
 	size returns ones in the "extra" variables, that is, those corresponding to ndims(X)+1 through n.
 	Note   For a Java array, size returns the length of the Java array as the number of rows. The number of columns is always 1. For a Java array of arrays, the result describes only the top level array.
-]]
-
---[[
-cell()
-Create cell array
-Syntax
-	C = cell(dim)
-	C = cell(dim1,...,dimN)
-	D = cell(obj)
-
-	Description
-
-	C = cell(dim) creates a cell array of empty matrices. If dim is a scalar, C is dim-by-dim. If dim is a vector, C is dim(1)-by-...-dim(N), where N is the number of elements of dim.
-
-	C = cell(dim1,...,dimN) creates cell array C, where C is dim1-by-...-dimN.
-
-	D = cell(obj) converts a Java® array or .NET array of System.String or System.Object into a MATLAB® cell array.
-
-	Input Arguments
-
-	dim
-	Scalar integer or vector of integers that specifies the dimensions of cell array C.
-	dim1,...,dimN
-	Scalar integers that specify the dimensions of C.
-	obj
-	One of the following:
-	Java array or object
-	.NET array of type System.String or System.Object
-	Output Arguments
-
-	C
-	Cell array. Each cell contains an empty, 0-by-0 array of type double.
-	D
-	Cell array. Each cell contains a MATLAB type closest to the Java or .NET type. For more information, see:
-	Conversion of Java Return Types
-	.NET Type to MATLAB Type Mapping
 ]]
 
 return Scene
