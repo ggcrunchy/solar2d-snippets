@@ -39,6 +39,22 @@ Scene:addEventListener("create")
 --
 function Scene:show (e)
 	if e.phase == "will" then return end
+	
+	local svd = require("number_ops.svd")
+
+	local mat = {}
+	local mm, nn, ii = 20, 20, 1
+	for i = 1, nn do
+		for j = 1, mm do
+			mat[ii], ii = math.random(22), ii + 1
+		end
+	end
+	local s, u, v = svd.SVD(mat, mm, nn)
+--	vdump(s)
+--	vdump(u)
+--	vdump(v)
+	
+if true then return end
 	local oc=os.clock
 	local overlap=require("signal_ops.overlap")
 	local t1=oc()

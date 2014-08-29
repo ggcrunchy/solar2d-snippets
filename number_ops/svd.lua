@@ -25,81 +25,58 @@
 
 -- Standard library imports --
 local abs = math.abs
+local setmetatable = setmetatable
 local sqrt = math.sqrt
 
 -- Exports --
 local M = {}
 
 --
-local function Index (row, col, dim)
-	return row * dim + col + 1
-end
-
---
-local function GetS (S, row, col, h)
-	local index = Index(row, col, h)
-
-	return S[index], index
-end
-
---
-local function GetU (U, row, col, w)
-	local index = Index(row, col, w)
-
-	return U[index], index
-end
-
---
-local GetV = GetS
-
---
 local Vec = {}
 
 --
-local function IterCol (arr, get, k, from, to, dim)
-	local dot = 0
-
-	for j = from, to - 1 do
-		dot = dot + get(arr, k, j, dim) * Vec[j + 1]
-	end
-
-	for j = from, to - 1 do
-		local _, index = get(arr, k, j, dim)
-
-		arr[index] = arr[index] - dot * Vec[j + 1]
-	end
-end
-
---
-local function IterRow (arr, get, k, from, to, dim)
-	local dot = 0
-
-	for j = from, to - 1 do
-		dot = dot + get(arr, j, k, dim) * Vec[j + 1]
-	end
-
-	for j = from, to - 1 do
-		local _, index = get(arr, j, k, dim)
-
-		arr[index] = arr[index] - dot * Vec[j + 1]
-	end
-end
-
---
-local function GetBeta (S, i1, i2, inorm, h)
-	local x1, sign = GetS(S, i1, i2, h), 1
+local function GetBeta (S, i1, i2, norm)
+	local x1, inorm = S(i1, i2), 1 / sqrt(norm)
 
 	if x1 < 0 then
-		x1, sign = -x1, -1
+		inorm = -inorm
 	end
-
-	inorm = inorm / sqrt(inorm)
 
 	local alpha = sqrt(1 + x1 * inorm)
 
-	Vec[i + 1] = -alpha
+	Vec[i1 + 1] = -alpha
 
-	return sign * inorm / alpha
+	return inorm / alpha
+end
+
+--
+local function IterCol (arr, k, from, to)
+	local dot = 0
+
+	for j = from, to - 1 do
+		dot = dot + arr(k, j) * Vec[j + 1]
+	end
+
+	for j = from, to - 1 do
+		local v, i = arr(k, j)
+
+		arr[i] = v - dot * Vec[j + 1]
+	end
+end
+
+--
+local function IterRow (arr, k, from, to)
+	local dot = 0
+
+	for j = from, to - 1 do
+		dot = dot + arr(j, k) * Vec[j + 1]
+	end
+
+	for j = from, to - 1 do
+		local v, i = arr(j, k)
+
+		arr[i] = v - dot * Vec[j + 1]
+	end
 end
 
 --
@@ -107,47 +84,48 @@ local function Bidiagonalize (w, h, U, S, V)
 	for i = 0, h - 1 do
 		-- Column Householder...
 		do
-			local inorm = 0
+			local norm = 0
 
 			for j = i, w - 1 do
-				inorm = inorm + GetS(S, j, i, h)^2
+				norm = norm + S(j, i)^2
 			end
 
-			local beta = GetBeta(S, i, i, inorm, h)
+			local beta = GetBeta(S, i, i, norm)
 
 			for j = i + 1, w - 1 do
-				Vec[j + 1] = -beta * GetS(S, j, i, h)
+				Vec[j + 1] = -beta * S(j, i)
 			end
-
+--print(beta)
+--vdump(Vec)
 			for k = i, h - 1 do
-				IterRow(S, GetS, k, i, w, h)
+				IterRow(S, k, i, w)
 			end
 
 			for k = 0, w - 1 do
-				IterCol(U, GetU, k, i, w, w)
+				IterCol(U, k, i, w)
 			end
 		end
 
 		-- Row Householder...
 		if i < h - 1 then
-			local inorm = 0
+			local norm = 0
 
 			for j = i + 1, h - 1 do
-				inorm = inorm + GetS(S, i, j, h)^2
+				norm = norm + S(i, j)^2
 			end
 
-			local beta = GetBeta(S, i, i + 1, inorm, h)
+			local beta = GetBeta(S, i, i + 1, norm)
 
 			for j = i + 1, w - 1 do
-				Vec[j + 1] = -beta * GetS(S, i, j, h)
+				Vec[j + 1] = -beta * S(i, j)
 			end
 
 			for k = i, w - 1 do
-				IterCol(S, GetS, k, i + 1, h, h)
+				IterCol(S, k, i + 1, h)
 			end
 
 			for k = 0, h - 1 do
-				IterRow(V, GetV, k, i + 1, h, h)
+				IterRow(V, k, i + 1, h)
 			end
 		end
 	end
@@ -252,13 +230,12 @@ local function Bidiagonalize (w, h, U, S, V)
 end
 
 --
-local function ComputeMu (S, n, w, h)
-	local sm2m2 = GetS(S, n - 2, n - 2, h)
-	local sm3m2 = GetS(S, n - 3, n - 2, h)
-	local sm2m1 = GetS(S, n - 2, n - 1, h)
-	local c00, c01 = sm2m2^2 + sm3m2^2, sm2m2 * sm2m1
-	local c10, c11 = sm2m2 * sm2m1, GetS(S, n - 1, n - 1, h)^2 + sm2m1^2
-	local b, c = -.5 * (c00 + c11), c00 * c11 - c01 * c10
+local function ComputeMu (S, n)
+	local sm2m2 = S(n - 2, n - 2)
+	local sm2m1 = S(n - 2, n - 1)
+	local c00 = sm2m2^2 + S(n - 3, n - 2)^2
+	local c11 = S(n - 1, n - 1)^2 + sm2m1^2
+	local b, c = -.5 * (c00 + c11), c00 * c11 - (sm2m2 * sm2m1)^2
 	local d = sqrt(b^2 - c)
 	local lambda1 = -b + d
 	local lambda2 = -b - d
@@ -268,102 +245,96 @@ local function ComputeMu (S, n, w, h)
 end
 
 --
-local function GetS_Abs (S, row, col, h)
-	local index = Index(row, col, h)
+local function CosSin (a, b)
+	local r = sqrt(a^2 + b^2)
 
-	return abs(S[index]), index
+	return a / r, -b / r
 end
 
 --
-local function Rotate (S, is1, delta, cosa, sina)
-	local is2 = is1 + delta
-	local s1, s2 = S[is1], S[is2]
-
-	S[is1] = s1 * cosa - s2 * sina
-	S[is2] = s1 * sina + s2 * cosa
-end
-
---
-local function GivensL (S, w, h, m, a, b)
-	local r, pos = sqrt(a^2 + b^2), Index(m, 0, h)
-	local c, s = a / r, -b / r
+local function GivensL (S, h, m, a, b)
+	local cosa, sina = CosSin(a, b)
 
 	for i = 0, h - 1 do
-		Rotate(S, pos, h, c, s)
+		local s1, is1 = S(m, i)
+		local s2, is2 = S(m + 1, i)
+
+		S[is1] = s1 * cosa - s2 * sina
+		S[is2] = s1 * sina + s2 * cosa
 	end
 end
 
 --
-local function GivensR (S, w, h, m, a, b)
-	local r, pos = sqrt(a^2 + b^2), Index(0, m, h)
-	local c, s = a / r, -b / r
+local function GivensR (S, w, m, a, b)
+	local cosa, sina = CosSin(a, b)
 
-	for _ = 1, w do
-		Rotate(S, pos, 1, c, s)
+	for i = 0, w - 1 do
+		local s1, is1 = S(i, m)
+		local s2, is2 = S(i, m + 1)
 
-		pos = pos + h
+		S[is1] = s1 * cosa - s2 * sina
+		S[is2] = s1 * sina + s2 * cosa
 	end
 end
 
+-- --
+local Epsilon = (function()
+	local eps = 1
+
+	while eps + 1 > 1 do
+		eps = .5 * eps
+	end
+
+	return eps * 64
+end)()
+
 --
-local function Tridiagonalize (w, h, U, S, V, eps)
+local function Tridiagonalize (w, h, U, S, V)
 	local k0 = 0
 
 	while k0 < h - 1 do
 		local smax = 0
-
+if AAA == 20 then
+break
+else
+print("?", k0, h - 1)
+	AAA=(AAA or 0)+1
+end
 		for i = 0, h - 1 do
-			local sii = GetS(S, i, i, h)
+			local sii = S(i, i)
 
 			if sii > smax then
 				smax = sii
 			end
 		end
 
-		smax = smax * eps
+		smax = smax * Epsilon
 
-		while k0 < h - 1 and GetS_Abs(S, k0, k0 + 1, h) <= smax do
+		while k0 < h - 1 and abs(S(k0, k0 + 1)) <= smax do
 			k0 = k0 + 1
 		end
 
 		local k, n = k0, k0 + 1
 
-		while n < h and GetS_Abs(S, n - 1, n, w, h) > smax do
+		while n < h and abs(S(n - 1, n)) > smax do
 			n = n + 1
 		end
-
-		local mu, skk = ComputeMu(S, n, w, h), GetS(S, k, k, h)
-		local alpha, beta = skk^2 - mu, skk * GetS(S, k, k + 1, h)
+--print("N", n, h, smax)
+		local mu, skk = ComputeMu(S, n), S(k, k)
+		local alpha, beta = skk^2 - mu, skk * S(k, k + 1)
 
 		while k < n - 1 do
-			GivensR(S, w, h ,k, alpha, beta)
-			GivensL(V, h, h, k, alpha, beta)
+			GivensR(S, w, k, alpha, beta)
+			GivensL(V, h, k, alpha, beta)
 
-			alpha, beta = GetS(S, k, k, h), GetS(S, k + 1, k, h)
+			alpha, beta = S(k, k), S(k + 1, k)
 
-			GivensL(S, w, h, k, alpha, beta)
-			GivensR(U, w, w, k, alpha, beta)
+			GivensL(S, h, k, alpha, beta)
+			GivensR(U, w, k, alpha, beta)
 
-			alpha, beta, k = GetS(S, k, k + 1, h), GetS(S, k, k + 2, h), k + 1
+			alpha, beta, k = S(k, k + 1), S(k, k + 2), k + 1
 		end
 	end
-end
-
---
-local function AuxSVD (w, h, U, S, V, eps)
-	Bidiagonalize()
-
-	if eps < 0 then
-		eps = 1
-
-		while eps + 1 > 1 do
-			eps = .5 * eps
-		end
-
-		eps = eps * 64
-	end
-
-	Tridiagonalize(w, h, eps)
 end
 
 --[=[
@@ -634,17 +605,39 @@ inline void svd(int *M, int *N, T *A, int *LDA, T *S, T *U, int *LDU, T *VT, int
 -- --
 local S, U, V = {}, {}, {}
 
+-- --
+local MT = {}
+
+function MT:__call (row, col)
+	local index = row * self.m_dim + col + 1
+
+	return self[index], index
+end
+
+--
+local function BindArray (arr, dim)
+	arr.m_dim = dim
+
+	setmetatable(arr, MT)
+end
+
 --
 local function DiagOnes (arr, dim)
 	local j, inc = 1, dim + 1
 
-	for i = 1, dim do
+	for i = 1, dim^2 do
+		arr[i] = 0
+	end
+
+	for _ = 1, dim do
 		arr[j], j = j + 1, j + inc
 	end
+
+	BindArray(arr, dim)
 end
 
 --- DOCME
-function M.SVD (out, matrix, w, h)
+function M.SVD (matrix, w, h)
 --[=[
 [in,out]	A	
           A is DOUBLE PRECISION array, dimension (LDA,N)
@@ -677,10 +670,10 @@ function M.SVD (out, matrix, w, h)
 ]=]
 
 	--
-	local m, n, ldv = w, h, h
+	local m, n = w, h
 
 	if w < h then
-		w, h, ldv = h, w, w
+		w, h = h, w
 	end
 
 	--
@@ -699,6 +692,7 @@ function M.SVD (out, matrix, w, h)
 			S[sbase + j] = matrix[rpos]
 		end
 	end
+
 	--
 	--[=[
   if(dim[1]==*M){
@@ -714,15 +708,17 @@ function M.SVD (out, matrix, w, h)
   }
 }
 ]=]
+	BindArray(S, h)
 	DiagOnes(U, w)
 	DiagOnes(V, h)
-	AuxSVD(w, h, U, S, V, -1)
+	Bidiagonalize(w, h, U, S, V)
+	Tridiagonalize(w, h, U, S, V)
 
 	--
 	local s, u, vt = {}, {}, {}
 
 	for i = 1, h do
-		s[i] = GetS(S, i - 1, i - 1, h)
+		s[i] = S(i - 1, i - 1)
 	end
 
 	--
@@ -751,7 +747,7 @@ function M.SVD (out, matrix, w, h)
   }
 ]=]  
 	for i = 1, n do
-		local vtbase = (i - 1) * ldv
+		local vtbase = (i - 1) * h
 
 		for j = 1, h do
 			if w == n then
@@ -778,7 +774,7 @@ function M.SVD (out, matrix, w, h)
 		s[i] = abs(s[i])
 	end
 
-	return s, u, v
+	return s, u, vt
 end
 
 --[=[
