@@ -43,13 +43,6 @@ local function GetS (S, row, col, h)
 end
 
 --
-local function GetS_Abs (S, row, col, h)
-	local index = Index(row, col, h)
-
-	return abs(S[index]), index
-end
-
---
 local function GetU (U, row, col, w)
 	local index = Index(row, col, w)
 
@@ -60,38 +53,104 @@ end
 local GetV = GetS
 
 --
-local function Rotate (S, is1, delta, cosa, sina)
-	local is2 = is1 + delta
-	local s1, s2 = S[is1], S[is2]
-
-	S[is1] = s1 * cosa - s2 * sina
-	S[is2] = s1 * sina + s2 * cosa
-end
+local Vec = {}
 
 --
-local function GivensL (S, w, h, m, a, b)
-	local r, pos = sqrt(a^2 + b^2), Index(m, 0, h)
-	local c, s = a / r, -b / r
+local function IterCol (arr, get, k, from, to, dim)
+	local dot = 0
 
-	for i = 0, h - 1 do
-		Rotate(S, pos, h, c, s)
+	for j = from, to - 1 do
+		dot = dot + get(arr, k, j, dim) * Vec[j + 1]
+	end
+
+	for j = from, to - 1 do
+		local _, index = get(arr, k, j, dim)
+
+		arr[index] = arr[index] - dot * Vec[j + 1]
 	end
 end
 
 --
-local function GivensR (S, w, h, m, a, b)
-	local r, pos = sqrt(a^2 + b^2), Index(0, m, h)
-	local c, s = a / r, -b / r
+local function IterRow (arr, get, k, from, to, dim)
+	local dot = 0
 
-	for _ = 1, w do
-		Rotate(S, pos, 1, c, s)
-
-		pos = pos + h
+	for j = from, to - 1 do
+		dot = dot + get(arr, j, k, dim) * Vec[j + 1]
 	end
+
+	for j = from, to - 1 do
+		local _, index = get(arr, j, k, dim)
+
+		arr[index] = arr[index] - dot * Vec[j + 1]
+	end
+end
+
+--
+local function GetBeta (S, i1, i2, inorm, h)
+	local x1, sign = GetS(S, i1, i2, h), 1
+
+	if x1 < 0 then
+		x1, sign = -x1, -1
+	end
+
+	inorm = inorm / sqrt(inorm)
+
+	local alpha = sqrt(1 + x1 * inorm)
+
+	Vec[i + 1] = -alpha
+
+	return sign * inorm / alpha
 end
 
 --
 local function Bidiagonalize (w, h, U, S, V)
+	for i = 0, h - 1 do
+		-- Column Householder...
+		do
+			local inorm = 0
+
+			for j = i, w - 1 do
+				inorm = inorm + GetS(S, j, i, h)^2
+			end
+
+			local beta = GetBeta(S, i, i, inorm, h)
+
+			for j = i + 1, w - 1 do
+				Vec[j + 1] = -beta * GetS(S, j, i, h)
+			end
+
+			for k = i, h - 1 do
+				IterRow(S, GetS, k, i, w, h)
+			end
+
+			for k = 0, w - 1 do
+				IterCol(U, GetU, k, i, w, w)
+			end
+		end
+
+		-- Row Householder...
+		if i < h - 1 then
+			local inorm = 0
+
+			for j = i + 1, h - 1 do
+				inorm = inorm + GetS(S, i, j, h)^2
+			end
+
+			local beta = GetBeta(S, i, i + 1, inorm, h)
+
+			for j = i + 1, w - 1 do
+				Vec[j + 1] = -beta * GetS(S, i, j, h)
+			end
+
+			for k = i, w - 1 do
+				IterCol(S, GetS, k, i + 1, h, h)
+			end
+
+			for k = 0, h - 1 do
+				IterRow(V, GetV, k, i + 1, h, h)
+			end
+		end
+	end
 --[=[
     size_t n=std::min(dim[0],dim[1]);
     std::vector<T> house_vec(std::max(dim[0],dim[1]));
@@ -118,6 +177,8 @@ local function Bidiagonalize (w, h, U, S, V)
           house_vec[j]=-house_vec[j];
         }
       }
+]=]
+--[=[  
       #pragma omp parallel for
       for(size_t k=i;k<dim[1];k++){
         T dot_prod=0;
@@ -138,7 +199,8 @@ local function Bidiagonalize (w, h, U, S, V)
           U(k,j)-=dot_prod*house_vec[j];
         }
       }
-
+]=]
+--[=[
       // Row Householder
       if(i>=n-1) continue;
       {
@@ -162,6 +224,8 @@ local function Bidiagonalize (w, h, U, S, V)
           house_vec[j]=-house_vec[j];
         }
       }
+]=]
+--[=[  
       #pragma omp parallel for
       for(size_t k=i;k<dim[0];k++){
         T dot_prod=0;
@@ -201,6 +265,44 @@ local function ComputeMu (S, n, w, h)
 	local d1, d2 = abs(lambda1 - c11), abs(lambda2 - c11)
   
 	return d1 < d2 and lambda1 or lambda2
+end
+
+--
+local function GetS_Abs (S, row, col, h)
+	local index = Index(row, col, h)
+
+	return abs(S[index]), index
+end
+
+--
+local function Rotate (S, is1, delta, cosa, sina)
+	local is2 = is1 + delta
+	local s1, s2 = S[is1], S[is2]
+
+	S[is1] = s1 * cosa - s2 * sina
+	S[is2] = s1 * sina + s2 * cosa
+end
+
+--
+local function GivensL (S, w, h, m, a, b)
+	local r, pos = sqrt(a^2 + b^2), Index(m, 0, h)
+	local c, s = a / r, -b / r
+
+	for i = 0, h - 1 do
+		Rotate(S, pos, h, c, s)
+	end
+end
+
+--
+local function GivensR (S, w, h, m, a, b)
+	local r, pos = sqrt(a^2 + b^2), Index(0, m, h)
+	local c, s = a / r, -b / r
+
+	for _ = 1, w do
+		Rotate(S, pos, 1, c, s)
+
+		pos = pos + h
+	end
 end
 
 --
@@ -543,15 +645,43 @@ end
 
 --- DOCME
 function M.SVD (out, matrix, w, h)
-	--
-	local flipped = w < h
+--[=[
+[in,out]	A	
+          A is DOUBLE PRECISION array, dimension (LDA,N)
+          On entry, the M-by-N matrix A.
+          On exit,
+          if JOBU .ne. 'O' and JOBVT .ne. 'O', the contents of A
+                          are destroyed.
+[in]	LDA	
+          LDA is INTEGER
+          The leading dimension of the array A.  LDA >= max(1,M).
+[out]	S	
+          S is DOUBLE PRECISION array, dimension (min(M,N))
+          The singular values of A, sorted so that S(i) >= S(i+1).
+[out]	U	
+          U is DOUBLE PRECISION array, dimension (LDU,UCOL)
+          (LDU,M) if JOBU = 'A' or (LDU,min(M,N)) if JOBU = 'S'.
+          if JOBU = 'S', U contains the first min(m,n) columns of U
+          (the left singular vectors, stored columnwise);
+[in]	LDU	
+          LDU is INTEGER
+          The leading dimension of the array U.  LDU >= 1; if
+          JOBU = 'S' or 'A', LDU >= M.
+[out]	VT	
+          VT is DOUBLE PRECISION array, dimension (LDVT,N)
+          if JOBVT = 'S', VT contains the first min(m,n) rows of
+          V**T (the right singular vectors, stored rowwise);
+[in]	LDVT	
+          LDVT is INTEGER
+          The leading dimension of the array VT.  LDVT >= 1; if JOBVT = 'S', LDVT >= min(M,N).
+]=]
 
-	if flipped then
-		w, h = h, w
+	--
+	local m, n, ldv = w, h, h
+
+	if w < h then
+		w, h, ldv = h, w, w
 	end
-
-	--
-	local lda, ldu, ldv -- ???
 
 	--
 	for i = 1, w do
@@ -560,10 +690,10 @@ function M.SVD (out, matrix, w, h)
 		for j = 1, h do
 			local rpos
 
-			if flipped then
-				rpos = (i - 1) * lda + j
+			if h == m then
+				rpos = (i - 1) * m + j
 			else
-				rpos = (j - 1) * lda + i
+				rpos = (j - 1) * m + i
 			end
 
 			S[sbase + j] = matrix[rpos]
@@ -596,13 +726,11 @@ function M.SVD (out, matrix, w, h)
 	end
 
 	--
-	local m = flipped and h or w
-
 	for i = 1, h do
-		local sign, ubase = s[i] < 0 and -1 or 1, (i - 1) * ldu
+		local sign, ubase = s[i] < 0 and -1 or 1, (i - 1) * m
 
 		for j = 1, m do
-			if flipped then
+			if h == m then
 				u[ubase + j] = V[(i - 1) * h + j] * sign
 			else
 				u[ubase + j] = U[(j - 1) * w + i] * sign
@@ -622,13 +750,11 @@ function M.SVD (out, matrix, w, h)
     }
   }
 ]=]  
-	local n = flipped and w or h
-
 	for i = 1, n do
 		local vtbase = (i - 1) * ldv
 
 		for j = 1, h do
-			if flipped then
+			if w == n then
 				vt[vtbase + j] = U[(i - 1) * w + j]
 			else
 				vt[vtbase + j] = V[(j - 1) * h + i]
