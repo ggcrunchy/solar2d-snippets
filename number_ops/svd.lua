@@ -542,18 +542,35 @@ local function DiagOnes (arr, dim)
 end
 
 --- DOCME
-function M.SVD (out, w, h)
+function M.SVD (out, matrix, w, h)
 	--
-	local ww, hh
+	local flipped = w < h
 
-	if w > h then
-		ww, hh = w, h
-	else
-		ww, hh = h, w
+	if flipped then
+		w, h = h, w
 	end
 
 	--
-	--[[
+	local lda, ldu, ldv -- ???
+
+	--
+	for i = 1, w do
+		local sbase = (i - 1) * h
+
+		for j = 1, h do
+			local rpos
+
+			if flipped then
+				rpos = (i - 1) * lda + j
+			else
+				rpos = (j - 1) * lda + i
+			end
+
+			S[sbase + j] = matrix[rpos]
+		end
+	end
+	--
+	--[=[
   if(dim[1]==*M){
     for(size_t i=0;i<dim[0];i++)
     for(size_t j=0;j<dim[1];j++){
@@ -565,54 +582,77 @@ function M.SVD (out, w, h)
       S_[i*dim[1]+j]=A[j*lda+i];
     }
   }
-  }]]
-	DiagOnes(U, ww)
-	DiagOnes(V, hh)
+}
+]=]
+	DiagOnes(U, w)
+	DiagOnes(V, h)
+	AuxSVD(w, h, U, S, V, -1)
 
-	AuxSVD(ww, hh, U, S, V, -1)
+	--
+	local s, u, vt = {}, {}, {}
 
-	for i = 1, hh do
-		OutS[i] = GetS(S, i - 1, i - 1, hh)
+	for i = 1, h do
+		s[i] = GetS(S, i - 1, i - 1, h)
 	end
 
-	if hh == w then
-		--
-	else
-		--
-	end
+	--
+	local m = flipped and h or w
 
-	if ww = h then
-		--
-	else
-		--
+	for i = 1, h do
+		local sign, ubase = s[i] < 0 and -1 or 1, (i - 1) * ldu
+
+		for j = 1, m do
+			if flipped then
+				u[ubase + j] = V[(i - 1) * h + j] * sign
+			else
+				u[ubase + j] = U[(j - 1) * w + i] * sign
+			end
+		end
 	end
 --[=[
   if(dim[1]==*M){ // Set U
     for(size_t i=0;i<dim[1];i++)
-    for(size_t j=0;j<*M;j++){
+    for(size_t j=0;j<*M;j++){ -- j < h (dim[1] = m)
       U[j+ldu*i]=V_[j+i*dim[1]]*(S[i]<0.0?-1.0:1.0);
     }
   }else{
     for(size_t i=0;i<dim[1];i++)
-    for(size_t j=0;j<*M;j++){
+    for(size_t j=0;j<*M;j++){ -- j < w (dim[0] = m)
       U[j+ldu*i]=U_[i+j*dim[0]]*(S[i]<0.0?-1.0:1.0);
     }
   }
+]=]  
+	local n = flipped and w or h
+
+	for i = 1, n do
+		local vtbase = (i - 1) * ldv
+
+		for j = 1, h do
+			if flipped then
+				vt[vtbase + j] = U[(i - 1) * w + j]
+			else
+				vt[vtbase + j] = V[(j - 1) * h + i]
+			end
+		end
+	end
+--[=[
   if(dim[0]==*N){ // Set V
-    for(size_t i=0;i<*N;i++)
-    for(size_t j=0;j<dim[1];j++){
+    for(size_t i=0;i<*N;i++) - i < w ()
+    for(size_t j=0;j<dim[1];j++){ -- j < h (dim[1] = m)
       VT[j+ldv*i]=U_[j+i*dim[0]];
     }
   }else{
-    for(size_t i=0;i<*N;i++)
+    for(size_t i=0;i<*N;i++) -- i < h...
     for(size_t j=0;j<dim[1];j++){
       VT[j+ldv*i]=V_[i+j*dim[1]];
     }
   }
 ]=]
-	for i = 1, hh do
-		OutS[i] = abs(OutS[i])
+	for i = 1, h do
+		s[i] = abs(s[i])
 	end
+
+	return s, u, v
 end
 
 --[=[
