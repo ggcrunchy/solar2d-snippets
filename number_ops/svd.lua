@@ -44,7 +44,7 @@ local function GetBeta (S, i1, i2, norm)
 
 	local alpha = sqrt(1 + x1 * inorm)
 
-	Vec[i1 + 1] = -alpha
+	Vec[i2 + 1] = -alpha
 
 	return inorm / alpha
 end
@@ -116,7 +116,7 @@ local function Bidiagonalize (w, h, U, S, V)
 
 			local beta = GetBeta(S, i, i + 1, norm)
 
-			for j = i + 1, w - 1 do
+			for j = i + 2, h - 1 do
 				Vec[j + 1] = -beta * S(i, j)
 			end
 
@@ -233,7 +233,7 @@ end
 local function ComputeMu (S, n)
 	local sm2m2 = S(n - 2, n - 2)
 	local sm2m1 = S(n - 2, n - 1)
-	local c00 = sm2m2^2 + S(n - 3, n - 2)^2
+	local c00 = sm2m2^2 + (n > 2 and S(n - 3, n - 2)^2 or 0)
 	local c11 = S(n - 1, n - 1)^2 + sm2m1^2
 	local b, c = -.5 * (c00 + c11), c00 * c11 - (sm2m2 * sm2m1)^2
 	local d = sqrt(b^2 - c)
@@ -316,6 +316,7 @@ end
 
 		local k, n = k0, k0 + 1
 
+		if k < h - 1 then
 		while n < h and abs(S(n - 1, n)) > smax do
 			n = n + 1
 		end
@@ -333,6 +334,7 @@ end
 			GivensR(U, w, k, alpha, beta)
 
 			alpha, beta, k = S(k, k + 1), S(k, k + 2), k + 1
+		end
 		end
 	end
 end
@@ -630,7 +632,7 @@ local function DiagOnes (arr, dim)
 	end
 
 	for _ = 1, dim do
-		arr[j], j = j + 1, j + inc
+		arr[j], j = 1, j + inc
 	end
 
 	BindArray(arr, dim)

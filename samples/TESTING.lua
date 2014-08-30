@@ -39,14 +39,14 @@ Scene:addEventListener("create")
 --
 function Scene:show (e)
 	if e.phase == "will" then return end
-	
+	require("mobdebug").start()
 	local svd = require("number_ops.svd")
 
 	local mat = {}
-	local mm, nn, ii = 20, 20, 1
+	local mm, nn, ii = 4, 4, 1--20, 20, 1
 	for i = 1, nn do
 		for j = 1, mm do
-			mat[ii], ii = math.random(22), ii + 1
+			mat[ii], ii = ii, ii + 1--math.random(22), ii + 1
 		end
 	end
 	local s, u, v = svd.SVD(mat, mm, nn)
