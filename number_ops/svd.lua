@@ -1,4 +1,6 @@
 --- Singular value decomposition.
+--
+-- Adapted from Dhairya Malhotra's answer [here](http://stackoverflow.com/questions/3856072/svd-implementation-c).
 
 --
 -- Permission is hereby granted, free of charge, to any person obtaining
@@ -95,8 +97,7 @@ local function Bidiagonalize (w, h, U, S, V)
 			for j = i + 1, w - 1 do
 				Vec[j + 1] = -beta * S(j, i)
 			end
---print(beta)
---vdump(Vec)
+
 			for k = i, h - 1 do
 				IterRow(S, k, i, w)
 			end
@@ -128,105 +129,7 @@ local function Bidiagonalize (w, h, U, S, V)
 				IterRow(V, k, i + 1, h)
 			end
 		end
-	end
---[=[
-    size_t n=std::min(dim[0],dim[1]);
-    std::vector<T> house_vec(std::max(dim[0],dim[1]));
-    for(size_t i=0;i<n;i++){
-      // Column Householder
-      {
-        T x1=S(i,i);
-        if(x1<0) x1=-x1;
-
-        T x_inv_norm=0;
-        for(size_t j=i;j<dim[0];j++){
-          x_inv_norm+=S(j,i)*S(j,i);
-        }
-        x_inv_norm=1/sqrt(x_inv_norm);
-
-        T alpha=sqrt(1+x1*x_inv_norm);
-        T beta=x_inv_norm/alpha;
-
-        house_vec[i]=-alpha;
-        for(size_t j=i+1;j<dim[0];j++){
-          house_vec[j]=-beta*S(j,i);
-        }
-        if(S(i,i)<0) for(size_t j=i+1;j<dim[0];j++){
-          house_vec[j]=-house_vec[j];
-        }
-      }
-]=]
---[=[  
-      #pragma omp parallel for
-      for(size_t k=i;k<dim[1];k++){
-        T dot_prod=0;
-        for(size_t j=i;j<dim[0];j++){
-          dot_prod+=S(j,k)*house_vec[j];
-        }
-        for(size_t j=i;j<dim[0];j++){
-          S(j,k)-=dot_prod*house_vec[j];
-        }
-      }
-      #pragma omp parallel for
-      for(size_t k=0;k<dim[0];k++){
-        T dot_prod=0;
-        for(size_t j=i;j<dim[0];j++){
-          dot_prod+=U(k,j)*house_vec[j];
-        }
-        for(size_t j=i;j<dim[0];j++){
-          U(k,j)-=dot_prod*house_vec[j];
-        }
-      }
-]=]
---[=[
-      // Row Householder
-      if(i>=n-1) continue;
-      {
-        T x1=S(i,i+1);
-        if(x1<0) x1=-x1;
-
-        T x_inv_norm=0;
-        for(size_t j=i+1;j<dim[1];j++){
-          x_inv_norm+=S(i,j)*S(i,j);
-        }
-        x_inv_norm=1/sqrt(x_inv_norm);
-
-        T alpha=sqrt(1+x1*x_inv_norm);
-        T beta=x_inv_norm/alpha;
-
-        house_vec[i+1]=-alpha;
-        for(size_t j=i+2;j<dim[1];j++){
-          house_vec[j]=-beta*S(i,j);
-        }
-        if(S(i,i+1)<0) for(size_t j=i+2;j<dim[1];j++){
-          house_vec[j]=-house_vec[j];
-        }
-      }
-]=]
---[=[  
-      #pragma omp parallel for
-      for(size_t k=i;k<dim[0];k++){
-        T dot_prod=0;
-        for(size_t j=i+1;j<dim[1];j++){
-          dot_prod+=S(k,j)*house_vec[j];
-        }
-        for(size_t j=i+1;j<dim[1];j++){
-          S(k,j)-=dot_prod*house_vec[j];
-        }
-      }
-      #pragma omp parallel for
-      for(size_t k=0;k<dim[1];k++){
-        T dot_prod=0;
-        for(size_t j=i+1;j<dim[1];j++){
-          dot_prod+=V(j,k)*house_vec[j];
-        }
-        for(size_t j=i+1;j<dim[1];j++){
-          V(j,k)-=dot_prod*house_vec[j];
-        }
-      }
-    }
-  }
-]=]  
+	end 
 end
 
 --
@@ -294,12 +197,7 @@ local function Tridiagonalize (w, h, U, S, V)
 
 	while k0 < h - 1 do
 		local smax = 0
-if AAA == 20 then
-break
-else
-print("?", k0, h - 1)
-	AAA=(AAA or 0)+1
-end
+
 		for i = 0, h - 1 do
 			local sii = S(i, i)
 
@@ -317,292 +215,27 @@ end
 		local k, n = k0, k0 + 1
 
 		if k < h - 1 then
-		while n < h and abs(S(n - 1, n)) > smax do
-			n = n + 1
-		end
---print("N", n, h, smax)
-		local mu, skk = ComputeMu(S, n), S(k, k)
-		local alpha, beta = skk^2 - mu, skk * S(k, k + 1)
+			while n < h and abs(S(n - 1, n)) > smax do
+				n = n + 1
+			end
 
-		while k < n - 1 do
-			GivensR(S, w, k, alpha, beta)
-			GivensL(V, h, k, alpha, beta)
+			local mu, skk = ComputeMu(S, n), S(k, k)
+			local alpha, beta = skk^2 - mu, skk * S(k, k + 1)
 
-			alpha, beta = S(k, k), S(k + 1, k)
+			while k < n - 1 do
+				GivensR(S, w, k, alpha, beta)
+				GivensL(V, h, k, alpha, beta)
 
-			GivensL(S, h, k, alpha, beta)
-			GivensR(U, w, k, alpha, beta)
+				alpha, beta = S(k, k), S(k + 1, k)
 
-			alpha, beta, k = S(k, k + 1), S(k, k + 2), k + 1
-		end
+				GivensL(S, h, k, alpha, beta)
+				GivensR(U, w, k, alpha, beta)
+
+				alpha, beta, k = S(k, k + 1), S(k, k + 2), k + 1
+			end
 		end
 	end
 end
-
---[=[
-From http://stackoverflow.com/questions/3856072/svd-implementation-c:
-
-#define U(i,j) U_[(i)*dim[0]+(j)]
-#define S(i,j) S_[(i)*dim[1]+(j)]
-#define V(i,j) V_[(i)*dim[1]+(j)]
-
-template <class T>
-void GivensL(T* S_, const size_t dim[2], size_t m, T a, T b){
-  T r=sqrt(a*a+b*b);
-  T c=a/r;
-  T s=-b/r;
-
-  #pragma omp parallel for
-  for(size_t i=0;i<dim[1];i++){
-    T S0=S(m+0,i);
-    T S1=S(m+1,i);
-    S(m  ,i)+=S0*(c-1);
-    S(m  ,i)+=S1*(-s );
-
-    S(m+1,i)+=S0*( s );
-    S(m+1,i)+=S1*(c-1);
-  }
-}
-
-template <class T>
-void GivensR(T* S_, const size_t dim[2], size_t m, T a, T b){
-  T r=sqrt(a*a+b*b);
-  T c=a/r;
-  T s=-b/r;
-
-  #pragma omp parallel for
-  for(size_t i=0;i<dim[0];i++){
-    T S0=S(i,m+0);
-    T S1=S(i,m+1);
-    S(i,m  )+=S0*(c-1);
-    S(i,m  )+=S1*(-s );
-
-    S(i,m+1)+=S0*( s );
-    S(i,m+1)+=S1*(c-1);
-  }
-}
-
-template <class T>
-void SVD(const size_t dim[2], T* U_, T* S_, T* V_, T eps=-1){
-  assert(dim[0]>=dim[1]);
-
-  { // Bi-diagonalization
-    size_t n=std::min(dim[0],dim[1]);
-    std::vector<T> house_vec(std::max(dim[0],dim[1]));
-    for(size_t i=0;i<n;i++){
-      // Column Householder
-      {
-        T x1=S(i,i);
-        if(x1<0) x1=-x1;
-
-        T x_inv_norm=0;
-        for(size_t j=i;j<dim[0];j++){
-          x_inv_norm+=S(j,i)*S(j,i);
-        }
-        x_inv_norm=1/sqrt(x_inv_norm);
-
-        T alpha=sqrt(1+x1*x_inv_norm);
-        T beta=x_inv_norm/alpha;
-
-        house_vec[i]=-alpha;
-        for(size_t j=i+1;j<dim[0];j++){
-          house_vec[j]=-beta*S(j,i);
-        }
-        if(S(i,i)<0) for(size_t j=i+1;j<dim[0];j++){
-          house_vec[j]=-house_vec[j];
-        }
-      }
-      #pragma omp parallel for
-      for(size_t k=i;k<dim[1];k++){
-        T dot_prod=0;
-        for(size_t j=i;j<dim[0];j++){
-          dot_prod+=S(j,k)*house_vec[j];
-        }
-        for(size_t j=i;j<dim[0];j++){
-          S(j,k)-=dot_prod*house_vec[j];
-        }
-      }
-      #pragma omp parallel for
-      for(size_t k=0;k<dim[0];k++){
-        T dot_prod=0;
-        for(size_t j=i;j<dim[0];j++){
-          dot_prod+=U(k,j)*house_vec[j];
-        }
-        for(size_t j=i;j<dim[0];j++){
-          U(k,j)-=dot_prod*house_vec[j];
-        }
-      }
-
-      // Row Householder
-      if(i>=n-1) continue;
-      {
-        T x1=S(i,i+1);
-        if(x1<0) x1=-x1;
-
-        T x_inv_norm=0;
-        for(size_t j=i+1;j<dim[1];j++){
-          x_inv_norm+=S(i,j)*S(i,j);
-        }
-        x_inv_norm=1/sqrt(x_inv_norm);
-
-        T alpha=sqrt(1+x1*x_inv_norm);
-        T beta=x_inv_norm/alpha;
-
-        house_vec[i+1]=-alpha;
-        for(size_t j=i+2;j<dim[1];j++){
-          house_vec[j]=-beta*S(i,j);
-        }
-        if(S(i,i+1)<0) for(size_t j=i+2;j<dim[1];j++){
-          house_vec[j]=-house_vec[j];
-        }
-      }
-      #pragma omp parallel for
-      for(size_t k=i;k<dim[0];k++){
-        T dot_prod=0;
-        for(size_t j=i+1;j<dim[1];j++){
-          dot_prod+=S(k,j)*house_vec[j];
-        }
-        for(size_t j=i+1;j<dim[1];j++){
-          S(k,j)-=dot_prod*house_vec[j];
-        }
-      }
-      #pragma omp parallel for
-      for(size_t k=0;k<dim[1];k++){
-        T dot_prod=0;
-        for(size_t j=i+1;j<dim[1];j++){
-          dot_prod+=V(j,k)*house_vec[j];
-        }
-        for(size_t j=i+1;j<dim[1];j++){
-          V(j,k)-=dot_prod*house_vec[j];
-        }
-      }
-    }
-  }
-
-  size_t k0=0;
-  if(eps<0){
-    eps=1.0;
-    while(eps+(T)1.0>1.0) eps*=0.5;
-    eps*=64.0;
-  }
-  while(k0<dim[1]-1){ // Diagonalization
-    T S_max=0.0;
-    for(size_t i=0;i<dim[1];i++) S_max=(S_max>S(i,i)?S_max:S(i,i));
-
-    while(k0<dim[1]-1 && fabs(S(k0,k0+1))<=eps*S_max) k0++;
-    size_t k=k0;
-
-    size_t n=k0+1;
-    while(n<dim[1] && fabs(S(n-1,n))>eps*S_max) n++;
-
-    T mu=0;
-    { // Compute mu
-      T C[3][2];
-      C[0][0]=S(n-2,n-2)*S(n-2,n-2)+S(n-3,n-2)*S(n-3,n-2); C[0][1]=S(n-2,n-2)*S(n-2,n-1);
-      C[1][0]=S(n-2,n-2)*S(n-2,n-1); C[1][1]=S(n-1,n-1)*S(n-1,n-1)+S(n-2,n-1)*S(n-2,n-1);
-
-      T b=-(C[0][0]+C[1][1])/2;
-      T c=  C[0][0]*C[1][1] - C[0][1]*C[1][0];
-      T d=sqrt(b*b-c);
-      T lambda1=-b+d;
-      T lambda2=-b-d;
-
-      T d1=lambda1-C[1][1]; d1=(d1<0?-d1:d1);
-      T d2=lambda2-C[1][1]; d2=(d2<0?-d2:d2);
-      mu=(d1<d2?lambda1:lambda2);
-    }
-
-    T alpha=S(k,k)*S(k,k)-mu;
-    T beta=S(k,k)*S(k,k+1);
-
-    for(;k<n-1;k++)
-    {
-      size_t dimU[2]={dim[0],dim[0]};
-      size_t dimV[2]={dim[1],dim[1]};
-      GivensR(S_,dim ,k,alpha,beta);
-      GivensL(V_,dimV,k,alpha,beta);
-
-      alpha=S(k,k);
-      beta=S(k+1,k);
-      GivensL(S_,dim ,k,alpha,beta);
-      GivensR(U_,dimU,k,alpha,beta);
-
-      alpha=S(k,k+1);
-      beta=S(k,k+2);
-    }
-  }
-}
-
-#undef U
-#undef S
-#undef V
-
-template<class T>
-inline void svd(int *M, int *N, T *A, int *LDA, T *S, T *U, int *LDU, T *VT, int *LDVT){
-  const size_t dim[2]={std::max(*N,*M), std::min(*N,*M)};
-  T* U_=new T[dim[0]*dim[0]]; memset(U_, 0, dim[0]*dim[0]*sizeof(T));
-  T* V_=new T[dim[1]*dim[1]]; memset(V_, 0, dim[1]*dim[1]*sizeof(T));
-  T* S_=new T[dim[0]*dim[1]];
-
-  const size_t lda=*LDA;
-  const size_t ldu=*LDU;
-  const size_t ldv=*LDVT;
-
-  if(dim[1]==*M){
-    for(size_t i=0;i<dim[0];i++)
-    for(size_t j=0;j<dim[1];j++){
-      S_[i*dim[1]+j]=A[i*lda+j];
-    }
-  }else{
-    for(size_t i=0;i<dim[0];i++)
-    for(size_t j=0;j<dim[1];j++){
-      S_[i*dim[1]+j]=A[j*lda+i];
-    }
-  }
-  for(size_t i=0;i<dim[0];i++){
-    U_[i*dim[0]+i]=1;
-  }
-  for(size_t i=0;i<dim[1];i++){
-    V_[i*dim[1]+i]=1;
-  }
-
-  SVD<T>(dim, U_, S_, V_, (T)-1);
-
-  for(size_t i=0;i<dim[1];i++){ // Set S
-    S[i]=S_[i*dim[1]+i];
-  }
-  if(dim[1]==*M){ // Set U
-    for(size_t i=0;i<dim[1];i++)
-    for(size_t j=0;j<*M;j++){
-      U[j+ldu*i]=V_[j+i*dim[1]]*(S[i]<0.0?-1.0:1.0);
-    }
-  }else{
-    for(size_t i=0;i<dim[1];i++)
-    for(size_t j=0;j<*M;j++){
-      U[j+ldu*i]=U_[i+j*dim[0]]*(S[i]<0.0?-1.0:1.0);
-    }
-  }
-  if(dim[0]==*N){ // Set V
-    for(size_t i=0;i<*N;i++)
-    for(size_t j=0;j<dim[1];j++){
-      VT[j+ldv*i]=U_[j+i*dim[0]];
-    }
-  }else{
-    for(size_t i=0;i<*N;i++)
-    for(size_t j=0;j<dim[1];j++){
-      VT[j+ldv*i]=V_[i+j*dim[1]];
-    }
-  }
-  for(size_t i=0;i<dim[1];i++){
-    S[i]=S[i]*(S[i]<0.0?-1.0:1.0);
-  }
-
-  delete[] U_;
-  delete[] S_;
-  delete[] V_;
-}
-
---]=]
 
 -- --
 local S, U, V = {}, {}, {}
@@ -640,37 +273,6 @@ end
 
 --- DOCME
 function M.SVD (matrix, w, h)
---[=[
-[in,out]	A	
-          A is DOUBLE PRECISION array, dimension (LDA,N)
-          On entry, the M-by-N matrix A.
-          On exit,
-          if JOBU .ne. 'O' and JOBVT .ne. 'O', the contents of A
-                          are destroyed.
-[in]	LDA	
-          LDA is INTEGER
-          The leading dimension of the array A.  LDA >= max(1,M).
-[out]	S	
-          S is DOUBLE PRECISION array, dimension (min(M,N))
-          The singular values of A, sorted so that S(i) >= S(i+1).
-[out]	U	
-          U is DOUBLE PRECISION array, dimension (LDU,UCOL)
-          (LDU,M) if JOBU = 'A' or (LDU,min(M,N)) if JOBU = 'S'.
-          if JOBU = 'S', U contains the first min(m,n) columns of U
-          (the left singular vectors, stored columnwise);
-[in]	LDU	
-          LDU is INTEGER
-          The leading dimension of the array U.  LDU >= 1; if
-          JOBU = 'S' or 'A', LDU >= M.
-[out]	VT	
-          VT is DOUBLE PRECISION array, dimension (LDVT,N)
-          if JOBVT = 'S', VT contains the first min(m,n) rows of
-          V**T (the right singular vectors, stored rowwise);
-[in]	LDVT	
-          LDVT is INTEGER
-          The leading dimension of the array VT.  LDVT >= 1; if JOBVT = 'S', LDVT >= min(M,N).
-]=]
-
 	--
 	local m, n = w, h
 
@@ -696,24 +298,32 @@ function M.SVD (matrix, w, h)
 	end
 
 	--
-	--[=[
-  if(dim[1]==*M){
-    for(size_t i=0;i<dim[0];i++)
-    for(size_t j=0;j<dim[1];j++){
-      S_[i*dim[1]+j]=A[i*lda+j];
-    }
-  }else{
-    for(size_t i=0;i<dim[0];i++)
-    for(size_t j=0;j<dim[1];j++){
-      S_[i*dim[1]+j]=A[j*lda+i];
-    }
-  }
-}
-]=]
 	BindArray(S, h)
 	DiagOnes(U, w)
 	DiagOnes(V, h)
 	Bidiagonalize(w, h, U, S, V)
+	
+	local AA = {}
+
+	local ii = 1
+	for i = 0, 3 do
+		for j = 0, 3 do
+			AA[ii]=U(i, j) * S(j, i)
+			ii = ii + 1
+		end
+	end
+	BindArray(AA, w)
+	local BB={}
+	local jj = 1
+	for i = 0, 3 do
+		for j = 0, 3 do
+			BB[jj]=AA(i, j) * V(j, i)
+			jj=jj+1
+		end
+	end
+	vdump(BB)
+	if true then return end
+	
 	Tridiagonalize(w, h, U, S, V)
 
 	--
@@ -735,19 +345,7 @@ function M.SVD (matrix, w, h)
 			end
 		end
 	end
---[=[
-  if(dim[1]==*M){ // Set U
-    for(size_t i=0;i<dim[1];i++)
-    for(size_t j=0;j<*M;j++){ -- j < h (dim[1] = m)
-      U[j+ldu*i]=V_[j+i*dim[1]]*(S[i]<0.0?-1.0:1.0);
-    }
-  }else{
-    for(size_t i=0;i<dim[1];i++)
-    for(size_t j=0;j<*M;j++){ -- j < w (dim[0] = m)
-      U[j+ldu*i]=U_[i+j*dim[0]]*(S[i]<0.0?-1.0:1.0);
-    }
-  }
-]=]  
+ 
 	for i = 1, n do
 		local vtbase = (i - 1) * h
 
@@ -759,19 +357,7 @@ function M.SVD (matrix, w, h)
 			end
 		end
 	end
---[=[
-  if(dim[0]==*N){ // Set V
-    for(size_t i=0;i<*N;i++) - i < w ()
-    for(size_t j=0;j<dim[1];j++){ -- j < h (dim[1] = m)
-      VT[j+ldv*i]=U_[j+i*dim[0]];
-    }
-  }else{
-    for(size_t i=0;i<*N;i++) -- i < h...
-    for(size_t j=0;j<dim[1];j++){
-      VT[j+ldv*i]=V_[i+j*dim[1]];
-    }
-  }
-]=]
+
 	for i = 1, h do
 		s[i] = abs(s[i])
 	end
@@ -780,67 +366,71 @@ function M.SVD (matrix, w, h)
 end
 
 --[=[
-LAPACK docs:
+To integrate:
 
-Purpose:
- DGESVD computes the singular value decomposition (SVD) of a real
- M-by-N matrix A, optionally computing the left and/or right singular
- vectors. The SVD is written
+/* svd.c: Perform a singular value decomposition A = USV' of square matrix.
+ *
+ * This routine has been adapted with permission from a Pascal implementation
+ * (c) 1988 J. C. Nash, "Compact numerical methods for computers", Hilger 1990.
+ * The A matrix must be pre-allocated with 2n rows and n columns. On calling
+ * the matrix to be decomposed is contained in the first n rows of A. On return
+ * the n first rows of A contain the product US and the lower n rows contain V
+ * (not V'). The S2 vector returns the square of the singular values.
+ *
+ * (c) Copyright 1996 by Carl Edward Rasmussen. */
 
-      A = U * SIGMA * transpose(V)
+#include <stdio.h>
+#include <math.h>
 
- where SIGMA is an M-by-N matrix which is zero except for its
- min(m,n) diagonal elements, U is an M-by-M orthogonal matrix, and
- V is an N-by-N orthogonal matrix.  The diagonal elements of SIGMA
- are the singular values of A; they are real and non-negative, and
- are returned in descending order.  The first min(m,n) columns of
- U and V are the left and right singular vectors of A.
 
- Note that the routine returns V**T, not V.
-Parameters
-[in]	JOBU	
-          = 'S':  the first min(m,n) columns of U (the left singular
-                  vectors) are returned in the array U;
-[in]	JOBVT	
-          = 'S':  the first min(m,n) rows of V**T (the right singular
-                  vectors) are returned in the array VT;
 
-          JOBVT and JOBU cannot both be 'O'.
-[in]	M	
-          M is INTEGER
-          The number of rows of the input matrix A.  M >= 0.
-[in]	N	
-          N is INTEGER
-          The number of columns of the input matrix A.  N >= 0.
-[in,out]	A	
-          A is DOUBLE PRECISION array, dimension (LDA,N)
-          On entry, the M-by-N matrix A.
-          On exit,
-          if JOBU .ne. 'O' and JOBVT .ne. 'O', the contents of A
-                          are destroyed.
-[in]	LDA	
-          LDA is INTEGER
-          The leading dimension of the array A.  LDA >= max(1,M).
-[out]	S	
-          S is DOUBLE PRECISION array, dimension (min(M,N))
-          The singular values of A, sorted so that S(i) >= S(i+1).
-[out]	U	
-          U is DOUBLE PRECISION array, dimension (LDU,UCOL)
-          (LDU,M) if JOBU = 'A' or (LDU,min(M,N)) if JOBU = 'S'.
-          if JOBU = 'S', U contains the first min(m,n) columns of U
-          (the left singular vectors, stored columnwise);
-[in]	LDU	
-          LDU is INTEGER
-          The leading dimension of the array U.  LDU >= 1; if
-          JOBU = 'S' or 'A', LDU >= M.
-[out]	VT	
-          VT is DOUBLE PRECISION array, dimension (LDVT,N)
-          if JOBVT = 'S', VT contains the first min(m,n) rows of
-          V**T (the right singular vectors, stored rowwise);
-[in]	LDVT	
-          LDVT is INTEGER
-          The leading dimension of the array VT.  LDVT >= 1; if JOBVT = 'S', LDVT >= min(M,N).
---]=]
+void svd(double **A, double *S2, int n)
+{
+  int  i, j, k, EstColRank = n, RotCount = n, SweepCount = 0,
+       slimit = (n<120) ? 30 : n/4;
+  double eps = 1e-15, e2 = 10.0*n*eps*eps, tol = 0.1*eps, vt, p, x0,
+       y0, q, r, c0, s0, d1, d2;
+
+  for (i=0; i<n; i++) { for (j=0; j<n; j++) A[n+i][j] = 0.0; A[n+i][i] = 1.0; }
+  while (RotCount != 0 && SweepCount++ <= slimit) {
+    RotCount = EstColRank*(EstColRank-1)/2;
+    for (j=0; j<EstColRank-1; j++) 
+      for (k=j+1; k<EstColRank; k++) {
+        p = q = r = 0.0;
+        for (i=0; i<n; i++) {
+          x0 = A[i][j]; y0 = A[i][k];
+          p += x0*y0; q += x0*x0; r += y0*y0;
+        }
+        S2[j] = q; S2[k] = r;
+        if (q >= r) {
+          if (q<=e2*S2[0] || fabs(p)<=tol*q)
+            RotCount--;
+          else {
+            p /= q; r = 1.0-r/q; vt = sqrt(4.0*p*p+r*r);
+            c0 = sqrt(0.5*(1.0+r/vt)); s0 = p/(vt*c0);
+            for (i=0; i<2*n; i++) {
+              d1 = A[i][j]; d2 = A[i][k];
+              A[i][j] = d1*c0+d2*s0; A[i][k] = -d1*s0+d2*c0;
+            }
+          }
+        } else {
+          p /= r; q = q/r-1.0; vt = sqrt(4.0*p*p+q*q);
+          s0 = sqrt(0.5*(1.0-q/vt));
+          if (p<0.0) s0 = -s0;
+          c0 = p/(vt*s0);
+          for (i=0; i<2*n; i++) {
+            d1 = A[i][j]; d2 = A[i][k];
+            A[i][j] = d1*c0+d2*s0; A[i][k] = -d1*s0+d2*c0;
+          }
+        }
+      }
+    while (EstColRank>2 && S2[EstColRank-1]<=S2[0]*tol+tol*tol) EstColRank--;
+  }
+  if (SweepCount > slimit)
+    printf("Warning: Reached maximum number of sweeps (%d) in SVD routine...\n"
+	   ,slimit);
+}
+]=]
 
 -- Export the module.
 return M
