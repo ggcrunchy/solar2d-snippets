@@ -27,6 +27,7 @@
 
 -- Standard library imports --
 local abs = math.abs
+local floor = math.floor
 local setmetatable = setmetatable
 local sqrt = math.sqrt
 
@@ -91,7 +92,7 @@ local function Bidiagonalize (w, h, U, S, V)
 			for j = i, w - 1 do
 				norm = norm + S(j, i)^2
 			end
-
+if norm > 1e-7 then
 			local beta = GetBeta(S, i, i, norm)
 
 			for j = i + 1, w - 1 do
@@ -105,6 +106,7 @@ local function Bidiagonalize (w, h, U, S, V)
 			for k = 0, w - 1 do
 				IterCol(U, k, i, w)
 			end
+end
 		end
 
 		-- Row Householder...
@@ -114,7 +116,7 @@ local function Bidiagonalize (w, h, U, S, V)
 			for j = i + 1, h - 1 do
 				norm = norm + S(i, j)^2
 			end
-
+if norm > 1e-7 then
 			local beta = GetBeta(S, i, i + 1, norm)
 
 			for j = i + 2, h - 1 do
@@ -128,12 +130,16 @@ local function Bidiagonalize (w, h, U, S, V)
 			for k = 0, h - 1 do
 				IterRow(V, k, i + 1, h)
 			end
+end
 		end
 	end 
 end
 
 --
 local function ComputeMu (S, n)
+if n < 3 then
+return 0
+end
 	local sm2m2 = S(n - 2, n - 2)
 	local sm2m1 = S(n - 2, n - 1)
 	local c00 = sm2m2^2 + (n > 2 and S(n - 3, n - 2)^2 or 0)
@@ -302,7 +308,7 @@ function M.SVD (matrix, w, h)
 	DiagOnes(U, w)
 	DiagOnes(V, h)
 	Bidiagonalize(w, h, U, S, V)
-	
+	--[[
 	local AA = {}
 
 	local ii = 1
@@ -321,7 +327,7 @@ function M.SVD (matrix, w, h)
 			jj=jj+1
 		end
 	end
-	vdump(BB)
+	vdump(BB)]]
 	if true then return end
 	
 	Tridiagonalize(w, h, U, S, V)
@@ -363,6 +369,93 @@ function M.SVD (matrix, w, h)
 	end
 
 	return s, u, vt
+end
+
+-- --
+local Work = {}
+
+--
+local function Rotate (n2, c0, s0, j, k)
+	for _ = 1, n2 do
+		local d1, d2 = Work[j], Work[k]
+
+		Work[j], Work[k] = d1 * c0 + d2 * s0, d2 * c0 - d1 * s0
+	end
+end
+
+--- DOCME
+function M.SVD_Square (matrix, n)
+	--
+	local mid = n^2
+
+	for i = 1, mid do
+		Work[i] = matrix[i]
+	end
+
+	--
+	for i = 1, n do
+		for j = 1, n do
+			Work[mid + j] = 0
+		end
+
+		Work[mid + i], mid = 1, mid + n
+	end
+
+	--
+	local s, sweep_count, slimit = {}, 0, n < 120 and 30 or floor(n / 4)
+	local est_col_rank, rot_count, eps, n2 = n, n, 1e-15, 2 * n
+	local e2, tol = 10 * n * eps * eps, .1 * eps
+
+	while rot_count ~= 0 and sweep_count <= slimit do
+		rot_count, sweep_count = floor(est_col_rank * (est_col_rank - 1) / 2), sweep_count + 1
+
+		for j = 1, est_col_rank - 1 do
+			for k = j + 1, est_col_rank do
+				local abase, p, q, r = 0, 0, 0, 0
+
+				for _ = 1, n do
+					local x0, y0 = Work[j], Work[k]
+
+					p, q, r, abase = p + x0 * y0, q + x0^2, r + y0^2, abase + n
+				end
+
+				s[j], s[k] = q, r
+
+				if q >= r then
+					if q <= e2 * s[1] or abs(p) <= tol * q then
+						rot_count = rot_count - 1
+					else
+						local abase, vt = 0, sqrt(4 * (p / q)^2 + (1 - r / q)^2)
+						local c0 = sqrt(.5 * (1 + r / vt))
+						local s0 = p / (vt * c0)
+
+						Rotate(n2, c0, s0, j, k)
+					end
+				else
+					p, q = p / r, q / r - 1
+
+					local abase, vt = 0, sqrt(4 * p^2 + q^2)
+					local s0 = sqrt(.5 * (1 - q / vt))
+
+					if p < 0 then
+						s0 = -s0
+					end
+
+					local c0 = p / (vt * s0)
+
+					Rotate(n2, c0, s0, j, k)
+				end
+			end
+		end
+
+		while est_col_rank > 2 and s[est_col_rank] <= s[1] * tol + tol^2 do
+			est_col_rank = est_col_rank - 1
+		end
+
+		if sweep_count > slimit then
+			-- ???
+		end
+	end
 end
 
 --[=[

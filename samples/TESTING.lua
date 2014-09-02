@@ -40,6 +40,7 @@ Scene:addEventListener("create")
 function Scene:show (e)
 	if e.phase == "will" then return end
 --	require("mobdebug").start()
+--[=[
 	local svd = require("number_ops.svd")
 
 	local mat = {}
@@ -55,6 +56,7 @@ function Scene:show (e)
 --	vdump(v)
 	
 if true then return end
+--]=]
 	local oc=os.clock
 	local overlap=require("signal_ops.overlap")
 	local t1=oc()
@@ -97,7 +99,16 @@ if true then return end
 		end
 	end
 	local t4=oc()
-	print("OK", t3-t2,t4-t3)
+	local AA={}
+	for i = 1, 2 * N do
+		AA[i] = math.random(256)
+	end
+	local t5=oc()
+--	require("signal_ops.fft_convolution").Convolve_2D(A, B, N, 2)
+	local t6=oc()
+	overlap.OverlapAdd_2D(A, B, 8, N)
+	local t7=oc()
+	print("OK", t3-t2,t4-t3,t5-t4,t6-t5,t7-t6)
 end
 
 Scene:addEventListener("show")
