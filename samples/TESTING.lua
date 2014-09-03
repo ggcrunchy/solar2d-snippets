@@ -40,7 +40,7 @@ Scene:addEventListener("create")
 function Scene:show (e)
 	if e.phase == "will" then return end
 --	require("mobdebug").start()
---[=[
+---[=[
 	local svd = require("number_ops.svd")
 
 	local mat = {}
@@ -50,11 +50,28 @@ function Scene:show (e)
 			mat[ii], ii = 1--[[math.random(22)]], ii + 1
 		end
 	end
-	local s, u, v = svd.SVD(mat, mm, nn)
---	vdump(s)
---	vdump(u)
---	vdump(v)
-	
+	local s, u, v = svd.SVD_Square(mat, 4)--svd.SVD(mat, mm, nn)
+s,u = u,s
+	vdump(s)
+	vdump(u)
+	vdump(v)
+
+	local dim, num = 25, 25
+
+	for NUM = 1, num do
+		for j = 1, dim^2 do
+			mat[j] = math.random(256)
+		end
+		local _, s = svd.SVD_Square(mat, dim)
+		local k = 0
+		for i = 1, #s do
+			if s[i] > 1e-6 then
+				k=k+1
+			end
+		end
+		print("RANK", k)
+	end
+
 if true then return end
 --]=]
 	local oc=os.clock
