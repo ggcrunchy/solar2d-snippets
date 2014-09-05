@@ -1,4 +1,4 @@
---- Assorted linear algebra operations.
+--- Assorted basic linear algebra operations.
 
 --
 -- Permission is hereby granted, free of charge, to any person obtaining
@@ -22,6 +22,9 @@
 --
 -- [ MIT license: http://www.opensource.org/licenses/mit-license.php ]
 --
+
+-- Standard library imports --
+local min = math.min
 
 -- Exports --
 local M = {}
@@ -101,6 +104,40 @@ function M.CompactTranspose (L, U, n)
 		rstep = rstep + 1
 		di = di + rstep
 	end
+end
+
+--- DOCME
+function M.Identity (dim, out)
+	out = out or {}
+
+	for i = 1, dim^2 do
+		out[i] = 0
+	end
+
+	local j, inc = 1, dim + 1
+
+	for _ = 1, dim do
+		out[j], j = 1, j + inc
+	end
+
+	return out
+end
+
+--- DOCME
+function M.Identity_Rect (m, n, out)
+	out = out or {}
+
+	for i = 1, m * n do
+		out[i] = 0
+	end
+
+	local j, inc = 1, m + 1
+
+	for _ = 1, min(m, n) do
+		out[j], j = 1, j + inc
+	end
+
+	return out
 end
 
 --- Matrix-vector product.

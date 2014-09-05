@@ -41,7 +41,7 @@ function Scene:show (e)
 	if e.phase == "will" then return end
 --	require("mobdebug").start()
 ---[=[
-	local svd = require("number_ops.svd")
+	local svd = require("linear_algebra_ops.svd")
 
 	local mat = {}
 	local mm, nn, ii = 4, 4, 1
@@ -57,21 +57,31 @@ s,u = u,s
 	vdump(v)
 
 	local dim, num = 25, 25
-
+local tt0=os.clock()
 	for NUM = 1, num do
+		local sum = {}
+	--	print("MATRIX", NUM)
 		for j = 1, dim^2 do
 			mat[j] = math.random(256)
+			sum[j] = 0
 		end
-		local _, s = svd.SVD_Square(mat, dim)
-		local k = 0
-		for i = 1, #s do
-			if s[i] > 1e-6 then
-				k=k+1
-			end
-		end
-		print("RANK", k)
-	end
+		local u, _, v = svd.SVD_Square(mat, dim)
+		local n = #u
+		for rank = 1, dim do
+			local fnorm, j = 0, 1
+			for ci = rank, n, dim do
+				local cval = u[ci]
 
+				for ri = rank, n, dim do
+					sum[j] = sum[j] + cval * v[ri]
+					fnorm, j = fnorm + (mat[j] - sum[j])^2, j + 1
+				end
+			end
+		--	print("Approximation for rank " .. rank, fnorm)
+		end
+	--	print("")
+	end
+print("TTTT", (os.clock() - tt0) / num)
 if true then return end
 --]=]
 	local oc=os.clock

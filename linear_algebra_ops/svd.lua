@@ -31,6 +31,9 @@ local floor = math.floor
 local setmetatable = setmetatable
 local sqrt = math.sqrt
 
+-- Modules --
+local base = require("linear_algebra_ops.base")
+
 -- Exports --
 local M = {}
 
@@ -264,15 +267,7 @@ end
 
 --
 local function DiagOnes (arr, dim)
-	local j, inc = 1, dim + 1
-
-	for i = 1, dim^2 do
-		arr[i] = 0
-	end
-
-	for _ = 1, dim do
-		arr[j], j = 1, j + inc
-	end
+	base.Identity(dim, arr)
 
 	BindArray(arr, dim)
 end
@@ -305,7 +300,7 @@ function M.SVD (matrix, w, h)
 
 	--
 	BindArray(S, h)
-	DiagOnes(U, w)
+	DiagOnes(U, w) -- TODO: In general, I suppose these shouldn't be square...
 	DiagOnes(V, h)
 	Bidiagonalize(w, h, U, S, V)
 	--[[
@@ -385,14 +380,11 @@ end
 --- DOCME
 function M.SVD_Square (matrix, n)
 	--
-	local u, v, mid = {}, {}, n^2
+	local u, v = {}, base.Identity(n)
+	local mid = #v
 
 	for i = 1, mid do
-		u[i], v[i] = matrix[i], 0
-	end
-
-	for i = 1, mid, n + 1 do
-		v[i] = 1
+		u[i] = matrix[i]
 	end
 
 	--
@@ -448,10 +440,6 @@ function M.SVD_Square (matrix, n)
 
 		while est_col_rank > 2 and s[est_col_rank] <= s[1] * tol + tol^2 do
 			est_col_rank = est_col_rank - 1
-		end
-
-		if sweep_count > slimit then
-			-- ???
 		end
 	end
 

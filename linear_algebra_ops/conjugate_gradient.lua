@@ -24,7 +24,7 @@
 --
 
 -- Modules --
-local linear_algebra = require("number_ops.linear_algebra")
+local linear_algebra = require("linear_algebra_ops.base")
 
 -- Exports --
 local M = {}
