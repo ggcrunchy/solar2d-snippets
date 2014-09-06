@@ -82,7 +82,7 @@ local tt0=os.clock()
 	--	print("")
 	end
 print("TTTT", (os.clock() - tt0) / num)
-if true then return end
+--if true then return end
 --]=]
 	local oc=os.clock
 	local overlap=require("signal_ops.overlap")
@@ -96,6 +96,29 @@ if true then return end
 	for i = 1, N^2 do
 		B[i]=math.random(256)
 	end
+	local t2 = oc()
+	local fftc = require("signal_ops.fft_convolution")
+	local separable = require("signal_ops.separable")
+	local kd = separable.DecomposeKernel(B, N)
+	local fopts = { into = {} }
+	local sopts = { into = {}, max_rank = math.ceil(N / 5) }
+	for i = 1, 20 do
+		fftc.Convolve_2D(A, B, M, N, fopts)
+		separable.Convolve_2D(A, M, kd, sopts)
+	end
+	local t3 = oc()
+	print("VVV", t2 - t1, (t3 - t2) / 20, sopts.max_rank)
+	for i = 1, 25 do
+		sopts.max_rank = i
+		local o1 = fftc.Convolve_2D(A, B, M, N, fopts)
+		local o2 = separable.Convolve_2D(A, M, kd, sopts)
+		local diff = 0
+		for j = 1, #o2 do
+			diff = diff + math.abs(o2[j] - o1[j])
+		end
+		print("APPROX", i, diff, diff / #o2)
+	end
+--[==[
 	local t2=oc()
 	local opts={into = {}}
 	overlap.OverlapAdd_2D(A, B, M, N, opts)
@@ -120,7 +143,7 @@ if true then return end
 		if d > 1 then
 			print(i, into[i], out[i])
 			n=n+1
-			if n == 25 then
+			if n == N then
 				break
 			end
 		end
@@ -136,6 +159,7 @@ if true then return end
 	overlap.OverlapAdd_2D(A, B, 8, N)
 	local t7=oc()
 	print("OK", t3-t2,t4-t3,t5-t4,t6-t5,t7-t6)
+]==]
 end
 
 Scene:addEventListener("show")
