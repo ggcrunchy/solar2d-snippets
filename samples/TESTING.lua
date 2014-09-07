@@ -90,18 +90,21 @@ print("TTTT", (os.clock() - tt0) / num)
 	local A={}
 	local B={}
 	local M, N = 81, 25
+	local ii,jj=math.random(256), math.random(256)
 	for i = 1, M^2 do
-		A[i]=math.random(256)
+		A[i]=ii--math.random(256)
+		ii=ii+math.random(16)-8
 	end
 	for i = 1, N^2 do
-		B[i]=math.random(256)
+		B[i]=jj--math.random(256)
+		jj=jj+math.random(16)-8
 	end
 	local t2 = oc()
 	local fftc = require("signal_ops.fft_convolution")
 	local separable = require("signal_ops.separable")
 	local kd = separable.DecomposeKernel(B, N)
 	local fopts = { into = {} }
-	local sopts = { into = {}, max_rank = math.ceil(N / 5) }
+	local sopts = { into = {}, max_rank = math.ceil(N / 5 + 2) }
 	for i = 1, 20 do
 		fftc.Convolve_2D(A, B, M, N, fopts)
 		separable.Convolve_2D(A, M, kd, sopts)
