@@ -44,7 +44,7 @@ function Scene:show (e)
 	local svd = require("linear_algebra_ops.svd")
 
 	local mat = {}
-	local mm, nn, ii = 4, 4, 1
+	local mm, nn, ii = 36, 36, 1
 	for i = 1, nn do
 		for j = 1, mm do
 			mat[ii], ii = 1--[[math.random(22)]], ii + 1
@@ -55,7 +55,38 @@ s,u = u,s
 	vdump(s)
 	vdump(u)
 	vdump(v)
-
+do
+	local utils = require("signal_ops.utils")
+	local tt1=os.clock()
+	local uu={}
+	local vv={}
+	local nu, nv = #u / #s, #v / #s
+	local ulen, up = utils.LenPower(mm, nu)
+	local vlen, vp = utils.LenPower(nn, nv)
+	local k1, arr1={},{}
+	for i = 1, #u, nu do
+		local out = {}
+		for j = 0, nu - 1 do
+			k1[j + 1] = u[i + j]
+		end
+		utils.PrecomputeKernel_1D(out, up, k1, nu)
+		arr1[#arr1+1]=out
+	end
+	local k2,arr2={},{}
+	for i = 1, #v, nv do
+		local out = {}
+		for j = 0, nv - 1 do
+			k2[j + 1] = v[i + j]
+		end
+		utils.PrecomputeKernel_1D(out, up, k2, nv)
+		arr2[#arr2+1]=out
+	end
+	print("TIME", os.clock()-tt1)
+	-- In signal, do same for rows on startup...
+	-- Then do just multiply / IFFT on left
+	-- On right, still need to do FFT first, then multiply and IFFT
+	if true then return end
+end
 	local dim, num = 25, 25
 local tt0=os.clock()
 	for NUM = 1, num do
@@ -93,11 +124,11 @@ print("TTTT", (os.clock() - tt0) / num)
 	local M, N = 81, 25
 	local ii,jj=random(256), random(256)
 	for i = 1, M^2 do
-		A[i]=ii / 256
+		A[i]=ii
 		ii=ii+random(16)-8
 	end
 	for i = 1, N^2 do
-		B[i]=jj / 256
+		B[i]=jj
 		jj=jj+random(16)-8
 	end
 	local t2 = oc()
