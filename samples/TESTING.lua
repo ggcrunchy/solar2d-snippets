@@ -97,10 +97,10 @@ do
 		lhs[#lhs + 1] = out
 	end
 	-- Then do just multiply / IFFT on left
-	local sss,ttt={},{}
+	local sss,ttt,uuu={},{},{}
 	local pk = utils.MakePrecomputedKernelFunc_1D(ttt)
 	for rank = 1, mm do
-		local u=arr1[rank]
+		local u,v=arr1[rank],arr2[rank]
 		for i = 1, #lhs do
 			fft_utils.Multiply_1D(lhs[i], u, up, sss)
 
@@ -108,14 +108,23 @@ do
 			real_fft.RealIFFT_1D(sss, .5 * up)
 
 			-- ...and get the requested part of the result.
-		--	for i = 1, clen do
-		--		out[i] = B[i]
-		--	end
+--			for i = 1, ulen do
+--				uuu[i] = sss[i]
+--			end
 
+			pk(vp, sss, ulen, v)
+
+			real_fft.RealIFFT_1D(sss, .5 * vp)
+--[[
+Convolve_1D(signal, kernel, opts)
 		end
-	--	if rank > 1 then
-		--	break
-	--	end
+
+		count, from, size, offset, signal, opts, kernel = len, Columns, offset, 0, RowVector, RowOpts, v
+]]
+		end
+		if rank == 15 then
+		break
+		end
 	end
 	-- On right, still need to do FFT first, then multiply and IFFT
 	print("TIME", tt2-tt1, os.clock()-tt2)
