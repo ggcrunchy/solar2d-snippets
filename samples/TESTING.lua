@@ -42,21 +42,25 @@ function Scene:show (e)
 --	require("mobdebug").start()
 ---[=[
 	local svd = require("linear_algebra_ops.svd")
-
+	local fftc = require("signal_ops.fft_convolution")
 	local mat = {}
-	local mm, nn, ii = 36, 36, 1
+	local mm, nn, ii = 25, 25, 1
 	for i = 1, nn do
 		for j = 1, mm do
 			mat[ii], ii = 1--[[math.random(22)]], ii + 1
 		end
 	end
-	local s, u, v = svd.SVD_Square(mat, 4)--svd.SVD(mat, mm, nn)
+	local s, u, v = svd.SVD_Square(mat, mm)--svd.SVD(mat, mm, nn)
 s,u = u,s
+if mm == 4 then
 	vdump(s)
 	vdump(u)
 	vdump(v)
+end
 do
 	local utils = require("signal_ops.utils")
+	local fft_utils = require("dft_ops.utils")
+	local real_fft=require("dft_ops.real_fft")
 	local tt1=os.clock()
 	local uu={}
 	local vv={}
@@ -81,11 +85,41 @@ do
 		utils.PrecomputeKernel_1D(out, up, k2, nv)
 		arr2[#arr2+1]=out
 	end
-	print("TIME", os.clock()-tt1)
+	local tt2=os.clock()
 	-- In signal, do same for rows on startup...
+	local lhs,ss = {}, {}
+	for i = 1, #u, nu do
+		local out = {}
+		for j = 0, nu - 1 do
+			ss[j + 1] = mat[i + j]
+		end
+		utils.PrecomputeKernel_1D(out, up, ss, nu)
+		lhs[#lhs + 1] = out
+	end
 	-- Then do just multiply / IFFT on left
+	local sss,ttt={},{}
+	local pk = utils.MakePrecomputedKernelFunc_1D(ttt)
+	for rank = 1, mm do
+		local u=arr1[rank]
+		for i = 1, #lhs do
+			fft_utils.Multiply_1D(lhs[i], u, up, sss)
+
+			-- ...transform back to the time domain...
+			real_fft.RealIFFT_1D(sss, .5 * up)
+
+			-- ...and get the requested part of the result.
+		--	for i = 1, clen do
+		--		out[i] = B[i]
+		--	end
+
+		end
+	--	if rank > 1 then
+		--	break
+	--	end
+	end
 	-- On right, still need to do FFT first, then multiply and IFFT
-	if true then return end
+	print("TIME", tt2-tt1, os.clock()-tt2)
+--	if true then return end
 end
 	local dim, num = 25, 25
 local tt0=os.clock()
@@ -132,7 +166,6 @@ print("TTTT", (os.clock() - tt0) / num)
 		jj=jj+random(16)-8
 	end
 	local t2 = oc()
-	local fftc = require("signal_ops.fft_convolution")
 	local separable = require("signal_ops.separable")
 	local kd = separable.DecomposeKernel(B, N)
 	local fopts = { into = {} }
