@@ -130,6 +130,7 @@ Convolve_1D(signal, kernel, opts)
 	print("TIME", tt2-tt1, os.clock()-tt2)
 --	if true then return end
 end
+--[=[
 	local dim, num = 25, 25
 local tt0=os.clock()
 	for NUM = 1, num do
@@ -156,6 +157,7 @@ local tt0=os.clock()
 	--	print("")
 	end
 print("TTTT", (os.clock() - tt0) / num)
+--]=]
 --if true then return end
 --]=]
 	local oc=os.clock
@@ -179,6 +181,7 @@ print("TTTT", (os.clock() - tt0) / num)
 	local kd = separable.DecomposeKernel(B, N)
 	local fopts = { into = {} }
 	local sopts = { into = {}, max_rank = math.ceil(N / 5 - 1) }
+--[=[
 	NN=N+20
 	for i = 1, 20 do
 	--	fftc.Convolve_2D(A, B, M, N, fopts)
@@ -186,12 +189,29 @@ print("TTTT", (os.clock() - tt0) / num)
 	end
 	local t3 = oc()
 	print("VVV", t2 - t1, (t3 - t2) / 20, sopts.max_rank)
+--]=]
 	local o1 = fftc.Convolve_2D(A, B, M, N, fopts)
+---[=[
 	local rank = sopts.max_rank
 	for i = 1, N do
 		sopts.max_rank = i
 		local t4=oc()
 		local o2 = separable.Convolve_2D(A, M, kd, sopts)
+		local sum, sum2 = 0, 0
+		for j = 1, #o2 do
+			local diff = abs(o2[j] - o1[j])
+			sum, sum2 = sum + diff, sum2 + --[[floor]] (sqrt(diff))
+		end
+		print("APPROX", i, sum, sum / #o2, oc() - t4)
+		print("SQRTAPX", sum2, sum2 / #o2)
+	end
+--]=]
+	print("2!")
+	local kd2 = separable.DecomposeKernel(B, N, { scols = M, srows = M })
+	for i = 1, N do
+		sopts.max_rank = i
+		local t4=oc()
+		local o2 = separable.Convolve_2D(A, M, kd2, sopts)
 		local sum, sum2 = 0, 0
 		for j = 1, #o2 do
 			local diff = abs(o2[j] - o1[j])
