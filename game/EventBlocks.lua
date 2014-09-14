@@ -507,7 +507,7 @@ function M.GetTypes ()
 end
 
 -- Listen to events.
-AddMultipleListeners{
+for k, v in pairs{
 	-- Enter Level --
 	enter_level = function(level)
 		Blocks = {}
@@ -558,7 +558,9 @@ AddMultipleListeners{
 			Runtime:dispatchEvent{ name = "event_block_setup", block = block }
 		end
 	end
-}
+} do
+	Runtime:addEventListener(k, v)
+end
 
 -- Install various types of events.
 EventBlockList = require_ex.DoList("config.EventBlocks")

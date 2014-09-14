@@ -74,7 +74,7 @@ function M.Unload ()
 end
 
 -- Listen to events.
-AddMultipleListeners{
+for k, v in pairs{
 	-- Build Level --
 	build_level = function(level)
 		local builds
@@ -106,7 +106,9 @@ AddMultipleListeners{
 
 		events.VerifyValues(verify, dots, GridView)
 	end
-}
+} do
+	Runtime:addEventListener(k, v)
+end
 
 -- Export the module.
 return M

@@ -53,7 +53,7 @@ local transition = transition
 local MarkersLayer
 
 -- Listen to events.
-AddMultipleListeners{
+for k, v in pairs{
 	-- Enter Level --
 	enter_level = function(level)
 		MarkersLayer = level.markers_layer
@@ -63,7 +63,9 @@ AddMultipleListeners{
 	leave_level = function()
 		MarkersLayer = nil
 	end
-}
+} do
+	Runtime:addEventListener(k, v)
+end
 
 -- A random shake displacement
 local function ShakeBy ()

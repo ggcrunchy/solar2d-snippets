@@ -155,7 +155,7 @@ function M.Unload ()
 end
 
 -- Listen to events.
-AddMultipleListeners{
+for k, v in pairs{
 	-- Build Level --
 	build_level = function(level)
 		level.global_events = events.BuildEntry(level, global_events, level.global_events, nil)[1]
@@ -170,7 +170,9 @@ AddMultipleListeners{
 	save_level_wip = function(level)
 		level.global_events = events.SaveValuesIntoEntry(level, global_events, Global, { version = 1 })
 	end
-}
+} do
+	Runtime:addEventListener(k, v)
+end
 
 -- Export the module.
 return M

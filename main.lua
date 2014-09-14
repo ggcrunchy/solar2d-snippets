@@ -24,11 +24,9 @@
 --
 
 -- Standard library imports --
-local assert = assert
 local pairs = pairs
 local print = print
 local setmetatable = setmetatable
-local type = type
 
 -- Modules --
 local debug = require("debug")
@@ -116,24 +114,6 @@ if not OnDevice then
 	native.setActivityIndicator(false)
 end
 -- /Corona hack
-
---- Utility.
--- @ptable to_add Table, where each key is an event name, and the value is a listener to be
--- called by **Runtime:dispatchEvent**.
---
--- To allow convenient reuse, the value may be a string, in which case it is used to lookup
--- another value (which may be another string, so long as the chain terminates).
-function AddMultipleListeners (to_add)
-	for k, v in pairs(to_add) do
-		while type(v) == "string" do
-			v = to_add[v]
-
-			assert(k ~= v, "Loop in add table")
-		end
-
-		Runtime:addEventListener(k, v)
-	end
-end
 
 --- Helper to print formatted argument.
 -- @string s Format string.

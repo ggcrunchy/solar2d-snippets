@@ -184,8 +184,21 @@ local function TrapTaps (event)
 	return true
 end
 
+-- Player Killed response
+local function PlayerKilled ()
+	Active = false
+end
+
+-- Reset Level response
+local function ResetLevel ()
+	Active = true
+	FramesLeft = 0
+	Dir, Was = nil
+	ChangeTo = nil
+end
+
 -- Listen to events.
-AddMultipleListeners{
+for k, v in pairs{
 	-- Enter Level --
 	enter_level = function(level)
 		local hg = level.hud_group
@@ -217,12 +230,10 @@ AddMultipleListeners{
 	end,
 
 	-- Player Killed --
-	player_killed = function()
-		Active = false
-	end,
+	player_killed = PlayerKilled,
 
 	-- Player Stunned --
-	player_stunned = "player_killed",
+	player_stunned = PlayerKilled,
 
 	-- Player Unstunned --
 	player_unstunned = function()
@@ -230,16 +241,13 @@ AddMultipleListeners{
 	end,
 
 	-- Reset Level --
-	reset_level = function()
-		Active = true
-		FramesLeft = 0
-		Dir, Was = nil
-		ChangeTo = nil
-	end,
+	reset_level = ResetLevel,
 
 	-- Things Loaded --
-	things_loaded = "reset_level"
-}
+	things_loaded = ResetLevel
+} do
+	Runtime:addEventListener(k, v)
+end
 
 -- Export the module.
 return M

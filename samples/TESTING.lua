@@ -206,7 +206,7 @@ Scene:addEventListener("show")
 	- Might even be worth making the submodules even more granular
 	- Kick off a couple extra programs to stress-test submodule approach
 
-	- Deprecate DispatchList? (perhaps add some helpers to main)
+	- Deprecate DispatchList? (perhaps add some helpers to main) (PROBATION)
 
 	- Make the resource system independent of Corona, then start using it more pervasively
 

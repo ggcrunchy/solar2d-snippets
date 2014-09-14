@@ -145,7 +145,7 @@ function M.Unload ()
 end
 
 -- Listen to events.
-AddMultipleListeners{
+for k, v in pairs{
 	-- Load Level WIP --
 	load_level_wip = function(level)
 		if level.player.col and level.player.row then
@@ -177,7 +177,9 @@ AddMultipleListeners{
 			end
 		end
 	end
-}
+} do
+	Runtime:addEventListener(k, v)
+end
 
 -- Export the module.
 return M

@@ -294,7 +294,7 @@ function M.AddActionButton (group, do_actions)
 end
 
 -- Listen to events.
-AddMultipleListeners{
+for k, v in pairs{
 	-- Leave Level --
 	leave_level = function()
 		Cancel(Fading)
@@ -329,7 +329,9 @@ AddMultipleListeners{
 
 		action.m_touches = ntouch
 	end
-}
+} do
+	Runtime:addEventListener(k, v)
+end
 
 -- Export the module.
 return M

@@ -179,7 +179,7 @@ function M.Unload ()
 end
 
 -- Listen to events.
-AddMultipleListeners{
+for k, v in pairs{
 	-- Build Level --
 	build_level = function(level)
 		local ncols, nrows = common.GetDims()
@@ -260,7 +260,9 @@ AddMultipleListeners{
 		-- Just compare each one, making sure, say, a left-right one has a right one to left and a left one to right...
 		-- Do walks from some dot in each start to a dot in each shape
 	end
-}
+} do
+	Runtime:addEventListener(k, v)
+end
 
 -- Export the module.
 return M

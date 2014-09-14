@@ -269,7 +269,7 @@ collision.AddHandler("warp", function(phase, warp, other, other_type)
 end)
 
 -- Listen to events.
-AddMultipleListeners{
+for k, v in pairs{
 	-- Enter Level --
 	enter_level = function(level)
 		MarkersLayer = level.markers_layer
@@ -298,7 +298,9 @@ AddMultipleListeners{
 			end
 		end
 	end
-}
+} do
+	Runtime:addEventListener(k, v)
+end
 
 --
 local function LinkWarp (warp1, warp2, sub1, _)

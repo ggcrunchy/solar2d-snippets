@@ -147,17 +147,20 @@ end
 -- TODO: Enable / disable audio
 -- TODO: Menu audio
 
+-- Leave Level response
+local function LeaveLevel ()
+	for _, group in ipairs(Groups) do
+		group.m_handles = nil
+	end
+end
+
 -- Listen to events.
-AddMultipleListeners{
+for k, v in pairs{
 	-- Leave Level --
-	leave_level = function()
-		for _, group in ipairs(Groups) do
-			group.m_handles = nil
-		end
-	end,
+	leave_level = LeaveLevel,
 
 	-- Leave Menus --
-	leave_menus = "leave_level",
+	leave_menus = LeaveLevel,
 
 	-- Reset Level --
 	reset_level = function()
@@ -167,7 +170,9 @@ AddMultipleListeners{
 			end
 		end
 	end
-}
+} do
+	Runtime:addEventListener(k, v)
+end
 
 -- Export the module.
 return M

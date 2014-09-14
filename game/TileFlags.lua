@@ -285,7 +285,7 @@ function M.WipeFlags (col1, row1, col2, row2)
 end
 
 -- Listen to events.
-AddMultipleListeners{
+for k, v in pairs{
 	-- Enter Level --
 	enter_level = function(level)
 		Deltas.up = -level.ncols
@@ -312,7 +312,9 @@ AddMultipleListeners{
 	tiles_changed = function()
 		M.ResolveFlags(true)
 	end
-}
+} do
+	Runtime:addEventListener(k, v)
+end
 
 -- Export the module.
 return M

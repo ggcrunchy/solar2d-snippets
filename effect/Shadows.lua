@@ -129,7 +129,7 @@ function M.Shadow (func, arg)
 end
 
 -- Listen to events.
-AddMultipleListeners{
+for k, v in pairs{
 	-- Enter Level --
 	enter_level = function(level)
 		DecalsLayer = level.decals_layer
@@ -139,7 +139,9 @@ AddMultipleListeners{
 	leave_level = function()
 		DecalsLayer = nil
 	end
-}
+} do
+	Runtime:addEventListener(k, v)
+end
 
 -- Export the module.
 return M

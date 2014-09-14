@@ -26,6 +26,7 @@
 -- Standard library imports --
 local ipairs = ipairs
 local pairs = pairs
+local sort = table.sort
 
 -- Modules --
 local bound_args = require("var_ops.bound_args")
@@ -35,6 +36,9 @@ local wipe = require("array_ops.wipe")
 -- Imports --
 local CollectArgsInto = collect.CollectArgsInto
 local WipeRange = wipe.WipeRange
+
+-- Cached module references --
+local _Backfill_
 
 -- Exports --
 local M = {}
@@ -143,6 +147,22 @@ function M.GetKeys (arr)
 	return dt
 end
 
+--- DOCME
+function M.RemoveDups (arr, comp)
+	sort(arr, comp)
+
+	--
+	local prev
+
+	for i = #arr, 1, -1 do
+		if arr[i] == prev then
+			_Backfill_(arr, i)
+		else
+			prev = arr[i]
+		end
+	end
+end
+
 --- Reverses array elements in-place, in the range [1, _count_].
 -- @array arr Array to reverse.
 -- @uint[opt=#arr] count Range to reverse.
@@ -159,6 +179,9 @@ end
 
 -- Register bound-table functions.
 GetTable = bound_args.Register{ M.ArrayOfTables, M.GetFields, M.GetKeys }
+
+-- Cache module members.
+_Backfill_ = M.Backfill
 
 -- Export the module.
 return M

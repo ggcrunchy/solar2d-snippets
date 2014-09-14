@@ -122,7 +122,7 @@ end
 Scene:addEventListener("hide")
 
 -- Listen to events.
-AddMultipleListeners{
+for k, v in pairs{
 	-- Enter Level --
 	enter_level = function()
 		scenes.SetListenFunc(Listen) -- TODO: Timing not QUITE right...
@@ -135,6 +135,8 @@ AddMultipleListeners{
 			Scene.m_exit = button.Button(level.hud_group, nil, display.contentWidth - 110, 15, 50, 40, scenes.WantsToGoBack, "X")
 		end
 	end
-}
+} do
+	Runtime:addEventListener(k, v)
+end
 
 return Scene

@@ -246,18 +246,23 @@ function M.TileImage (name, ncols, nrows, x1, y1, x2, y2)
 	return graphics.newImageSheet(name, { frames = frames })
 end
 
+-- Leave Level response
+local function LeaveLevel ()
+	for _, factory in ipairs(Factories) do
+		factory.m_isheet = nil
+	end
+end
+
 -- Listen to events.
-AddMultipleListeners{
+for k, v in pairs{
 	-- Leave Level --
-	leave_level = function()
-		for _, factory in ipairs(Factories) do
-			factory.m_isheet = nil
-		end
-	end,
+	leave_level = LeaveLevel,
 
 	-- Leave Menus --
-	leave_menus = "leave_level"
-}
+	leave_menus = LeaveLevel
+} do
+	Runtime:addEventListener(k, v)
+end
 
 -- Export the module.
 return M

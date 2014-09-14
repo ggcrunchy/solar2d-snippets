@@ -157,7 +157,7 @@ function M.SetYOffset (offset)
 end
 
 -- Listen to events.
-AddMultipleListeners{
+for k, v in pairs{
 	-- Enter Level --
 	enter_level = function(level)
 		Width = level.ncols * level.w
@@ -168,7 +168,9 @@ AddMultipleListeners{
 	leave_level = function()
 		M.Follow(nil)
 	end
-}
+} do
+	Runtime:addEventListener(k, v)
+end
 
 -- Export the module.
 return M

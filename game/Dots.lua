@@ -181,7 +181,7 @@ local function DotLess (a, b)
 end
 
 -- Listen to events.
-AddMultipleListeners{
+for k, v in pairs{
 	-- Act On Dot --
 	act_on_dot = function(event)
 		-- If this dot counts toward the "dots remaining", deduct it. If it was the last
@@ -267,7 +267,9 @@ AddMultipleListeners{
 			end
 		end)
 	end
-}
+} do
+	Runtime:addEventListener(k, v)
+end
 
 -- Install various types of dots.
 DotList = require_ex.DoList("config.Dots")

@@ -354,8 +354,13 @@ function M.SetVisibility (object, show)
 	end
 end
 
+-- Enter Level response
+local function EnterLevel ()
+	IsHidden, Partners = {}, {}
+end
+
 -- Listen to events.
-AddMultipleListeners{
+for k, v in pairs{
 	-- Collision --
 	collision = function(event)
 		local o1, o2 = event.object1, event.object2
@@ -373,9 +378,7 @@ AddMultipleListeners{
 	end,
 
 	-- Enter Level --
-	enter_level = function()
-		IsHidden, Partners = {}, {}
-	end,
+	enter_level = EnterLevel,
 
 	-- Leave Level --
 	leave_level = function()
@@ -383,14 +386,16 @@ AddMultipleListeners{
 	end,
 
 	-- Reset Level --
-	reset_level = "enter_level",
+	reset_level = EnterLevel,
 
 	-- Things Loaded --
 	things_loaded = function(level)
 		-- Add a "net" around the level to deal with things that fly away.
 		M.Border(level.things_layer, 0, 0, level.ncols * level.w, level.nrows * level.h, 500, 150)
 	end
-}
+} do
+	Runtime:addEventListener(k, v)
+end
 
 -- Kick off physics, sans gravity.
 physics.start()

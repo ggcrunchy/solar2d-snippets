@@ -70,7 +70,7 @@ function M.Unload ()
 end
 
 -- Listen to events.
-AddMultipleListeners{
+for k, v in pairs {
 	-- Build Level --
 	build_level = function(level)
 		level.settings = nil
@@ -91,7 +91,9 @@ AddMultipleListeners{
 			show_layers = ShowLayers:IsChecked()
 		}
 	end
-}
+} do
+	Runtime:addEventListener(k, v)
+end
 
 -- Export the module.
 return M

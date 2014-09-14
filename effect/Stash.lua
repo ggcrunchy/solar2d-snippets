@@ -167,7 +167,7 @@ function M.PushRect (what, rect, how)
 end
 
 -- Listen to events.
-AddMultipleListeners{
+for k, v in pairs{
 	-- Enter Level --
 	enter_level = function()
 		Circles = lazy.SubTablesOnDemand()
@@ -195,7 +195,9 @@ AddMultipleListeners{
 
 		Circles, Rects, Stash = nil
 	end
-}
+} do
+	Runtime:addEventListener(k, v)
+end
 
 -- Export the module.
 return M

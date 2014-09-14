@@ -217,7 +217,7 @@ function M.Unload ()
 end
 
 -- Listen to events.
-AddMultipleListeners{
+for k, v in pairs{
 	-- Build Level --
 	build_level = function(level)
 		-- ??
@@ -243,7 +243,9 @@ AddMultipleListeners{
 		-- Ensure music exists?
 		-- Could STILL fail later... :(
 	end
-}
+} do
+	Runtime:addEventListener(k, v)
+end
 
 -- Export the module.
 return M

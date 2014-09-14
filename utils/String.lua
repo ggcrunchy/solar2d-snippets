@@ -25,6 +25,8 @@
 
 -- Standard library imports --
 local format = string.format
+local match = string.match
+local tonumber = tonumber
 
 -- Exports --
 local M = {}
@@ -85,6 +87,16 @@ function M.EndsWith_AnyCase (str, patt, get_prefix)
 	return ends_with, (get_prefix and ends_with) and str:sub(1, -patt_len - 1) or ""
 end
 
+--- Decodes a key built up from two integers.
+-- @string key A key, as encoded by @{PairToKey}.
+-- @treturn ?uint Value #1... (If _key_ could not be parsed, **nil**.)
+-- @treturn ?uint ...and #2.
+function M.KeyToPair (key)
+	local a, b = match(key, "^(%d+)x(%d+)$")
+
+	return tonumber(a), tonumber(b)
+end
+
 -- The input used to generate random names --
 local NameID = 0
 
@@ -103,6 +115,14 @@ function M.NewName ()
 	NameID = NameID + 1
 
 	return format("%s%i", Prefix, NameID - 1)
+end
+
+--- Encodes two integers as a string key.
+-- @uint a Value #1...
+-- @uint b ...and #2.
+-- @treturn string Key. The values may be read back out via @{KeyToPair}.
+function M.PairToKey (a, b)
+	return format("%ix%i", a, b)
 end
 
 -- Export the module.

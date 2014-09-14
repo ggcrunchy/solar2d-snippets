@@ -564,7 +564,7 @@ local function NewBlock (block, info)
 end
 
 -- Listen to events.
-AddMultipleListeners{
+for k, v in pairs{
 	-- Build Level --
 	build_level = function(level)
 		local builds
@@ -661,7 +661,9 @@ AddMultipleListeners{
 			end
 		end
 	end
-}
+} do
+	Runtime:addEventListener(k, v)
+end
 
 -- Export the module.
 return M

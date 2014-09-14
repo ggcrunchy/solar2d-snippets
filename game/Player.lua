@@ -209,7 +209,7 @@ local function Activate (active)
 end
 
 -- Listen to events.
-AddMultipleListeners{
+for k, v in pairs{
 	-- Enter Level --
 	enter_level = function(level)
 		MarkersLayer = level.markers_layer
@@ -311,7 +311,9 @@ AddMultipleListeners{
 	touching_dot = function(event)
 		Player.m_touching[event.dot] = event.is_touching or nil
 	end
-}
+} do
+	Runtime:addEventListener(k, v)
+end
 
 -- Export the module.
 return M

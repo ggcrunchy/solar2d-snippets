@@ -24,13 +24,14 @@
 --
 
 -- Standard library imports --
+local assert = assert
 local ipairs = ipairs
 local pairs = pairs
 local type = type
 
 -- Modules --
 local adaptive = require("table_ops.adaptive")
-local common = require("editor.Common")
+local array_funcs = require("array_ops.funcs")
 local iterator_utils = require("iterator_ops.utils")
 
 -- Exports --
@@ -213,6 +214,18 @@ do
 	end
 end
 
+-- --
+local function NoOp () end
+
+--
+local function Pairs (t)
+	if t then
+		return pairs(t)
+	else
+		return NoOp
+	end
+end
+
 do
 	--
 	local function AddInterface (sub, what)
@@ -342,7 +355,7 @@ do
 			end
 
 			--
-			for _, sub in common.PairsIf(new) do
+			for _, sub in Pairs(new) do
 				for what in adaptive.IterSet(sub.m_interfaces) do
 					AddImplementor(name, what)
 				end
@@ -417,7 +430,7 @@ local IterStrList = iterator_utils.InstancedAutocacher(function()
 			str_list[i] = nil
 		end
 
-		common.RemoveDups(str_list)
+		array_funcs.RemoveDups(str_list)
 
 		return nil, 0
 	end
@@ -431,7 +444,7 @@ do
 		end
 
 		--
-		for _, v in common.PairsIf(Tags[name].sub_links) do
+		for _, v in Pairs(Tags[name].sub_links) do
 			str_list[count + 1], count = v:GetName(), count + 1
 		end
 
@@ -449,7 +462,7 @@ end
 do
 	-- Enumerator body
 	local function EnumTagAndChildren (str_list, name, count)
-		for i, tname in M.Children(name) do
+		for _, tname in M.Children(name) do
 			count = EnumTagAndChildren(str_list, tname, count)
 		end
 
@@ -470,7 +483,7 @@ end
 do
 	-- Enumerator body
 	local function EnumTagAndParents (str_list, name, count)
-		for i, tname in M.Parents(name) do
+		for _, tname in M.Parents(name) do
 			count = EnumTagAndParents(str_list, tname, count)
 		end
 

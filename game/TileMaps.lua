@@ -267,7 +267,7 @@ local NullMeta = {
 }
 
 -- Listen to events.
-AddMultipleListeners{
+for k, v in pairs{
 	-- Enter Level --
 	enter_level = function(level)
 		Tiles = setmetatable({}, NullMeta)
@@ -281,7 +281,9 @@ AddMultipleListeners{
 	leave_level = function()
 		ImageSheet, Tiles = nil
 	end
-}
+} do
+	Runtime:addEventListener(k, v)
+end
 
 -- Export the module.
 return M

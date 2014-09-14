@@ -246,7 +246,7 @@ function M.SetImage (name)
 end
 
 -- Listen to events.
-AddMultipleListeners{
+for k, v in pairs{
 	-- Enter Level --
 	enter_level = function(level)
 		ImageCache = {}
@@ -265,7 +265,9 @@ AddMultipleListeners{
 			ImageCache[k] = nil
 		end
 	end
-}
+} do
+	Runtime:addEventListener(k, v)
+end
 
 -- Export the module.
 return M

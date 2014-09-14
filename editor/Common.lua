@@ -31,14 +31,12 @@ local max = math.max
 local min = math.min
 local next = next
 local pairs = pairs
-local sort = table.sort
 local tonumber = tonumber
 local type = type
 
 -- Modules --
 local require_ex = require("tektite.require_ex")
 local adaptive = require("table_ops.adaptive")
-local array_funcs = require("array_ops.funcs")
 local sheet = require("ui.Sheet")
 local tags = require_ex.Lazy("editor.Tags")
 
@@ -440,22 +438,6 @@ function M.ProxyRect (group, minx, miny, maxx, maxy)
 	rect.m_is_proxy = true
 
 	return rect
-end
-
---- DOCME
-function M.RemoveDups (list)
-	sort(list)
-
-	--
-	local prev
-
-	for i = #list, 1, -1 do
-		if list[i] == prev then
-			array_funcs.Backfill(list, i)
-		else
-			prev = list[i]
-		end
-	end
 end
 
 --- DOCME

@@ -142,7 +142,7 @@ function M.ExtendAction (name, func)
 end
 
 -- Listen to events.
-AddMultipleListeners{
+for k, v in pairs{
 	-- Enter Level --
 	enter_level = function()
 		Events = {}
@@ -154,7 +154,9 @@ AddMultipleListeners{
 			Events, Defaults = nil
 		end)
 	end
-}
+} do
+	Runtime:addEventListener(k, v)
+end
 
 -- Export the module.
 return M

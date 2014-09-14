@@ -61,7 +61,7 @@ function M.GetGlowTime ()
 end
 
 -- Listen to events.
-AddMultipleListeners{
+for k, v in pairs{
 	-- Enter Level --
 	enter_level = function()
 		Glow.t = 0
@@ -73,7 +73,9 @@ AddMultipleListeners{
 	leave_level = function()
 		transition.cancel(Glow)
 	end
-}
+} do
+	Runtime:addEventListener(k, v)
+end
 
 -- Export the module.
 return M

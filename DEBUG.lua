@@ -31,7 +31,6 @@ local checkbox = require("ui.Checkbox")
 local level_map = require("game.LevelMap")
 local markers = require("effect.Markers")
 local movement = require("game.Movement")
-local player = require("game.Player")
 local tile_maps = require("game.TileMaps")
 
 -- Corona globals --
@@ -76,7 +75,7 @@ local Colors = {
 --
 local function SetDirections (keep)
 	if Options[Index] == "TILE_FLAGS" then
-		if not keep and DebugLayer then
+		if keep ~= true and DebugLayer then -- keep = true, otherwise an event
 			DebugLayer:removeSelf()
 
 			AddDebugLayer()
@@ -96,13 +95,13 @@ local function SetDirections (keep)
 	end
 end
 
---
-AddMultipleListeners{
+-- Listen to events.
+for _, name, event in args.ArgsByN(2,
 	-- Flags Updated --
-	flags_updated = SetDirections,
+	"flags_updated", SetDirections,
 
 	-- Leave Level --
-	leave_level = function()
+	"leave_level", function()
 		local choice = Options[Index]
 
 		if choice ~= "NONE" then
@@ -113,16 +112,16 @@ AddMultipleListeners{
 	end,
 
 	-- Reset Level --
-	reset_level = SetDirections,
+	"reset_level", SetDirections,
 
 	-- Things Loaded --
-	things_loaded = function(level)
+	"things_loaded", function(level)
 		GameGroup = level.game_group
 
 		local y = 20
 
 		for _, key, func in args.ArgsByN(2,
---			"KillP", player.Kill,
+	--		"KillP", player.Kill,
 			"Win", function()
 				level_map.UnloadLevel("won")
 			end
@@ -165,7 +164,9 @@ AddMultipleListeners{
 			end
 		end
 	end
-}
+) do
+	Runtime:addEventListener(name, event)
+end
 
 --
 return function(what, arg_)

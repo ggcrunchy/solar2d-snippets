@@ -25,6 +25,7 @@
 
 -- Standard library imports --
 local assert = assert
+local ipairs = ipairs
 local min = math.min
 local pairs = pairs
 local type = type
@@ -32,8 +33,8 @@ local yield = coroutine.yield
 
 -- Modules --
 local array_funcs = require("array_ops.funcs")
-local common = require("editor.Common")
 local coro = require("iterator_ops.coroutine")
+local str_utils = require("utils.String")
 local tags = require("editor.Tags")
 local timers = require("game.Timers")
 
@@ -52,9 +53,21 @@ local Links = {}
 -- Object proxies --
 local Proxies = {}
 
+-- --
+local function NoOp () end
+
+--
+local function Pairs (t)
+	if t then
+		return pairs(t)
+	else
+		return NoOp
+	end
+end
+
 -- Helper to visit a proxy's link keys
 local function LinkKeys (proxy)
-	return common.PairsIf(proxy, "number")
+	return Pairs(proxy, "number")
 end
 
 -- Lists of proxies assigned a given link tag --
@@ -173,10 +186,19 @@ local function GetKey (p1, p2)
 end
 
 --
+local function Ipairs (t)
+	if t then
+		return ipairs(t)
+	else
+		return NoOp
+	end
+end
+
+--
 local function LinksIter (p1, p2)
 	local key = GetKey(p1, p2)
 
-	return common.IpairsIf(key and Links[key])
+	return Ipairs(key and Links[key])
 end
 
 --
@@ -411,7 +433,7 @@ function M.LinkObjects (object1, object2, sub1, sub2)
 		local links = Links[key]
 
 		if not key then
-			key, links = common.ToKey(p1.id, p2.id), {}
+			key, links = str_utils.PairToKey(p1.id, p2.id), {}
 
 			Links[key], p1[p2.id], p2[p1.id] = links, key, key
 		end
@@ -419,7 +441,9 @@ function M.LinkObjects (object1, object2, sub1, sub2)
 		-- Install the link.
 		local link = { m_proxy1 = p1, m_proxy2 = p2, m_sub1 = sub1, m_sub2 = sub2 }
 
-		common.CopyInto(link, Link)
+		for k, v in pairs(Link) do -- TODO: If using class system, might make sense here too...
+			link[k] = v
+		end
 
 		links[#links + 1] = link
 
@@ -505,7 +529,7 @@ end
 M.Tagged = coro.Iterator(function(name)
 	local list = TaggedLists[name]
 
-	for _, proxy in common.PairsIf(list) do
+	for _, proxy in Pairs(list) do
 		local object = Object(proxy)
 
 		if object then
