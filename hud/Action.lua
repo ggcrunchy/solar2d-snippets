@@ -32,7 +32,6 @@ local setmetatable = setmetatable
 
 -- Modules --
 local array_index = require("array_ops.index")
-local dispatch_list = require("game.DispatchList")
 local touch = require("ui.Touch")
 
 -- Corona globals --
@@ -295,7 +294,7 @@ function M.AddActionButton (group, do_actions)
 end
 
 -- Listen to events.
-dispatch_list.AddToMultipleLists{
+AddMultipleListeners{
 	-- Leave Level --
 	leave_level = function()
 		Cancel(Fading)
@@ -305,24 +304,24 @@ dispatch_list.AddToMultipleLists{
 	end,
 
 	-- Touching Dot --
-	touching_dot = function(dot, touch)
+	touching_dot = function(event)
 		local action = ActionGroup[1]
 		local ntouch = action.m_touches
 
 		-- If this is the first dot being touched (the player may be overlapping several),
 		-- bring the action button into view.
-		if touch and ntouch == 0 then
+		if event.is_touching and ntouch == 0 then
 			ScaleActionButton(action, .1)
 
 			ShowAction(true)
 		end
 
 		-- Add or remove the dot from the action sequence.
-		MergeDotIntoSequence(dot, touch)
+		MergeDotIntoSequence(event.dot, event.is_touching)
 
 		-- Update the touched dot tally. If this was the last one being touched, hide the
 		-- action button.
-		ntouch = ntouch + (touch and 1 or -1)
+		ntouch = ntouch + (event.is_touching and 1 or -1)
 
 		if ntouch == 0 then
 			ShowAction(false)

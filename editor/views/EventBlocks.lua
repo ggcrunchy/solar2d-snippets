@@ -31,7 +31,6 @@ local min = math.min
 -- Modules --
 local common = require("editor.Common")
 local dialog = require("editor.Dialog")
-local dispatch_list = require("game.DispatchList")
 local event_blocks = require("game.EventBlocks")
 local events = require("editor.Events")
 local grid = require("editor.Grid")
@@ -565,7 +564,7 @@ local function NewBlock (block, info)
 end
 
 -- Listen to events.
-dispatch_list.AddToMultipleLists{
+AddMultipleListeners{
 	-- Build Level --
 	build_level = function(level)
 		local builds
@@ -582,7 +581,10 @@ dispatch_list.AddToMultipleLists{
 	end,
 
 	-- Editor Event Message --
-	editor_event_message = function(verify, packet)
+	editor_event_message = function(event)
+		-- TODO: Needs fixing when reincorporated back into game!
+		local packet, verify = event.packet, event.verify
+
 		if packet.message == "target:event_block" then
 			for _, block in ipairs(Blocks) do
 				if block and block.info.name == packet.target then

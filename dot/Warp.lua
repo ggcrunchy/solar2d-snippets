@@ -33,7 +33,6 @@ local require_ex = require("tektite.require_ex")
 local audio = require("utils.Audio")
 local collision = require("game.Collision")
 local common = require_ex.Lazy("editor.Common")
-local dispatch_list = require("game.DispatchList")
 local frames = require("utils.Frames")
 local fx = require("game.FX")
 local links = require_ex.Lazy("editor.Links")
@@ -157,13 +156,24 @@ local function DoWarp (warp, func)
 	end
 end
 
+-- Warp event state --
+local WarpEvent = {}
+
+-- DoWarp-compatible event dispatch
+local function DispatchWarpEvent (name, from, to)
+	WarpEvent.name, WarpEvent.from, WarpEvent.to = name, from, to
+
+	Runtime:dispatchEvent(WarpEvent)
+
+	WarpEvent.from, WarpEvent.to = nil
+end
+
 --- Dot method: warp acted on as dot of interest.
 --
--- If the warp has a valid target, dispatches various event lists (cf. _func_ in @{Warp:Use})
+-- If the warp has a valid target, dispatches various events (cf. _func_ in @{Warp:Use})
 -- with this warp and the target as arguments.
--- @see game.DispatchList.CallList
 function Warp:ActOn ()
-	if not DoWarp(self, dispatch_list.CallList) then
+	if not DoWarp(self, DispatchWarpEvent) then
 		-- Sound effect?
 	end
 end
@@ -226,11 +236,18 @@ function Warp:Use (func)
 	return DoWarp(self, func) ~= nil
 end
 
+-- Warp-being-touched event --
+local TouchEvent = { name = "touching_dot" }
+
 -- Add warp-OBJECT collision handler.
 collision.AddHandler("warp", function(phase, warp, other, other_type)
 	-- Player touched warp: signal it as the dot of interest.
 	if other_type == "player" then
-		dispatch_list.CallList("touching_dot", warp, phase == "began")
+		TouchEvent.dot, TouchEvent.is_touching = warp, phase == "began"
+
+		Runtime:dispatchEvent(TouchEvent)
+
+		TouchEvent.dot = nil
 
 		-- Show or hide a hint between this warp and its target.
 		local target = WarpList[warp.m_to]
@@ -252,7 +269,7 @@ collision.AddHandler("warp", function(phase, warp, other, other_type)
 end)
 
 -- Listen to events.
-dispatch_list.AddToMultipleLists{
+AddMultipleListeners{
 	-- Enter Level --
 	enter_level = function(level)
 		MarkersLayer = level.markers_layer

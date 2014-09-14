@@ -2,8 +2,10 @@
 --
 -- Various elements are added to the GUI, and where possible device input is used as well.
 --
--- In the case of screen taps, the **"tapped_at** event list is dispatched with the screen
--- x- and y-coordinates as input, cf. @{game.DispatchList.CallList}.
+-- In the case of screen taps, the **"tapped_at** event is dispatched with the screen x- and
+-- y-coordinates under keys **x** and **y** respectively.
+
+-- FIXLISTENER above stuff
 
 --
 -- Permission is hereby granted, free of charge, to any person obtaining
@@ -30,7 +32,6 @@
 
 -- Modules --
 local action = require("hud.Action")
-local dispatch_list = require("game.DispatchList")
 local move = require("hud.Move")
 local player = require("game.Player")
 local touch = require("ui.Touch")
@@ -149,6 +150,9 @@ local function KeyEvent (event)
 	return true
 end
 
+-- Event dispatched on tap --
+local TappedAtEvent = { name = "tapped_at" }
+
 -- Traps touches to the screen and interprets any taps
 local function TrapTaps (event)
 	if Active then
@@ -168,7 +172,9 @@ local function TrapTaps (event)
 		-- (Doesn't feel like a good fit for a tap if the press lingered for too long.)
 		elseif event.phase == "ended" then
 			if trap.m_tapped_when and event.time - trap.m_tapped_when < 300 then
-				dispatch_list.CallList("tapped_at", event.x, event.y)
+				TappedAtEvent.x, TappedAtEvent.y = event.x, event.y
+
+				Runtime:dispatchEvent(TappedAtEvent)
 			end
 
 			trap.m_tapped_when = nil
@@ -179,7 +185,7 @@ local function TrapTaps (event)
 end
 
 -- Listen to events.
-dispatch_list.AddToMultipleLists{
+AddMultipleListeners{
 	-- Enter Level --
 	enter_level = function(level)
 		local hg = level.hud_group

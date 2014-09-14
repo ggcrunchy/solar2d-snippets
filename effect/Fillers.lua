@@ -33,7 +33,6 @@ local pairs = pairs
 -- Modules --
 local audio = require("utils.Audio")
 local circle = require("fill.Circle")
-local dispatch_list = require("game.DispatchList")
 local pixels = require("utils.Pixels")
 local quantize = require("geom2d_ops.quantize")
 local sheet = require("ui.Sheet")
@@ -247,7 +246,7 @@ function M.SetImage (name)
 end
 
 -- Listen to events.
-dispatch_list.AddToMultipleLists{
+AddMultipleListeners{
 	-- Enter Level --
 	enter_level = function(level)
 		ImageCache = {}

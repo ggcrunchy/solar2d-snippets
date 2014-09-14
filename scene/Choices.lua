@@ -30,7 +30,6 @@ local exit = os.exit
 
 -- Modules --
 local button = require("ui.Button")
-local dispatch_list = require("game.DispatchList")
 local file_utils = require("utils.File")
 local layout = require("ui.Layout")
 local scenes = require("utils.Scenes")
@@ -231,7 +230,7 @@ function Scene:show (event)
 		local prev = composer.getSceneName("previous")
 
 		if prev == "scene.Intro" or prev == "scene.Level" then
-			dispatch_list.CallList("enter_menus")
+			Runtime:dispatchEvent{ name = "enter_menus" }
 			-- ????
 		end
 	end

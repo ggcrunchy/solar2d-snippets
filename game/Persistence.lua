@@ -30,9 +30,6 @@ local pairs = pairs
 local tostring = tostring
 local type = type
 
--- Modules --
-local dispatch_list = require("game.DispatchList")
-
 -- Corona globals --
 local system = system
 
@@ -164,10 +161,10 @@ end
 --
 -- The encoding is formatted for easier viewing.
 --
--- Just before formatting, the **"preprocess\_level\_string"** event list is dispatched,
--- taking as input the encoded table (currently, JSON-style) and a table with boolean field
--- **is_building**, which will be **true** if _build_ is true. Listeners may append _subst_
--- pairs to the table for @{string.gsub}-style substitution.
+-- Just before formatting, the **"preprocess\_level\_string"** event is dispatched, taking as
+-- input under key **string** the encoded table (currently, JSON-style) and under key **ppinfo**
+-- a table with boolean field **is_building**, which will be **true** if _build_ is true.
+-- Listeners may append _subst_ pairs to the table for @{string.gsub}-style substitution.
 --
 -- After dispatch, the table will be iterated and the encoding updated at each step:
 --
@@ -175,13 +172,12 @@ end
 -- @ptable t Table to encode.
 -- @bool build Is this a game-ready level build?
 -- @treturn string Encoded data blob.
--- @see game.DispatchList.CallList
 function M.Encode (t, build)
 	Indent = 0
 
 	local pp, str = { is_building = not not build }, json.encode(t)
 
-	dispatch_list.CallList("preprocess_level_string", str, pp)
+	Runtime:dispatchEvent{ name = "preprocess_level_string", string = str, ppinfo = pp }
 
 	for _, op in ipairs(pp) do
 		str = str:gsub(op[1], op[2])

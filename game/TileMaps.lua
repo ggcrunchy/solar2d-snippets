@@ -30,7 +30,6 @@ local setmetatable = setmetatable
 -- Modules --
 local array_index = require("array_ops.index")
 local collision = require("game.Collision")
-local dispatch_list = require("game.DispatchList")
 local range = require("number_ops.range")
 local sheet = require("ui.Sheet")
 local tile_flags = require("game.TileFlags")
@@ -268,7 +267,7 @@ local NullMeta = {
 }
 
 -- Listen to events.
-dispatch_list.AddToMultipleLists{
+AddMultipleListeners{
 	-- Enter Level --
 	enter_level = function(level)
 		Tiles = setmetatable({}, NullMeta)

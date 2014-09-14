@@ -28,7 +28,6 @@ local max = math.max
 local remove = table.remove
 
 -- Modules --
-local dispatch_list = require("game.DispatchList")
 local lazy = require("table_ops.lazy")
 local timers = require("game.Timers")
 
@@ -168,9 +167,9 @@ function M.PushRect (what, rect, how)
 end
 
 -- Listen to events.
-dispatch_list.AddToMultipleLists{
+AddMultipleListeners{
 	-- Enter Level --
-	enter_level = function(level)
+	enter_level = function()
 		Circles = lazy.SubTablesOnDemand()
 		Rects = lazy.SubTablesOnDemand()
 		Stash = display.newGroup()

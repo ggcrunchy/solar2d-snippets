@@ -29,7 +29,6 @@ local min = math.min
 
 -- Modules --
 local common = require("editor.Common")
-local dispatch_list = require("game.DispatchList")
 local grid = require("editor.Grid")
 local grid_views = require("editor.GridViews")
 
@@ -146,7 +145,7 @@ function M.Unload ()
 end
 
 -- Listen to events.
-dispatch_list.AddToMultipleLists{
+AddMultipleListeners{
 	-- Load Level WIP --
 	load_level_wip = function(level)
 		if level.player.col and level.player.row then

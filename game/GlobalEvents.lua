@@ -33,7 +33,6 @@ local rawequal = rawequal
 -- Modules --
 local bind_utils = require("utils.Bind")
 local config = require("config.GlobalEvents")
-local dispatch_list = require("game.DispatchList")
 
 -- Corona globals --
 local timer = timer
@@ -53,7 +52,7 @@ local GetEvent = {}
 for _, v in ipairs(config.events) do
 	GetEvent[v] = bind_utils.BroadcastBuilder(v)
 
-	dispatch_list.AddToList(v, function()
+	Runtime:addEventListener(v, function()
 		--
 		for _, event in bind_utils.IterEvents(Events[v]) do
 			event("fire", false)
@@ -143,7 +142,7 @@ function M.ExtendAction (name, func)
 end
 
 -- Listen to events.
-dispatch_list.AddToMultipleLists{
+AddMultipleListeners{
 	-- Enter Level --
 	enter_level = function()
 		Events = {}

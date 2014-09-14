@@ -29,7 +29,6 @@ local audio = require("utils.Audio")
 local bind_utils = require("utils.Bind")
 local common = require_ex.Lazy("editor.Common")
 local collision = require("game.Collision")
-local dispatch_list = require("game.DispatchList")
 local powers_of_2 = require("bitwise_ops.powers_of_2")
 local links = require_ex.Lazy("editor.Links")
 
@@ -133,15 +132,20 @@ function Switch:Update ()
 	self.m_waiting = waiting
 end
 
+-- Switch-being-touched event --
+local TouchEvent = { name = "touching_dot" }
+
 -- Add switch-OBJECT collision handler.
 collision.AddHandler("switch", function(phase, switch, _, other_type)
 	-- Player touched switch: signal it as the dot of interest.
 	if other_type == "player" then
 		local is_touched = phase == "began"
 
-		switch.m_touched = is_touched
+		TouchEvent.dot, TouchEvent.is_touching, switch.m_touched = switch, is_touched, is_touched
 
-		dispatch_list.CallList("touching_dot", switch, is_touched)
+		Runtime:dispatchEvent(TouchEvent)
+
+		TouchEvent.dot = nil
 
 		--
 		local flag, waiting = 1, switch.m_waiting

@@ -27,9 +27,6 @@
 local max = math.max
 local min = math.min
 
--- Modules --
-local dispatch_list = require("game.DispatchList")
-
 -- Corona globals --
 local display = display
 
@@ -160,7 +157,7 @@ function M.SetYOffset (offset)
 end
 
 -- Listen to events.
-dispatch_list.AddToMultipleLists{
+AddMultipleListeners{
 	-- Enter Level --
 	enter_level = function(level)
 		Width = level.ncols * level.w

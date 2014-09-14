@@ -44,7 +44,6 @@ local yield = coroutine.yield
 -- Modules --
 local require_ex = require("tektite.require_ex")
 local bind_utils = require("utils.Bind")
-local dispatch_list = require("game.DispatchList")
 local fx = require("game.FX")
 local range = require("number_ops.range")
 local tags = require_ex.Lazy("editor.Tags")
@@ -508,7 +507,7 @@ function M.GetTypes ()
 end
 
 -- Listen to events.
-dispatch_list.AddToMultipleLists{
+AddMultipleListeners{
 	-- Enter Level --
 	enter_level = function(level)
 		Blocks = {}
@@ -556,7 +555,7 @@ dispatch_list.AddToMultipleLists{
 	-- Things Loaded --
 	things_loaded = function()
 		for _, block in ipairs(Blocks) do
-			dispatch_list.CallList("event_block_setup", block)
+			Runtime:dispatchEvent{ name = "event_block_setup", block = block }
 		end
 	end
 }

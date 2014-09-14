@@ -29,7 +29,6 @@ local assert = assert
 -- Modules --
 local adaptive = require("table_ops.adaptive")
 local args = require("iterator_ops.args")
-local dispatch_list = require("game.DispatchList")
 local powers_of_2 = require("bitwise_ops.powers_of_2")
 local timers = require("game.Timers")
 
@@ -355,24 +354,24 @@ function M.SetVisibility (object, show)
 	end
 end
 
--- "collision" listener --
-Runtime:addEventListener("collision", function(event)
-	local o1, o2 = event.object1, event.object2
-	local t1, t2 = Types[o1], Types[o2]
-	local h1, h2 = Handlers[t1], Handlers[t2]
-	local phase, contact = event.phase, event.contact
-
-	if h1 then
-		h1(phase, o1, o2, t2, contact)
-	end
-
-	if h2 then
-		h2(phase, o2, o1, t1, contact)
-	end
-end)
-
 -- Listen to events.
-dispatch_list.AddToMultipleLists{
+AddMultipleListeners{
+	-- Collision --
+	collision = function(event)
+		local o1, o2 = event.object1, event.object2
+		local t1, t2 = Types[o1], Types[o2]
+		local h1, h2 = Handlers[t1], Handlers[t2]
+		local phase, contact = event.phase, event.contact
+
+		if h1 then
+			h1(phase, o1, o2, t2, contact)
+		end
+
+		if h2 then
+			h2(phase, o2, o1, t1, contact)
+		end
+	end,
+
 	-- Enter Level --
 	enter_level = function()
 		IsHidden, Partners = {}, {}

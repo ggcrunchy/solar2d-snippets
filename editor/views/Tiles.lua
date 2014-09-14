@@ -29,7 +29,6 @@ local pairs = pairs
 
 -- Modules --
 local common = require("editor.Common")
-local dispatch_list = require("game.DispatchList")
 local grid = require("editor.Grid")
 local grid1D = require("ui.Grid1D")
 local grid_views = require("editor.GridViews")
@@ -180,7 +179,7 @@ function M.Unload ()
 end
 
 -- Listen to events.
-dispatch_list.AddToMultipleLists{
+AddMultipleListeners{
 	-- Build Level --
 	build_level = function(level)
 		local ncols, nrows = common.GetDims()
@@ -220,7 +219,9 @@ dispatch_list.AddToMultipleLists{
 	end,
 
 	-- Preprocess Level String --
-	preprocess_level_string = function(str, ppinfo)
+	preprocess_level_string = function(event)
+		local ppinfo = event.ppinfo
+
 		if ppinfo.is_building then
 			ppinfo[#ppinfo + 1] = {
 				[["tiles":%b{}]],

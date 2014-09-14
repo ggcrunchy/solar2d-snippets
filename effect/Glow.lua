@@ -23,9 +23,6 @@
 -- [ MIT license: http://www.opensource.org/licenses/mit-license.php ]
 --
 
--- Modules --
-local dispatch_list = require("game.DispatchList")
-
 -- Corona globals --
 local transition = transition
 
@@ -50,8 +47,7 @@ local Glow = {}
 -- @see GetGlowTime
 function M.ColorInterpolator (r1, g1, b1, r2, g2, b2)
 	return function()
-		local gt = 1 - 2 * Glow.t
-		local u = 1 - gt * gt
+		local u = 1 - (1 - 2 * Glow.t)^2
 		local s, t = 1 - u, u
 
 		return s * r1 + t * r2, s * g1 + t * g2, s * b1 + t * b2
@@ -65,7 +61,7 @@ function M.GetGlowTime ()
 end
 
 -- Listen to events.
-dispatch_list.AddToMultipleLists{
+AddMultipleListeners{
 	-- Enter Level --
 	enter_level = function()
 		Glow.t = 0

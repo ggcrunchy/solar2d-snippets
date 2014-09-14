@@ -31,7 +31,6 @@ local min = math.min
 local type = type
 
 -- Modules --
-local dispatch_list = require("game.DispatchList")
 local flow = require("coroutine_ops.flow")
 local movement = require("game.Movement")
 local mwc_rng = require("number_ops.mwc_rng")
@@ -301,7 +300,7 @@ function M.WipePath (entity)
 end
 
 -- Listen to events.
-dispatch_list.AddToList("things_loaded", function(level)
+Runtime:addEventListener("things_loaded", function(level)
 	MaxX = max(level.ncols * level.w, display.contentWidth)
 	MaxY = max(level.nrows * level.h, display.contentHeight)
 end)

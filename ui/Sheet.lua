@@ -29,7 +29,6 @@ local max = math.max
 local tonumber = tonumber
 
 -- Modules --
-local dispatch_list = require("game.DispatchList")
 local grid_iterators = require("iterator_ops.grid")
 
 -- Corona globals --
@@ -248,7 +247,7 @@ function M.TileImage (name, ncols, nrows, x1, y1, x2, y2)
 end
 
 -- Listen to events.
-dispatch_list.AddToMultipleLists{
+AddMultipleListeners{
 	-- Leave Level --
 	leave_level = function()
 		for _, factory in ipairs(Factories) do

@@ -30,7 +30,6 @@ local max = math.max
 -- Modules --
 local common = require("editor.Common")
 local common_ui = require("editor.CommonUI")
-local dispatch_list = require("game.DispatchList")
 local config = require("config.GlobalEvents")
 local events = require("editor.Events")
 local global_events = require("game.GlobalEvents")
@@ -156,7 +155,7 @@ function M.Unload ()
 end
 
 -- Listen to events.
-dispatch_list.AddToMultipleLists{
+AddMultipleListeners{
 	-- Build Level --
 	build_level = function(level)
 		level.global_events = events.BuildEntry(level, global_events, level.global_events, nil)[1]

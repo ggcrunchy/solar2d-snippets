@@ -57,79 +57,7 @@ if mm == 4 then
 	vdump(u)
 	vdump(v)
 end
-do
-	local utils = require("signal_ops.utils")
-	local fft_utils = require("dft_ops.utils")
-	local real_fft=require("dft_ops.real_fft")
-	local tt1=os.clock()
-	local uu={}
-	local vv={}
-	local nu, nv = #u / #s, #v / #s
-	local ulen, up = utils.LenPower(mm, nu)
-	local vlen, vp = utils.LenPower(nn, nv)
-	local k1, arr1={},{}
-	for i = 1, #u, nu do
-		local out = {}
-		for j = 0, nu - 1 do
-			k1[j + 1] = u[i + j]
-		end
-		utils.PrecomputeKernel_1D(out, up, k1, nu)
-		arr1[#arr1+1]=out
-	end
-	local k2,arr2={},{}
-	for i = 1, #v, nv do
-		local out = {}
-		for j = 0, nv - 1 do
-			k2[j + 1] = v[i + j]
-		end
-		utils.PrecomputeKernel_1D(out, up, k2, nv)
-		arr2[#arr2+1]=out
-	end
-	local tt2=os.clock()
-	-- In signal, do same for rows on startup...
-	local lhs,ss = {}, {}
-	for i = 1, #u, nu do
-		local out = {}
-		for j = 0, nu - 1 do
-			ss[j + 1] = mat[i + j]
-		end
-		utils.PrecomputeKernel_1D(out, up, ss, nu)
-		lhs[#lhs + 1] = out
-	end
-	-- Then do just multiply / IFFT on left
-	local sss,ttt,uuu={},{},{}
-	local pk = utils.MakePrecomputedKernelFunc_1D(ttt)
-	for rank = 1, mm do
-		local u,v=arr1[rank],arr2[rank]
-		for i = 1, #lhs do
-			fft_utils.Multiply_1D(lhs[i], u, up, sss)
 
-			-- ...transform back to the time domain...
-			real_fft.RealIFFT_1D(sss, .5 * up)
-
-			-- ...and get the requested part of the result.
---			for i = 1, ulen do
---				uuu[i] = sss[i]
---			end
-
-			pk(vp, sss, ulen, v)
-
-			real_fft.RealIFFT_1D(sss, .5 * vp)
---[[
-Convolve_1D(signal, kernel, opts)
-		end
-
-		count, from, size, offset, signal, opts, kernel = len, Columns, offset, 0, RowVector, RowOpts, v
-]]
-		end
-		if rank == 15 then
-		break
-		end
-	end
-	-- On right, still need to do FFT first, then multiply and IFFT
-	print("TIME", tt2-tt1, os.clock()-tt2)
---	if true then return end
-end
 --[=[
 	local dim, num = 25, 25
 local tt0=os.clock()
@@ -206,20 +134,7 @@ print("TTTT", (os.clock() - tt0) / num)
 		print("SQRTAPX", sum2, sum2 / #o2)
 	end
 --]=]
-	print("2!")
-	local kd2 = separable.DecomposeKernel(B, N, { scols = M, srows = M })
-	for i = 1, N do
-		sopts.max_rank = i
-		local t4=oc()
-		local o2 = separable.Convolve_2D(A, M, kd2, sopts)
-		local sum, sum2 = 0, 0
-		for j = 1, #o2 do
-			local diff = abs(o2[j] - o1[j])
-			sum, sum2 = sum + diff, sum2 + --[[floor]] (sqrt(diff))
-		end
-		print("APPROX", i, sum, sum / #o2, oc() - t4)
-		print("SQRTAPX", sum2, sum2 / #o2)
-	end
+
 --[==[
 	local t2=oc()
 	local opts={into = {}}

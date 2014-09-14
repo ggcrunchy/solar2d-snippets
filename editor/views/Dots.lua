@@ -29,7 +29,6 @@ local pairs = pairs
 -- Modules --
 local common = require("editor.Common")
 local dialog = require("editor.Dialog")
-local dispatch_list = require("game.DispatchList")
 local dots = require("game.Dots")
 local events = require("editor.Events")
 local grid_views = require("editor.GridViews")
@@ -75,7 +74,7 @@ function M.Unload ()
 end
 
 -- Listen to events.
-dispatch_list.AddToMultipleLists{
+AddMultipleListeners{
 	-- Build Level --
 	build_level = function(level)
 		local builds

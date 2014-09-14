@@ -34,7 +34,6 @@ local yield = coroutine.yield
 local array_funcs = require("array_ops.funcs")
 local common = require("editor.Common")
 local coro = require("iterator_ops.coroutine")
-local dispatch_list = require("game.DispatchList")
 local tags = require("editor.Tags")
 local timers = require("game.Timers")
 
@@ -514,33 +513,6 @@ M.Tagged = coro.Iterator(function(name)
 		end
 	end
 end)
-
--- Listen to events.
-dispatch_list.AddToMultipleLists{
-	-- Build Level --
-	build_level = function(level)
-		-- ??
-		-- Iterate list of links, dispatch out to objects? (some way to look up values from keys...)
-	end,
-
-	-- Load Level WIP --
-	load_level_wip = function(level)
-		-- ??
-		-- SetArray() -> lookup tag, key combos?
-	end,
-
-	-- Save Level WIP --
-	save_level_wip = function(level)
-		-- ??
-		-- GetArray() -> save tag, key combos?
-	end,
-
-	-- Verify Level --
-	verify_level = function(verify)
-		-- ??
-		-- Iterate list of links and ask objects?
-	end
-}
 
 -- Export the module.
 return M

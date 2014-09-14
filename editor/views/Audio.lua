@@ -37,7 +37,6 @@ local audio_patterns = require("ui.patterns.audio")
 local button = require("ui.Button")
 local common = require("editor.Common")
 local common_ui = require("editor.CommonUI")
-local dispatch_list = require("game.DispatchList")
 local file_utils = require("utils.File")
 local object_helper = require("utils.ObjectHelper")
 
@@ -218,7 +217,7 @@ function M.Unload ()
 end
 
 -- Listen to events.
-dispatch_list.AddToMultipleLists{
+AddMultipleListeners{
 	-- Build Level --
 	build_level = function(level)
 		-- ??

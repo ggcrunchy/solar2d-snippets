@@ -27,7 +27,6 @@
 local pairs = pairs
 
 -- Modules --
-local dispatch_list = require("game.DispatchList")
 local timers = require("game.Timers")
 
 -- Corona globals --
@@ -130,7 +129,7 @@ function M.Shadow (func, arg)
 end
 
 -- Listen to events.
-dispatch_list.AddToMultipleLists{
+AddMultipleListeners{
 	-- Enter Level --
 	enter_level = function(level)
 		DecalsLayer = level.decals_layer

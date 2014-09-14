@@ -32,7 +32,6 @@ local write = io.write
 
 -- Modules --
 local common = require("editor.Common")
-local dispatch_list = require("game.DispatchList")
 local events = require("editor.Events")
 local keyboard = require("ui.Keyboard")
 local persistence = require("game.Persistence")
@@ -121,9 +120,12 @@ end
 
 -- Common save / build logic
 local function AuxSave ()
-	local saved = { main = { common.GetDims() } }
+	local saved = { name = "save_level_wip", main = { common.GetDims() } }
 
-	dispatch_list.CallList("save_level_wip", saved)
+	Runtime:dispatchEvent(saved)
+
+	saved.name = nil
+
 	events.ResolveLinks_Save(saved)
 
 	return saved
@@ -132,13 +134,12 @@ end
 --- Builds a game-ready version of the work-in-progress level, saving it in the database
 -- under the working name. The level is first verified; if this fails, the build is aborted.
 --
--- The build proceeds in two steps. First, the **save\_level\_wip** event list is dispatched,
--- with a table argument as per @{Save}. Second, the **build_level** event list is dispatched
--- with this same table as argument; listeners can then mutate the table into game-ready form.
+-- The build proceeds in two steps. First, the **save\_level\_wip** event is dispatched, with
+-- a table event as per @{Save}. Second, the **build_level** event is dispatched with this
+-- same table as event; listeners can then mutate the table into game-ready form.
 --
--- This table is then added, as a string, to the level database. If possible, this string is
--- also sent to the clipboard.
--- @see editor.Common.IsVerified, game.DispatchList.CallList, game.Persistence.SaveLevel, GetLevelName, Verify
+-- This table is then added, as a string, to the level database.
+-- @see editor.Common.IsVerified, game.Persistence.SaveLevel, GetLevelName, Verify
 function M.Build ()
 	M.Verify()
 
@@ -146,7 +147,12 @@ function M.Build ()
 		GetLevelName(function()
 			local level = AuxSave()
 
-			dispatch_list.CallList("build_level", level)
+			level.name = "build_level"
+
+			Runtime:dispatchEvent(level)
+
+			level.name = nil
+
 			events.ResolveLinks_Build(level)
 
 			return level
@@ -178,12 +184,12 @@ end
 -- If the editor state is not dirty, this is no-op.
 --
 -- A table of the form `to_save = { main = { _cols_, _rows_ } }` is prepared, where _cols_
--- and _rows_ are the tile-wise level dimensions. The **save\_level\_wip** event list is
--- dispatched with this table as argument; listeners can then fill it in.
+-- and _rows_ are the tile-wise level dimensions. The **save\_level\_wip** event is dispatched
+-- with this table as event; listeners can then fill it in.
 --
 -- This table is then added, as a string, to the level database (as a WIP). If possible, this
 -- string is also sent to the clipboard.
--- @see editor.Common.IsDirty, game.DispatchList.CallList, game.Persistence.SaveLevel, GetLevelName
+-- @see editor.Common.IsDirty, game.Persistence.SaveLevel, GetLevelName
 function M.Save ()
 	if common.IsDirty() then
 		GetLevelName(function()
@@ -223,7 +229,7 @@ end
 -- If the editor state is already verified, this is a no-op.
 --
 -- One or more passes are run over the level data. On each pass, the **verify\_level\_wip**
--- event list is dispatched, with a table as argument. The table has the following fields:
+-- event is dispatched, with a table as event. The table has the following fields:
 --
 -- * **pass**: Read-only **uint**. Starts at 1 and is incremented after each pass.
 -- * **needs\_another\_pass**: **bool**. Begins each pass as **false**. To request another
@@ -234,7 +240,7 @@ end
 --
 -- Verification runs until a pass ends either: with errors (failure) or without a request
 -- for a follow-up pass (success). On success, the editor will be in the verified state.
--- @see editor.Common.IsVerified, game.DispatchList.CallList
+-- @see editor.Common.IsVerified
 function M.Verify ()
 	if not common.IsVerified() then
 		local verify, done = { pass = 1 }
@@ -257,15 +263,17 @@ function M.Verify ()
 		-- if some issues came up.
 		-- TODO: While not implemented yet, this is meant to be built with some form of yields
 		-- in mind, either via coroutines or based on the timer
+		verify.name = "verify_level_wip"
+
 		repeat
 			verify.needs_another_pass = false
 
-			dispatch_list.CallList("verify_level_wip", verify)
+			Runtime:dispatchEvent(verify)
 
 			verify.pass = verify.pass + 1
 		until #verify > 0 or not verify.needs_another_pass
 
-		done = true
+		done, verify.name = true
 
 		-- One or more issues: report in environment-appropriate way.
 		if #verify > 0 then

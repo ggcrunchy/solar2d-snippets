@@ -26,9 +26,6 @@
 -- Standard library imports --
 local format = string.format
 
--- Corona globals --
-local system = system
-
 -- Exports --
 local M = {}
 

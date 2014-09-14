@@ -36,7 +36,6 @@ local yield = coroutine.yield
 -- Modules --
 local bind_utils = require("utils.Bind")
 local controls = require("game.Controls")
-local dispatch_list = require("game.DispatchList")
 local dots = require("game.Dots")
 local event_blocks = require("game.EventBlocks")
 local global_events = require("game.GlobalEvents")
@@ -145,8 +144,8 @@ end
 
 --- Loads a level.
 --
--- The level information is gathered into a table and the **enter_level** event list is
--- dispatched with said table as argument. It has the following fields:
+-- The level information is gathered into a table and the **enter_level** event is dispatched
+-- with said table as argument. It has the following fields:
 --
 -- * **ncols**, **nrows**: Columns wide and rows tall of level, respectively.
 -- * **w**, **h**: Tile width and height, respectively.
@@ -155,11 +154,10 @@ end
 -- Game group sublayers.
 --
 -- After tiles and game objects have been added to the level, the **things_loaded** event
--- list is dispatched, with the same argument.
+-- is dispatched, with the same argument.
 -- @pgroup view Level scene view.
 -- @param which As a **uint**, a level index as per @{game.LevelsList.GetLevel}. As a
 -- **string**, a level as archived by @{game.Persistence.Encode}.
--- @see game.DispatchList.CallList
 function M.LoadLevel (view, which)
 	assert(not CurrentLevel, "Level not unloaded")
 	assert(not Loading, "Load already in progress")
@@ -211,7 +209,9 @@ function M.LoadLevel (view, which)
 		-- Dispatch to "enter level" observers, now that the basics are in place.
 		bind_utils.Reset("loading_level")
 
-		dispatch_list.CallList("enter_level", CurrentLevel)
+		CurrentLevel.name = "enter_level"
+
+		Runtime:dispatchEvent(CurrentLevel)
 
 		-- Add the tiles to the level...
 		local tgroup = tile_maps.NewImageGroup()
@@ -251,7 +251,9 @@ function M.LoadLevel (view, which)
 		repeat yield() until IsDone
 
 		-- Dispatch to "things_loaded" observers, now that most objects are in place.
-		dispatch_list.CallList("things_loaded", CurrentLevel)
+		CurrentLevel.name = "things_loaded"
+
+		Runtime:dispatchEvent(CurrentLevel)
 
 		CurrentLevel.is_loaded = true
 	end)
@@ -261,7 +263,7 @@ end
 
 -- Helper to leave level
 local function Leave (info)
-	dispatch_list.CallList("leave_level", info.why)
+	Runtime:dispatchEvent{ name = "leave_level", why = info.why }
 
 	--
 	local return_to = Values.return_to
@@ -280,9 +282,8 @@ local Overlay = { won = "overlay.Win", lost = "overlay.OutOfLives" }
 --
 -- This will be the appropriate game or editor menu, depending on how the level was launched.
 --
--- The **leave_level** event list is dispatched, with _why_ as argument.
+-- The **leave_level** event is dispatched, with _why_ as argument (under key **why**).
 -- @string why Reason for unloading, which should be **won"**, **"lost"**, or **"quit"**.
--- @see game.DispatchList.CallList
 function M.UnloadLevel (why)
 	assert(not Loading, "Cannot unload: load in progress")
 	assert(CurrentLevel, "No level to unload")
@@ -302,7 +303,7 @@ global_events.ExtendAction("win", function()
 end)
 
 -- Listen to events.
-dispatch_list.AddToList("enter_menus", function()
+Runtime:addEventListener("enter_menus", function()
 	for _, name in ipairs(Groups) do
 		display.remove(CurrentLevel and CurrentLevel[name])
 	end

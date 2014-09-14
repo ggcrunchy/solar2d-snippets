@@ -30,7 +30,6 @@ local pairs = pairs
 local common = require("editor.Common")
 local common_ui = require("editor.CommonUI")
 local grid = require("editor.Grid")
-local dispatch_list = require("game.DispatchList")
 
 -- Exports --
 local M = {}
@@ -71,7 +70,7 @@ function M.Unload ()
 end
 
 -- Listen to events.
-dispatch_list.AddToMultipleLists{
+AddMultipleListeners{
 	-- Build Level --
 	build_level = function(level)
 		level.settings = nil

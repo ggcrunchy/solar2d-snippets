@@ -39,7 +39,6 @@ local sort = table.sort
 
 -- Modules --
 local collision = require("game.Collision")
-local dispatch_list = require("game.DispatchList")
 local require_ex = require("tektite.require_ex")
 local tile_maps = require("game.TileMaps")
 local timers = require("game.Timers")
@@ -70,8 +69,7 @@ local function NoOp () end
 -- Various dot properties are important:
 --
 -- If the **"is_counted"** property is true, the dot will count toward the remaining dots
--- total. If this count falls to 0, the **all\_dots\_removed** event list is dispatched,
--- without arguments.
+-- total. If this count falls to 0, the **all\_dots\_removed** event is dispatched.
 --
 -- Unless the **"omit\_from\_event\_blocks"** property is true, a dot will be added to any event
 -- block that it happens to occupy.
@@ -85,7 +83,7 @@ local function NoOp () end
 -- * **type**: Name of dot type, q.v. _name_, above. This is also assigned as the dot's collision type.
 --
 -- Instance-specific data may also be passed in other fields.
--- @see game.Collision.GetType, game.DispatchList.CallList
+-- @see game.Collision.GetType
 function M.AddDot (group, info)
 	local dot = DotList[info.type](group, info)
 	local index = tile_maps.GetTileIndex(info.col, info.row)
@@ -183,21 +181,21 @@ local function DotLess (a, b)
 end
 
 -- Listen to events.
-dispatch_list.AddToMultipleLists{
+AddMultipleListeners{
 	-- Act On Dot --
-	act_on_dot = function(dot, facing)
+	act_on_dot = function(event)
 		-- If this dot counts toward the "dots remaining", deduct it. If it was the last
 		-- dot, fire off an alert to that effect.
-		if dot.m_count > 0 then
+		if event.dot.m_count > 0 then
 			Remaining = Remaining - 1
 
 			if Remaining == 0 then
-				dispatch_list.CallList("all_dots_removed")
+				Runtime:dispatchEvent{ name = "all_dots_removed" }
 			end
 		end
 
 		-- Do dot-specific logic.
-		dot:ActOn(facing)
+		event.dot:ActOn(event.facing)
 	end,
 
 	-- Enter Level --
@@ -208,7 +206,7 @@ dispatch_list.AddToMultipleLists{
 	end,
 
 	-- Event Block Setup --
-	event_block_setup = function(block)
+	event_block_setup = function(event)
 		-- Sort the dots so that they may be incrementally traversed as we iterate the block.
 		if not Dots.sorted then
 			sort(Dots, DotLess)
@@ -217,6 +215,7 @@ dispatch_list.AddToMultipleLists{
 		end
 
 		-- Accumulate any non-omitted dot inside the event block region into its dots list.
+		local block = event.block
 		local slot, n, dots = 1, #Dots
 
 		for index in block:IterSelf() do

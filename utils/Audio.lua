@@ -30,9 +30,6 @@ local pairs = pairs
 local random = math.random
 local type = type
 
--- Modules --
-local dispatch_list = require("game.DispatchList")
-
 -- Corona globals --
 local system = system
 local timer = timer
@@ -151,7 +148,7 @@ end
 -- TODO: Menu audio
 
 -- Listen to events.
-dispatch_list.AddToMultipleLists{
+AddMultipleListeners{
 	-- Leave Level --
 	leave_level = function()
 		for _, group in ipairs(Groups) do

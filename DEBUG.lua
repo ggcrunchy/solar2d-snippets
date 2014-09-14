@@ -28,7 +28,6 @@ local args = require("iterator_ops.args")
 local array_index = require("array_ops.index")
 local button = require("ui.Button")
 local checkbox = require("ui.Checkbox")
-local dispatch_list = require("game.DispatchList")
 local level_map = require("game.LevelMap")
 local markers = require("effect.Markers")
 local movement = require("game.Movement")
@@ -98,7 +97,7 @@ local function SetDirections (keep)
 end
 
 --
-dispatch_list.AddToMultipleLists{
+AddMultipleListeners{
 	-- Flags Updated --
 	flags_updated = SetDirections,
 

@@ -31,7 +31,6 @@
 -- Modules --
 local array_index = require("array_ops.index")
 local powers_of_2 = require("bitwise_ops.powers_of_2")
-local dispatch_list = require("game.DispatchList")
 local range = require("number_ops.range")
 local table_funcs = require("table_ops.funcs")
 
@@ -175,6 +174,9 @@ local NCols, NRows
 -- Number of cells in level --
 local Area
 
+-- Event dispatched on update --
+local FlagsUpdatedEvent = { name = "flags_updated" }
+
 --- Resolves the current working flags, as set by @{SetFlags}, into the current active
 -- flag set. The working flags will remain intact.
 --
@@ -184,8 +186,7 @@ local Area
 -- *  Orphaned border, e.g. a down-flagged tile on the lowest row.
 --
 -- The final result, after culling the troublesome flags, is the resolved flag set.
--- @bool update If true, the **"flags_updated"** event list is dispatched after resolution.
--- @see game.DispatchList.CallList
+-- @bool update If true, the **"flags_updated"** event is dispatched after resolution.
 function M.ResolveFlags (update)
 	local col = 0
 
@@ -213,7 +214,7 @@ function M.ResolveFlags (update)
 	end
 
 	if update then
-		dispatch_list.CallList("flags_updated")
+		Runtime:dispatchEvent(FlagsUpdatedEvent)
 	end
 end
 
@@ -284,7 +285,7 @@ function M.WipeFlags (col1, row1, col2, row2)
 end
 
 -- Listen to events.
-dispatch_list.AddToMultipleLists{
+AddMultipleListeners{
 	-- Enter Level --
 	enter_level = function(level)
 		Deltas.up = -level.ncols

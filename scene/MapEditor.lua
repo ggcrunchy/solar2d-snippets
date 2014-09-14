@@ -49,7 +49,6 @@ local args = require("iterator_ops.args")
 local button = require("ui.Button")
 local common = require("editor.Common")
 local common_ui = require("editor.CommonUI")
-local dispatch_list = require("game.DispatchList")
 local events = require("editor.Events")
 local grid = require("editor.Grid")
 local ops = require("editor.Ops")
@@ -203,7 +202,7 @@ function Scene:show (event)
 		local params
 
 		if scenes.ComingFrom() == "Level" then
-			dispatch_list.CallList("enter_menus")
+			Runtime:dispatchEvent{ name = "enter_menus" }
 
 			local _, data = persistence.LevelExists(TestLevelName, true)
 
@@ -363,7 +362,13 @@ function Scene:show (event)
 		-- not be dirty after a load.
 		if params.is_loading or RestoreState then
 			ops.SetLevelName(params.is_loading)
-			dispatch_list.CallList("load_level_wip", params)
+
+			params.name = "load_level_wip"
+
+			Runtime:dispatchEvent(params)
+
+			params.name = nil
+
 			events.ResolveLinks_Load(params)
 			common.Undirty()
 		end
@@ -379,7 +384,7 @@ function Scene:show (event)
 		-- Remove evidence of any test and alert listeners that the WIP is opened.
 		RestoreState = nil
 
-		dispatch_list.CallList("level_wip_opened")
+		Runtime:dispatchEvent{ name = "level_wip_opened" }
 	end
 end
 
@@ -406,7 +411,7 @@ function Scene:hide (event)
 			self.view:remove(i)
 		end
 
-		dispatch_list.CallList("level_wip_closed")
+		Runtime:dispatchEvent{ name = "level_wip_closed" }
 	end
 end
 

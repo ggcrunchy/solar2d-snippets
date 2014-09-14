@@ -1,10 +1,12 @@
 --- Maze-type event block.
 --
--- A maze is a strictly toggle-type event, i.e. it goes on &rarr; off or vice versa,
--- and may begin in either state. After toggling, the **"tiles_changed"** event list
--- is dispatched with **"maze"** as the argument, cf. @{game.DispatchList.CallList}.
+-- A maze is a strictly toggle-type event, i.e. it goes on &rarr; off or vice versa, and may
+-- begin in either state. After toggling, the **"tiles_changed"** event is dispatched with
+-- **"maze"** under key **how**.
 --
 -- @todo Maze format.
+
+-- FIXLISTENER! (Explain event!)
 
 --
 -- Permission is hereby granted, free of charge, to any person obtaining
@@ -39,7 +41,6 @@ local sqrt = math.sqrt
 -- Modules --
 local array_index = require("array_ops.index")
 local circle = require("fill.Circle")
-local dispatch_list = require("game.DispatchList")
 local tile_flags = require("game.TileFlags")
 local tile_maps = require("game.TileMaps")
 local timers = require("game.Timers")
@@ -52,7 +53,7 @@ local transition = transition
 local MarkersLayer
 
 -- Listen to events.
-dispatch_list.AddToMultipleLists{
+AddMultipleListeners{
 	-- Enter Level --
 	enter_level = function(level)
 		MarkersLayer = level.markers_layer
@@ -269,6 +270,9 @@ local function OnEditorEvent (what, arg1, arg2, arg3)
 	end
 end
 
+-- Event dispatched on change --
+local TilesChangedEvent = { name = "tiles_changed", how = "maze" }
+
 -- Export the maze factory.
 return function(info, block)
 	if info == "editor_event" then
@@ -393,7 +397,7 @@ return function(info, block)
 		-- just leave them as is since they're ipso facto invisible.
 		added = not added
 
-		dispatch_list.CallList("tiles_changed", "maze")
+		Runtime:dispatchEvent(TilesChangedEvent)
 
 		if added then
 			UpdateTiles(block)

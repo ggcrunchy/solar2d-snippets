@@ -32,7 +32,6 @@ local pi = math.pi
 local sin = math.sin
 
 -- Modules --
-local dispatch_list = require("game.DispatchList")
 local glow = require("effect.Glow")
 local line_ex = require("ui.LineEx")
 local quantize = require("geom2d_ops.quantize")

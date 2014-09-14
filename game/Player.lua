@@ -24,20 +24,13 @@
 --
 
 -- Standard library imports --
-local abs = math.abs
 local min = math.min
 local pairs = pairs
 
 -- Modules --
-local require_ex = require("tektite.require_ex")
 local ai = require("game.AI")
-local audio = require("utils.Audio")
 local collision = require("game.Collision")
-local dispatch_list = require("game.DispatchList")
 local frames = require("utils.Frames")
---local fx = require("game.FX")
-local level_map = require_ex.Lazy("game.LevelMap")
-local movement = require("game.Movement")
 local pathing = require("game.Pathing")
 local path_utils = require("game.PathUtils")
 local scrolling = require("game.Scrolling")
@@ -46,7 +39,6 @@ local tile_maps = require("game.TileMaps")
 
 -- Corona globals --
 local display = display
-local transition = transition
 
 -- Exports --
 local M = {}
@@ -120,13 +112,20 @@ function M.CancelPath ()
 	Cur, Goal, X1, X2 = nil
 end
 
+-- Event dispatched on action --
+local ActOnDotEvent = { name = "act_on_dot" }
+
 --- Acts on any objects that the player is touching.
 function M.DoActions ()
-	local facing = Player.m_facing
+	ActOnDotEvent.facing = Player.m_facing
 
 	for object in pairs(Player.m_touching) do
-		dispatch_list.CallList("act_on_dot", object, facing)
+		ActOnDotEvent.dot = object
+
+		Runtime:dispatchEvent(ActOnDotEvent)
 	end
+
+	ActOnDotEvent.dot = nil
 end
 
 ---@treturn number Player's x coordinate.
@@ -180,8 +179,6 @@ function M.MovePlayer (dir)
 
 	-- If we did move, update the animation.
 	if moved then
-		FramesLeft = 2
-
 --		Player.m_body:play()
 	end
 
@@ -211,19 +208,11 @@ local function Activate (active)
 	collision.Activate(Player.m_body, active)
 end
 
--- Helper to kick off reset
-local function Reset ()
-	dispatch_list.CallList("pre_reset")
-	dispatch_list.CallList("reset_level")
-	dispatch_list.CallList("post_reset")
-end
-
 -- Listen to events.
-dispatch_list.AddToMultipleLists{
+AddMultipleListeners{
 	-- Enter Level --
 	enter_level = function(level)
 		MarkersLayer = level.markers_layer
-		FramesLeft = 0
 		NearGoal = min(level.w, level.h) / 3
 
 --		Sounds:Load()
@@ -248,13 +237,13 @@ dispatch_list.AddToMultipleLists{
 	end,
 
 	-- Move Done Moving --
-	move_done_moving = function(_, to)
-		Place(Player, to.x, to.y)
+	move_done_moving = function(event)
+		Place(Player, event.to.x, event.to.y)
 	end,
 
 	-- Move Prepare --
-	move_prepare = function(from)
-		from:AddItem(Player.m_body)
+	move_prepare = function(event)
+		event.from:AddItem(Player.m_body)
 
 		Activate(false)
 
@@ -268,8 +257,8 @@ dispatch_list.AddToMultipleLists{
 	end,
 
 	-- Tapped At --
-	tapped_at = function(x, y)
-		x, y = x - RefGroup.x, y - RefGroup.y
+	tapped_at = function(event)
+		local x, y = event.x - RefGroup.x, event.y - RefGroup.y
 
 		-- If we tapped on a tile, plan a path to it.
 		local tile = tile_maps.GetTileIndex_XY(x, y)
@@ -319,8 +308,8 @@ dispatch_list.AddToMultipleLists{
 	end,
 
 	-- Touching Dot --
-	touching_dot = function(dot, touch)
-		Player.m_touching[dot] = touch or nil
+	touching_dot = function(event)
+		Player.m_touching[event.dot] = event.is_touching or nil
 	end
 }
 

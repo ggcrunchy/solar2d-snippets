@@ -30,7 +30,6 @@
 
 -- Modules --
 local button = require("ui.Button")
-local dispatch_list = require("game.DispatchList")
 local level_map = require("game.LevelMap")
 local scenes = require("utils.Scenes")
 local timers = require("game.Timers")
@@ -95,7 +94,7 @@ Scene:addEventListener("create")
 function Scene:show (event)
 	if event.phase == "did" then
 		--
-		dispatch_list.CallList("leave_menus") -- OKAY??? (TODO: seems to have worked fine, but look into "will")
+		Runtime:dispatchEvent{ name = "leave_menus" } -- OKAY??? (TODO: seems to have worked fine, but look into "will")
 
 		level_map.LoadLevel(self.view, event.params)
 	end
@@ -123,7 +122,7 @@ end
 Scene:addEventListener("hide")
 
 -- Listen to events.
-dispatch_list.AddToMultipleLists{
+AddMultipleListeners{
 	-- Enter Level --
 	enter_level = function()
 		scenes.SetListenFunc(Listen) -- TODO: Timing not QUITE right...
