@@ -35,6 +35,7 @@ local pairs = pairs
 local common = require("editor.Common")
 local common_ui = require("editor.CommonUI")
 local grid2D = require("ui.Grid2D")
+local str_utils = require("utils.String")
 
 -- Corona globals --
 local display = display
@@ -405,7 +406,7 @@ function M.ShowOrHide (items, func)
 	local redge, bedge = Col + VCols, Row + VRows
 
 	for k, v in pairs(items) do
-		local col, row = common.FromKey(k)
+		local col, row = str_utils.KeyToPair(k)
 
 		func(v, col > Col and col <= redge and row > Row and row <= bedge)
 	end

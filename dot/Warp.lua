@@ -66,12 +66,12 @@ local HandleGroups
 
 -- Warp logic
 local function DoWarp (warp, func)
-	local target = WarpList[warp.m_to]
+	local target, ttype = WarpList[warp.m_to]
 
 	if target then
-		func = func or DefWarp
+		func, ttype = func or DefWarp, collision.GetType(target) == "warp" and "warp" or "position"
 
-		func("move_prepare", warp, target)
+		func("move_prepare", warp, target, ttype)
 
 		-- If there is no cargo, we're done. Otherwise, remove it and do warp logic.
 		local items = warp.m_items
@@ -91,7 +91,7 @@ local function DoWarp (warp, func)
 			-- Warp-in onComplete handler, which concludes the warp and does cleanup
 			local function WarpIn_OC (object)
 				if object.parent then
-					func("move_done", warp, target)
+					func("move_done", warp, target, ttype)
 
 					object:setMask(nil)
 
@@ -111,7 +111,7 @@ local function DoWarp (warp, func)
 						handles[i] = fx.WarpIn(item, i == 1 and WarpIn_OC)
 					end
 
-					func("move_done_moving", warp, target)
+					func("move_done_moving", warp, target, ttype)
 
 					Sounds:PlaySound("warp")
 				end
@@ -130,7 +130,7 @@ local function DoWarp (warp, func)
 					MoveParams.time = quantize.ToBin(dx, dy, 200, 5) * 100
 					MoveParams.onComplete = MoveParams_OC
 
-					func("move_began_moving", warp, target)
+					func("move_began_moving", warp, target, ttype)
 
 					Sounds:PlaySound("whiz")
 
@@ -160,8 +160,8 @@ end
 local WarpEvent = {}
 
 -- DoWarp-compatible event dispatch
-local function DispatchWarpEvent (name, from, to)
-	WarpEvent.name, WarpEvent.from, WarpEvent.to = name, from, to
+local function DispatchWarpEvent (name, from, to, is_warp)
+	WarpEvent.name, WarpEvent.from, WarpEvent.to, WarpEvent.is_warp = name, from, to, is_warp
 
 	Runtime:dispatchEvent(WarpEvent)
 
@@ -226,9 +226,12 @@ end
 --
 -- This is a no-op if the warp is missing a target.
 -- @callable func As the warp progresses, this is called as
---   func(what, warp, target)
+--   func(what, warp, target, target_type)
 -- for the following values of _what_: **"move_prepare"** (if the cargo is empty, only this
 -- is performed), **"move\_began\_moving"**, **"move\_done\_moving"**, **"move_done"**.
+--
+-- The target's type will be either **"position"** or **"warp"**. At a minimum, any _target_
+-- will have local **x** and **y** coordinates.
 --
 -- If absent, this is a no-op.
 -- @treturn boolean The warp had cargo and a target?
@@ -359,10 +362,23 @@ local function OnEditorEvent (what, arg1, arg2, arg3)
 
 				-- To --
 				to = function(warp, other, wsub, osub)
+					-- Is another warp being validly targeted?
 					local passed, why, is_cont = Pair(warp, other, wsub, osub, "from")
 
+					-- Otherwise, it may still be possible to target a position. If that is not what the
+					-- target is, then retain the previous errors; otherwise, provisionally succeed.
+					if not passed and links.GetTag(other) == "position" then
+						passed, why, is_cont = true
+					end
+
+					-- Finally, see if the link is even able to bind a target.
+					-- TODO: There are fairly obvious applications of multiple targets... however, it implies
+					-- some more editor support, e.g. load-time verification (ensuring constraints, say, after
+					-- manual editing) and perhaps "graying out" certain widgets (could use some of the dialog
+					-- functionality?)--e.g. an "Allow Multiple Targets" one--when not valid (this would then
+					-- require some detection for same).
 					if passed and links.HasLinks(warp, "to") then
-						passed, why, is_cont = false, "Already targeting a warp"
+						passed, why, is_cont = false, "Already has a target"
 					end
 
 					return passed, why, is_cont

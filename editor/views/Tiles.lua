@@ -33,6 +33,7 @@ local grid = require("editor.Grid")
 local grid1D = require("ui.Grid1D")
 local grid_views = require("editor.GridViews")
 local sheet = require("ui.Sheet")
+local str_utils = require("utils.String")
 
 -- Exports --
 local M = {}
@@ -60,7 +61,7 @@ local TileNames = {	"_H", "_V", "UL", "UR", "LL", "LR", "TT", "LT", "RT", "BT", 
 
 --
 local function Cell (event)
-	local key, is_dirty = common.ToKey(event.col, event.row)
+	local key, is_dirty = str_utils.PairToKey(event.col, event.row)
 	local tile = Tiles[key]
 
 	--
@@ -96,7 +97,7 @@ end
 
 --
 local function ShowHide (event)
-	local tile = Tiles[common.ToKey(event.col, event.row)]
+	local tile = Tiles[str_utils.PairToKey(event.col, event.row)]
 
 	if tile then
 		tile.isVisible = event.show
@@ -188,7 +189,7 @@ for k, v in pairs{
 		level.tiles.version = nil
 
 		for k, v in pairs(level.tiles) do
-			local col, row = common.FromKey(k)
+			local col, row = str_utils.KeyToPair(k)
 
 			tiles[(row - 1) * nrows + col] = TileNames[v]
 		end
@@ -209,7 +210,7 @@ for k, v in pairs{
 		for k, v in pairs(level.tiles) do
 			CurrentTile:SetCurrent(v)
 
-			Grid:TouchCell(common.FromKey(k))
+			Grid:TouchCell(str_utils.KeyToPair(k))
 		end
 
 		CurrentTile:SetCurrent(1)

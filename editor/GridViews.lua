@@ -48,6 +48,7 @@ local grid = require("editor.Grid")
 local grid1D = require("ui.Grid1D")
 local links = require("editor.Links")
 local sheet = require("ui.Sheet")
+local str_utils = require("utils.String")
 
 -- Corona globals --
 local display = display
@@ -105,7 +106,7 @@ function M.EditErase (dialog_wrapper, types)
 
 	--
 	local function Cell (event)
-		local key, which = common.ToKey(event.col, event.row), current:GetCurrent()
+		local key, which = str_utils.PairToKey(event.col, event.row), current:GetCurrent()
 		local cur, tile = values[key], tiles[key]
 		local canvas, cw, ch = event.target:GetCanvas(), event.target:GetCellDims()
 
@@ -157,7 +158,7 @@ function M.EditErase (dialog_wrapper, types)
 
 	--
 	local function ShowHide (event)
-		local key = common.ToKey(event.col, event.row)
+		local key = str_utils.PairToKey(event.col, event.row)
 
 		if values[key] then
 			tiles[key].isVisible = event.show

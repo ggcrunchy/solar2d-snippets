@@ -32,6 +32,7 @@ local dialog = require("editor.Dialog")
 local dots = require("game.Dots")
 local events = require("editor.Events")
 local grid_views = require("editor.GridViews")
+local str_utils = require("utils.String")
 
 -- Exports --
 local M = {}
@@ -80,7 +81,7 @@ for k, v in pairs{
 		local builds
 
 		for k, dot in pairs(level.dots.entries) do
-			dot.col, dot.row = common.FromKey(k)
+			dot.col, dot.row = str_utils.KeyToPair(k)
 
 			builds = events.BuildEntry(level, dots, dot, builds)
 		end

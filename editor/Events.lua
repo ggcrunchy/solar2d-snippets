@@ -177,7 +177,7 @@ function M.LoadGroupOfValues_Grid (level, what, mod, grid_view)
 	for k, entry in pairs(level[what].entries) do
 		_SetCurrentIndex_(current, types, entry.type)
 
-		cells:TouchCell(common.FromKey(k))
+		cells:TouchCell(str_utils.KeyToPair(k))
 
 		_LoadValuesFromEntry_(level, mod, values[k], entry)
 	end

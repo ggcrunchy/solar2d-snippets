@@ -38,6 +38,7 @@ local grid1D = require("ui.Grid1D")
 local grid_views = require("editor.GridViews")
 local links = require("editor.Links")
 local sheet = require("ui.Sheet")
+local str_utils = require("utils.String")
 local touch = require("ui.Touch")
 
 -- Corona globals --
@@ -97,8 +98,8 @@ end
 
 --
 local function GetCorners (block)
-	local ul = Tiles[common.ToKey(block.col1, block.row1)].image
-	local lr = Tiles[common.ToKey(block.col2, block.row2)].image
+	local ul = Tiles[str_utils.PairToKey(block.col1, block.row1)].image
+	local lr = Tiles[str_utils.PairToKey(block.col2, block.row2)].image
 
 	return ul, lr
 end
@@ -164,7 +165,7 @@ end
 local function WipeBlock (block)
 	for row = block.row1, block.row2 do
 		for col = block.col1, block.col2 do
-			local key = common.ToKey(col, row)
+			local key = str_utils.PairToKey(col, row)
 			local tile = Tiles[key]
 
 			if tile then
@@ -280,7 +281,7 @@ local Cell
 
 --
 local function ShowHide (event)
-	local tile = Tiles[common.ToKey(event.col, event.row)]
+	local tile = Tiles[str_utils.PairToKey(event.col, event.row)]
 
 	if tile then
 		tile.image.isVisible = event.show and Option ~= "Stretch"
@@ -414,7 +415,7 @@ local function AddRep (block, type)
 	local tag = Dialog("get_tag", type)
 
 	if tag then
-		local tile = Tiles[common.ToKey(block.col1, block.row1)].image
+		local tile = Tiles[str_utils.PairToKey(block.col1, block.row1)].image
 		local rep = display.newRect(tile.parent, 0, 0, 50, 50)--, 15) -- <- should be rounded?
 
 		FitTo(rep, tile)
@@ -429,7 +430,7 @@ end
 --
 local function CheckCol (col, rfrom, rto)
 	for row = rfrom, rto do
-		local tile = Tiles[common.ToKey(col, row)]
+		local tile = Tiles[str_utils.PairToKey(col, row)]
 
 		if tile and tile.id ~= ID then
 			return
@@ -442,7 +443,7 @@ end
 --
 local function CheckRow (row, cfrom, cto)
 	for col = cfrom, cto do
-		local tile = Tiles[common.ToKey(col, row)]
+		local tile = Tiles[str_utils.PairToKey(col, row)]
 
 		if tile and tile.id ~= ID then
 			return
@@ -466,7 +467,7 @@ end
 --
 function Cell (event)
 	local col, row = event.col, event.row
-	local key = common.ToKey(col, row)
+	local key = str_utils.PairToKey(col, row)
 	local tile = Tiles[key]
 
 	--

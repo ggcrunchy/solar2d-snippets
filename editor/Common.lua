@@ -26,7 +26,6 @@
 -- Standard library imports --
 local format = string.format
 local ipairs = ipairs
-local match = string.match
 local max = math.max
 local min = math.min
 local next = next
@@ -230,18 +229,6 @@ function M.FadeButton (name, check, alpha)
 		FadeParams.alpha = alpha
 
 		transition.to(Buttons[name], FadeParams)
-	end
-end
-
---- Utility.
--- @string key A backing store key, as encoded by @{ToKey} on a pair of grid coordinates.
--- @treturn uint The grid column...
--- @treturn uint ...and row.
-function M.FromKey (key)
-	local a, b = match(key, "(%d+)x(%d+)")
-
-	if a then
-		return tonumber(a), tonumber(b)
 	end
 end
 
@@ -477,15 +464,6 @@ function M.SpriteSetFromThumbs (prefix, types)
 	end
 
 	return sheet.NewSpriteSetFromImages(thumbs)
-end
-
---- Utility.
--- @uint col A grid column...
--- @uint row ...and row
--- @treturn string A key, used to add grid elements to a backing store table. The coordinates
--- may be read back out via @{FromKey}.
-function M.ToKey (col, row)
-	return format("%ix%i", col, row)
 end
 
 --- Clears the editor dirty state, if set, and updates dirty-related features.
