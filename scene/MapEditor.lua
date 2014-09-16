@@ -51,6 +51,7 @@ local common = require("editor.Common")
 local common_ui = require("editor.CommonUI")
 local events = require("editor.Events")
 local grid = require("editor.Grid")
+local help = require("editor.Help")
 local ops = require("editor.Ops")
 local persistence = require("game.Persistence")
 local scenes = require("utils.Scenes")
@@ -80,14 +81,16 @@ local Current
 
 -- View switching and related FSM logic
 local function SetCurrent (view)
-	if Current then
-		Current.Exit(Scene.view)
-	end
+	if Current ~= view then
+		if Current then
+			Current.Exit(Scene.view)
+		end
 
-	Current = view
+		Current = view
 
-	if Current then
-		Current.Enter(Scene.view)
+		if Current then
+			Current.Enter(Scene.view)
+		end
 	end
 end
 
@@ -339,17 +342,18 @@ function Scene:show (event)
 
 		-- Initialize systems.
 		common.Init(params.main[1], params.main[2])
+		help.Init()
 		grid.Init(self.view)
 		ops.Init(self.view)
 
 		--
-		common.AddHelp("Common", {
+		help.AddHelp("Common", {
 			Test = "Builds the level. If successful, launches the level in the game.",
 			Build = "Verifies the scene. If is passes, builds it in game-loadable form.",
 			Verify = "Checks the scene for errors that would prevent a build.",
 			Save = "Saves the current work-in-progress scene."
 		})
-		common.AddHelp("Common", sidebar)
+		help.AddHelp("Common", sidebar)
 
 		-- Install the views.
 		for _, view in pairs(EditorView) do
@@ -403,6 +407,7 @@ function Scene:hide (event)
 
 		ops.CleanUp()
 		grid.CleanUp()
+		help.CleanUp()
 		common.CleanUp()
 
 		Tabs:removeSelf()

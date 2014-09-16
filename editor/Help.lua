@@ -1,4 +1,4 @@
---- UI element layout mechanisms / factories.
+--- Help system components.
 
 --
 -- Permission is hereby granted, free of charge, to any person obtaining
@@ -24,50 +24,83 @@
 --
 
 -- Standard library imports --
-local select = select
+local pairs = pairs
+local tonumber = tonumber
+local type = type
 
 -- Modules --
-local args = require("iterator_ops.args")
-local buttons = require("ui.Button")
-
--- Corona globals --
-local display = display
-
--- Imports --
-local ArgsByN = args.ArgsByN
-local Button = buttons.Button
-local contentCenterX = display.contentCenterX
-local contentCenterY = display.contentCenterY
+local common = require("editor.Common")
 
 -- Exports --
 local M = {}
 
----
--- @pgroup group
--- @param skin
--- @number x
--- @number y
--- @number bw
--- @number bh
--- @number sep
--- @param ...
-function M.VBox (group, skin, x, y, bw, bh, sep, ...)
-	x = x or contentCenterX
+-- --
+local Help
 
-	if not y then
-		local n = select("#", ...) / 2
+--- DOCME
+function M.AddHelp (name, help)
+	local page = Help[name] or {}
 
-		y = contentCenterY - (bh + sep) * (n - 1) / 2
+	for k, v in pairs(help) do
+		local vtype, tk = type(v)
+
+		if vtype == "string" then
+			local colon = k:find(":")
+
+			if colon then
+				k, tk = k:sub(1, colon - 1), tonumber(k:sub(colon + 1))
+			end
+		end
+
+		local entry = page[k] or {}
+
+		if vtype == "string" then
+			if tk then
+				local tarr = entry.text or {}
+
+				tarr[tk], v = v, tarr
+			end
+
+			entry.text = v
+		else
+			entry.binding = v or nil
+		end
+
+		page[k] = entry
 	end
+	
+	Help[name] = page
+end
 
-	--
-	local h = 0
+-- --
+local Context
 
-	for _, func, text in ArgsByN(2, ...) do
-		Button(group, skin, x, y + h, bw, bh, func, text)
+--- DOCME
+function M.CleanUp ()
+	Help, Context = nil
+end
 
-		h = h + bh + sep
+--- DOCME
+function M.GetHelp (func, context)
+	for k, v in common.PairsIf(Help[context or Context]) do
+		local text = v.text
+
+		func(k, type(text) == "table" and common.CopyInto({}, text) or text, v.binding)
 	end
+end
+
+--- DOCME
+function M.Init ()
+	Help = {}
+end
+
+--- DOCME
+function M.SetContext (what)
+	local cur = Context
+
+	Context = what
+
+	return cur
 end
 
 -- Export the module.

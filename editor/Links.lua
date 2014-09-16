@@ -227,7 +227,7 @@ end
 -- @treturn boolean X If true, this is the only return value.
 -- @treturn ?string Reason link cannot be formed.
 -- @treturn ?boolean This is a contradiction or "strong" failure, i.e. the predicate will
--- *always* fail, given the inputs?
+-- **always** fail, given the inputs?
 function M.CanLink (object1, object2, sub1, sub2)
 	local p1, p2 = Proxy(object1), Proxy(object2)
 

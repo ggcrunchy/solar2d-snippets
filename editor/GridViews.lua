@@ -46,6 +46,7 @@ local common = require("editor.Common")
 local common_ui = require("editor.CommonUI")
 local grid = require("editor.Grid")
 local grid1D = require("ui.Grid1D")
+local help = require("editor.Help")
 local links = require("editor.Links")
 local sheet = require("ui.Sheet")
 local str_utils = require("utils.String")
@@ -252,7 +253,7 @@ function M.EditErase (dialog_wrapper, types)
 		common.ShowCurrent(current, false)
 
 		--
-		common.AddHelp(prefix, { current = current, tabs = tabs })
+		help.AddHelp(prefix, { current = current, tabs = tabs })
 	end
 
 	--- DOCME

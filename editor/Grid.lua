@@ -35,6 +35,7 @@ local pairs = pairs
 local common = require("editor.Common")
 local common_ui = require("editor.CommonUI")
 local grid2D = require("ui.Grid2D")
+local help = require("editor.Help")
 local str_utils = require("utils.String")
 
 -- Corona globals --
@@ -92,7 +93,7 @@ end
 --- DOCME
 function M.GetHelp (func)
 	if Grid.group.isVisible then
-		common.GetHelp(func, "_Grid_")
+		help.GetHelp(func, "_Grid_")
 	end
 end
 
@@ -322,13 +323,13 @@ function M.Init (view)
 	UpdateCoord(Col, Row, -1)
 
 	--
-	common.AddHelp("_Grid_", {
+	help.AddHelp("_Grid_", {
 		grid = "A marked cell on the grid indicates where the current selection will be appear.",
 		offset = "Offset of upper-left cell in grid, from (0, 0).",
 		scroll = "Scrolls the grid, i.e. updates the offset."
 	})
 
-	common.AddHelp("_Grid_", { grid = grid_proxy, offset = Offset, scroll = scroll_proxy })
+	help.AddHelp("_Grid_", { grid = grid_proxy, offset = Offset, scroll = scroll_proxy })
 
 	-- Start out in the hidden state.
 	M.Show(false)

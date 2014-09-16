@@ -27,9 +27,9 @@
 local pairs = pairs
 
 -- Modules --
-local common = require("editor.Common")
 local common_ui = require("editor.CommonUI")
 local grid = require("editor.Grid")
+local help = require("editor.Help")
 
 -- Exports --
 local M = {}
@@ -49,14 +49,14 @@ function M.Load (view)
 	-- Warning level?
 	-- Replicate save to clipboard, console, log file, nothing?
 	-- Other?
-	-- common.AddHelp("settings", ...)
+	-- help.AddHelp("settings", ...)
 end
 
 --- DOCMAYBE
 function M.Enter ()
 	ShowLayers.isVisible = true
 
-	common.SetHelpContext("settings")
+	help.SetContext("settings")
 end
 
 --- DOCMAYBE

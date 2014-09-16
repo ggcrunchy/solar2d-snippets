@@ -32,6 +32,7 @@ local common = require("editor.Common")
 local grid = require("editor.Grid")
 local grid1D = require("ui.Grid1D")
 local grid_views = require("editor.GridViews")
+local help = require("editor.Help")
 local sheet = require("ui.Sheet")
 local str_utils = require("utils.String")
 
@@ -144,8 +145,8 @@ function M.Load (view)
 	CurrentTile.isVisible = false
 
 	--
-	common.AddHelp("Tiles", { current = CurrentTile, tabs = Tabs })
-	common.AddHelp("Tiles", {
+	help.AddHelp("Tiles", { current = CurrentTile, tabs = Tabs })
+	help.AddHelp("Tiles", {
 		current = "The current tile. When painting, cells are populated with this tile.",
 		["tabs:1"] = "'Paint Mode' is used to add new tiles to the level, by clicking a grid cell or dragging across the grid.",
 		["tabs:2"] = "'Erase Mode' is used to remove tiles from the level, by clicking an occupied grid cell or dragging across the grid."
@@ -159,14 +160,14 @@ function M.Enter ()
 	common.ShowCurrent(CurrentTile, not Erase)
 
 	Tabs.isVisible = true
-
-	common.SetHelpContext("Tiles")
+print("ENTER TILES")
+	help.SetContext("Tiles")
 end
 
 --- DOCMAYBE
 function M.Exit ()
 	Tabs.isVisible = false
-
+print("EXIT TILES")
 	grid.SetChoice(Erase and "Erase" or "Paint")
 	common.ShowCurrent(CurrentTile, false)
 	grid.Show(false)

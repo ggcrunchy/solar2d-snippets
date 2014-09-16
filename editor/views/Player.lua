@@ -31,6 +31,7 @@ local min = math.min
 local common = require("editor.Common")
 local grid = require("editor.Grid")
 local grid_views = require("editor.GridViews")
+local help = require("editor.Help")
 
 -- Corona globals --
 local display = display
@@ -108,8 +109,8 @@ function M.Load (view)
 	grid.Show(false)
 
 	--
-	common.AddHelp("Player", { tabs = Tabs })
-	common.AddHelp("Player", {
+	help.AddHelp("Player", { tabs = Tabs })
+	help.AddHelp("Player", {
 		["tabs:1"] = "'Start' is used to choose where the player will first appear in the level.",
 --		["tabs:2"] = "other stuff!"
 	})
@@ -117,23 +118,23 @@ end
 
 --- DOCMAYBE
 function M.Enter ()
-	if Option == "Start" then
+--	if Option == "Start" then
 		grid.Show(Grid)
-	end
-
+--	end
+print("ENTER PLAYER")
 	-- Zoom factors?
 	-- Triggers (can be affected by enemies?)
 	-- "positions"
 
 	Tabs.isVisible = true
 
-	common.SetHelpContext("Player")
+	help.SetContext("Player")
 end
 
 --- DOCMAYBE
 function M.Exit ()
 	Tabs.isVisible = false
-
+print("EXIT PLAYER")
 	grid.Show(false)
 end
 
@@ -143,7 +144,7 @@ function M.Unload ()
 
 	Grid, Option, StartPos, Tabs = nil
 end
-
+print("M!", M)
 -- Listen to events.
 for k, v in pairs{
 	-- Load Level WIP --

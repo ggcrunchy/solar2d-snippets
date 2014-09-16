@@ -30,7 +30,6 @@ local max = math.max
 local min = math.min
 local next = next
 local pairs = pairs
-local tonumber = tonumber
 local type = type
 
 -- Modules --
@@ -56,44 +55,6 @@ function M.AddButton (name, button)
 	Buttons = Buttons or {}
 
 	Buttons[name] = button
-end
-
--- --
-local Help
-
---- DOCME
-function M.AddHelp (name, help)
-	local page = Help[name] or {}
-
-	for k, v in pairs(help) do
-		local vtype, tk = type(v)
-
-		if vtype == "string" then
-			local colon = k:find(":")
-
-			if colon then
-				k, tk = k:sub(1, colon - 1), tonumber(k:sub(colon + 1))
-			end
-		end
-
-		local entry = page[k] or {}
-
-		if vtype == "string" then
-			if tk then
-				local tarr = entry.text or {}
-
-				tarr[tk], v = v, tarr
-			end
-
-			entry.text = v
-		else
-			entry.binding = v or nil
-		end
-
-		page[k] = entry
-	end
-	
-	Help[name] = page
 end
 
 -- Full-screen dummy widgets used to implement modal behavior --
@@ -182,7 +143,7 @@ function M.CleanUp ()
 		Runtime:removeEventListener("enterFrame", WatchNets)
 	end
 
-	Buttons, Help, Nets, RepToValues, ValuesToRep = nil
+	Buttons, Nets, RepToValues, ValuesToRep = nil
 end
 
 --- Copies into one table from another.
@@ -240,18 +201,6 @@ local NCols, NRows
 -- @treturn uint ...and number of rows.
 function M.GetDims ()
 	return NCols, NRows
-end
-
--- --
-local HelpContext
-
---- DOCME
-function M.GetHelp (func, context)
-	for k, v in M.PairsIf(Help[context or HelpContext]) do
-		local text = v.text
-
-		func(k, type(text) == "table" and M.CopyInto({}, text) or text, v.binding)
-	end
 end
 
 --- DOCME
@@ -313,7 +262,7 @@ function M.Init (ncols, nrows)
 		Buttons.Verify.alpha = .4
 	end
 
-	Help, RepToValues, ValuesToRep, IsDirty, IsVerified = {}, {}, {}, false, false
+	RepToValues, ValuesToRep, IsDirty, IsVerified = {}, {}, false, false
 end
 
 --
@@ -425,15 +374,6 @@ function M.ProxyRect (group, minx, miny, maxx, maxy)
 	rect.m_is_proxy = true
 
 	return rect
-end
-
---- DOCME
-function M.SetHelpContext (what)
-	local cur = HelpContext
-
-	HelpContext = what
-
-	return cur
 end
 
 --- Shows or hides the current selection widget. As a convenience, the last position of a

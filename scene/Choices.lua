@@ -29,9 +29,9 @@
 local exit = os.exit
 
 -- Modules --
+local args = require("iterator_ops.args")
 local button = require("ui.Button")
 local file_utils = require("utils.File")
-local layout = require("ui.Layout")
 local scenes = require("utils.Scenes")
 local table_view_patterns = require("ui.patterns.table_view")
 
@@ -182,7 +182,9 @@ function Scene:create ()
 
 	SetCurrent(Current, 1)
 
-	local box = layout.VBox(self.view, nil, false, display.contentCenterY, 400, 50, 25,
+	local bh = 50
+
+	for i, func, text in args.ArgsByN(2,
 		function()
 			local name = Names[Current.m_id]
 
@@ -205,7 +207,9 @@ function Scene:create ()
 				exit()
 			end
 		end, "Exit"
-	)
+	) do
+		button.Button(self.view, nil, display.contentCenterX, display.contentCenterY + (i - 1) * (bh + 25), 400, bh, func, text)
+	end
 
 	local marquee = display.newRoundedRect(self.view, 0, 0, display.contentWidth - 4, 50, 5)
 

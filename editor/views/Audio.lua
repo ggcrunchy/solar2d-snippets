@@ -35,9 +35,9 @@
 -- Modules --
 local audio_patterns = require("ui.patterns.audio")
 local button = require("ui.Button")
-local common = require("editor.Common")
 local common_ui = require("editor.CommonUI")
 local file_utils = require("utils.File")
+local help = require("editor.Help")
 local object_helper = require("utils.ObjectHelper")
 
 -- Corona globals --
@@ -177,8 +177,8 @@ function M.Load (view)
 	view:insert(Group)
 
 	--
-	common.AddHelp("Ambience", widgets)
-	common.AddHelp("Ambience", {
+	help.AddHelp("Ambience", widgets)
+	help.AddHelp("Ambience", {
 		current = "What is the 'current' selection?",
 		list = "A list of available songs.",
 		play_or_stop = "If music is playing, stops it. Otherwise, plays the 'current' selection, if available.",
@@ -199,7 +199,7 @@ function M.Enter (view)
 
 	Group.isVisible = true
 
-	common.SetHelpContext("Ambience")
+	help.SetContext("Ambience")
 end
 
 --- DOCMAYBE

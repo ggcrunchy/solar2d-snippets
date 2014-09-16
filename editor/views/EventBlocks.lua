@@ -36,6 +36,7 @@ local events = require("editor.Events")
 local grid = require("editor.Grid")
 local grid1D = require("ui.Grid1D")
 local grid_views = require("editor.GridViews")
+local help = require("editor.Help")
 local links = require("editor.Links")
 local sheet = require("ui.Sheet")
 local str_utils = require("utils.String")
@@ -357,8 +358,8 @@ function M.Load (view)
 	common.ShowCurrent(CurrentEvent, false)
 
 	--
-	common.AddHelp("EventBlock", { current = CurrentEvent, tabs = Tabs })
-	common.AddHelp("EventBlock", {
+	help.AddHelp("EventBlock", { current = CurrentEvent, tabs = Tabs })
+	help.AddHelp("EventBlock", {
 		current = "The current event block type. When painting, cells are populated with this event block.",
 		["tabs:1"] = "'Paint Mode' is used to add new event blocks to the level, by clicking an unoccupied grid cell or dragging across the grid.",
 		["tabs:2"] = "'Edit Mode' lets the user edit an event block's properties. Clicking any occupied grid cell will call up a dialog.",
@@ -538,7 +539,7 @@ function M.Enter ()
 
 	Tabs.isVisible = true
 
-	common.SetHelpContext("EventBlock")
+	help.SetContext("EventBlock")
 end
 
 --- DOCMAYBE

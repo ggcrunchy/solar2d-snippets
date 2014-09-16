@@ -33,6 +33,7 @@ local common_ui = require("editor.CommonUI")
 local config = require("config.GlobalEvents")
 local events = require("editor.Events")
 local global_events = require("game.GlobalEvents")
+local help = require("editor.Help")
 local links = require("editor.Links")
 
 -- Corona globals --
@@ -126,8 +127,8 @@ function M.Load (view)
 	end
 
 	--
-	common.AddHelp("GlobalEvents", { events = Events })
-	common.AddHelp("GlobalEvents", {
+	help.AddHelp("GlobalEvents", { events = Events })
+	help.AddHelp("GlobalEvents", {
 		events = "Click a link to open the linking dialog. Drag the background up and down to see available choices."
 	})
 
@@ -139,7 +140,7 @@ end
 function M.Enter ()
 	ShowEvents(true)
 
-	common.SetHelpContext("GlobalEvents")
+	help.SetContext("GlobalEvents")
 end
 
 --- DOCMAYBE

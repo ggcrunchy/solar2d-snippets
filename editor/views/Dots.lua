@@ -27,11 +27,11 @@
 local pairs = pairs
 
 -- Modules --
-local common = require("editor.Common")
 local dialog = require("editor.Dialog")
 local dots = require("game.Dots")
 local events = require("editor.Events")
 local grid_views = require("editor.GridViews")
+local help = require("editor.Help")
 local str_utils = require("utils.String")
 
 -- Exports --
@@ -48,7 +48,7 @@ local GridView = grid_views.EditErase(Dialog, dots.GetTypes())
 function M.Load (view)
 	GridView:Load(view, "Dot", "Current dot")
 
-	common.AddHelp("Dot", {
+	help.AddHelp("Dot", {
 		current = "The current dot type. When painting, cells are populated with this dot.",
 		["tabs:1"] = "'Paint Mode' is used to add new dots to the level, by clicking a grid cell or dragging across the grid.",
 		["tabs:2"] = "'Edit Mode' lets the user edit a dot's properties. Clicking an occupied grid cell will call up a dialog.",
@@ -60,12 +60,13 @@ end
 -- @pgroup view
 function M.Enter (view)
 	GridView:Enter(view)
-
-	common.SetHelpContext("Dot")
+print("ENTER DOTS")
+	help.SetContext("Dot")
 end
 
 --- DOCME
 function M.Exit ()
+print("EXIT DOTS")
 	GridView:Exit()
 end
 

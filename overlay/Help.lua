@@ -30,6 +30,7 @@ local type = type
 local button = require("ui.Button")
 local common = require("editor.Common")
 local grid = require("editor.Grid")
+local help = require("editor.Help")
 local touch = require("ui.Touch")
 
 -- Corona globals --
@@ -161,9 +162,9 @@ function Overlay:show (event)
 			end
 		end
 
-		common.GetHelp(on_help)
+		help.GetHelp(on_help)
 		grid.GetHelp(on_help)
-		common.GetHelp(on_help, "Common")
+		help.GetHelp(on_help, "Common")
 	end
 end
 
