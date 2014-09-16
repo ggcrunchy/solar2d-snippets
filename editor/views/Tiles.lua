@@ -160,14 +160,14 @@ function M.Enter ()
 	common.ShowCurrent(CurrentTile, not Erase)
 
 	Tabs.isVisible = true
-print("ENTER TILES")
+
 	help.SetContext("Tiles")
 end
 
 --- DOCMAYBE
 function M.Exit ()
 	Tabs.isVisible = false
-print("EXIT TILES")
+
 	grid.SetChoice(Erase and "Erase" or "Paint")
 	common.ShowCurrent(CurrentTile, false)
 	grid.Show(false)

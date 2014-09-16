@@ -60,13 +60,12 @@ end
 -- @pgroup view
 function M.Enter (view)
 	GridView:Enter(view)
-print("ENTER DOTS")
+
 	help.SetContext("Dot")
 end
 
 --- DOCME
 function M.Exit ()
-print("EXIT DOTS")
 	GridView:Exit()
 end
 

@@ -118,10 +118,10 @@ end
 
 --- DOCMAYBE
 function M.Enter ()
---	if Option == "Start" then
+	if Option == "Start" then
 		grid.Show(Grid)
---	end
-print("ENTER PLAYER")
+	end
+
 	-- Zoom factors?
 	-- Triggers (can be affected by enemies?)
 	-- "positions"
@@ -134,7 +134,7 @@ end
 --- DOCMAYBE
 function M.Exit ()
 	Tabs.isVisible = false
-print("EXIT PLAYER")
+
 	grid.Show(false)
 end
 
@@ -144,7 +144,7 @@ function M.Unload ()
 
 	Grid, Option, StartPos, Tabs = nil
 end
-print("M!", M)
+
 -- Listen to events.
 for k, v in pairs{
 	-- Load Level WIP --
