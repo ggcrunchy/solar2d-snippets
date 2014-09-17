@@ -27,6 +27,7 @@
 local assert = assert
 local ipairs = ipairs
 local min = math.min
+local next = next
 local pairs = pairs
 local type = type
 local yield = coroutine.yield
@@ -56,12 +57,30 @@ local Proxies = {}
 -- --
 local function NoOp () end
 
+-- --
+local KeyType = setmetatable({}, { __mode = "k" })
+
 --
-local function Pairs (t)
-	if t then
-		return pairs(t)
-	else
+local function TypePairs (t, k)
+	local ktype = KeyType[t]
+
+	repeat
+		k = next(t, k)
+	until k == nil or type(k) == ktype
+
+	return k, t[k]
+end
+
+--- DOCME
+local function Pairs (t, ktype)
+	if not t then
 		return NoOp
+	elseif ktype then
+		KeyType[t] = ktype
+
+		return TypePairs, t
+	else
+		return pairs(t)
 	end
 end
 
@@ -462,6 +481,12 @@ M.Links = coro.Iterator(function(object, sub)
 	local proxy = Proxy(object)
 
 	for _, v in LinkKeys(proxy) do
+if not Links[v] then
+	print("????", v)
+	vdump(Links)
+	vdump(proxy)
+	vdump(object)
+end
 		for _, link in pairs(Links[v]) do
 			if Match1(link, proxy, sub) or Match2(link, proxy, sub) then
 				yield(link)

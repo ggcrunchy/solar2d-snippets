@@ -31,7 +31,9 @@ local common = require("editor.Common")
 local grid = require("editor.Grid")
 local grid_views = require("editor.GridViews")
 local help = require("editor.Help")
+local links = require("editor.Links")
 local str_utils = require("utils.String")
+local tags = require("editor.Tags")
 
 -- Corona globals --
 local display = display
@@ -50,7 +52,7 @@ local Tabs
 
 -- --
 local Positions
-
+local WWW
 --
 local function Cell (event)
 	local key, is_dirty = str_utils.PairToKey(event.col, event.row)
@@ -59,11 +61,13 @@ local function Cell (event)
 	--
 	if Erase then
 		if pos then
+			links.RemoveTag(pos)
+
 			pos:removeSelf()
 
 			is_dirty = true
 		end
-
+WWW[key]=nil
 		Positions[key] = nil
 
 	--
@@ -74,6 +78,9 @@ local function Cell (event)
 		pos:setStrokeColor(1, 0, 0)
 
 		pos.strokeWidth = 3
+WWW[key]={name=key}
+common.BindRepAndValues(rep, WWW[key])
+		links.SetTag(pos, "position")
 
 		is_dirty, Positions[key] = true, pos
 	end
@@ -97,7 +104,7 @@ end
 -- @pgroup view X
 function M.Load (view)
 	Positions, Grid = {}, grid.NewGrid()
-
+WWW={}
 	Grid:addEventListener("cell", Cell)
 	Grid:addEventListener("show", ShowHide)
 
@@ -121,6 +128,11 @@ function M.Load (view)
 		["tabs:1"] = "'Paint Mode' is used to add new positions to the level, by clicking a grid cell or dragging across the grid.",
 		["tabs:2"] = "'Erase Mode' is used to remove positions from the level, by clicking an occupied grid cell or dragging across the grid."
 	})
+
+	--
+	if not tags.Exists("position") then
+		tags.New("position", { sub_links = { link = true } } )
+	end
 end
 
 ---
@@ -147,19 +159,32 @@ function M.Unload ()
 	Tabs:removeSelf()
 
 	Erase, Grid, Positions, Tabs, TryOption = nil
+	WWW=nil
 end
 
 -- Listen to events.
 for k, v in pairs{
 	-- Build Level --
 	build_level = function(level)
---[=[
 		level.positions.version = nil
 
 		-- ??
 
+--[=[
 -- Needs "BuildEntry" stuff?
 		level.positions = { version = 1, values = ? }
+]=]
+
+--[=[
+local builds
+
+		for k, dot in pairs(level.dots.entries) do
+			dot.col, dot.row = str_utils.KeyToPair(k)
+
+			builds = events.BuildEntry(level, dots, dot, builds)
+		end
+
+		level.dots = builds
 ]=]
 	end,
 
@@ -168,11 +193,11 @@ for k, v in pairs{
 		grid.Show(Grid)
 
 		level.positions.version = nil
---[=[
+
 		for _, k in ipairs(level.positions) do
 			Grid:TouchCell(str_utils.KeyToPair(k))
 		end
-]=]
+
 		grid.ShowOrHide(Positions)
 		grid.Show(false)
 	end,

@@ -28,9 +28,7 @@ local format = string.format
 local ipairs = ipairs
 local max = math.max
 local min = math.min
-local next = next
 local pairs = pairs
-local type = type
 
 -- Modules --
 local require_ex = require("tektite.require_ex")
@@ -321,30 +319,12 @@ function M.NewRoundedRect (group, x, y, w, h, corner)
 	return rrect
 end
 
--- --
-local KeyType = setmetatable({}, { __mode = "k" })
-
---
-local function TypePairs (t, k)
-	local ktype = KeyType[t]
-
-	repeat
-		k = next(t, k)
-	until k == nil or type(k) == ktype
-
-	return k, t[k]
-end
-
 --- DOCME
-function M.PairsIf (t, ktype)
-	if not t then
-		return NoOp
-	elseif ktype then
-		KeyType[t] = ktype
-
-		return TypePairs, t
-	else
+function M.PairsIf (t)
+	if t then
 		return pairs(t)
+	else
+		return NoOp
 	end
 end
 
