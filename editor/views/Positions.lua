@@ -45,18 +45,18 @@ local M = {}
 local Grid
 
 -- --
+local PosImages, PosValues
+
+-- --
 local Erase, TryOption
 
 -- --
 local Tabs
 
--- --
-local Positions
-local WWW
 --
 local function Cell (event)
 	local key, is_dirty = str_utils.PairToKey(event.col, event.row)
-	local pos = Positions[key]
+	local pos = PosImages[key]
 
 	--
 	if Erase then
@@ -65,24 +65,22 @@ local function Cell (event)
 
 			pos:removeSelf()
 
-			is_dirty = true
+			is_dirty, PosImages[key], PosValues[key] = true
 		end
-WWW[key]=nil
-		Positions[key] = nil
 
 	--
 	elseif not pos then
 		local cw, ch = event.target:GetCellDims()
-		local pos = display.newCircle(event.target:GetCanvas(), event.x, event.y, min(cw, ch) / 2)
+		local pos, values = display.newCircle(event.target:GetCanvas(), event.x, event.y, min(cw, ch) / 2), { name = key }
 
 		pos:setStrokeColor(1, 0, 0)
 
 		pos.strokeWidth = 3
-WWW[key]={name=key}
-common.BindRepAndValues(rep, WWW[key])
+
+		common.BindRepAndValues(pos, values)
 		links.SetTag(pos, "position")
 
-		is_dirty, Positions[key] = true, pos
+		is_dirty, PosImages[key], PosValues[key] = true, pos, values
 	end
 
 	--
@@ -93,7 +91,7 @@ end
 
 --
 local function ShowHide (event)
-	local pos = Positions[str_utils.PairToKey(event.col, event.row)]
+	local pos = PosImages[str_utils.PairToKey(event.col, event.row)]
 
 	if pos then
 		pos.isVisible = event.show
@@ -103,8 +101,8 @@ end
 ---
 -- @pgroup view X
 function M.Load (view)
-	Positions, Grid = {}, grid.NewGrid()
-WWW={}
+	PosImages, PosValues, Grid = {}, {}, grid.NewGrid()
+
 	Grid:addEventListener("cell", Cell)
 	Grid:addEventListener("show", ShowHide)
 
@@ -158,8 +156,7 @@ end
 function M.Unload ()
 	Tabs:removeSelf()
 
-	Erase, Grid, Positions, Tabs, TryOption = nil
-	WWW=nil
+	Erase, Grid, PosImages, PosValues, Tabs, TryOption = nil
 end
 
 -- Listen to events.
@@ -198,7 +195,7 @@ local builds
 			Grid:TouchCell(str_utils.KeyToPair(k))
 		end
 
-		grid.ShowOrHide(Positions)
+		grid.ShowOrHide(PosValues)
 		grid.Show(false)
 	end,
 

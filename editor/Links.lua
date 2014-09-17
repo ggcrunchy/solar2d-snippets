@@ -57,36 +57,22 @@ local Proxies = {}
 -- --
 local function NoOp () end
 
--- --
-local KeyType = setmetatable({}, { __mode = "k" })
-
 --
-local function TypePairs (t, k)
-	local ktype = KeyType[t]
-
+local function NumberPairs (t, k)
 	repeat
 		k = next(t, k)
-	until k == nil or type(k) == ktype
+	until k == nil or type(k) == "number"
 
 	return k, t[k]
 end
 
---- DOCME
-local function Pairs (t, ktype)
-	if not t then
-		return NoOp
-	elseif ktype then
-		KeyType[t] = ktype
-
-		return TypePairs, t
-	else
-		return pairs(t)
-	end
-end
-
 -- Helper to visit a proxy's link keys
 local function LinkKeys (proxy)
-	return Pairs(proxy, "number")
+	if proxy then
+		return NumberPairs, proxy
+	else
+		return NoOp
+	end
 end
 
 -- Lists of proxies assigned a given link tag --
@@ -205,19 +191,15 @@ local function GetKey (p1, p2)
 end
 
 --
-local function Ipairs (t)
+local function LinksIter (p1, p2)
+	local key = GetKey(p1, p2)
+	local t = key and Links[key]
+
 	if t then
 		return ipairs(t)
 	else
 		return NoOp
 	end
-end
-
---
-local function LinksIter (p1, p2)
-	local key = GetKey(p1, p2)
-
-	return Ipairs(key and Links[key])
 end
 
 --
@@ -481,12 +463,6 @@ M.Links = coro.Iterator(function(object, sub)
 	local proxy = Proxy(object)
 
 	for _, v in LinkKeys(proxy) do
-if not Links[v] then
-	print("????", v)
-	vdump(Links)
-	vdump(proxy)
-	vdump(object)
-end
 		for _, link in pairs(Links[v]) do
 			if Match1(link, proxy, sub) or Match2(link, proxy, sub) then
 				yield(link)
@@ -554,11 +530,13 @@ end
 M.Tagged = coro.Iterator(function(name)
 	local list = TaggedLists[name]
 
-	for _, proxy in Pairs(list) do
-		local object = Object(proxy)
+	if list then
+		for _, proxy in pairs(list) do
+			local object = Object(proxy)
 
-		if object then
-			yield(object)
+			if object then
+				yield(object)
+			end
 		end
 	end
 end)

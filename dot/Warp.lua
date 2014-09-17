@@ -31,6 +31,7 @@ local sin = math.sin
 -- Modules --
 local require_ex = require("tektite.require_ex")
 local audio = require("utils.Audio")
+local bind_utils = require("utils.Bind")
 local collision = require("game.Collision")
 local common = require_ex.Lazy("editor.Common")
 local frames = require("utils.Frames")
@@ -306,9 +307,13 @@ for k, v in pairs{
 end
 
 --
-local function LinkWarp (warp1, warp2, sub1, _)
-	if sub1 == "to" or (sub1 == "from" and not warp1.to) then
-		warp1.to = warp2.uid
+local function LinkWarp (warp, other, sub, other_sub)
+	if sub == "to" or (sub == "from" and not warp.to) then
+		if sub == "to" and other.type ~= "warp" then
+			bind_utils.AddId(warp, "to", other.uid, other_sub)
+		else
+			warp.to = other.uid
+		end
 	end
 end
 
@@ -331,7 +336,7 @@ local function OnEditorEvent (what, arg1, arg2, arg3)
 	-- arg2: Representative object
 	elseif what == "enum_props" then
 		arg1:AddLink{ text = "Link from source warp", rep = arg2, sub = "from", tags = "warp" }
-		arg1:AddLink{ text = "Link to target warp", rep = arg2, sub = "to", tags = "warp" }
+		arg1:AddLink{ text = "Link to target (warp or position)", rep = arg2, sub = "to", tags = { "warp", "position" } }
 		arg1:AddCheckbox{ text = "Two-way link, if one is blank?", value_name = "reciprocal_link" }
 		-- Polarity? Can be rotated?
 
@@ -432,9 +437,14 @@ return function (group, info)
 
 	Sounds:Load()
 
-	-- Add the warp to the list so it can be targeted.
-	warp.m_to = info.to
+	--
+	if bind_utils.IsCompositeId(info.to) then
+		-- Subscribe to position event?
+	else
+		warp.m_to = info.to
+	end
 
+	-- Add the warp to the list so it can be targeted.
 	WarpList[info.uid] = warp
 
 	return warp

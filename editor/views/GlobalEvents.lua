@@ -92,7 +92,6 @@ function M.Load (view)
 
 	if tag then
 		common.BindRepAndValues(rep, Global)
-
 		links.SetTag(rep, tag)
 	end
 

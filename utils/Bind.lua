@@ -24,6 +24,7 @@
 --
 
 -- Standard library imports --
+local find = string.find
 local format = string.format
 local ipairs = ipairs
 local rawget = rawget
@@ -192,6 +193,13 @@ end
 -- @treturn iterator Supplies index, event.
 function M.IterEvents (event)
 	return AuxEvent, event, event and event("n")
+end
+
+--- Predicate.
+-- @int|string id
+-- @treturn boolean _id_ is a composite of a simple ID and a sublink?
+function M.IsCompositeId (id)
+	return type(id) == "string" and find(id, ":") ~= nil
 end
 
 --- Convenience routine for the common case where an object binds both actions and events.
