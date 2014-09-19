@@ -196,7 +196,7 @@ function M.IterEvents (event)
 end
 
 --- Predicate.
--- @int|string id
+-- @tparam int|string id
 -- @treturn boolean _id_ is a composite of a simple ID and a sublink?
 function M.IsCompositeId (id)
 	return type(id) == "string" and find(id, ":") ~= nil

@@ -40,6 +40,9 @@
 
 -- Standard library imports --
 local ipairs = ipairs
+local min = math.min
+local rawequal = rawequal
+local type = type
 
 -- Modules --
 local common = require("editor.Common")
@@ -98,16 +101,58 @@ end)
 	return tabs
 end
 
+--
+local function CircleUpdate (canvas, _, x, y, cw, ch, tile)
+	tile = tile or display.newCircle(canvas, 0, 0, min(cw, ch) / 2))
+
+	tile:setStrokeColor(1, 0, 0)
+
+	tile.strokeWidth, tile.x, tile.y = 3, x, y
+
+	return tile
+end
+
+--
+local function FrameSame (tile, which, cur) -- TODO: can 'tile' sub for 'cur' ?(then we have a pattern...)
+	return cur and sheet.GetSpriteSetImageFrame(tile) == which
+end
+
+--
+local function FrameUpdate (canvas, tile_images, x, y, cw, ch, tile, which)
+	tile = tile or sheet.NewImage(canvas, tile_images, x, y, cw, ch)
+
+	sheet.SetSpriteSetImageFrame(tile, which)
+
+	return tile
+end
+
+--
+local function ImageUpdate (canvas, tile_images, x, y, cw, ch, tile)
+	-- Like FrameUpdate, but "tile_images" is a filename
+end
+
 --- Common logic for the **PAINT** / **EDIT** / **ERASE** combination of grid operations.
 -- @callable dialog_wrapper Cf. the result of @{editor.Dialog.DialogWrapper}.
--- @array types An array of strings denoting type.
+-- @tparam array|string types An array of strings denoting type.
+-- @string[opt=""] palette 
 -- @treturn GridView Editor grid view object.
-function M.EditErase (dialog_wrapper, types)
+function M.EditErase (dialog_wrapper, types, palette)
 	local cells, current, option, pick, tabs, tiles, try_option, tile_images, values
 
 	--
+	local same, update = rawequal
+
+	if palette == "circle" then
+		update = CircleUpdate
+	elseif #(palette or "") ~= 0 then
+		update, tile_images = ImageUpdate, palette
+	else
+		same, update = FrameSame, FrameUpdate
+	end
+
+	--
 	local function Cell (event)
-		local key, which = str_utils.PairToKey(event.col, event.row), current:GetCurrent()
+		local key, which = str_utils.PairToKey(event.col, event.row), current and current:GetCurrent()
 		local cur, tile = values[key], tiles[key]
 		local canvas, cw, ch = event.target:GetCanvas(), event.target:GetCellDims()
 
@@ -117,7 +162,7 @@ function M.EditErase (dialog_wrapper, types)
 		--
 		if option == "Edit" then
 			if cur then
-				dialog_wrapper("edit", cur, current.parent, key, tile)
+				dialog_wrapper("edit", cur, tabs.parent, key, tile)
 			else
 				dialog_wrapper("close")
 			end
@@ -134,22 +179,21 @@ function M.EditErase (dialog_wrapper, types)
 			values[key], tiles[key] = nil
 
 		--
-		elseif not cur or sheet.GetSpriteSetImageFrame(tile) ~= which then -- TODO: can 'tile' sub for 'cur' ?(then we have a pattern...)
+		elseif not same(tile, which, cur) then 
 			if tile then
 				links.RemoveTag(tile)
 			end
 
-			values[key] = dialog_wrapper("new_values", types[which], key)
-			tiles[key] = tile or sheet.NewImage(canvas, tile_images, event.x, event.y, cw, ch)
+			local vtype = type(types) == "string" and types or types[which]
 
-			sheet.SetSpriteSetImageFrame(tiles[key], which)
+			values[key] = dialog_wrapper("new_values", vtype, key)
+			tiles[key] = update(canvas, tile_images, event.x, event.y, cw, ch, tile, which)
 
 			--
-			local tag = dialog_wrapper("get_tag", types[which])
+			local tag = dialog_wrapper("get_tag", vtype)
 
 			if tag then
 				common.BindRepAndValues(tiles[key], values[key])
-
 				links.SetTag(tiles[key], tag)
 			end
 
@@ -175,7 +219,10 @@ function M.EditErase (dialog_wrapper, types)
 	function EditEraseGridView:Enter ()
 		grid.Show(cells)
 		try_option(tabs, option)
-		common.ShowCurrent(current, option == "Paint")
+
+		if current then
+			common.ShowCurrent(current, option == "Paint")
+		end
 
 		tabs.isVisible = true
 	end
@@ -185,7 +232,10 @@ function M.EditErase (dialog_wrapper, types)
 		dialog_wrapper("close")
 
 		grid.SetChoice(option)
-		common.ShowCurrent(current, false)
+
+		if current then
+			common.ShowCurrent(current, false)
+		end
 
 		tabs.isVisible = false
 
@@ -222,7 +272,9 @@ function M.EditErase (dialog_wrapper, types)
 		cells:addEventListener("show", ShowHide)
 
 		--
-		current = grid1D.OptionsHGrid(group, nil, 150, 50, 200, 100, title)
+		if update == FrameUpdate then
+			current = grid1D.OptionsHGrid(group, nil, 150, 50, 200, 100, title)
+		end
 
 		--
 		local choices = { "Paint", "Edit", "Erase" }
@@ -231,7 +283,9 @@ function M.EditErase (dialog_wrapper, types)
 			return function()
 				option = label
 
-				common.ShowCurrent(current, label == "Paint")
+				if current then
+					common.ShowCurrent(current, label == "Paint")
+				end
 
 				if label ~= "Edit" then
 					dialog_wrapper("close")
@@ -245,12 +299,14 @@ function M.EditErase (dialog_wrapper, types)
 		try_option = grid.ChoiceTrier(choices)
 
 		--
-		tile_images = common.SpriteSetFromThumbs(prefix, types)
+		if current then
+			tile_images = common.SpriteSetFromThumbs(prefix, types)
 
-		current:Bind(tile_images, #tile_images)
-		current:toFront()
+			current:Bind(tile_images, #tile_images)
+			current:toFront()
 
-		common.ShowCurrent(current, false)
+			common.ShowCurrent(current, false)
+		end
 
 		--
 		help.AddHelp(prefix, { current = current, tabs = tabs })

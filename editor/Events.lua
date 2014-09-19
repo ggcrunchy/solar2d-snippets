@@ -160,9 +160,15 @@ end
 -- editor. Some concomitant work is performed in order to produce a consistent grid.
 -- @ptable level Loaded level state, as per @{LoadValuesFromEntry}.
 -- @string what The group to load is found under `level[what].entries`.
--- @ptable mod Module. As per @{LoadValuesFromEntry}, and in addition must contain a
--- **GetTypes** function, which returns an array of type names.
+-- @ptable mod Module, as per @{LoadValuesFromEntry}.
+--
+-- In addition, if _mod_ contains a **GetTypes** function, which in turn returns an array of
+-- type names, the current tile grid (if available) will be indexed to a given entry's type
+-- before that entry's cell is loaded.
 -- @tparam GridView grid_view Supplies the module's current tile grid, values, and tiles.
+--
+-- If _grid\_view_ does not contain a **GetCurrent** method, or if it returns **nil**, the
+-- current tile grid is considered unavailable and ignored during loading.
 function M.LoadGroupOfValues_Grid (level, what, mod, grid_view)
 	local cells = grid_view:GetGrid()
 
@@ -171,18 +177,22 @@ function M.LoadGroupOfValues_Grid (level, what, mod, grid_view)
 	level[what].version = nil
 
 	local values, tiles = grid_view:GetValues(), grid_view:GetTiles()
-	local current = grid_view:GetCurrent()
-	local types = mod.GetTypes()
+	local gcfunc, gtfunc = grid_view.GetCurrent, mod.GetTypes
+	local current, types = gcfunc and gcfunc(grid_view), gtfunc()
 
 	for k, entry in pairs(level[what].entries) do
-		_SetCurrentIndex_(current, types, entry.type)
+		if current and types then
+			_SetCurrentIndex_(current, types, entry.type)
+		end
 
 		cells:TouchCell(str_utils.KeyToPair(k))
 
 		_LoadValuesFromEntry_(level, mod, values[k], entry)
 	end
 
-	current:SetCurrent(1)
+	if current then
+		current:SetCurrent(1)
+	end
 
 	grid.ShowOrHide(tiles)
 	grid.Show(false)
