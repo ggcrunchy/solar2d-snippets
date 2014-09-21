@@ -40,6 +40,14 @@ local sqlite3 = require("sqlite3")
 -- Exports --
 local M = {}
 
+-- Routines called on level save --
+local OnSave = {}
+
+--- DOCME
+function M.AddSaveFunc (on_save)
+	OnSave[#OnSave + 1] = on_save
+end
+
 -- Configuration info used to build the database from scratch --
 local Info = {}
 
@@ -277,6 +285,10 @@ function M.SaveLevel (name, blob, overwrite, wip, omit)
 	changes = changes .. tostring(not not omit) .. [[');]]
 
 	Commit(what, changes)
+
+	for i = 1, #OnSave do
+		OnSave[i](blob, wip)
+	end
 end
 
 --- Wipes the database.

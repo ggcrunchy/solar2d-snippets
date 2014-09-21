@@ -53,7 +53,6 @@ local function Write (name, func, wip)
 	M.SetLevelName(name)
 
 	local blob = persistence.Encode(func(), not wip)
-print(blob)
 
 	persistence.SaveLevel(name, blob, true, wip, IsTemp)
 end

@@ -116,13 +116,18 @@ local function RemoveObject (id, object)
 	Objects:RemoveAt(id)
 end
 
+-- Is the object still valid?
+local function Alive (object)
+	return object.parent
+end
+
 -- Helper to clean up any dead objects in a range
 local function AuxCleanUp (from, to)
 	for i = from, to do
 		if Objects:InUse(i) then
 			local object = Objects:Get(i)
 
-			if not object.parent then
+			if not Alive(object) then
 				RemoveObject(i, object)
 			end
 		end
@@ -164,7 +169,7 @@ end
 
 -- Helper to get a proxy (if valid) from an object
 local function Proxy (object)
-	return object and object.parent and Proxies[object]
+	return object and Alive(object) and Proxies[object]
 end
 
 --- Getter.
@@ -310,7 +315,7 @@ local function Object (proxy)
 	if id then
 		local object = Objects:Get(id)
 
-		if object.parent then
+		if Alive(object) then
 			return object
 		else
 			RemoveObject(id, object)
@@ -494,7 +499,7 @@ local Purge
 -- @pobject object
 -- @string name
 function M.SetTag (object, name)
-	assert(object and object.parent, "Invalid object")
+	assert(object and Alive(object), "Invalid object")
 	assert(not Proxies[object], "Object already tagged")
 
 	local proxy = { id = Objects:Insert(object), name = name }

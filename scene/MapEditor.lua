@@ -72,6 +72,8 @@ local Scene = composer.newScene()
 -- Create Scene --
 function Scene:create ()
 	scenes.Alias("Editor")
+
+	persistence.AddSaveFunc(print)
 end
 
 Scene:addEventListener("create")

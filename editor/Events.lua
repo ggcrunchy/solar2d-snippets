@@ -178,7 +178,7 @@ function M.LoadGroupOfValues_Grid (level, what, mod, grid_view)
 
 	local values, tiles = grid_view:GetValues(), grid_view:GetTiles()
 	local gcfunc, gtfunc = grid_view.GetCurrent, mod.GetTypes
-	local current, types = gcfunc and gcfunc(grid_view), gtfunc()
+	local current, types = gcfunc and gcfunc(grid_view), gtfunc and gtfunc()
 
 	for k, entry in pairs(level[what].entries) do
 		if current and types then
