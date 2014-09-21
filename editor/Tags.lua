@@ -34,6 +34,12 @@ local adaptive = require("table_ops.adaptive")
 local array_funcs = require("array_ops.funcs")
 local iterator_utils = require("iterator_ops.utils")
 
+-- Cached module references --
+local _Children_
+local _Is_
+local _Parents_
+local _TagAndChildren_
+
 -- Exports --
 local M = {}
 
@@ -98,7 +104,7 @@ end
 do
 	--
 	local function AuxHasChild (name, child)
-		for _, tname in M.Children(name) do
+		for _, tname in _Children_(name) do
 			if tname == child or AuxHasChild(tname, child) then
 				return true
 			end
@@ -130,7 +136,7 @@ do
 		end
 
 		--
-		for _, tname in M.Parents(name) do
+		for _, tname in _Parents_(name) do
 			local sublink = AuxHasSublink(tname, sub)
 
 			if sublink then
@@ -183,12 +189,10 @@ do
 	end
 
 	--- DOCME
+	-- @string name
+	-- @string sub
 	-- @treturn boolean
-	function M.HasSublink (
-		name, -- MURBLE
-		sub -- BURBLE
-		)
-
+	function M.HasSublink (name, sub)
 		return FindSublink(name, sub) ~= nil
 	end
 end
@@ -196,7 +200,7 @@ end
 do
 	--
 	local function AuxIs (name, super)
-		for _, tname in M.Parents(name) do
+		for _, tname in _Parents_(name) do
 			if tname == super or AuxIs(tname, super) then
 				return true
 			end
@@ -267,13 +271,13 @@ do
 
 	--- DOCME
 	function M.Implementors (what)
-		return M.TagAndChildren(ImplementedBy[what], true)
+		return _TagAndChildren_(ImplementedBy[what], true)
 	end
 
 	--
 	local function AddImplementor (name, what)
 		for impl_by in adaptive.IterSet(ImplementedBy[what]) do
-			if M.Is(name, impl_by) then
+			if _Is_(name, impl_by) then
 				return
 			end
 		end
@@ -439,7 +443,7 @@ end)
 do
 	-- Enumerator body
 	local function EnumSublinks (str_list, name, count)
-		for _, tname in M.Parents(name) do
+		for _, tname in _Parents_(name) do
 			count = EnumSublinks(str_list, tname, count)
 		end
 
@@ -462,7 +466,7 @@ end
 do
 	-- Enumerator body
 	local function EnumTagAndChildren (str_list, name, count)
-		for _, tname in M.Children(name) do
+		for _, tname in _Children_(name) do
 			count = EnumTagAndChildren(str_list, tname, count)
 		end
 
@@ -483,7 +487,7 @@ end
 do
 	-- Enumerator body
 	local function EnumTagAndParents (str_list, name, count)
-		for _, tname in M.Parents(name) do
+		for _, tname in _Parents_(name) do
 			count = EnumTagAndParents(str_list, tname, count)
 		end
 
@@ -504,6 +508,32 @@ do
 		return IterStrList(EnumTagAndParents, name, as_set)
 	end
 end
+
+do
+	-- Enumerator body
+	local function EnumTags (str_list, _, count)
+		for k in pairs(Tags) do
+			str_list[count + 1], count = k, count + 1
+		end
+
+		return count
+	end
+
+	--- Iterator.
+	-- @treturn iterator Supplies, in some order without duplication, at each iteration:
+	--
+	-- * Iteration variable, of dubious practical use.
+	-- * Tag name, as assigned in @{New}.
+	function M.Tags ()
+		return IterStrList(EnumTags, true)
+	end
+end
+
+-- Cache module members.
+_Children_ = M.Children
+_Is_ = M.Is
+_Parents_ = M.Parents
+_TagAndChildren_ = M.TagAndChildren
 
 -- Export the module.
 return M

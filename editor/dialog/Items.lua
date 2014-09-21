@@ -200,13 +200,17 @@ function M:AddString (options)
 end
 
 --- DOCME
--- @string dir
+-- @string[opt] dir
 -- @string type
 function M:StockElements (dir, type)
 	self:CommonAdd(button.Button(self:ItemGroup(), nil, 0, 0, 25, 25, function()
 		self:RemoveSelf()
 	end, "X"), { continue_line = true })
-	self:AddImage{ file = format("%s_Assets/%s_Thumb.png", dir, type), continue_line = true }
+
+	if dir then
+		self:AddImage{ file = format("%s_Assets/%s_Thumb.png", dir, type), continue_line = true }
+	end
+
 	self:AddString{ value_name = "name" }
 	self:AddCoordinates{ text = "Pos", is_static = true, name = "current" }
 end

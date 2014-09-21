@@ -536,6 +536,8 @@ function Overlay:show (event)
 
 		if params.interfaces then
 			iter, set = tags.Implementors, params.interfaces
+		elseif not params.tags then
+			iter = tags.Tags
 		end
 
 		for _, name in iter(set) do

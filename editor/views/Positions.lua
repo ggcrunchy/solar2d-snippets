@@ -23,140 +23,54 @@
 -- [ MIT license: http://www.opensource.org/licenses/mit-license.php ]
 --
 
--- Standard library imports --
-local min = math.min
-
 -- Modules --
-local common = require("editor.Common")
+local dialog = require("editor.Dialog")
+local events = require("editor.Events")
 local grid = require("editor.Grid")
 local grid_views = require("editor.GridViews")
 local help = require("editor.Help")
-local links = require("editor.Links")
-local str_utils = require("utils.String")
-local tags = require("editor.Tags")
-
--- Corona globals --
-local display = display
+local positions = require("game.Positions")
 
 -- Exports --
 local M = {}
 
 -- --
+local Dialog = dialog.DialogWrapper(positions.EditorEvent)
+
+-- --
+local GridView = grid_views.EditErase(Dialog, "position", "circle")
+
+-- --
 local Grid
-
--- --
-local PosImages, PosValues
-
--- --
-local Erase, TryOption
-
--- --
-local Tabs
-
---
-local function Cell (event)
-	local key, is_dirty = str_utils.PairToKey(event.col, event.row)
-	local pos = PosImages[key]
-
-	--
-	if Erase then
-		if pos then
-			links.RemoveTag(pos)
-
-			pos:removeSelf()
-
-			is_dirty, PosImages[key], PosValues[key] = true
-		end
-
-	--
-	elseif not pos then
-		local cw, ch = event.target:GetCellDims()
-		local pos, values = display.newCircle(event.target:GetCanvas(), event.x, event.y, min(cw, ch) / 2), { name = key }
-
-		pos:setStrokeColor(1, 0, 0)
-
-		pos.strokeWidth = 3
-
-		common.BindRepAndValues(pos, values)
-		links.SetTag(pos, "position")
-
-		is_dirty, PosImages[key], PosValues[key] = true, pos, values
-	end
-
-	--
-	if is_dirty then
-		common.Dirty()
-	end
-end
-
---
-local function ShowHide (event)
-	local pos = PosImages[str_utils.PairToKey(event.col, event.row)]
-
-	if pos then
-		pos.isVisible = event.show
-	end
-end
 
 ---
 -- @pgroup view X
 function M.Load (view)
-	PosImages, PosValues, Grid = {}, {}, grid.NewGrid()
+	GridView:Load(view, "Position")
 
-	Grid:addEventListener("cell", Cell)
-	Grid:addEventListener("show", ShowHide)
-
-	--
-	local choices = { "Paint", "Erase" }
-
-	Tabs = grid_views.AddTabs(view, choices, function(label)
-		return function()
-			Erase = label == "Erase"
-
-			return true
-		end
-	end, 200)
-
-	--
-	TryOption = grid.ChoiceTrier(choices)
-
-	--
-	help.AddHelp("Positions", { tabs = Tabs })
-	help.AddHelp("Positions", {
+	help.AddHelp("Position", {
 		["tabs:1"] = "'Paint Mode' is used to add new positions to the level, by clicking a grid cell or dragging across the grid.",
-		["tabs:2"] = "'Erase Mode' is used to remove positions from the level, by clicking an occupied grid cell or dragging across the grid."
+		["tabs:2"] = "'Edit Mode' lets the user edit a position's properties. Clicking an occupied grid cell will call up a dialog.",
+		["tabs:3"] = "'Erase Mode' is used to remove positions from the level, by clicking an occupied grid cell or dragging across the grid."
 	})
-
-	--
-	if not tags.Exists("position") then
-		tags.New("position", { sub_links = { link = true } } )
-	end
 end
 
 ---
 -- @pgroup view X
 function M.Enter (view)
-	grid.Show(Grid)
-	TryOption(Tabs)
+	GridView:Enter(view)
 
-	Tabs.isVisible = true
-
-	help.SetContext("Positions")
+	help.SetContext("Position")
 end
 
 --- DOCMAYBE
 function M.Exit ()
-	Tabs.isVisible = false
-
-	grid.SetChoice(Erase and "Erase" or "Paint")
-	grid.Show(false)
+	GridView:Exit()
 end
 
 --- DOCMAYBE
 function M.Unload ()
-	Tabs:removeSelf()
-
-	Erase, Grid, PosImages, PosValues, Tabs, TryOption = nil
+	GridView:Unload()
 end
 
 -- Listen to events.
@@ -187,6 +101,7 @@ local builds
 
 	-- Load Level WIP --
 	load_level_wip = function(level)
+		--[[
 		grid.Show(Grid)
 
 		level.positions.version = nil
@@ -197,6 +112,7 @@ local builds
 
 		grid.ShowOrHide(PosValues)
 		grid.Show(false)
+		]]
 	end,
 
 	-- Save Level WIP --

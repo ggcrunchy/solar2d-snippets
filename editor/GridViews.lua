@@ -41,7 +41,6 @@
 -- Standard library imports --
 local ipairs = ipairs
 local min = math.min
-local rawequal = rawequal
 local type = type
 
 -- Modules --
@@ -102,13 +101,23 @@ end)
 end
 
 --
-local function CircleUpdate (canvas, _, x, y, cw, ch, tile)
-	tile = tile or display.newCircle(canvas, 0, 0, min(cw, ch) / 2))
+local function CircleUpdate (canvas, tile, x, y, cw, ch)
+	tile = tile or display.newCircle(canvas, 0, 0, min(cw, ch) / 2)
 
 	tile:setStrokeColor(1, 0, 0)
 
 	tile.strokeWidth, tile.x, tile.y = 3, x, y
 
+	return tile
+end
+
+--- DOCME
+function M.CircleUpdate (grid, x, y, tile)
+	return CircleUpdate(grid:GetCanvas(), tile, x, y, grid:GetCellDims())
+end
+
+--
+local function DefSame (tile)
 	return tile
 end
 
@@ -118,7 +127,7 @@ local function FrameSame (tile, which, cur) -- TODO: can 'tile' sub for 'cur' ?(
 end
 
 --
-local function FrameUpdate (canvas, tile_images, x, y, cw, ch, tile, which)
+local function FrameUpdate (canvas, tile, x, y, cw, ch, tile_images, which)
 	tile = tile or sheet.NewImage(canvas, tile_images, x, y, cw, ch)
 
 	sheet.SetSpriteSetImageFrame(tile, which)
@@ -127,7 +136,7 @@ local function FrameUpdate (canvas, tile_images, x, y, cw, ch, tile, which)
 end
 
 --
-local function ImageUpdate (canvas, tile_images, x, y, cw, ch, tile)
+local function ImageUpdate (canvas, tile, x, y, cw, ch, tile_images)
 	-- Like FrameUpdate, but "tile_images" is a filename
 end
 
@@ -140,7 +149,7 @@ function M.EditErase (dialog_wrapper, types, palette)
 	local cells, current, option, pick, tabs, tiles, try_option, tile_images, values
 
 	--
-	local same, update = rawequal
+	local same, update = DefSame
 
 	if palette == "circle" then
 		update = CircleUpdate
@@ -187,7 +196,7 @@ function M.EditErase (dialog_wrapper, types, palette)
 			local vtype = type(types) == "string" and types or types[which]
 
 			values[key] = dialog_wrapper("new_values", vtype, key)
-			tiles[key] = update(canvas, tile_images, event.x, event.y, cw, ch, tile, which)
+			tiles[key] = update(canvas, tile, event.x, event.y, cw, ch, tile_images, which)
 
 			--
 			local tag = dialog_wrapper("get_tag", vtype)

@@ -23,18 +23,11 @@
 -- [ MIT license: http://www.opensource.org/licenses/mit-license.php ]
 --
 
--- Standard library imports --
-local ipairs = ipairs
-local min = math.min
-
 -- Modules --
 local common = require("editor.Common")
 local grid = require("editor.Grid")
 local grid_views = require("editor.GridViews")
 local help = require("editor.Help")
-
--- Corona globals --
-local display = display
 
 -- Exports --
 local M = {}
@@ -53,15 +46,7 @@ local Tabs
 
 --
 local function Cell (event)
-	if not StartPos then
-		local cw, ch = event.target:GetCellDims()
-
-		StartPos = display.newCircle(event.target:GetCanvas(), 0, 0, min(cw, ch) / 2)
-
-		StartPos:setStrokeColor(1, 0, 0)
-
-		StartPos.strokeWidth = 3
-	end
+	StartPos = grid_views.CircleUpdate(event.target, event.x, event.y, StartPos)
 
 	if event.col ~= StartPos.m_col or event.row ~= StartPos.m_row then
 		StartPos.m_col = event.col
@@ -69,8 +54,6 @@ local function Cell (event)
 
 		common.Dirty()
 	end
-
-	StartPos.x, StartPos.y = event.x, event.y
 end
 
 ---

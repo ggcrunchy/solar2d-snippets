@@ -35,9 +35,35 @@
 -- Exports --
 local M = {}
 
+--- DOCME
+function M.AddPosition ()
+	-- !!!
+end
+
 -- Just needs an editor event? (only real property is linkability... or dynamicity boolean?)
 -- Anything else? Just instantiation from in game? (concerning which, only really for instance identity, in vague
 -- possible scenario where the positions are dynamic... otherwise could just be injected into user objects)
+
+--- DOCME
+function M.EditorEvent (_, what, arg1, arg2)
+	-- Enumerate Properties --
+	-- arg1: Dialog
+	-- arg2: Representative object
+	if what == "enum_props" then
+		arg1:Spacer()
+		arg1:StockElements(nil)
+		arg1:AddSeparator()
+		arg1:AddLink{ text = "Generic link", rep = arg2, sub = "link" }
+
+	-- Get Tag --
+	elseif what == "get_tag" then
+		return "position"
+
+	-- New Tag --
+	elseif what == "new_tag" then
+		return { sub_links = { link = true } }
+	end
+end
 
 -- Export the module.
 return M
