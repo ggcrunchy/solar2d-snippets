@@ -29,6 +29,8 @@ local format = string.format
 local ipairs = ipairs
 local rawget = rawget
 local setmetatable = setmetatable
+local sub = string.sub
+local tonumber = tonumber
 local type = type
 
 -- Modules --
@@ -197,9 +199,26 @@ end
 
 --- Predicate.
 -- @tparam int|string id
+-- @bool split If composite, return the parts?
 -- @treturn boolean _id_ is a composite of a simple ID and a sublink?
-function M.IsCompositeId (id)
-	return type(id) == "string" and find(id, ":") ~= nil
+-- @treturn ?int Simple ID.
+-- @treturn ?string Sublink.
+function M.IsCompositeId (id, split)
+	local is_composed = false
+
+	if type(id) == "string" then
+		local pos = find(id, ":")
+
+		if pos ~= nil then
+			if split then
+				return true, tonumber(sub(id, 1, pos - 1)), sub(id, pos + 1)
+			else
+				is_composed = true
+			end
+		end
+	end
+
+	return is_composed
 end
 
 --- Convenience routine for the common case where an object binds both actions and events.

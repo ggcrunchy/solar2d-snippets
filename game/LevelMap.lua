@@ -42,6 +42,7 @@ local global_events = require("game.GlobalEvents")
 local level_list = require("game.LevelsList")
 local persistence = require("game.Persistence")
 local player = require("game.Player")
+local positions = require("game.Positions")
 local scenes = require("utils.Scenes")
 local tile_maps = require("game.TileMaps")
 
@@ -219,6 +220,11 @@ function M.LoadLevel (view, which)
 		CurrentLevel.tiles_layer:insert(tgroup)
 
 		tile_maps.AddTiles(tgroup, level)
+
+		-- ...and the positions...
+		for _, pos in Ipairs(level.positions) do
+			positions.AddPosition(pos)
+		end
 
 		-- ...and the event blocks...
 		for _, block in Ipairs(level.event_blocks) do

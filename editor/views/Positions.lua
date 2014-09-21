@@ -26,10 +26,10 @@
 -- Modules --
 local dialog = require("editor.Dialog")
 local events = require("editor.Events")
-local grid = require("editor.Grid")
 local grid_views = require("editor.GridViews")
 local help = require("editor.Help")
 local positions = require("game.Positions")
+local str_utils = require("utils.String")
 
 -- Exports --
 local M = {}
@@ -39,9 +39,6 @@ local Dialog = dialog.DialogWrapper(positions.EditorEvent)
 
 -- --
 local GridView = grid_views.EditErase(Dialog, "position", "circle")
-
--- --
-local Grid
 
 ---
 -- @pgroup view X
@@ -77,57 +74,34 @@ end
 for k, v in pairs{
 	-- Build Level --
 	build_level = function(level)
-		level.positions.version = nil
+		local builds
 
-		-- ??
+		for k, pos in pairs(level.positions.entries) do
+			pos.col, pos.row = str_utils.KeyToPair(k)
 
---[=[
--- Needs "BuildEntry" stuff?
-		level.positions = { version = 1, values = ? }
-]=]
-
---[=[
-local builds
-
-		for k, dot in pairs(level.dots.entries) do
-			dot.col, dot.row = str_utils.KeyToPair(k)
-
-			builds = events.BuildEntry(level, dots, dot, builds)
+			builds = events.BuildEntry(level, positions, pos, builds)
 		end
 
-		level.dots = builds
-]=]
+		level.positions = builds
 	end,
 
 	-- Load Level WIP --
 	load_level_wip = function(level)
-		--[[
-		grid.Show(Grid)
-
-		level.positions.version = nil
-
-		for _, k in ipairs(level.positions) do
-			Grid:TouchCell(str_utils.KeyToPair(k))
-		end
-
-		grid.ShowOrHide(PosValues)
-		grid.Show(false)
-		]]
+		events.LoadGroupOfValues_Grid(level, "positions", positions, GridView)
 	end,
 
 	-- Save Level WIP --
 	save_level_wip = function(level)
-		level.positions = { version = 1 }
---[=[
-		for k in pairs(Positions) do
-			level.positions[#level.positions] = k?
-		end
-]=]
+ 		events.SaveGroupOfValues(level, "positions", positions, GridView)
 	end,
 
 	-- Verify Level WIP --
 	verify_level_wip = function(verify)
-		-- Anything?
+		if verify.pass == 1 then
+			events.CheckNamesInValues("position", verify, GridView)
+		end
+
+		events.VerifyValues(verify, positions, GridView)
 	end
 } do
 	Runtime:addEventListener(k, v)

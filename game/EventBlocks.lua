@@ -46,7 +46,6 @@ local require_ex = require("tektite.require_ex")
 local bind_utils = require("utils.Bind")
 local fx = require("game.FX")
 local range = require("number_ops.range")
-local tags = require_ex.Lazy("editor.Tags")
 local tile_flags = require("game.TileFlags")
 local tile_maps = require("game.TileMaps")
 local wrapper = require("coroutine_ops.wrapper")
@@ -57,7 +56,6 @@ local display = display
 -- Imports --
 local GetFlags = tile_flags.GetFlags
 local GetImage = tile_maps.GetImage
-local PutObjectAt = tile_maps.PutObjectAt
 local SetFlags = tile_flags.SetFlags
 
 -- Module --

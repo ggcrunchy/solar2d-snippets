@@ -32,17 +32,27 @@
 -- [ MIT license: http://www.opensource.org/licenses/mit-license.php ]
 --
 
+-- Standard library imports --
+local pairs = pairs
+
+-- Modules --
+local tile_maps = require("game.TileMaps")
+
 -- Exports --
 local M = {}
 
---- DOCME
-function M.AddPosition ()
-	-- !!!
-end
+-- Index -> position map --
+local Positions
 
--- Just needs an editor event? (only real property is linkability... or dynamicity boolean?)
--- Anything else? Just instantiation from in game? (concerning which, only really for instance identity, in vague
--- possible scenario where the positions are dynamic... otherwise could just be injected into user objects)
+--- DOCME
+-- @ptable info
+function M.AddPosition (info)
+	local pos = { m_index = tile_maps.GetTileIndex(info.col, info.row) }
+
+	tile_maps.PutObjectAt(pos.m_index, pos)
+
+	Positions[info.uid] = pos
+end
 
 --- DOCME
 function M.EditorEvent (_, what, arg1, arg2)
@@ -54,6 +64,7 @@ function M.EditorEvent (_, what, arg1, arg2)
 		arg1:StockElements(nil)
 		arg1:AddSeparator()
 		arg1:AddLink{ text = "Generic link", rep = arg2, sub = "link" }
+		-- TODO: "dynamic" boolean?
 
 	-- Get Tag --
 	elseif what == "get_tag" then
@@ -63,6 +74,33 @@ function M.EditorEvent (_, what, arg1, arg2)
 	elseif what == "new_tag" then
 		return { sub_links = { link = true } }
 	end
+end
+
+--- DOCME
+function M.GetPosition (id)
+	return Positions[id]
+end
+
+-- Listen to events.
+for k, v in pairs{
+	-- Enter Level --
+	enter_level = function()
+		Positions = {}
+	end,
+
+	-- Leave Level --
+	leave_level = function()
+		Positions = nil
+	end,
+
+	-- Reset Level --
+	reset_level = function()
+		for id, pos in pairs(Positions) do
+			tile_maps.PutObjectAt(pos.m_index, pos)
+		end
+	end
+} do
+	Runtime:addEventListener(k, v)
 end
 
 -- Export the module.

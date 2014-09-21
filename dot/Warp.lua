@@ -27,6 +27,7 @@
 local ipairs = ipairs
 local pairs = pairs
 local sin = math.sin
+local type = type
 
 -- Modules --
 local require_ex = require("tektite.require_ex")
@@ -38,6 +39,7 @@ local frames = require("utils.Frames")
 local fx = require("game.FX")
 local links = require_ex.Lazy("editor.Links")
 local markers = require("effect.Markers")
+local positions = require("game.Positions")
 local quantize = require("geom2d_ops.quantize")
 
 -- Corona globals --
@@ -65,12 +67,23 @@ local function DefWarp () end
 -- Groups of warp transition handles, to allow cancelling --
 local HandleGroups
 
+-- Helper to resolve a warp's target
+local function GetTarget (warp)
+	local to = warp.m_to
+
+	if type(to) == "number" then
+		return WarpList[to], "warp"
+	else
+		return to, "position"
+	end
+end
+
 -- Warp logic
 local function DoWarp (warp, func)
-	local target, ttype = WarpList[warp.m_to]
+	local target, ttype = GetTarget(warp)
 
 	if target then
-		func, ttype = func or DefWarp, collision.GetType(target) == "warp" and "warp" or "position"
+		func = func or DefWarp
 
 		func("move_prepare", warp, target, ttype)
 
@@ -254,7 +267,7 @@ collision.AddHandler("warp", function(phase, warp, other, other_type)
 		TouchEvent.dot = nil
 
 		-- Show or hide a hint between this warp and its target.
-		local target = WarpList[warp.m_to]
+		local target = GetTarget(warp)
 
 		if target then
 			if phase == "began" then
@@ -438,8 +451,10 @@ return function (group, info)
 	Sounds:Load()
 
 	--
-	if bind_utils.IsCompositeId(info.to) then
-		-- Subscribe to position event?
+	local _, id = bind_utils.IsCompositeId(info.to, true)
+
+	if id then
+		warp.m_to = positions.GetPosition(id)
 	else
 		warp.m_to = info.to
 	end
