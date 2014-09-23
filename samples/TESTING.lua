@@ -56,6 +56,35 @@ Scene:addEventListener("show")
 	- Make some dialogs to stress-test the section feature
 	- Decouple dialogs from the editor
 	- Decouple links / tags from editor? Instancing? (LOOKS FEASIBLE... links just need a tag association up front)
+
+--[=[
+	Links:
+
+C:\Users\XS\Desktop\corona-sdk-snippets\dot\Switch.lua(36,31): local links = require_ex.Lazy("editor.Links")
+C:\Users\XS\Desktop\corona-sdk-snippets\dot\Warp.lua(40,31): local links = require_ex.Lazy("editor.Links")
+C:\Users\XS\Desktop\corona-sdk-snippets\editor\views\EventBlocks.lua(40,23): local links = require("editor.Links")
+C:\Users\XS\Desktop\corona-sdk-snippets\editor\views\GlobalEvents.lua(37,23): local links = require("editor.Links")
+C:\Users\XS\Desktop\corona-sdk-snippets\editor\Events.lua(37,23): local links = require("editor.Links")
+C:\Users\XS\Desktop\corona-sdk-snippets\editor\GridViews.lua(52,23): local links = require("editor.Links")
+C:\Users\XS\Desktop\corona-sdk-snippets\overlay\Link.lua(36,23): local links = require("editor.Links")
+]=]
+
+--[=[
+	Tags:
+
+C:\Users\XS\Desktop\corona-sdk-snippets\editor\Common.lua(37,30): local tags = require_ex.Lazy("editor.Tags")
+C:\Users\XS\Desktop\corona-sdk-snippets\editor\Events.lua(39,22): local tags = require("editor.Tags")
+C:\Users\XS\Desktop\corona-sdk-snippets\editor\Links.lua(39,22): local tags = require("editor.Tags")
+C:\Users\XS\Desktop\corona-sdk-snippets\overlay\Link.lua(38,22): local tags = require("editor.Tags")
+C:\Users\XS\Desktop\corona-sdk-snippets\scene\MapEditor.lua(58,30): local tags = require_ex.Lazy("editor.Tags")
+]==]
+
+-- Editor cases probably fine, just another abstraction
+-- In the dots, in the "new_tag" case, links could go in arg2
+-- For verify, should be passed along in the verify structure, I suppose
+-- Tags then passed in to constructor of links object, along with "alive" predicate
+-- Links itself takes cleanup system... details to be worked out
+
 	- Some sort of stuff for recurring UI tasks: save / load dialogs, listbox, etc. especially ones that recur outside the editor (PARTIAL)
 	- Kill off redundant widgets (button, checkbox)
 
