@@ -60,30 +60,41 @@ Scene:addEventListener("show")
 --[=[
 	Links:
 
-C:\Users\XS\Desktop\corona-sdk-snippets\dot\Switch.lua(36,31): local links = require_ex.Lazy("editor.Links")
-C:\Users\XS\Desktop\corona-sdk-snippets\dot\Warp.lua(40,31): local links = require_ex.Lazy("editor.Links")
-C:\Users\XS\Desktop\corona-sdk-snippets\editor\views\EventBlocks.lua(40,23): local links = require("editor.Links")
-C:\Users\XS\Desktop\corona-sdk-snippets\editor\views\GlobalEvents.lua(37,23): local links = require("editor.Links")
-C:\Users\XS\Desktop\corona-sdk-snippets\editor\Events.lua(37,23): local links = require("editor.Links")
-C:\Users\XS\Desktop\corona-sdk-snippets\editor\GridViews.lua(52,23): local links = require("editor.Links")
-C:\Users\XS\Desktop\corona-sdk-snippets\overlay\Link.lua(36,23): local links = require("editor.Links")
+-- In the dots, in the "new_tag" case, links could go in arg2
+-- For verify, should be passed along in the verify structure, I suppose
+
+dot\Switch.lua(36,31), dot\Warp.lua(40,31)
+
+-- Editor cases probably fine, just another abstraction
+
+editor\views\EventBlocks.lua(40,23), editor\views\GlobalEvents.lua(37,23),
+editor\Events.lua(37,23), editor\GridViews.lua(52,23)
+
+-- PROBABLY just an extension of the editor?
+
+overlay\Link.lua(36,23)
 ]=]
 
 --[=[
 	Tags:
 
-C:\Users\XS\Desktop\corona-sdk-snippets\editor\Common.lua(37,30): local tags = require_ex.Lazy("editor.Tags")
-C:\Users\XS\Desktop\corona-sdk-snippets\editor\Events.lua(39,22): local tags = require("editor.Tags")
-C:\Users\XS\Desktop\corona-sdk-snippets\editor\Links.lua(39,22): local tags = require("editor.Tags")
-C:\Users\XS\Desktop\corona-sdk-snippets\overlay\Link.lua(38,22): local tags = require("editor.Tags")
-C:\Users\XS\Desktop\corona-sdk-snippets\scene\MapEditor.lua(58,30): local tags = require_ex.Lazy("editor.Tags")
-]==]
+-- These I think would facilitate the editor abstraction I mentioned...
 
--- Editor cases probably fine, just another abstraction
--- In the dots, in the "new_tag" case, links could go in arg2
--- For verify, should be passed along in the verify structure, I suppose
--- Tags then passed in to constructor of links object, along with "alive" predicate
--- Links itself takes cleanup system... details to be worked out
+editor\Common.lua(37,30), editor\Events.lua(39,22)
+
+-- If the rest was done, fairly easy; takes tags in constructor, then just need to
+00 deal with a couple Corona-isms: "alive" predicate, and cleanup system
+
+editor\Links.lua(39,22)
+
+-- Already mentioned
+
+overlay\Link.lua(38,22)
+
+-- Would be where it's all instantiated, perhaps? If not in events...
+
+scene\MapEditor.lua(58,30)
+]==]
 
 	- Some sort of stuff for recurring UI tasks: save / load dialogs, listbox, etc. especially ones that recur outside the editor (PARTIAL)
 	- Kill off redundant widgets (button, checkbox)
