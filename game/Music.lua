@@ -1,5 +1,4 @@
- --- Assorted functionality for positions, which serve mostly as auxiliaries for other
--- game objects.
+--- Various in-game music logic.
 
 --
 -- Permission is hereby granted, free of charge, to any person obtaining
@@ -25,72 +24,24 @@
 --
 
 -- Standard library imports --
-local pairs = pairs
 
 -- Modules --
-local tile_maps = require("game.TileMaps")
 
 -- Exports --
 local M = {}
 
--- Index -> position map --
-local Positions
-
---- DOCME
--- @ptable info
-function M.AddPosition (info)
-	local pos = { m_index = tile_maps.GetTileIndex(info.col, info.row) }
-
-	tile_maps.PutObjectAt(pos.m_index, pos)
-
-	Positions[info.uid] = pos
-end
-
 --- DOCME
 function M.EditorEvent (_, what, arg1, arg2)
-	-- Enumerate Properties --
-	-- arg1: Dialog
-	-- arg2: Representative object
-	if what == "enum_props" then
-		arg1:Spacer()
-		arg1:StockElements(nil)
-		arg1:AddSeparator()
-		arg1:AddLink{ text = "Generic link", rep = arg2, sub = "link" }
-		-- TODO: "dynamic" boolean?
 
-	-- Get Tag --
-	elseif what == "get_tag" then
-		return "position"
-
-	-- New Tag --
-	elseif what == "new_tag" then
-		return { sub_links = { link = true } }
-	end
 end
 
---- DOCME
-function M.GetPosition (id)
-	return Positions[id]
-end
+-- Play, Pause, Resume, Stop, Change
+-- Some default score (perhaps in LevelMap, if not here), if one not present
+-- Default reset_level behavior (global action?), override
 
 -- Listen to events.
 for k, v in pairs{
-	-- Enter Level --
-	enter_level = function()
-		Positions = {}
-	end,
 
-	-- Leave Level --
-	leave_level = function()
-		Positions = nil
-	end,
-
-	-- Reset Level --
-	reset_level = function()
-		for id, pos in pairs(Positions) do
-			tile_maps.PutObjectAt(pos.m_index, pos)
-		end
-	end
 } do
 	Runtime:addEventListener(k, v)
 end

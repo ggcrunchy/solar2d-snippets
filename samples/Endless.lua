@@ -162,6 +162,8 @@ function Scene:show (event)
 
 					column.x = column.m_true_x + offset
 				end
+
+				-- TODO: Some moving thing (just up and down?) painting a mask on texture
 			end
 		end
 
