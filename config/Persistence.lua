@@ -1,4 +1,4 @@
---- Various functionality associated with in-game sound effects.
+--- Application-specific persistence state.
 
 --
 -- Permission is hereby granted, free of charge, to any person obtaining
@@ -23,42 +23,14 @@
 -- [ MIT license: http://www.opensource.org/licenses/mit-license.php ]
 --
 
--- Standard library imports --
+return {
+	out_dir = system.CachesDirectory, -- TODO: Probably config (+ game state?) should be in caches, editor stuff in documents
 
--- Modules --
-
--- Exports --
-local M = {}
-
---- DOCME
-function M.EditorEvent (_, what, arg1, arg2)
-	-- Get Tag --
-	if what == "get_tag" then
-		return "sound"
-
-	-- New Tag --
-	elseif what == "new_tag" then
-	--	return "sources_and_targets", GetEvent, Actions
-	-- GetEvent: sound finished, etc.
-	-- Actions: Play... Pause, Resume, Stop (these assume singletons... also, fairly meaningless for short sounds!)
-
-	-- Prep Link --
-	elseif what == "prep_link" then
-	--	return LinkSound
-	end
-end
-
--- Any useful flags? (Ongoing vs. cut off? Singleton or instantiable? Looping, already playing...)
--- Perhaps impose that sound is singleton (or give warning...) if certain actions are linked
-
--- Listen to events.
-for k, v in pairs{
-	-- ??
-	-- reset_level, leave_level: cancel / fade / etc. long-running (relatively speaking, sometimes) sounds,
-	-- e.g. voice, background audio (wind, rain, ...)
-} do
-	Runtime:addEventListener(k, v)
-end
-
--- Export the module.
-return M
+	-- Configuration schema --
+	[['completed', 0]],
+	[['first_time', 'true']],
+	[['hit_points', 3]],
+	[['lives', 3]],
+	[['music_volume', 100]],
+	[['sound_volume', 100]]
+}

@@ -30,6 +30,9 @@ local pairs = pairs
 local tostring = tostring
 local type = type
 
+-- Modules --
+local pconfig = require("config.Persistence")
+
 -- Corona globals --
 local system = system
 
@@ -56,7 +59,7 @@ local Loaded = {}
 
 -- Opens a given database
 local function OpenDB (name)
-	local path = system.pathForFile(name .. ".sqlite3", system.CachesDirectory) -- TODO: Probably config (+ game state?) should be in caches, editor stuff in documents
+	local path = system.pathForFile(name .. ".sqlite3", pconfig.out_dir) 
 
 	return sqlite3.open(path)
 end
@@ -91,15 +94,11 @@ local function Commit (what, changes)
 end
 
 -- Configuration state --
-Info.config = {
-	schema = [[m_KEY UNIQUE, m_VALUE]],
-	[['completed', 0]],
-	[['first_time', 'true']],
-	[['hit_points', 3]],
-	[['lives', 3]],
-	[['music_volume', 100]],
-	[['sound_volume', 100]]
-}
+Info.config = { schema = [[m_KEY UNIQUE, m_VALUE]] }
+
+for i, v in ipairs(pconfig) do
+	Info.config[i] = v
+end
 
 --- Updates configuration data.
 --

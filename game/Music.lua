@@ -26,22 +26,76 @@
 -- Standard library imports --
 
 -- Modules --
+local bind_utils = require("utils.Bind")
 
 -- Exports --
 local M = {}
 
 --- DOCME
-function M.EditorEvent (_, what, arg1, arg2)
-
+function M.AddMenuMusic (info)
+	-- How much can actually be done here? (probably a config file thing...)
 end
 
--- Play, Pause, Resume, Stop, Change
+--- DOCME
+function M.AddMusic (info)
+	-- filename: required
+	-- is playing: probably automatic, if only one (though should that decision be made here?)...
+	-- looping or play count (default to looping)...
+	-- Detection for disabled audio option
+end
+
+--
+local function LinkMusic (music, other, gsub, osub)
+--	bind_utils.LinkActionsAndEvents(music, other, gsub, osub, GetEvent, Actions, "actions")
+end
+
+--- DOCME
+function M.EditorEvent (_, what, arg1, arg2)
+	-- Get Tag --
+	if what == "get_tag" then
+		return "music"
+
+	-- New Tag --
+	elseif what == "new_tag" then
+	--	return "sources_and_targets", GetEvent, Actions
+	-- GetEvent: music finished, etc.
+	-- Actions: Play, Pause, Resume, Stop, Change...
+
+	-- Prep Link --
+	elseif what == "prep_link" then
+		return LinkMusic
+	end
+end
+
 -- Some default score (perhaps in LevelMap, if not here), if one not present
 -- Default reset_level behavior (global action?), override
 
 -- Listen to events.
 for k, v in pairs{
+	-- Enter Level --
+	enter_level = function(level)
+		--
+	end,
 
+	-- Enter Menus --
+	enter_menus = function()
+		-- What kind of menu? (e.g. editor shouldn't do anything...)
+	end,
+
+	-- Leave Level --
+	leave_level = function()
+		--
+	end,
+
+	-- Leave Menus --
+	leave_menus = function()
+		--
+	end,
+
+	-- Reset Level --
+	reset_level = function()
+		--
+	end
 } do
 	Runtime:addEventListener(k, v)
 end

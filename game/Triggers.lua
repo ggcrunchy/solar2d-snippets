@@ -26,6 +26,7 @@
 -- Standard library imports --
 
 -- Modules --
+local collision = require("game.Collision")
 
 -- Exports --
 local M = {}
@@ -40,7 +41,8 @@ end
 
 -- Listen to events.
 for k, v in pairs{
-
+	-- This might not even need anything?
+	-- Just the "touching" state, but collision might take care of that
 } do
 	Runtime:addEventListener(k, v)
 end
