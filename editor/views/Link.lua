@@ -1,4 +1,4 @@
---- Editor views list.
+--- Link editing.
 
 --
 -- Permission is hereby granted, free of charge, to any person obtaining
@@ -23,8 +23,36 @@
 -- [ MIT license: http://www.opensource.org/licenses/mit-license.php ]
 --
 
-return {
-	_prefix = "editor.views",
+-- Some sort of cloud of groups, probably made on the fly
+-- Nodes moved in and out of those as they're moved around (groups will be somewhat generous, accommodate largest size)
+-- Lines in separate groups? (Must allow for large distances, in general... but could use some bounding box analysis...)
+-- Search feature? (Based on tag, then on list... essentially what's available now)
+-- Would the above make LinkGroup obsolete? Would it promote the search box?
 
-	"Player", "Dots", "EventBlocks", "Tiles", "Triggers", "Audio", "Background", "GlobalEvents", "Positions", "Link", "Settings"
-}
+-- Exports --
+local M = {}
+
+---
+-- @pgroup view X
+function M.Load (view)
+
+end
+
+---
+-- @pgroup view X
+function M.Enter (view)
+
+end
+
+--- DOCMAYBE
+function M.Exit ()
+
+end
+
+--- DOCMAYBE
+function M.Unload ()
+
+end
+
+-- Export the module.
+return M

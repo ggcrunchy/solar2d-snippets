@@ -166,6 +166,8 @@ local TabOptions, TabRotate, TabW
 --
 if #TabButtons > TabsMax then
 	local params = {
+		time = 175,
+
 		onComplete = function(object)
 			object.m_going = false
 		end

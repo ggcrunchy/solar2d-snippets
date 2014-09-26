@@ -273,7 +273,7 @@ skins.RegisterSkin("rscroll", {
 	touch = { 0, 1, .5 },
 	image = "UI_Assets/Arrow.png",
 	type = "image",
-	timeout = .4,
+	timeout = .15,
 	_prefix_ = "button"
 })
 

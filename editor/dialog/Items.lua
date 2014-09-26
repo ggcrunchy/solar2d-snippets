@@ -48,6 +48,9 @@ local function OnCheck (cb, is_checked)
 	utils.UpdateObject(cb, is_checked)
 end
 
+-- TODO: AddBitfield()
+-- Own widget? (seems it sort of needs the editor support anyhow...)
+
 --- DOCME
 -- @ptable options
 function M:AddCheckbox (options)
@@ -59,6 +62,11 @@ function M:AddCheckbox (options)
 
 	cb:Check(is_checked)
 end
+
+-- ^^^ TODO: "widgets"...
+
+--- TODO: AddColorPicker()
+-- What do the values look like?
 
 -- NYI
 -- @ptable options
@@ -117,6 +125,9 @@ function M:AddListbox (options)
 	self:CommonAdd(listbox, options)
 end
 
+-- ^^^ TODO: Various special-purpose lists...
+-- TODO: AddSlider()
+
 --- DOCME
 -- @ptable options
 function M:AddSpinner (options)
@@ -173,6 +184,8 @@ function M:AddSpinner (options)
 		str.text = value .. ""
 	end, "+"))
 end
+
+-- ^^ This basically now exists, in "widgets"...
 
 --- DOCME
 -- @ptable options
