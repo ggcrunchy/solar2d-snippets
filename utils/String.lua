@@ -27,9 +27,33 @@
 local format = string.format
 local match = string.match
 local tonumber = tonumber
+local sub = string.sub
+
+-- Cached module references --
+local _EndsWith_AnyCase_
 
 -- Exports --
 local M = {}
+
+--- Adds an extension to a string, as _str_._ext_, e.g. for filenames.
+--
+-- If _str_ already has the dot and extension, this is a no-op.
+-- @string str String to extend.
+-- @string ext Extension. The first character may be a dot, but this is not necessary.
+-- @treturn string Extended string.
+function M.AddExtension (str, ext)
+	-- Convert any non-dotted extension into a dotted one.
+	if sub(ext, 1, 1) ~= "." then
+		ext = "." .. ext
+	end
+
+	-- If the string already has the extension, just return that; otherwise, add it.
+	if _EndsWith_AnyCase_(str, ext) then
+		return str
+	else
+		return str .. ext
+	end
+end
 
 --- Predicate.
 -- @string str Source string.
@@ -124,6 +148,9 @@ end
 function M.PairToKey (a, b)
 	return format("%ix%i", a, b)
 end
+
+-- Cache module members.
+_EndsWith_AnyCase_ = M.EndsWith_AnyCase
 
 -- Export the module.
 return M

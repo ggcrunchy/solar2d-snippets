@@ -69,15 +69,6 @@ local function HexToNum (file)
 	return sum
 end
 
---
-local function AddExt (name)
-	if str_utils.EndsWith_AnyCase(name, "png") then
-		return name
-	else
-		return name .. (str_utils.EndsWith(name, ".") and "png" or ".png")
-	end
-end
-
 --- Generates a rectangular mask, for use with `graphics.setMask`.
 -- @uint w Mask width...
 -- @uint h ...and height.
@@ -100,7 +91,7 @@ function M.NewMask (w, h, name, base_dir)
 
 		display.newRect(group, xpad, ypad, w + ew, h + eh)
 
-		name = name or AddExt(str_utils.NewName())
+		name = name or str_utils.AddExtension(str_utils.NewName(), "png")
 
 		display.save(group, name, base_dir)
 
@@ -132,7 +123,7 @@ end
 
 --- DOCME
 function M.NewMask_Pattern (patt, w, h, base_dir)
-	return M.NewMask(w, h, AddExt(format(patt, w, h)), base_dir or system.CachesDirectory)
+	return M.NewMask(w, h, str_utils.AddExtension(format(patt, w, h), "png"), base_dir or system.CachesDirectory)
 end
 
 -- Helper for black regions of mask texture
@@ -154,7 +145,7 @@ end
 
 --- DOCME
 function M.NewReel (dim)
-	local pos, x, mask, xscale, yscale, ydim, mgroup, bounds, x, y = {}
+	local pos, mask, xscale, yscale, ydim, mgroup, bounds, x, y = {}
 
 	return function(what, arg1, arg2, arg3)
 		-- Set --
@@ -256,6 +247,7 @@ end
 -- ^^^ Also, display.save() now has those other parameters... maybe this obviates the PNG stuff?
 -- Also also, this relies on pairs() being deterministic, which is rather suspect! (store info in database or something...)
 -- TODO: More robust if the generator does "line feed"s to not overflow the screen
+-- Support for white / black swap on mask generation
 
 -- Export the module.
 return M

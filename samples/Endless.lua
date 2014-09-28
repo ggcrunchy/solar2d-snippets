@@ -31,6 +31,7 @@ local random = math.random
 -- Modules --
 local colored_corners = require("image_fx.colored_corners")
 local hash_ops = require("hash_ops")
+local ms = require("mask.MarchingSquares")
 
 -- Corona globals --
 local display = display
@@ -136,6 +137,7 @@ function Scene:show (event)
 							local index = colored_corners.GetIndexFromHash4(self.perm, ix, iy) + 1
 
 							column[j]:setFrame(index)
+							column[j]:setMask(nil)
 
 							iy = iy + 1
 						end
@@ -151,6 +153,11 @@ function Scene:show (event)
 		})
 
 		--
+	--	local ms, commit = ms.NewGrid(function(col, row, ncols, nrows, tiles)
+	--		return col <= ncols and row <= nrows and tiles[Index(col, row)]
+	--	end, 32, NCols * TileDim, NRows * TileDim, NCols, NRows)
+
+		--
 		function self.EnterFrame ()
 			done = done and dummy.x == -TileDim
 
@@ -164,6 +171,13 @@ function Scene:show (event)
 				end
 
 				-- TODO: Some moving thing (just up and down?) painting a mask on texture
+				-- Just approximate diagonal movement vertically, choose min and max (to account for wave pattern)
+				-- Blast from low to high - quantize to some arbitrary (not necessarily grid-aligned) column, say toward the middle
+				-- To do this right, probably need wrap option...
+--[=[
+		if tile then
+			MS(col, row, set)
+]=]
 			end
 		end
 
