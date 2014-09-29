@@ -13,3 +13,6 @@
 [submodule "bitwise_ops"]
 	path = bitwise_ops
 	url = https://github.com/ggcrunchy/bitwise_ops.git
+[submodule "linear_algebra_ops"]
+	path = linear_algebra_ops
+	url = https://github.com/ggcrunchy/linear_algebra_ops.git
