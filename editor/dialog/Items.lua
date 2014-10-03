@@ -43,13 +43,49 @@ local display = display
 -- Exports --
 local M = {}
 
+-- Bitfield checkbox response
+local function OnCheck_Field (cb, is_checked)
+	local value = cb.parent.value -- Need to add a utils.GetValue()?
+
+	if is_checked then
+		value = value + cb.m_flag
+	else
+		value = value - cb.m_flag
+	end
+
+	utils.UpdateObject(cb.parent, value)
+end
+
+--- DOCME
+function M:AddBitfield (options)
+	local bits = options and self:GetValue(options.value_name) or 0
+	local nstrs = #(options and options.strs or "")
+
+	-- local bf = group, + box (size nstrs + padding)
+
+	for i = 1, nstrs do
+		local str, low = options.strs[i], bits % 2
+
+		-- text, cb...
+		-- cb.m_id = i
+
+		-- local cb = checkbox.Checkbox(group, nil, 0, 0, 40, 40, OnCheck_Field)
+
+		-- self:CommonAdd(cb, { text = str, etc. }, true) -- Probably not, just do the long way
+
+		-- cb:Check(low == 1)
+
+		-- ypos = ypos + ddd...
+		bits = (bits - low) / 2
+	end
+
+--	self:CommonAdd(bf, options, true)
+end
+
 -- Checkbox response
 local function OnCheck (cb, is_checked)
 	utils.UpdateObject(cb, is_checked)
 end
-
--- TODO: AddBitfield()
--- Own widget? (seems it sort of needs the editor support anyhow...)
 
 --- DOCME
 -- @ptable options
@@ -65,8 +101,20 @@ end
 
 -- ^^^ TODO: "widgets"...
 
---- TODO: AddColorPicker()
--- What do the values look like?
+--
+local function OnColorChange (event)
+	utils.UpdateObject(event.target, true) -- true -> some combo of event.r, event.g, event.b
+end
+
+--- DOCME
+function M:AddColorPicker (options)
+	-- TODO!
+	-- What do the values look like? (peculiar in that color is multi-valued, of course)
+	-- Read inputs in some way
+	-- picker:SetColor(r, g, b)
+
+	-- picker:addEventListener("color_change", OnColorChange)
+end
 
 -- NYI
 -- @ptable options
@@ -126,7 +174,13 @@ function M:AddListbox (options)
 end
 
 -- ^^^ TODO: Various special-purpose lists...
--- TODO: AddSlider()
+
+--- DOCME
+function M:AddSlider (options)
+	-- TODO!
+	-- Horizontal, vertical?
+	-- Range, quantized?
+end
 
 --- DOCME
 -- @ptable options
