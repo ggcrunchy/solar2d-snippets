@@ -24,7 +24,9 @@
 --
 
 -- Standard library imports --
+local pairs = pairs
 local rawget = rawget
+local type = type
 
 -- Modules --
 local common = require("editor.Common")
@@ -68,6 +70,25 @@ function M.GetDialog (object)
 	return object
 end
 
+--- DOCME
+function M.GetValue (object)
+	local dialog, value = _GetDialog_(object)
+
+	if dialog then
+		local values, value_name = dialog.m_values, _GetProperty_(object, "value_name")
+
+		if values and value_name then
+			value = values[value_name]
+
+			if type(value) == "table" then
+				value = common.CopyInto({}, value)
+			end
+		end
+	end
+
+	return value
+end
+
 --- DOCMEMORE
 -- Updates the value bound to an object (dirties the editor state)
 function M.UpdateObject (object, value)
@@ -75,6 +96,23 @@ function M.UpdateObject (object, value)
 	local value_name = _GetProperty_(object, "value_name")
 
 	if values and value_name then
+		if type(value) == "table" then
+			-- If the values are already a table, copy into it instead of overwriting the reference.
+			if type(values[value_name]) == "table" then
+				local cur = values[value_name]
+
+				for k, v in pairs(value) do
+					cur[k] = v
+				end
+
+				value = cur
+
+			-- Otherwise, assign a shallow table copy to avoid capturing the input reference.
+			else
+				value = common.CopyInto({}, value)
+			end
+		end
+
 		values[value_name] = value
 
 		common.Dirty()

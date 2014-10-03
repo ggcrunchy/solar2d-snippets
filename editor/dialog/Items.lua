@@ -32,54 +32,73 @@ local min = math.min
 -- Modules --
 local button = require("ui.Button")
 local checkbox = require("ui.Checkbox")
+local color_picker = require("ui.ColorPicker")
 local common = require("editor.Common")
 local common_ui = require("editor.CommonUI")
+local layout = require("utils.Layout")
 local table_view_patterns = require("ui.patterns.table_view")
 local utils = require("editor.dialog.Utils")
 
 -- Corona globals --
 local display = display
+local native = native
 
 -- Exports --
 local M = {}
 
 -- Bitfield checkbox response
 local function OnCheck_Field (cb, is_checked)
-	local value = cb.parent.value -- Need to add a utils.GetValue()?
+	local value = utils.GetValue(cb.parent)
 
-	if is_checked then
-		value = value + cb.m_flag
-	else
-		value = value - cb.m_flag
+	if value ~= nil then
+		if is_checked then
+			value = value + cb.m_flag
+		else
+			value = value - cb.m_flag
+		end
+
+		utils.UpdateObject(cb.parent, value)
 	end
-
-	utils.UpdateObject(cb.parent, value)
 end
 
 --- DOCME
 function M:AddBitfield (options)
-	local bits = options and self:GetValue(options.value_name) or 0
-	local nstrs = #(options and options.strs or "")
+	local bits, sep = options and self:GetValue(options.value_name) or 0, 10
+	local bf, nstrs = display.newGroup(), #(options and options.strs or "")
+	local prev, w = 0, 0
 
-	-- local bf = group, + box (size nstrs + padding)
+	self:ItemGroup():insert(bf)
 
 	for i = 1, nstrs do
-		local str, low = options.strs[i], bits % 2
+		local cb, low = checkbox.Checkbox(bf, nil, 0, 0, 40, 40, OnCheck_Field), bits % 2
 
-		-- text, cb...
-		-- cb.m_id = i
+		cb.anchorX, cb.x = 0, sep
+		cb.m_flag = 2^(i - 1)
 
-		-- local cb = checkbox.Checkbox(group, nil, 0, 0, 40, 40, OnCheck_Field)
+		layout.PutBelow(cb, prev, sep)
 
-		-- self:CommonAdd(cb, { text = str, etc. }, true) -- Probably not, just do the long way
+		if low ~= 0 then
+			cb:Check(true)
+		end
 
-		-- cb:Check(low == 1)
+		local text = display.newText(bf, options.strs[i], 0, cb.y, native.systemFontBold, 22)
 
-		-- ypos = ypos + ddd...
-		bits = (bits - low) / 2
+		layout.PutRightOf(text, cb, sep)
+
+		bits, prev, w = (bits - low) / 2, cb, max(w, layout.RightOf(text, sep))
 	end
 
---	self:CommonAdd(bf, options, true)
+	local region = display.newRoundedRect(bf, 0, 0, w, layout.Below(prev, sep), 12)
+
+	region:setFillColor(0, 0)
+	region:setStrokeColor(0)
+	region:toBack()
+
+	region.anchorX, region.x = 0, 0
+	region.anchorY, region.y = 0, 0
+	region.strokeWidth = 3
+
+	self:CommonAdd(bf, options, true)
 end
 
 -- Checkbox response
@@ -102,18 +121,34 @@ end
 -- ^^^ TODO: "widgets"...
 
 --
+local RGB = {}
+
+--
 local function OnColorChange (event)
-	utils.UpdateObject(event.target, true) -- true -> some combo of event.r, event.g, event.b
+	RGB.r, RGB.g, RGB.b = event.r, event.g, event.b
+
+	utils.UpdateObject(event.target, RGB)
 end
 
 --- DOCME
 function M:AddColorPicker (options)
+	local picker = color_picker.ColorPicker(self:ItemGroup(), nil, 0, 0, 300, 240)
+
+	self:CommonAdd(picker, options, true)
+
+	local color = options and self:GetValue(options.value_name)
+
+	if color then
+		picker:SetColor(color.r, color.g, color.b)
+	end
+
+	picker:addEventListener("color_change", OnColorChange)
 	-- TODO!
 	-- What do the values look like? (peculiar in that color is multi-valued, of course)
 	-- Read inputs in some way
 	-- picker:SetColor(r, g, b)
 
-	-- picker:addEventListener("color_change", OnColorChange)
+	-- picker:
 end
 
 -- NYI

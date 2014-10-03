@@ -51,9 +51,11 @@ local function UpdateColorPick (colors)
 	picker.m_r, picker.m_g, picker.m_b = hsv.RGB_ColorSV(colors.m_rhue, colors.m_ghue, colors.m_bhue, node.m_u, 1 - node.m_v)
 
 	-- Alert listeners.
-	CCE.r, CCE.g, CCE.b, CCE.name = picker.m_r, picker.m_g, picker.m_b, "color_change"
+	CCE.r, CCE.g, CCE.b, CCE.name, CCE.target = picker.m_r, picker.m_g, picker.m_b, "color_change", picker
 
 	picker:dispatchEvent(CCE)
+
+	CCE.target = nil
 end
 
 -- Put the color node somewhere and apply updates
