@@ -29,7 +29,6 @@ local ipairs = ipairs
 -- Modules --
 local require_ex = require("tektite.require_ex")
 local button = require("ui.Button")
-local checkbox = require("ui.Checkbox")
 local common = require("editor.Common")
 local dialog_utils = require_ex.Lazy("editor.dialog.Utils")
 local object_helper = require("utils.ObjectHelper")
@@ -45,31 +44,6 @@ local widget = require("widget")
 
 -- Exports --
 local M = {}
-
---- Creates a checkbox with some attached text.
--- @pgroup group Group to which checkbox will be inserted.
--- @number x Checkbox x-coordinate...
--- @number y ...and y-coordinate.
--- @string text Text string.
--- @ptable options Optional checkbox options. The following fields are recognized:
---
--- * **func**: Passed as _func_ to @{ui.Checkbox.Checkbox}.
--- * **is_checked**: If true, the checkbox will start out checked.
--- @treturn DisplayGroup Augmented @{ui.Checkbox} object, with child #3: text object.
-function M.CheckboxWithText (group, x, y, text, options)
-	local cb = checkbox.Checkbox(group, nil, x, y, 40, 40, options and options.func)
-	local str = display.newText("", 0, 0, native.systemFontBold, 22)
-
-	object_helper.AlignTextToObject(str, text, cb, "below_left")
-
-	cb:insert(str)
-
-	cb:Check(options and options.is_checked)
-
-	cb.isVisible = false
-
-	return cb
-end
 
 --- Creates an editable text object.
 -- @pgroup group Group to which text and button will be inserted.

@@ -27,9 +27,14 @@
 local pairs = pairs
 
 -- Modules --
-local common_ui = require("editor.CommonUI")
+local checkbox = require("ui.Checkbox")
 local grid = require("editor.Grid")
 local help = require("editor.Help")
+local layout = require("utils.Layout")
+
+-- Corona globals --
+local display = display
+local native = native
 
 -- Exports --
 local M = {}
@@ -37,15 +42,27 @@ local M = {}
 -- Show layers checkbox --
 local ShowLayers
 
+-- --
+local Group
+
 ---
 -- @pgroup view X
 function M.Load (view)
-	ShowLayers = common_ui.CheckboxWithText(view, 175, 100, "Show other layers in grid?", {
-		func = function(_, check)
-			grid.ShowMultipleLayers(check)
-		end,
-		is_checked = true
-	})
+	Group = display.newGroup()
+
+	view:insert(Group)
+
+	ShowLayers = checkbox.Checkbox(Group, nil, 175, 100, 40, 40, function(_, check)
+		grid.ShowMultipleLayers(check)
+	end)
+
+	local str = display.newText(Group, "Show other layers in grid?", 0, ShowLayers.y, native.systemFontBold, 22)
+
+	layout.PutBelow(str, ShowLayers, 5)
+	layout.PutRightOf(str, layout.LeftOf(ShowLayers))
+
+	Group.isVisible = false
+
 	-- Warning level?
 	-- Replicate save to clipboard, console, log file, nothing?
 	-- Other?
@@ -54,19 +71,19 @@ end
 
 --- DOCMAYBE
 function M.Enter ()
-	ShowLayers.isVisible = true
+	Group.isVisible = true
 
 	help.SetContext("settings")
 end
 
 --- DOCMAYBE
 function M.Exit ()
-	ShowLayers.isVisible = false
+	Group.isVisible = false
 end
 
 --- DOCMAYBE
 function M.Unload ()
-	ShowLayers = nil
+	Group, ShowLayers = nil
 end
 
 -- Listen to events.

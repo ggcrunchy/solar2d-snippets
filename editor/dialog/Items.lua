@@ -143,12 +143,6 @@ function M:AddColorPicker (options)
 	end
 
 	picker:addEventListener("color_change", OnColorChange)
-	-- TODO!
-	-- What do the values look like? (peculiar in that color is multi-valued, of course)
-	-- Read inputs in some way
-	-- picker:SetColor(r, g, b)
-
-	-- picker:
 end
 
 -- NYI
