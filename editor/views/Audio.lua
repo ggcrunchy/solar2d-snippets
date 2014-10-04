@@ -38,7 +38,7 @@ local button = require("ui.Button")
 local common_ui = require("editor.CommonUI")
 local file_utils = require("utils.File")
 local help = require("editor.Help")
-local object_helper = require("utils.ObjectHelper")
+local layout = require("utils.Layout")
 
 -- Corona globals --
 local audio = audio
@@ -76,9 +76,10 @@ end
 
 --
 local function SetCurrent (what)
-	Current = what
+	Current, CurrentText.text = what, "Current music file: " .. (what or "NONE")
 
-	object_helper.AlignTextToObject(CurrentText, "Current music file: " .. (what or "NONE"), Songs, "below_right")
+	layout.PutBelow(CurrentText, Songs)
+	layout.RightAlignWith(CurrentText, Songs)
 end
 
 -- --

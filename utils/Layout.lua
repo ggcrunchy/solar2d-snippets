@@ -33,10 +33,14 @@ local type = type
 local display = display
 
 -- Cached module references --
+local _Above_
+local _Below_
+local _LeftOf_
 local _PutAbove_
 local _PutBelow_
 local _PutLeftOf_
 local _PutRightOf_
+local _RightOf_
 
 -- Exports --
 local M = {}
@@ -165,9 +169,19 @@ function M.Below (ref, dy)
 end
 
 --- DOCME
+function M.BottomAlignWith (object, ref, dy)
+	_PutAbove_(object, _Below_(ref), dy)
+end
+
+--- DOCME
 function M.CenterAt (object, x, y)
 	object.x = object.x + ToCenterX(object) + x - display.contentCenterX
 	object.y = object.y + ToCenterY(object) + y - display.contentCenterY
+end
+
+--- DOCME
+function M.LeftAlignWith (object, ref, dx)
+	_PutRightOf_(object, _LeftOf_(ref), dx)
 end
 
 --- DOCME
@@ -296,15 +310,32 @@ function M.PutRightOf (object, ref, dx)
 end
 
 --- DOCME
+function M.RightAlignWith (object, ref, dx)
+	_PutLeftOf_(object, _RightOf_(ref), dx)
+end
+
+--- DOCME
 function M.RightOf (ref, dx)
 	return floor(RightX(ref) + DX(dx))
 end
 
+--- DOCME
+function M.TopAlignWith (object, ref, dy)
+	_PutBelow_(object, _Above_(ref), dy)
+end
+
 -- Cache module members.
+_Above_ = M.Above
+_Below_ = M.Below
+_LeftOf_ = M.LeftOf
 _PutAbove_ = M.PutAbove
 _PutBelow_ = M.PutBelow
 _PutLeftOf_ = M.PutLeftOf
 _PutRightOf_ = M.PutRightOf
+_RightOf_ = M.RightOf
+
+-- TODO: Pens, cursors
+-- ^^ Some sort of DSL for widgets?
 
 -- Export the module.
 return M

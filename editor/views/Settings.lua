@@ -59,7 +59,7 @@ function M.Load (view)
 	local str = display.newText(Group, "Show other layers in grid?", 0, ShowLayers.y, native.systemFontBold, 22)
 
 	layout.PutBelow(str, ShowLayers, 5)
-	layout.PutRightOf(str, layout.LeftOf(ShowLayers))
+	layout.LeftAlignWith(str, ShowLayers)
 
 	Group.isVisible = false
 

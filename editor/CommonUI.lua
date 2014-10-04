@@ -31,7 +31,7 @@ local require_ex = require("tektite.require_ex")
 local button = require("ui.Button")
 local common = require("editor.Common")
 local dialog_utils = require_ex.Lazy("editor.dialog.Utils")
-local object_helper = require("utils.ObjectHelper")
+local layout = require("utils.Layout")
 local touch = require("ui.Touch")
 
 -- Corona globals --
@@ -80,9 +80,9 @@ function M.EditableString (group, keys, x, y, options)
 	end, "EDIT")
 
 	-- Add the text, positioned and aligned relative to the button.
-	str = display.newText(group, "", 0, 0, font or native.systemFont, size or 20)
+	str = display.newText(group, text or "", 0, button.y, font or native.systemFont, size or 20)
 
-	object_helper.AlignTextToObject(str, text or "", button[1], "to_right", 10)
+	layout.PutRightOf(str, button, 15)
 
 	return str, button
 end

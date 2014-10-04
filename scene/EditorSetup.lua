@@ -35,10 +35,11 @@ local sort = table.sort
 local tonumber = tonumber
 
 -- Modules --
+local args = require("iterator_ops.args")
 local button = require("ui.Button")
 local common_ui = require("editor.CommonUI")
 local keyboard = require("ui.Keyboard")
-local object_helper = require("utils.ObjectHelper")
+local layout = require("utils.Layout")
 local persistence = require("game.Persistence")
 local scenes = require("utils.Scenes")
 local table_view_patterns = require("ui.patterns.table_view")
@@ -78,7 +79,8 @@ local RowText = "Number of rows:"
 -- Create Scene --
 function Scene:create ()
 	button.Button(self.view, nil, 120, 70, 200, 50, scenes.WantsToGoBack, "Go Back")
-	button.Button(self.view, nil, display.contentWidth - (150 + 20), display.contentHeight - (20 + 50), 200, 50, function()
+
+	self.m_new_scene = button.Button(self.view, nil, display.contentWidth - (150 + 20), display.contentHeight - (20 + 50), 200, 50, function()
 		local cols = tonumber(self.m_cols.text)
 		local rows = tonumber(self.m_rows.text)
 
@@ -108,7 +110,10 @@ Scene:addEventListener("create")
 
 -- Updates levels listbox and related elements according to current choice
 local function UpdateCurrent (scene, levels, index)
-	object_helper.AlignTextToObject(scene.m_current, "Current choice: " .. levels[index].name, scene.m_levels_list, "below_left", 0, 10)
+	scene.m_current.text = "Current choice: " .. levels[index].name
+
+	layout.PutBelow(scene.m_current, scene.m_levels_list, 10)
+	layout.LeftAlignWith(scene.m_current, scene.m_levels_list)
 
 	scene.m_load_index = index
 end
@@ -133,13 +138,13 @@ function Scene:show (event)
 
 	 -- TODO: use object_helper...
 		if OnDevice then
-			self.m_cols = native.newTextField(textx, colsy, 300, 65, function(event)
+			self.m_cols = native.newTextField(textx, self.m_cols_text.y, 300, 65, function(event)
 				if event.phase == "submitted" then
 					native.setKeyboardFocus(self.m_rows)
 				end
 			end)
 
-			self.m_rows = native.newTextField(textx, rowsy, 300, 65, function(event)
+			self.m_rows = native.newTextField(textx, self.m_rows_text.y, 300, 65, function(event)
 				if event.phase == "submitted" then
 					native.setKeyboardFocus(nil)
 				end
@@ -196,33 +201,47 @@ function Scene:show (event)
 
 			UpdateCurrent(self, levels, 1)
 
-			self.m_delete = button.Button(self.view, nil, display.contentWidth - (200 + 20), display.contentHeight - (20 + 190), 200, 50, function()
-				local index = self.m_load_index
+			--
+			local prev = self.m_new_scene
 
-				-- Remove the level from the database, the local sorted list, and the listbox.
-				persistence.RemoveLevel(levels[index].name, true)
+			for _, key, action, text in args.ArgsByN(3,
+				-- Load Scene --
+				"load", function()
+					local level = levels[self.m_load_index]
+					local params = persistence.Decode(level.data)
 
-				remove(levels, index)
+					params.is_loading = level.name
 
-				self.m_levels_list:Delete(index)
+					scenes.GoToScene{ name = "scene.MapEditor", params = params }
+				end, "Load Scene",
 
-				-- Update the listbox selection to reflect the missing element, or remove all the load
-				-- elements entirely if no more levels exist.
-				if #levels == 0 then
-					CleanupLoadElements()
-				else
-					UpdateCurrent(self, levels, index <= #levels and index or index - 1)
-				end
-			end, "Delete scene")
+				-- Delete Scene --
+				"delete", function()
+					local index = self.m_load_index
 
-			self.m_load = button.Button(self.view, nil, display.contentWidth - (200 + 20), display.contentHeight - (20 + 120), 200, 50, function()
-				local level = levels[self.m_load_index]
-				local params = persistence.Decode(level.data)
+					-- Remove the level from the database, the local sorted list, and the listbox.
+					persistence.RemoveLevel(levels[index].name, true)
 
-				params.is_loading = level.name
+					remove(levels, index)
 
-				scenes.GoToScene{ name = "scene.MapEditor", params = params }
-			end, "Load Scene")
+					self.m_levels_list:Delete(index)
+
+					-- Update the listbox selection to reflect the missing element, or remove all the load
+					-- elements entirely if no more levels exist.
+					if #levels == 0 then
+						CleanupLoadElements()
+					else
+						UpdateCurrent(self, levels, index <= #levels and index or index - 1)
+					end
+				end, "Delete scene"
+			) do
+				local button = button.Button(self.view, nil, 0, 0, 200, 50, action, text)
+
+				layout.LeftAlignWith(button, prev)
+				layout.PutAbove(button, prev, -20)
+
+				self["m_" .. key], prev = button, button
+			end
 		end
 	end
 end

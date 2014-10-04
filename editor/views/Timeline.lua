@@ -1,4 +1,4 @@
---- Editor views list.
+--- Editing components for timeline-based events.
 
 --
 -- Permission is hereby granted, free of charge, to any person obtaining
@@ -23,14 +23,33 @@
 -- [ MIT license: http://www.opensource.org/licenses/mit-license.php ]
 --
 
-return {
-	_prefix = "editor.views",
+-- Exports --
+local M = {}
 
-	"Player",
-	"Dots", "EventBlocks", "Tiles",
-	"Positions", "Triggers",
-	"GlobalEvents", "State",
-	"Audio", "Background", "Timeline",
-	"Link",
-	"Settings"
-}
+---
+-- @pgroup view X
+function M.Load (view)
+
+end
+
+---
+-- @pgroup view X
+function M.Enter (view)
+
+end
+
+--- DOCMAYBE
+function M.Exit ()
+
+end
+
+-- Overall time vs. per-"session" time (i.e. enter_level vs. reset_level)
+-- Supports rewind / go-to?
+
+--- DOCMAYBE
+function M.Unload ()
+
+end
+
+-- Export the module.
+return M
