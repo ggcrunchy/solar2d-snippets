@@ -35,6 +35,7 @@ local common = require("editor.Common")
 local events = require("editor.Events")
 local keyboard = require("ui.Keyboard")
 local persistence = require("game.Persistence")
+local prompts = require("ui.patterns.prompts")
 local timers = require("game.Timers")
 
 -- Corona globals --
