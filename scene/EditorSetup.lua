@@ -28,7 +28,6 @@
 
 -- Standard library imports --
 local format = string.format
-local ipairs = ipairs
 local max = math.max
 local remove = table.remove
 local sort = table.sort
@@ -120,7 +119,7 @@ end
 
 -- Clean up (conditional) elements used for scene loading
 local function CleanupLoadElements ()
-	for _, what in ipairs{ "m_current", "m_delete", "m_frame", "m_levels_list", "m_load" } do
+	for _, what in args.Args("m_current", "m_delete", "m_frame", "m_levels_list", "m_load") do
 		display.remove(Scene[what])
 
 		Scene[what] = nil
@@ -164,7 +163,7 @@ function Scene:show (event)
 
 			local w = .5 * self.m_colsedit.width
 
-			for _, what in ipairs{ "m_cols", "m_colsedit", "m_rows", "m_rowsedit" } do
+			for _, what in args.Args("m_cols", "m_colsedit", "m_rows", "m_rowsedit") do
 				self[what]:translate(w, 0)
 			end
 		end

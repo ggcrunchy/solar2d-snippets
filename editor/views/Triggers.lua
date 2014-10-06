@@ -29,7 +29,11 @@ local M = {}
 ---
 -- @pgroup view X
 function M.Load (view)
-
+	-- Like positions, but...
+	-- Are event sources
+	-- Have bitfields: on(enter): { left, right, top, bottom }, on(leave): ditto
+	-- Affected by: player, other? (also a bitfield?)
+	-- One-time? Reset?
 end
 
 ---

@@ -29,7 +29,10 @@ local M = {}
 ---
 -- @pgroup view X
 function M.Load (view)
-
+	-- Actions!
+	-- Conditions...
+	-- Monitors
+	-- The first two (at least) would be new groups of objects (like dots, event blocks, etc.)
 end
 
 ---
