@@ -66,6 +66,27 @@ local View
 
 -- Tries to get the level name; if successful, writes the level
 local function GetLevelName (func, wip)
+	--[[
+ASSIGN View to group
+
+		prompts.WriteEntry_MightExist(LevelName, {
+			group = View, what = "level name",
+
+			exists = function(name, _, wip)
+				return persistence.LevelExists(name, wip)
+			end,
+
+			writer = function(name, func, wip)
+				M.SetLevelName(name)
+
+				local blob = persistence.Encode(func(), not wip)
+
+				persistence.SaveLevel(name, blob, true, wip, IsTemp)
+			end
+		})
+
+ASSIGN nil to group
+	]]
 	-- Name available: write away!
 	if LevelName then
 		Write(LevelName, func, wip)

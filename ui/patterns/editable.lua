@@ -23,6 +23,17 @@
 -- [ MIT license: http://www.opensource.org/licenses/mit-license.php ]
 --
 
+-- Exports --
+local M = {}
+
+--- DOCME
+function M.Editable ()
+end
+
+--- DOCME
+function M.Editable_XY ()
+end
+
 --[=[
 
 --- Creates an editable text object.
@@ -68,3 +79,6 @@ function M.EditableString (group, keys, x, y, options)
 end
 
 ]=]
+
+-- Export the module.
+return M

@@ -38,6 +38,9 @@ local native = native
 -- Exports --
 local M = {}
 
+-- --
+local CX, CY = display.contentCenterX, display.contentCenterY
+
 --
 local function Message (message, what)
 	return message:format(what)
@@ -46,24 +49,26 @@ end
 --- DOCME
 -- @string[opt] name
 -- @ptable opts
-function M.WriteEntry_MightExist (name, opts)
+-- @param arg1
+-- @param arg2
+function M.WriteEntry_MightExist (name, opts, arg1, arg2)
 	local exists = opts and assert(opts.exists, "Missing existence predicate")
 	local writer = opts and assert(opts.writer, "Missing entry writer function")
 
-	-- Name available: write it.
+	-- Name available: perform the write.
 	if name then
-		writer(name, opts.arg)
+		writer(name, arg1, arg2)
 
 	-- Unavailable: ask the user to provide one.
 	else
-		local arg, group, what = opts.arg, opts.group or display.getCurrentStage(), opts.what or "name"
+		local group, what = opts.group or display.getCurrentStage(), opts.what or "name"
 		local def_text = opts.def_text or what:upper()
 
 		native.showAlert(Message("Missing %s", what), Message("Please provide a %s", what), { "OK" }, function(event)
 			if event.action == "clicked" then
 				timers.Defer(function()
 					local keys = keyboard.Keyboard(group, nil, nil, 0, 50) -- TODO: On device, use native keyboard?
-					local str = display.newText(group, def_text, 0, 0, opts.font or native.systemFontBold, opts.size or 28)
+					local str = display.newText(group, def_text, CX, CY, opts.font or native.systemFontBold, opts.size or 28)
 
 					keys:SetTarget(str)
 					str:setFillColor(1, 0, 0)
@@ -71,12 +76,15 @@ function M.WriteEntry_MightExist (name, opts)
 					common.AddNet(group, keys)
 
 					keys:SetClosePredicate(function()
-						local name = str.text
-						local does_exist = exists(name, arg)
+						name = str.text
 
-						-- Was the user-provided name free? If so, write.
+						local does_exist = exists(name, arg1, arg2)
+
+						-- If the user-provided name was available, perform the write.
 						if not does_exist then
-							writer(name, arg)
+							writer(name, arg1, arg2)
+
+							-- Remove stuff and return true? (would obviate does_exist variable)
 						end
 
 						timers.Defer(function()
@@ -84,12 +92,12 @@ function M.WriteEntry_MightExist (name, opts)
 							if does_exist then
 								native.showAlert(Message("The %s is already in use!", what), "Overwrite?", { "OK", "Cancel" }, function(event)
 									if event.action == "clicked" and event.index == 1 then
-										writer(name, arg)
+										writer(name, arg1, arg2)
 									end
 								end)
 							end
 
-							-- Clean up temporary widgets.
+							-- Clean up temporary widgets. (try to coalesce these into "editable")
 							keys:removeSelf()
 							str:removeSelf()
 						end)
