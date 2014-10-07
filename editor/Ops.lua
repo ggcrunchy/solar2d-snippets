@@ -33,13 +33,11 @@ local write = io.write
 -- Modules --
 local common = require("editor.Common")
 local events = require("editor.Events")
-local keyboard = require("ui.Keyboard")
 local persistence = require("game.Persistence")
 local prompts = require("ui.patterns.prompts")
 local timers = require("game.Timers")
 
 -- Corona globals --
-local display = display
 local native = native
 local system = system
 
@@ -49,15 +47,6 @@ local composer = require("composer")
 -- Is the level being saved or built temporary? --
 local IsTemp
 
--- Writes a blob to the database
-local function Write (name, func, wip)
-	M.SetLevelName(name)
-
-	local blob = persistence.Encode(func(), not wip)
-
-	persistence.SaveLevel(name, blob, true, wip, IsTemp)
-end
-
 -- Working level name --
 local LevelName
 
@@ -66,77 +55,21 @@ local View
 
 -- Tries to get the level name; if successful, writes the level
 local function GetLevelName (func, wip)
-	--[[
-ASSIGN View to group
+	prompts.WriteEntry_MightExist(LevelName, {
+		group = View, what = "level name",
 
-		prompts.WriteEntry_MightExist(LevelName, {
-			group = View, what = "level name",
+		exists = function(name)
+			return persistence.LevelExists(name, wip)
+		end,
 
-			exists = function(name, _, wip)
-				return persistence.LevelExists(name, wip)
-			end,
+		writer = function(name)
+			M.SetLevelName(name)
 
-			writer = function(name, func, wip)
-				M.SetLevelName(name)
+			local blob = persistence.Encode(func(), not wip)
 
-				local blob = persistence.Encode(func(), not wip)
-
-				persistence.SaveLevel(name, blob, true, wip, IsTemp)
-			end
-		})
-
-ASSIGN nil to group
-	]]
-	-- Name available: write away!
-	if LevelName then
-		Write(LevelName, func, wip)
-
-	-- Unavailable: ask the user to provide one.
-	else
-		native.showAlert("Missing level name", "Please provide a name", { "OK" }, function(event)
-			if event.action == "clicked" then
-				timers.Defer(function()
-					local keys = keyboard.Keyboard(View, nil, nil, 0, 50) -- TODO: On device, use native keyboard?
-					local str = display.newText(View, "LEVEL NAME", 0, 0, native.systemFontBold, 28)
-
-					keys:SetTarget(str)
-					str:setFillColor(1, 0, 0)
-
-					common.AddNet(View, keys)
-
-					keys:SetClosePredicate(function()
-						local name = str.text
-						local exists = persistence.LevelExists(name, wip)
-
-						-- Was the user-provided name free? If so, write the level.
-						if not exists then
-							Write(name, func, wip)
-						end
-
-						timers.Defer(function()
-							-- If the user-provided name is already in the database, request
-							-- permission before overwriting the level.
-							if exists then
-								native.showAlert("Scene name already in use!", "Overwrite?", { "OK", "Cancel" }, function(event)
-									if event.action == "clicked" and event.index == 1 then
-										Write(name, func, wip)
-									end
-								end)
-							end
-
-							-- Clean up temporary widgets.
-							keys:removeSelf()
-							str:removeSelf()
-						end)
-
-						-- Hide the string until the deferred cleanup.
-						str.isVisible = false
-						-- TODO: return true? Or was there reasoning behind not doing so?
-					end)
-				end)
-			end
-		end)
-	end
+			persistence.SaveLevel(name, blob, true, wip, IsTemp)
+		end
+	})
 end
 
 -- Common save / build logic

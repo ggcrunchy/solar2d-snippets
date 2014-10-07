@@ -27,11 +27,25 @@
 local M = {}
 
 --- DOCME
-function M.Editable ()
+function M.Editable (group, opts)
+	-- ??
+	-- options:
+		-- Initial text
+		-- Font, size
+		-- Keyboard type
+		-- Keyboard only? (i.e. no native text)
+		-- Text filtering
+			-- How to handle with native text input?
+			-- For typing, just ignore invalid input (add caret?)
+		-- Is modal?
+	-- Approximate width, height (container?)
+		-- Somehow make obvious, e.g. tinted rounded rect
+			-- Even better dashed, but... not handy
 end
 
 --- DOCME
-function M.Editable_XY ()
+function M.Editable_XY (group, x, y, opts)
+	-- Core logic, + (x, y) stuff
 end
 
 --[=[

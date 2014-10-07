@@ -49,15 +49,14 @@ end
 --- DOCME
 -- @string[opt] name
 -- @ptable opts
--- @param arg1
--- @param arg2
-function M.WriteEntry_MightExist (name, opts, arg1, arg2)
+-- @param arg
+function M.WriteEntry_MightExist (name, opts, arg)
 	local exists = opts and assert(opts.exists, "Missing existence predicate")
 	local writer = opts and assert(opts.writer, "Missing entry writer function")
 
 	-- Name available: perform the write.
 	if name then
-		writer(name, arg1, arg2)
+		writer(name, arg)
 
 	-- Unavailable: ask the user to provide one.
 	else
@@ -78,11 +77,11 @@ function M.WriteEntry_MightExist (name, opts, arg1, arg2)
 					keys:SetClosePredicate(function()
 						name = str.text
 
-						local does_exist = exists(name, arg1, arg2)
+						local does_exist = exists(name, arg)
 
 						-- If the user-provided name was available, perform the write.
 						if not does_exist then
-							writer(name, arg1, arg2)
+							writer(name, arg)
 
 							-- Remove stuff and return true? (would obviate does_exist variable)
 						end
@@ -92,7 +91,7 @@ function M.WriteEntry_MightExist (name, opts, arg1, arg2)
 							if does_exist then
 								native.showAlert(Message("The %s is already in use!", what), "Overwrite?", { "OK", "Cancel" }, function(event)
 									if event.action == "clicked" and event.index == 1 then
-										writer(name, arg1, arg2)
+										writer(name, arg)
 									end
 								end)
 							end
