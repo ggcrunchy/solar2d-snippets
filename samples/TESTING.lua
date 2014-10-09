@@ -39,6 +39,11 @@ Scene:addEventListener("create")
 --
 function Scene:show (e)
 	if e.phase == "will" then return end
+	local em=require("ui.patterns.editable")
+	local ed=em.Editable(self.view, {
+		text = "DUCK"
+	})
+	ed.x, ed.y = display.contentCenterX, display.contentCenterY
 end
 
 Scene:addEventListener("show")
