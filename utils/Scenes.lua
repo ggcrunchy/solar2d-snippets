@@ -106,8 +106,13 @@ end
 
 --- Setter.
 -- @tparam ?|callable|nil func Scene listener to install, or **nil** to clear the listener.
+-- @treturn ?callable Previous scene listener, or **nil** if absent.
 function M.SetListenFunc (func)
+	local cur = ListenFunc
+
 	ListenFunc = func
+
+	return cur
 end
 
 do

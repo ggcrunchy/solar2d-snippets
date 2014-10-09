@@ -23,6 +23,14 @@
 -- [ MIT license: http://www.opensource.org/licenses/mit-license.php ]
 --
 
+-- Modules --
+local keyboard = require("ui.Keyboard")
+local layout = require("utils.Layout")
+local scenes = require("uitls.Scenes")
+
+-- Corona globals --
+local native = native
+
 -- Exports --
 local M = {}
 
@@ -36,8 +44,9 @@ function M.Editable (group, opts)
 		-- Keyboard only? (i.e. no native text)
 		-- Text filtering
 			-- How to handle with native text input?
-			-- For typing, just ignore invalid input (add caret?)
-		-- Is modal?
+			-- For typing, just ignore invalid input
+				-- Key repeat, caret, backspace, delete, etc.
+		-- Is modal? (probably should always be, UNLESS strictly editbox-ish)
 	-- Approximate width, height (container?)
 		-- Somehow make obvious, e.g. tinted rounded rect
 			-- Even better dashed, but... not handy
@@ -85,9 +94,9 @@ function M.EditableString (group, keys, x, y, options)
 	end, "EDIT")
 
 	-- Add the text, positioned and aligned relative to the button.
-	str = display.newText(group, "", 0, 0, font or native.systemFont, size or 20)
+	str = display.newText(group, text or "", 0, button.y, font or native.systemFont, size or 20)
 
-	object_helper.AlignTextToObject(str, text or "", button[1], "to_right", 10)
+	layout.PutRightOf(str, button, 15)
 
 	return str, button
 end
