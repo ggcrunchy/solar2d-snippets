@@ -35,12 +35,10 @@ local scenes = require("utils.Scenes")
 local display = display
 local native = native
 local system = system
+local transition = transition
 
 -- Exports --
 local M = {}
-
--- --
-local OldListenFunc
 
 --
 local function SetText (str, text, align, w)
@@ -53,6 +51,21 @@ local function SetText (str, text, align, w)
 	end
 end
 
+-- --
+local OldListenFunc
+
+-- --
+local Net
+
+-- --
+local FadeAwayParams = {
+	alpha = 0,
+		
+	onComplete = function(object)
+		object:removeSelf()
+	end
+}
+
 --
 local function HandleKey (event)
 	local name, phase = event.keyName, event.phase
@@ -60,8 +73,9 @@ local function HandleKey (event)
 	--
 	if name == "enter" then
 		scenes.SetListenFunc(OldListenFunc)
+		transition.to(Net, FadeAwayParams)
 
-		OldListenFunc = nil
+		OldListenFunc, Net = nil
 
 	--
 	elseif name == "deleteBack" or name == "deleteForward" then
@@ -106,11 +120,36 @@ local Filter = {
 }
 
 --
-local function EnterInputMode (event)
-	if event.phase == "began" then
-		OldListenFunc = scenes.SetListenFunc(Listen)
+local function NoTouch () return true end
 
-		-- Fade effect, net, etc.
+-- --
+local FadeInParams = { alpha = .4 }
+
+--
+local function EnterInputMode (event)
+	if event.phase == "began" and not Net then
+		OldListenFunc = scenes.SetListenFunc(Listen)
+		Net = display.newRect(0, 0, display.contentWidth, display.contentHeight)
+
+		--
+		Net:addEventListener("touch", NoTouch)
+
+		--
+		local editable = event.target
+		local group = editable.parent
+
+		for i = group.numChildren, 1, -1 do
+			if group[i] == editable then
+				group:insert(i, Net)
+
+				break
+			end
+		end
+
+		--
+		Net.alpha = .01
+
+		transition.to(Net, FadeInParams)
 	end
 
 	return true
