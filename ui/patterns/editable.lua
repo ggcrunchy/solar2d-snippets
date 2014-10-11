@@ -25,6 +25,7 @@
 
 -- Standard library imports --
 local max = math.max
+local sub = string.sub
 
 -- Modules --
 local keyboard = require("ui.Keyboard")
@@ -68,34 +69,69 @@ local FadeAwayParams = {
 }
 
 --
-local function IsValid (name, filter)
+local function UpdateCaret (info, pos)
+	info.text, info.m_pos = info.parent:GetText():sub(1, pos), pos
+
+	local width = info.width
+
+	-- PutRightOf() layout.LeftOf(str)
+end
+
+--
+local function ClampCaretAdjust (info, n, dec)
+	local old_pos, new_pos = info.m_pos
+
+	if dec then
+		new_pos = old_pos > 0 and old_pos - 1
+	else
+		new_pos = old_pos < n and old_pos + 1
+	end
+
+	if new_pos then
+		UpdateCaret(info, new_pos)
+
+		return old_pos
+	end
+end
+
+--
+local function Validate (name, filter)
 	if filter then
 		name = filter(name)
 	end
 
 	if name then
-		--
+		-- Is a letter or number or dot or space? (conforms to keyboard)
 	end
 end
 
 --
 local function DoKey (info, name)
+	local text = info.parent:GetText()
+
+	--
 	if name == "deleteBack" or name == "deleteForward" then
-		if name == "deleteBack" then
-			-- pos > 0
-				-- Remove, recalc caret
-		else
-			-- pos < #str
-				-- Remove
+		local pos = ClampCaretAdjust(info, #text, name == "deleteBack")
+
+		if pos then
+			local text = sub(text, 1, pos - 1) .. sub(text, pos + 1)
 		end
+
+	--
 	elseif name == "left" or name == "right" then
-		-- Can move?
-			-- Recalc caret
-	elseif IsValid(name, info.m_filter) then
-		-- Add character
-		-- Recalc caret
+		ClampCaretAdjust(info, #text, name == "left")
+
+	--
 	else
-		return false
+		local result = Validate(name, info.m_filter)
+
+		if result then
+			-- Add character
+
+			UpdateCaret(info, info.m_pos + 1)
+		else
+			return false
+		end
 	end
 
 	return true
@@ -119,14 +155,13 @@ local function HandleKey (event)
 		for i = 1, group.numChildren do
 			local item = group[i]
 
-			if item.m_is_info then
+			if item.m_pos then
 				--
 				if event.phase == "down" then
 					if not item.m_timer and DoKey(item, name) then
-						item.m_key = name
-						item.m_timer = timer.performWithDelay(350, function()
+						item.m_timer, item.m_key = timer.performWithDelay(350, function()
 							DoKey(item, name)
-						end, 0)
+						end, 0), name
 					end
 
 				--
@@ -140,8 +175,6 @@ local function HandleKey (event)
 			end
 		end
 	end
-
-	-- Key repeat, caret, etc.
 
 	return true
 end
@@ -187,7 +220,7 @@ local function EnterInputMode (event)
 		local editable = event.target
 		local group = editable.parent
 
-		for i = group.numChildren, 1, -1 do
+		for i = 1, group.numChildren do
 			if group[i] == editable then
 				group:insert(i, Net)
 
@@ -203,6 +236,9 @@ local function EnterInputMode (event)
 
 	return true
 end
+
+-- TODO: Handle taps in text case? (then need to pinpoint position...)
+-- Needs to handle all three alignments, too
 
 --
 local function AuxEditable (group, x, y, opts)
@@ -232,9 +268,13 @@ local function AuxEditable (group, x, y, opts)
 	SetText(str, str.text, align, w)
 
 	--
+	-- caret?
+	-- could just have a transition on repeat...
+
+	--
 	local info = display.newText(Editable, "", 0, 0, font, size)
 
-	info.isVisible, info.m_is_info = false, true
+	info.isVisible, info.m_pos = false, 0
 
 	--
 	local body = display.newRoundedRect(Editable, 0, 0, w + 5, h + 5, 12)
