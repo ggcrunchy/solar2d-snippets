@@ -35,6 +35,7 @@ local scenes = require("utils.Scenes")
 local display = display
 local native = native
 local system = system
+local timer = timer
 local transition = transition
 
 -- Exports --
@@ -67,6 +68,40 @@ local FadeAwayParams = {
 }
 
 --
+local function IsValid (name, filter)
+	if filter then
+		name = filter(name)
+	end
+
+	if name then
+		--
+	end
+end
+
+--
+local function DoKey (info, name)
+	if name == "deleteBack" or name == "deleteForward" then
+		if name == "deleteBack" then
+			-- pos > 0
+				-- Remove, recalc caret
+		else
+			-- pos < #str
+				-- Remove
+		end
+	elseif name == "left" or name == "right" then
+		-- Can move?
+			-- Recalc caret
+	elseif IsValid(name, info.m_filter) then
+		-- Add character
+		-- Recalc caret
+	else
+		return false
+	end
+
+	return true
+end
+
+--
 local function HandleKey (event)
 	local name, phase = event.keyName, event.phase
 
@@ -78,17 +113,31 @@ local function HandleKey (event)
 		OldListenFunc, Net = nil
 
 	--
-	elseif name == "deleteBack" or name == "deleteForward" then
-		if event.phase == "down" then
-			--
-		end
-
-	--
 	else
-		if event.phase == "down" then
-			--
-		else
-			--
+		local group = Net.parent
+
+		for i = 1, group.numChildren do
+			local item = group[i]
+
+			if item.m_is_info then
+				--
+				if event.phase == "down" then
+					if not item.m_timer and DoKey(item, name) then
+						item.m_key = name
+						item.m_timer = timer.performWithDelay(350, function()
+							DoKey(item, name)
+						end, 0)
+					end
+
+				--
+				elseif item.m_key == name then
+					timer.cancel(item.m_timer)
+
+					item.m_key, item.m_timer = nil
+				end
+
+				break
+			end
 		end
 	end
 
@@ -176,10 +225,16 @@ local function AuxEditable (group, x, y, opts)
 	end
 
 	--
-	local str = display.newText(Editable, opts and opts.text or "", 0, 0, opts and opts.font or native.systemFontBold, opts and opts.size or 20)
+	local font, size = opts and opts.font or native.systemFontBold, opts and opts.size or 20
+	local str = display.newText(Editable, opts and opts.text or "", 0, 0, font, size)
 	local w, h, align = max(str.width, opts and opts.width or 0, 80), max(str.height, opts and opts.height or 0, 25), opts and opts.align
 
 	SetText(str, str.text, align, w)
+
+	--
+	local info = display.newText(Editable, "", 0, 0, font, size)
+
+	info.isVisible, info.m_is_info = false, true
 
 	--
 	local body = display.newRoundedRect(Editable, 0, 0, w + 5, h + 5, 12)
