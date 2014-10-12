@@ -36,6 +36,9 @@ local display = display
 -- Cached module references --
 local _Above_
 local _Below_
+local _CenterAlignWith_
+local _CenterAt_
+local _CenterOf_
 local _LeftOf_
 local _PutAbove_
 local _PutBelow_
@@ -174,20 +177,34 @@ function M.BottomAlignWith (object, ref, dy)
 	_PutAbove_(object, _Below_(ref), dy)
 end
 
+--
+local function CenterX (object, x)
+	return floor(object.x + ToCenterX(object) + DX(x))
+end
+
+--
+local function CenterY (object, y)
+	return floor(object.y + ToCenterY(object) + DY(y))
+end
+
 --- DOCME
-function M.CenterAlign (object, ref, dx, dy)
-	-- TODO
+function M.CenterAlignWith (object, ref_object, dx, dy) -- TEST!
+	_CenterAt_(object, _CenterOf_(ref_object, dx, dy))
 end
 
 --- DOCME
 function M.CenterAt (object, x, y)
-	object.x = object.x + ToCenterX(object) + x - display.contentCenterX
-	object.y = object.y + ToCenterY(object) + y - display.contentCenterY
+	object.x = CenterX(object, x) - display.contentCenterX
+	object.y = CenterY(object, y) - display.contentCenterY
 end
 
 --- DOCME
-function M.CenterOf (object, dx, dy)
-	-- TODO
+function M.CenterOf (object, dx, dy) -- TEST!
+	local bounds = object.contentBounds
+
+	-- group, nongroup?
+
+	return floor(.5 * (bounds.xMin + bounds.xMax) + DX(dx)), floor(.5 * (bounds.yMin + bounds.yMax) + DY(dy))
 end
 
 --- DOCME
@@ -225,7 +242,7 @@ end
 
 --- DOCME
 function M.PutAtBottomCenter (object, dx, dy)
-	object.x = floor(object.x + ToCenterX(object) + DX(dx))
+	object.x = CenterX(object, dx)
 
 	_PutAbove_(object, display.contentHeight, dy)
 end
@@ -244,62 +261,74 @@ end
 
 --- DOCME
 function M.PutAtCenter (object, dx, dy)
-	object.x = floor(object.x + ToCenterX(object) + DX(dx))
-	object.y = floor(object.y + ToCenterY(object) + DY(dy))
+	object.x = CenterX(object, dx)
+	object.y = CenterY(object, dy)
 end
 
 --- DOCME
 function M.PutAtCenterLeft (object, dx, dy)
 	_PutRightOf_(object, 0, dx)
 
-	object.y = floor(object.x + ToCenterY(object) + DY(dy))
+	object.y = CenterY(object, dy)
 end
 
 --- DOCME
 function M.PutAtCenterRight (object, dx, dy)
 	_PutLeftOf_(object, display.contentWidth, dx)
 
-	object.y = floor(object.x + ToCenterY(object) + DY(dy))
+	object.y = CenterY(object, dy)
 end
 
 --- DOCME
-function M.PutAtFirstHit (object, ref, choices, center_on_fail)
-	-- local cx, cy = _CenterOf _(ref)
-	local dx, dy = DX(choices.dx), DY(choices.dy)
+function M.PutAtFirstHit (object, ref_object, choices, center_on_fail)
+	local x, y, dx, dy = object.x, object.y, DX(choices.dx), DY(choices.dy)
 
+	--
 	for _, choice in ipairs(choices) do
-		if choice == "above" then
-			-- center x
-			_PutAbove_(object, ref, -dy)
-			-- test top
-		elseif choice == "below" then
-			-- center x
-			_PutBelow_(object, ref, dy)
-			-- test bottom
-		elseif choice == "left_of" then
-			-- center y
-			_PutLeftOf_(object, ref, -dx)
-			-- test left
-		elseif choice == "right_of" then
-			-- center y
-			_PutRightOf_(object, ref, dx)
-			-- test right
-		end
+		_CenterAlignWith_(object, ref_object)
 
-		--
-		if true then
-			return
+		if choice == "above" or choice == "below" then
+			if choice == "above" then
+				_PutAbove_(object, ref_object, -dy)
+
+				if _Above_(object) >= 0 then
+					return
+				end
+			else
+				_PutBelow_(object, ref_object, dy)
+
+				if _Below_(object) < display.contentHeight then
+					return
+				end
+			end
+		elseif choice == "left_of" or choice == "right_of" then
+			if choice == "left_of" then
+				_PutLeftOf_(object, ref_object, -dx)
+
+				if _LeftOf_(object) >= 0 then
+					return
+				end
+			else
+				_PutRightOf_(object, ref_object, dx)
+
+				if _RightOf_(object) < display.contentWidth then
+					return
+				end
+			end
 		end
 	end
 
+	--
 	if center_on_fail then
-		-- Center it!
+		_CenterAlignWith_(object, ref_object)
+	else
+		object.x, object.y = x, y
 	end
 end
 
 --- DOCME
 function M.PutAtTopCenter (object, dx, dy)
-	object.x = floor(object.x + ToCenterX(object) + DX(dx))
+	object.x = CenterX(object, dx)
 
 	_PutAbove_(object, 0, dy)
 end
@@ -373,6 +402,9 @@ end
 -- Cache module members.
 _Above_ = M.Above
 _Below_ = M.Below
+_CenterAlignWith_ = M.CenterAlignWith
+_CenterAt_ = M.CenterAt
+_CenterOf_ = M.CenterOf
 _LeftOf_ = M.LeftOf
 _PutAbove_ = M.PutAbove
 _PutBelow_ = M.PutBelow

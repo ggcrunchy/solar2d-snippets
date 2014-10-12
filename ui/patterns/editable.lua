@@ -189,6 +189,35 @@ local function FindInGroup (group, item)
 end
 
 --
+local function CloseKeysAndText ()
+	local caret, keys = Editable:GetCaret(), Editable:GetKeyboard()
+
+	--
+	scenes.SetListenFunc(OldListenFunc)
+	transition.cancel(caret)
+	transition.to(Editable.m_net, FadeAwayParams)
+
+	caret.isVisible = false
+
+	--
+	local pos = FindInGroup(Editable.parent, Editable.m_stub)
+
+	if pos then
+		Editable.parent:insert(pos, Editable)
+	end
+
+	--
+	Editable.m_stub:removeSelf()
+
+	Editable, OldListenFunc, Editable.m_net, Editable.m_stub = nil
+
+	--
+	if keys then
+		transition.to(keys, KeyFadeOutParams)
+	end
+end
+
+--
 local function HandleKey (event)
 	local name = event.keyName
 
@@ -197,37 +226,7 @@ local function HandleKey (event)
 		return
 
 	--
-	elseif name == "enter" then
-		if event.phase == "down" then
-			local caret, keys = Editable:GetCaret(), Editable:GetKeyboard()
-
-			--
-			scenes.SetListenFunc(OldListenFunc)
-			transition.cancel(caret)
-			transition.to(Editable.m_net, FadeAwayParams)
-
-			caret.isVisible = false
-
-			--
-			local pos = FindInGroup(Editable.parent, Editable.m_stub)
-
-			if pos then
-				Editable.parent:insert(pos, Editable)
-			end
-
-			--
-			Editable.m_stub:removeSelf()
-
-			Editable, OldListenFunc, Editable.m_net, Editable.m_stub = nil
-
-			--
-			if keys then
-				transition.to(keys, KeyFadeOutParams)
-			end
-		end
-
-	--
-	else
+	elseif name ~= "enter" then
 		for i = 1, Editable.numChildren do
 			local item = Editable[i]
 
@@ -252,6 +251,10 @@ local function HandleKey (event)
 				break
 			end
 		end
+
+	--
+	elseif event.phase == "down" then
+		CloseKeysAndText()
 	end
 
 	return true
