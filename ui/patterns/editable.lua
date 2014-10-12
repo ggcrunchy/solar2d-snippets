@@ -47,67 +47,15 @@ local transition = transition
 local M = {}
 
 --
-local function SetText (str, text, align, w)
-	str.text = text
-
-	if align == "left" then
-		layout.LeftAlignWith(str, 2)
-	elseif align == "right" then
-		layout.RightAlignWith(str, w - 2)
-	end
-end
-
--- --
-local OldListenFunc
-
--- --
-local Net
-
--- --
-local FadeAwayParams = {
-	alpha = 0,
-		
-	onComplete = function(object)
-		object:removeSelf()
-	end
-}
-
---
-local function UpdateCaret (info, str, pos)
-	info.text, info.m_pos = sub(str.text, 1, pos), pos
-
-	local width = info.width
-
---	layout.PutRightOf(caret, layout.LeftOf(str), width)
-end
-
---- ^^ COULD be stretched to current character width, by taking difference between it and next character,
--- or rather the consecutive substrings they define (some default width at string end)
-
---
-local function ClampCaretAdjust (info, n, dec)
-	local old_pos, new_pos = info.m_pos
-
-	if dec then
-		new_pos = old_pos > 0 and old_pos - 1
-	else
-		new_pos = old_pos < n and old_pos + 1
-	end
-
-	if new_pos then
-		UpdateCaret(info, new_pos)
-
-		return old_pos
-	end
-end
-
---
 local function Char (name, is_shift_down)
+	--
 	if name == "space" then
 		return " "
+	elseif name == "-" and is_shift_down then
+		return "_"
 
 	--
-	else
+	elseif #name == 1 then -- what about accents?
 		local ln, un = lower(name), upper(name)
 
 		if ln ~= name then
@@ -133,23 +81,68 @@ local function Any (name, is_shift_down)
 end
 
 --
+local function AdjustAndClamp (info, n, how)
+	local remove_at, new_pos = info.m_pos
+
+	if how == "dec" then
+		new_pos = remove_at > 0 and remove_at - 1
+	elseif remove_at < n then
+		if how == "inc" then
+			new_pos = remove_at + 1
+		else
+			new_pos, remove_at = remove_at, remove_at + 1
+		end
+	end
+
+	if new_pos then
+		return new_pos, remove_at
+	end
+end
+
+--
+local function SetText (str, text, align, w)
+	str.text = text
+
+	if align == "left" then
+		layout.LeftAlignWith(str, 2)
+	elseif align == "right" then
+		layout.RightAlignWith(str, w - 2)
+	end
+end
+
+--
+local function UpdateCaret (info, str, pos)
+	info.text, info.m_pos = sub(str.text, 1, pos), pos
+
+	layout.LeftAlignWith(info.parent:GetCaret(), str, #info.text > 0 and info.width or 0)
+end
+
+--- ^^ COULD be stretched to current character width, by taking difference between it and next character,
+-- or rather the consecutive substrings they define (some default width at string end)
+
+--
 local function DoKey (info, name, is_shift_down)
 	local str = info.parent:GetString()
 	local text = str.text
 
 	--
 	if name == "deleteBack" or name == "deleteForward" then
-		local pos = ClampCaretAdjust(info, #text, name == "deleteBack")
+		local new_pos, remove_at = AdjustAndClamp(info, #text, name == "deleteBack" and "dec")
 
-		if pos then
-			text = sub(text, 1, pos - 1) .. sub(text, pos + 1)
+		if remove_at then
+			text = sub(text, 1, remove_at - 1) .. sub(text, remove_at + 1)
 
 			SetText(str, text, info.m_align, info.m_width)
+			UpdateCaret(info, str, new_pos)
 		end
 
 	--
 	elseif name == "left" or name == "right" then
-		ClampCaretAdjust(info, #text, name == "left")
+		local new_pos = AdjustAndClamp(info, #text, name == "left" and "dec" or "inc")
+
+		if new_pos then
+			UpdateCaret(info, str, new_pos)
+		end
 
 	--
 	else
@@ -159,7 +152,7 @@ local function DoKey (info, name, is_shift_down)
 			text = sub(text, 1, pos) .. result .. sub(text, pos + 1)
 
 			SetText(str, text, info.m_align, info.m_width)
-			UpdateCaret(info, pos + 1)
+			UpdateCaret(info, str, pos + 1)
 		else
 			return false
 		end
@@ -168,9 +161,33 @@ local function DoKey (info, name, is_shift_down)
 	return true
 end
 
+-- --
+local OldListenFunc
+
+-- --
+local Net
+
+-- --
+local FadeAwayParams = {
+	alpha = 0,
+		
+	onComplete = function(object)
+		object:removeSelf()
+	end
+}
+
+-- --
+local KeyFadeOutParams = {
+	alpha = .2,
+
+	onComplete = function(object)
+		object.isVisible = false
+	end
+}
+
 --
 local function HandleKey (event)
-	local name, phase = event.keyName, event.phase
+	local name = event.keyName
 
 	--
 	if event.isCtrlDown then
@@ -178,7 +195,7 @@ local function HandleKey (event)
 
 	--
 	elseif name == "enter" then
-		local caret = Net.parent:GetCaret()
+		local caret, keys = Net.parent:GetCaret(), Net.parent:GetKeyboard()
 
 		scenes.SetListenFunc(OldListenFunc)
 		transition.cancel(caret)
@@ -187,6 +204,11 @@ local function HandleKey (event)
 		caret.isVisible = false
 
 		OldListenFunc, Net = nil
+
+		--
+		if keys then
+			transition.to(keys, KeyFadeOutParams)
+		end
 
 	--
 	else
@@ -240,6 +262,9 @@ local CaretParams = { time = 650, iterations = -1, alpha = .125, transition = ea
 -- --
 local FadeInParams = { alpha = .4 }
 
+-- --
+local KeyFadeInParams = { alpha = 1 }
+
 --
 local function EnterInputMode (event)
 	if event.phase == "began" and not Net then
@@ -262,12 +287,19 @@ local function EnterInputMode (event)
 		end
 
 		--
-		local caret = editable:GetCaret()
+		local caret, keys = editable:GetCaret(), editable:GetKeyboard()
 
 		Net.alpha, caret.alpha, caret.isVisible = .01, .6, true
 
 		transition.to(caret, CaretParams)
 		transition.to(Net, FadeInParams)
+
+		if keys then
+			keys.alpha, keys.isVisible = .2, true
+
+			transition.to(keys, KeyFadeInParams)
+		--	layout.PutBelow(keys, editable, 5) -- TODO: layout.PutAtFirstHit(keys, editable, { "below", "above", "left", "right", dx = 5, dy = 5 }, true)
+		end
 	end
 
 	return true
@@ -284,17 +316,6 @@ local function AuxEditable (group, x, y, opts)
 	Editable.x, Editable.y = x, y
 
 	group:insert(Editable)
-
-	--
-	local style, ktype, filter = opts and opts.style
-
-	if style == "text_only" then
-		filter = Filter[opts.mode]
-	elseif style == "keys_only" or style == "keys_and_text" or system.getInfo("platformName") == "Win" then
-		filter, ktype = Filter[opts.mode], opts.mode
-	else
-		-- native textbox... not sure about filtering
-	end
 
 	--
 	local text, font, size = opts and opts.text or "", opts and opts.font or native.systemFontBold, opts and opts.size or 20
@@ -316,6 +337,19 @@ local function AuxEditable (group, x, y, opts)
 	info.isVisible, info.m_align, info.m_pos, info.m_width = false, align, #text, w
 
 	--
+	local style, keys = opts and opts.style
+
+	if style == "text_only" then
+		info.m_filter = Filter[opts.mode]
+	elseif style == "keys_only" or style == "keys_and_text" or system.getInfo("platformName") == "Win" then
+		keys = keyboard.Keyboard(group, nil, opts.mode, 0, 0)
+
+		info.m_filter, keys.isVisible = Filter[opts.mode], false
+	else
+		-- native textbox... not sure about filtering
+	end
+
+	--
 	local body = display.newRoundedRect(Editable, 0, 0, w + 5, h + 5, 12)
 
 	body:addEventListener("touch", EnterInputMode)
@@ -331,17 +365,18 @@ local function AuxEditable (group, x, y, opts)
 	end
 
 	--- DOCME
+	function Editable:GetKeyboard ()
+		return keys
+	end
+
+	--- DOCME
 	function Editable:GetString ()
 		return str
 	end
 
 	--- DOCME
 	function Editable:SetText (text)
-		if filter then
-			text = filter(text)
-		end
-
-		SetText(str, text or "", align, w)
+		SetText(str, (info.m_filter or Any)(text) or "", align, w)
 	end
 
 	return Editable
@@ -356,52 +391,6 @@ end
 function M.Editable_XY (group, x, y, opts)
 	return AuxEditable(group, x, y, opts)
 end
-
---[=[
-
---- Creates an editable text object.
--- @pgroup group Group to which text and button will be inserted.
--- @pobject keys @{ui.Keyboard} object, used to edit the text.
--- @number x Button x-coordinate... (Text will follow.)
--- @number y ...and y-coordinate.
--- @ptable options Optional string options. The following fields are recognized:
---
--- * **font**: Text font; if absent, uses a default.
--- * **size**: Text size; if absent, uses a default.
--- * **text**: Initial text string; if absent, empty.
--- * **is_modal**: If true, the keyboard will block other input.
--- @treturn DisplayObject The text object...
--- @treturn DisplayObject ...and the button widget.
---
--- **CONSIDER**: There may be better ways, e.g. put the text in the button, etc.
-function M.EditableString (group, keys, x, y, options)
-	local str, text, font, size, is_modal
-
-	if options then
-		text = options.text
-		font = options.font
-		size = options.size
-		is_modal = not not options.is_modal
-	end
-
-	-- Add a button to call up the keyboard for editing.
-	local button = button.Button(group, nil, x, y, 120, 50, function()
-		keys:SetTarget(str, true)
-
-		if is_modal then
-			common.AddNet(group, keys)
-		end
-	end, "EDIT")
-
-	-- Add the text, positioned and aligned relative to the button.
-	str = display.newText(group, text or "", 0, button.y, font or native.systemFont, size or 20)
-
-	layout.PutRightOf(str, button, 15)
-
-	return str, button
-end
-
-]=]
 
 -- Export the module.
 return M

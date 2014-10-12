@@ -25,6 +25,7 @@
 
 -- Standard library imports --
 local floor = math.floor
+local ipairs = ipairs
 local sub = string.sub
 local tonumber = tonumber
 local type = type
@@ -174,9 +175,19 @@ function M.BottomAlignWith (object, ref, dy)
 end
 
 --- DOCME
+function M.CenterAlign (object, ref, dx, dy)
+	-- TODO
+end
+
+--- DOCME
 function M.CenterAt (object, x, y)
 	object.x = object.x + ToCenterX(object) + x - display.contentCenterX
 	object.y = object.y + ToCenterY(object) + y - display.contentCenterY
+end
+
+--- DOCME
+function M.CenterOf (object, dx, dy)
+	-- TODO
 end
 
 --- DOCME
@@ -249,6 +260,39 @@ function M.PutAtCenterRight (object, dx, dy)
 	_PutLeftOf_(object, display.contentWidth, dx)
 
 	object.y = floor(object.x + ToCenterY(object) + DY(dy))
+end
+
+--- DOCME
+function M.PutAtFirstHit (object, ref, choices, center_on_fail)
+	-- local cx, cy = _CenterOf _(ref)
+	local dx, dy = DX(choices.dx), DY(choices.dy)
+
+	for _, choice in ipairs(choices) do
+		if choice == "above" then
+			-- center x
+			_PutAbove_(object, ref, -dy)
+			-- test top
+		elseif choice == "below" then
+			-- center x
+			_PutBelow_(object, ref, dy)
+			-- test bottom
+		elseif choice == "left_of" then
+			-- center y
+			_PutLeftOf_(object, ref, -dx)
+			-- test left
+		elseif choice == "right_of" then
+			-- center y
+			_PutRightOf_(object, ref, dx)
+			-- test right
+		end
+
+		-- if passed test, apply!
+			-- return
+	end
+
+	if center_on_fail then
+		-- Center it!
+	end
 end
 
 --- DOCME

@@ -206,14 +206,14 @@ function M.Keyboard (group, skin, type, x, y, no_drag)
 	skin = skins.GetSkin(skin)
 
 	--
-	local kgroup = display.newGroup()
+	local Keyboard = display.newGroup()
 
-	kgroup.x, kgroup.y = x, y
+	Keyboard.x, Keyboard.y = x, y
 
-	group:insert(kgroup)
+	group:insert(Keyboard)
 
 	--
-	local backdrop = display.newRect(kgroup, 0, 0, 1, 1)
+	local backdrop = display.newRoundedRect(Keyboard, 0, 0, 1, 1, skin.keyboard_backdropborderradius)
 
 	if not no_drag then
 		backdrop:addEventListener("touch", BackTouch)
@@ -225,18 +225,18 @@ function M.Keyboard (group, skin, type, x, y, no_drag)
 
 	--
 	if type ~= "nums" then
-		x0, bh = DoRows(kgroup, skin.keyboard_keyskin, Chars, x0, y0, w, h, xsep, ysep)
+		x0, bh = DoRows(Keyboard, skin.keyboard_keyskin, Chars, x0, y0, w, h, xsep, ysep)
 	end
 
 	--
 	if type ~= "chars" then
-		local rx, rh = DoRows(kgroup, skin.keyboard_keyskin, Nums, x0, y0, w, h, xsep, ysep)
+		local rx, rh = DoRows(Keyboard, skin.keyboard_keyskin, Nums, x0, y0, w, h, xsep, ysep)
 
 		x0, bh = rx, max(bh, rh)
 	end
 
 	--
-	local rx, rh = DoRows(kgroup, skin.keyboard_keyskin, Other, x0, y0, w, h, xsep, ysep)
+	local rx, rh = DoRows(Keyboard, skin.keyboard_keyskin, Other, x0, y0, w, h, xsep, ysep)
 
 	x0, bh = rx, max(bh, rh)
 
@@ -250,31 +250,31 @@ function M.Keyboard (group, skin, type, x, y, no_drag)
 
 	--- DOCME
 	-- @treturn DisplayObject X
-	function kgroup:GetTarget ()
+	function Keyboard:GetTarget ()
 		return self.m_target
 	end
 
 	--- DOCME
 	-- @callable close_if
-	function kgroup:SetClosePredicate (close_if)
+	function Keyboard:SetClosePredicate (close_if)
 		self.m_close_if = close_if
 	end
 
 	--- DOCME
 	-- @callable on_edit
-	function kgroup:SetEditFunc (on_edit)
+	function Keyboard:SetEditFunc (on_edit)
 		self.m_on_edit = on_edit
 	end
 
 	--
 	local function CheckTarget ()
-		local target = kgroup.m_target
+		local target = Keyboard.m_target
 
-		if not (kgroup.parent and target and target.isVisible) then
+		if not (Keyboard.parent and target and target.isVisible) then
 			Runtime:removeEventListener("enterFrame", CheckTarget)
 
-			if kgroup.parent then
-				kgroup:SetTarget(nil)
+			if Keyboard.parent then
+				Keyboard:SetTarget(nil)
 			end
 		end
 	end
@@ -282,7 +282,7 @@ function M.Keyboard (group, skin, type, x, y, no_drag)
 	--- DOCME
 	-- @pobject target
 	-- @bool left_aligned
-	function kgroup:SetTarget (target, left_aligned)
+	function Keyboard:SetTarget (target, left_aligned)
 		self.m_refx = left_aligned and target and target.x
 		self.m_target = target
 
@@ -316,9 +316,9 @@ function M.Keyboard (group, skin, type, x, y, no_drag)
 	end
 
 	--
-	kgroup:SetTarget(nil)
+	Keyboard:SetTarget(nil)
 
-	return kgroup
+	return Keyboard
 end
 
 -- Main keyboard skin --
@@ -326,6 +326,7 @@ skins.AddToDefaultSkin("keyboard", {
 	backdropcolor = { type = "gradient", color1 = { .25 }, color2 = { .75 }, direction = "up" },
 	backdropbordercolor = "white",
 	backdropborderwidth = 2,
+	backdropborderradius = 8,
 	keyskin = nil,
 	keywidth = 40,
 	keyheight = 40,
