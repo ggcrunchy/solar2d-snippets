@@ -104,7 +104,7 @@ local function LeftX (object)
 	if Number(object) then
 		return DX(object)
 	elseif NonGroup(object) then
-		return AnchorY(object, -object.anchorY)
+		return AnchorX(object, -object.anchorX)
 	else
 		return object.contentBounds.xMin
 	end

@@ -24,8 +24,11 @@
 --
 
 -- Standard library imports --
+local lower = string.lower
 local max = math.max
 local sub = string.sub
+local tonumber = tonumber
+local upper = string.upper
 
 -- Modules --
 local keyboard = require("ui.Keyboard")
@@ -34,6 +37,7 @@ local scenes = require("utils.Scenes")
 
 -- Corona globals --
 local display = display
+local easing = easing
 local native = native
 local system = system
 local timer = timer
@@ -69,13 +73,16 @@ local FadeAwayParams = {
 }
 
 --
-local function UpdateCaret (info, pos)
-	info.text, info.m_pos = info.parent:GetText():sub(1, pos), pos
+local function UpdateCaret (info, str, pos)
+	info.text, info.m_pos = sub(str.text, 1, pos), pos
 
 	local width = info.width
 
-	-- PutRightOf() layout.LeftOf(str)
+--	layout.PutRightOf(caret, layout.LeftOf(str), width)
 end
+
+--- ^^ COULD be stretched to current character width, by taking difference between it and next character,
+-- or rather the consecutive substrings they define (some default width at string end)
 
 --
 local function ClampCaretAdjust (info, n, dec)
@@ -95,26 +102,49 @@ local function ClampCaretAdjust (info, n, dec)
 end
 
 --
-local function Validate (name, filter)
-	if filter then
-		name = filter(name)
-	end
+local function Char (name, is_shift_down)
+	if name == "space" then
+		return " "
 
-	if name then
-		-- Is a letter or number or dot or space? (conforms to keyboard)
+	--
+	else
+		local ln, un = lower(name), upper(name)
+
+		if ln ~= name then
+			return is_shift_down and ln or name
+		elseif un ~= name then
+			return is_shift_down and un or name
+		end
 	end
 end
 
 --
-local function DoKey (info, name)
-	local text = info.parent:GetText()
+local function Num (name)
+	if name == "." or tonumber(name) then
+		return name
+	end
+end
+
+-- ^^^ Allows multiple decimal points in string (also issue with keyboard, not sure about native)
+
+--
+local function Any (name, is_shift_down)
+	return Char(name, is_shift_down) or Num(name)
+end
+
+--
+local function DoKey (info, name, is_shift_down)
+	local str = info.parent:GetString()
+	local text = str.text
 
 	--
 	if name == "deleteBack" or name == "deleteForward" then
 		local pos = ClampCaretAdjust(info, #text, name == "deleteBack")
 
 		if pos then
-			local text = sub(text, 1, pos - 1) .. sub(text, pos + 1)
+			text = sub(text, 1, pos - 1) .. sub(text, pos + 1)
+
+			SetText(str, text, info.m_align, info.m_width)
 		end
 
 	--
@@ -123,12 +153,13 @@ local function DoKey (info, name)
 
 	--
 	else
-		local result = Validate(name, info.m_filter)
+		local result, pos = (info.m_filter or Any)(name, is_shift_down), info.m_pos
 
 		if result then
-			-- Add character
+			text = sub(text, 1, pos) .. result .. sub(text, pos + 1)
 
-			UpdateCaret(info, info.m_pos + 1)
+			SetText(str, text, info.m_align, info.m_width)
+			UpdateCaret(info, pos + 1)
 		else
 			return false
 		end
@@ -142,9 +173,18 @@ local function HandleKey (event)
 	local name, phase = event.keyName, event.phase
 
 	--
-	if name == "enter" then
+	if event.isCtrlDown then
+		return
+
+	--
+	elseif name == "enter" then
+		local caret = Net.parent:GetCaret()
+
 		scenes.SetListenFunc(OldListenFunc)
+		transition.cancel(caret)
 		transition.to(Net, FadeAwayParams)
+
+		caret.isVisible = false
 
 		OldListenFunc, Net = nil
 
@@ -158,9 +198,11 @@ local function HandleKey (event)
 			if item.m_pos then
 				--
 				if event.phase == "down" then
-					if not item.m_timer and DoKey(item, name) then
+					local is_shift_down = event.isShiftDown
+
+					if not item.m_timer and DoKey(item, name, is_shift_down) then
 						item.m_timer, item.m_key = timer.performWithDelay(350, function()
-							DoKey(item, name)
+							DoKey(item, name, is_shift_down)
 						end, 0), name
 					end
 
@@ -187,22 +229,13 @@ local function Listen (what, event)
 end
 
 -- --
--- How to handle with native text input?
--- For typing, just ignore invalid input
-local Filter = {
-	-- Chars --
-	chars = function(text)
-		--
-	end,
-
-	-- Nums --
-	nums = function(text)
-		--
-	end
-}
+local Filter = { chars = Char, nums = Num }
 
 --
 local function NoTouch () return true end
+
+-- --
+local CaretParams = { time = 650, iterations = -1, alpha = .125, transition = easing.continuousLoop }
 
 -- --
 local FadeInParams = { alpha = .4 }
@@ -217,20 +250,23 @@ local function EnterInputMode (event)
 		Net:addEventListener("touch", NoTouch)
 
 		--
-		local editable = event.target
-		local group = editable.parent
+		local body = event.target
+		local editable = body.parent
 
-		for i = 1, group.numChildren do
-			if group[i] == editable then
-				group:insert(i, Net)
+		for i = 1, editable.numChildren do
+			if editable[i] == body then
+				editable:insert(i, Net)
 
 				break
 			end
 		end
 
 		--
-		Net.alpha = .01
+		local caret = editable:GetCaret()
 
+		Net.alpha, caret.alpha, caret.isVisible = .01, .6, true
+
+		transition.to(caret, CaretParams)
 		transition.to(Net, FadeInParams)
 	end
 
@@ -261,20 +297,23 @@ local function AuxEditable (group, x, y, opts)
 	end
 
 	--
-	local font, size = opts and opts.font or native.systemFontBold, opts and opts.size or 20
-	local str = display.newText(Editable, opts and opts.text or "", 0, 0, font, size)
+	local text, font, size = opts and opts.text or "", opts and opts.font or native.systemFontBold, opts and opts.size or 20
+	local str = display.newText(Editable, text, 0, 0, font, size)
 	local w, h, align = max(str.width, opts and opts.width or 0, 80), max(str.height, opts and opts.height or 0, 25), opts and opts.align
 
 	SetText(str, str.text, align, w)
 
 	--
-	-- caret?
-	-- could just have a transition on repeat...
+	local caret = display.newRect(Editable, 0, 0, 5, str.height)
+
+	layout.PutRightOf(caret, str)
+
+	caret.isVisible = false
 
 	--
 	local info = display.newText(Editable, "", 0, 0, font, size)
 
-	info.isVisible, info.m_pos = false, 0
+	info.isVisible, info.m_align, info.m_pos, info.m_width = false, align, #text, w
 
 	--
 	local body = display.newRoundedRect(Editable, 0, 0, w + 5, h + 5, 12)
@@ -287,8 +326,13 @@ local function AuxEditable (group, x, y, opts)
 	body.strokeWidth = 2
 
 	--- DOCME
-	function Editable:GetText ()
-		return str.text
+	function Editable:GetCaret ()
+		return caret
+	end
+
+	--- DOCME
+	function Editable:GetString ()
+		return str
 	end
 
 	--- DOCME
