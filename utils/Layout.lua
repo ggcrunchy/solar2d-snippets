@@ -286,8 +286,10 @@ function M.PutAtFirstHit (object, ref, choices, center_on_fail)
 			-- test right
 		end
 
-		-- if passed test, apply!
-			-- return
+		--
+		if true then
+			return
+		end
 	end
 
 	if center_on_fail then

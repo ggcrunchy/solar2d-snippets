@@ -165,16 +165,10 @@ end
 local OldListenFunc
 
 -- --
-local Net
+local Editable
 
 -- --
-local FadeAwayParams = {
-	alpha = 0,
-		
-	onComplete = function(object)
-		object:removeSelf()
-	end
-}
+local FadeAwayParams = { alpha = 0, onComplete = display.remove }
 
 -- --
 local KeyFadeOutParams = {
@@ -186,6 +180,15 @@ local KeyFadeOutParams = {
 }
 
 --
+local function FindInGroup (group, item)
+	for i = 1, group.numChildren do
+		if group[i] == item then
+			return i
+		end
+	end
+end
+
+--
 local function HandleKey (event)
 	local name = event.keyName
 
@@ -195,27 +198,38 @@ local function HandleKey (event)
 
 	--
 	elseif name == "enter" then
-		local caret, keys = Net.parent:GetCaret(), Net.parent:GetKeyboard()
+		if event.phase == "down" then
+			local caret, keys = Editable:GetCaret(), Editable:GetKeyboard()
 
-		scenes.SetListenFunc(OldListenFunc)
-		transition.cancel(caret)
-		transition.to(Net, FadeAwayParams)
+			--
+			scenes.SetListenFunc(OldListenFunc)
+			transition.cancel(caret)
+			transition.to(Editable.m_net, FadeAwayParams)
 
-		caret.isVisible = false
+			caret.isVisible = false
 
-		OldListenFunc, Net = nil
+			--
+			local pos = FindInGroup(Editable.parent, Editable.m_stub)
 
-		--
-		if keys then
-			transition.to(keys, KeyFadeOutParams)
+			if pos then
+				Editable.parent:insert(pos, Editable)
+			end
+
+			--
+			Editable.m_stub:removeSelf()
+
+			Editable, OldListenFunc, Editable.m_net, Editable.m_stub = nil
+
+			--
+			if keys then
+				transition.to(keys, KeyFadeOutParams)
+			end
 		end
 
 	--
 	else
-		local group = Net.parent
-
-		for i = 1, group.numChildren do
-			local item = group[i]
+		for i = 1, Editable.numChildren do
+			local item = Editable[i]
 
 			if item.m_pos then
 				--
@@ -265,40 +279,49 @@ local FadeInParams = { alpha = .4 }
 -- --
 local KeyFadeInParams = { alpha = 1 }
 
+local PlaceKeys = { "below", "above", "left", "right", dx = 5, dy = 5 }
+
 --
 local function EnterInputMode (event)
-	if event.phase == "began" and not Net then
-		OldListenFunc = scenes.SetListenFunc(Listen)
-		Net = display.newRect(0, 0, display.contentWidth, display.contentHeight)
+	if event.phase == "began" and not Editable then
+		Editable, OldListenFunc = event.target.parent, scenes.SetListenFunc(Listen)
 
 		--
-		Net:addEventListener("touch", NoTouch)
+		local pos, stub = FindInGroup(Editable.parent, Editable), display.newRect(0, 0, 1, 1)
+
+		Editable.m_stub, stub.isVisible = stub, false
+
+		Editable.parent:insert(pos, stub)
 
 		--
-		local body = event.target
-		local editable = body.parent
+		local net = display.newRect(Editable.parent, display.contentCenterX, display.contentCenterY, display.contentWidth, display.contentHeight)
 
-		for i = 1, editable.numChildren do
-			if editable[i] == body then
-				editable:insert(i, Net)
+		Editable.m_net = net
 
-				break
-			end
+		--
+		net:addEventListener("touch", NoTouch)
+		net:toFront()
+
+		Editable:toFront()
+
+		local caret, keys = Editable:GetCaret(), Editable:GetKeyboard()
+
+		if keys then
+			keys:toFront()
 		end
 
 		--
-		local caret, keys = editable:GetCaret(), editable:GetKeyboard()
-
-		Net.alpha, caret.alpha, caret.isVisible = .01, .6, true
+		caret.alpha, caret.isVisible, net.alpha = .6, true, .01
 
 		transition.to(caret, CaretParams)
-		transition.to(Net, FadeInParams)
+		transition.to(net, FadeInParams)
 
 		if keys then
+			layout.PutAtFirstHit(keys, Editable, PlaceKeys, true)
+
 			keys.alpha, keys.isVisible = .2, true
 
 			transition.to(keys, KeyFadeInParams)
-		--	layout.PutBelow(keys, editable, 5) -- TODO: layout.PutAtFirstHit(keys, editable, { "below", "above", "left", "right", dx = 5, dy = 5 }, true)
 		end
 	end
 
