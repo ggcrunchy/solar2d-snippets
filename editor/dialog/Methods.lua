@@ -24,6 +24,7 @@
 --
 -- Modules --
 local common_ui = require("editor.CommonUI")
+local editable_patterns = require("ui.patterns.editable")
 local keyboard = require("ui.Keyboard")
 local utils = require("editor.dialog.Utils")
 
@@ -60,6 +61,7 @@ function M:CommonAdd (object, options, static_text)
 			if static_text then
 				text = display.newText(igroup, options.text, 0, 0, native.systemFontBold, 22)
 			else
+				--[[
 				if not self.m_keys then
 					self.m_keys = keyboard.Keyboard(self.parent)
 
@@ -67,7 +69,8 @@ function M:CommonAdd (object, options, static_text)
 					self.m_keys:toFront()
 				end
 
-				text, button = common_ui.EditableString(igroup, self.m_keys, 0, 0, { text = options.text, font = native.systemFontBold, size = 22 })
+				text, button = common_ui.EditableString(igroup, self.m_keys, 0, 0, { text = options.text, font = native.systemFontBold, size = 22 })]]
+				text = editable_patterns.Editable(igroup, { text = options.text })
 			end
 
 			self:Update(text, button and 50)

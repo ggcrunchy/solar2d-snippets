@@ -37,7 +37,7 @@ local tonumber = tonumber
 local args = require("iterator_ops.args")
 local button = require("ui.Button")
 local common_ui = require("editor.CommonUI")
-local keyboard = require("ui.Keyboard")
+local editable_patterns = require("ui.patterns.editable")
 local layout = require("utils.Layout")
 local persistence = require("game.Persistence")
 local scenes = require("utils.Scenes")
@@ -46,16 +46,12 @@ local table_view_patterns = require("ui.patterns.table_view")
 -- Corona globals --
 local display = display
 local native = native
-local system = system
 
 -- Corona modules --
 local composer = require("composer")
 
 -- Editor setup scene --
 local Scene = composer.newScene()
-
--- Is this running on a device? --
-local OnDevice = system.getInfo("environment") == "device"
 
 -- Some reasonable column / row defaults --
 local Cols, Rows = 10, 10
@@ -80,8 +76,8 @@ function Scene:create ()
 	button.Button(self.view, nil, 120, 70, 200, 50, scenes.WantsToGoBack, "Go Back")
 
 	self.m_new_scene = button.Button(self.view, nil, display.contentWidth - (150 + 20), display.contentHeight - (20 + 50), 200, 50, function()
-		local cols = tonumber(self.m_cols.text)
-		local rows = tonumber(self.m_rows.text)
+		local cols = tonumber(self.m_cols:GetString().text)
+		local rows = tonumber(self.m_rows:GetString().text)
 
 		-- Alert the user if the input is invalid (too high a number, malformed, etc.).
 		-- Otherwise, proceed to the editor.
@@ -99,10 +95,6 @@ function Scene:create ()
 
 	self.m_cols_text.anchorX, self.m_cols_text.x = 0, 30
 	self.m_rows_text.anchorX, self.m_rows_text.x = 0, 30
-
-	if not OnDevice then
-		self.m_keyboard = keyboard.Keyboard(self.view, { type = "nums" })
-	end
 end
 
 Scene:addEventListener("create")
@@ -133,44 +125,18 @@ function Scene:show (event)
 
 		-- Line up the text input (if on device, we use native keyboards) a little to the right
 		-- of the columns or rows text (whichever was wider).
-		local textx = self.m_cols_text.x + max(self.m_cols_text.width, self.m_rows_text.width) + 10
+		local extent = max(layout.RightOf(self.m_cols_text), layout.RightOf(self.m_rows_text)) + 10
 
-	 -- TODO: use object_helper...
-		if OnDevice then
-			self.m_cols = native.newTextField(textx, self.m_cols_text.y, 300, 65, function(event)
-				if event.phase == "submitted" then
-					native.setKeyboardFocus(self.m_rows)
-				end
-			end)
+		for _, name, count in args.ArgsByN(2,
+			"m_cols", Cols,
+			"m_rows", Rows
+		) do
+			self[name] = editable_patterns.Editable(self.view, { text = format("%i", count), mode = "nums" })
 
-			self.m_rows = native.newTextField(textx, self.m_rows_text.y, 300, 65, function(event)
-				if event.phase == "submitted" then
-					native.setKeyboardFocus(nil)
-				end
-			end)
+			self[name].y = self[name .. "_text"].y
 
-			self.m_cols.inputType = "number"
-			self.m_rows.inputType = "number"
-
-		-- In the simulator, fall back to buttons and a software keyboard.
-		else
-			local options = { is_modal = true }
-
-			self.m_cols, self.m_colsedit = common_ui.EditableString(self.view, self.m_keyboard, textx, self.m_cols_text.y, options)
-			self.m_rows, self.m_rowsedit = common_ui.EditableString(self.view, self.m_keyboard, textx, self.m_rows_text.y, options)
-
-			self.m_keyboard:toFront()
-
-			local w = .5 * self.m_colsedit.width
-
-			for _, what in args.Args("m_cols", "m_colsedit", "m_rows", "m_rowsedit") do
-				self[what]:translate(w, 0)
-			end
+			layout.PutRightOf(self[name], extent)
 		end
-
-		-- Add the actual text, now that the input widgets have been decided.
-		self.m_cols.text = format("%i", Cols)
-		self.m_rows.text = format("%i", Rows)
 
 		-- If any WIP levels exist, enumerate them and put them in a listbox.
 		local levels = persistence.GetLevels(true)
@@ -193,7 +159,6 @@ function Scene:show (event)
 			})
 
 			self.m_current = display.newText(self.view, "", 0, 0, native.systemFont, 22)
-
 			self.m_frame = common_ui.Frame(self.m_levels_list, 0, 0, 1)
 
 			self.m_levels_list:AssignList(levels)
@@ -252,11 +217,6 @@ function Scene:hide (event)
 	if event.phase == "did" then
 		self.m_cols:removeSelf()
 		self.m_rows:removeSelf()
-
-		if not OnDevice then
-			self.m_colsedit:removeSelf()
-			self.m_rowsedit:removeSelf()
-		end
 
 		CleanupLoadElements()
 

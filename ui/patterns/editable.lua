@@ -298,9 +298,24 @@ local function AuxEnterInputMode (editable)
 		editable.m_stub, stub.isVisible = stub, false
 
 		editable.parent:insert(pos, stub)
+-- Need to fix to allow for being in groups, e.g. dialogs:
 
+-- Before
+--  Save local pos into stub
+--  Put down net
+--  Lift into stage (at content pos)
+--  Move net up
+--  Move editable up
+--
+-- After
+--  Remove net
+--	Put into local pos (in stub's parent)
 		--
-		local net = display.newRect(editable.parent, display.contentCenterX, display.contentCenterY, display.contentWidth, display.contentHeight)
+		local net = display.newRect(editable.parent, 0, 0, display.contentWidth, display.contentHeight)
+		local nx, ny = editable.parent:contentToLocal(0, 0)
+
+		net.anchorX, net.x = 0, nx
+		net.anchorY, net.y = 0, ny
 
 		editable.m_net = net
 
@@ -377,7 +392,7 @@ local function AuxEditable (group, x, y, opts)
 	if style == "text_only" then
 		info.m_filter = Filter[opts.mode]
 	elseif style == "keys_and_text" or system.getInfo("platformName") == "Win" then
-		keys = keyboard.Keyboard(group, { type = opts.mode })
+		keys = keyboard.Keyboard(display.getCurrentStage(), { type = opts.mode })
 
 		info.m_filter, keys.isVisible = Filter[opts.mode], false
 
@@ -443,8 +458,12 @@ local function AuxEditable (group, x, y, opts)
 	end
 
 	--
-	if keys then -- or textinput?
---		Editable:addEventListener("finalize", CLEANUP)
+	if keys --[[ or textinput ]] then
+		Editable:addEventListener("finalize", function(event)
+			display.remove(keys)
+			display.remove(event.target.m_net)
+			display.remove(event.target.m_stub)
+		end)
 	end
 
 	return Editable

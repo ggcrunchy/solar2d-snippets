@@ -47,12 +47,12 @@ local function Message (message, what)
 end
 
 --- DOCME
--- @string[opt] name
+-- @tparam ?|string|nil name
 -- @ptable opts
 -- @param arg
 function M.WriteEntry_MightExist (name, opts, arg)
-	local exists = opts and assert(opts.exists, "Missing existence predicate")
-	local writer = opts and assert(opts.writer, "Missing entry writer function")
+	local exists = assert(opts and opts.exists, "Missing existence predicate")
+	local writer = assert(opts and opts.writer, "Missing entry writer function")
 
 	-- Name available: perform the write.
 	if name then

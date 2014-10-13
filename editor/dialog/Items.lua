@@ -145,12 +145,6 @@ function M:AddColorPicker (options)
 	picker:addEventListener("color_change", OnColorChange)
 end
 
--- NYI
--- @ptable options
-function M:AddCoordinates (options)
- -- options = { text = text, is_static = false }...
-end
-
 -- --
 local DirTabs
 
@@ -308,7 +302,6 @@ function M:StockElements (dir, type)
 	end
 
 	self:AddString{ value_name = "name" }
-	self:AddCoordinates{ text = "Pos", is_static = true, name = "current" }
 end
 
 -- --
