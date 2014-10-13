@@ -376,7 +376,7 @@ local function AuxEditable (group, x, y, opts)
 
 	if style == "text_only" then
 		info.m_filter = Filter[opts.mode]
-	elseif style == "keys_only" or style == "keys_and_text" or system.getInfo("platformName") == "Win" then
+	elseif style == "keys_and_text" or system.getInfo("platformName") == "Win" then
 		keys = keyboard.Keyboard(group, { type = opts.mode })
 
 		info.m_filter, keys.isVisible = Filter[opts.mode], false

@@ -71,15 +71,60 @@ local function UpdateSelection (target, select)
 	target.parent:insert(select)
 end
 
+-- --
+local KeyEvent = {
+	name = "key", descriptor = "Emulated key",
+	nativeKeyCode = -1,
+	isAltDown = false, isCommandDown = false, isCtrlDown = false
+}
+
+--
+local function SendKeyEvent (name, is_shift_down)
+	KeyEvent.keyName = name
+	KeyEvent.isShiftDown = not not is_shift_down
+
+	KeyEvent.phase = "down"
+
+	Runtime:dispatchEvent(KeyEvent)
+
+	KeyEvent.phase = "up"
+
+	Runtime:dispatchEvent(KeyEvent)
+end
+
+--
+local function ProduceKeyEvent (text)
+	if text == "<-" then
+		SendKeyEvent("deleteBack")
+	elseif text ~= "OK" then
+		if text == " " then
+			SendKeyEvent("space")
+		elseif text == "_" then
+			SendKeyEvent("-", true)
+		else
+			local lc = lower(text)
+
+			if #text == 1 and lc ~= upper(text) then
+				SendKeyEvent(lc, text ~= lc)
+			else
+				SendKeyEvent(text)
+			end
+		end
+	else
+		SendKeyEvent("enter")
+	end
+end
+
 --
 local function AddText (button)
 	local kgroup = button.parent.parent
 	local target = kgroup.m_target
 	local bstr = button.parent[2]
+	local btext = bstr.text
 
 	--
-	if bstr.text == "A>a" or bstr.text == "a>A" then
-		local func = bstr.text == "A>a" and lower or upper
+	if btext == "A>a" or btext == "a>A" then
+		local func = btext == "A>a" and lower or upper
 
 		for i = 2, kgroup.numChildren do
 			local cstr = kgroup[i][2]
@@ -92,13 +137,15 @@ local function AddText (button)
 		bstr.text = func == lower and "a>A" or "A>a"
 
 	--
-	elseif target then
+	else--if target then
+		ProduceKeyEvent(btext)
+--[[
 		local ttext = target.text
 
-		if bstr.text == "<-" then
+		if btext == "<-" then
 			target.text = ttext:sub(1, -2)
-		elseif bstr.text ~= "OK" then
-			target.text = ttext .. bstr.text
+		elseif btext ~= "OK" then
+			target.text = ttext .. btext
 		elseif not kgroup.m_close_if or kgroup:m_close_if() then
 			kgroup:SetTarget(nil)
 		end
@@ -111,6 +158,7 @@ local function AddText (button)
 				kgroup:m_on_edit(target)
 			end
 		end
+]]
 	end
 end
 
@@ -184,15 +232,6 @@ local function DoRows (group, skin, rows, x, y, w, h, xsep, ysep)
 
 	return rw, y
 end
-
--- --
-local Options = {
-	color = { 0, 0, .75, .625 }, parent_second = true,
-
-	keep = function(keys, target)
-		return keys.m_target == target
-	end
-}
 
 --
 local function AuxKeyboard (group, x, y, opts)
