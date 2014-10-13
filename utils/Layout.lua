@@ -287,6 +287,7 @@ function M.PutAtFirstHit (object, ref_object, choices, center_on_fail)
 	for _, choice in ipairs(choices) do
 		_CenterAlignWith_(object, ref_object)
 
+		--
 		if choice == "above" or choice == "below" then
 			if choice == "above" then
 				_PutAbove_(object, ref_object, -dy)
@@ -301,6 +302,8 @@ function M.PutAtFirstHit (object, ref_object, choices, center_on_fail)
 					return
 				end
 			end
+
+		--
 		elseif choice == "left_of" or choice == "right_of" then
 			if choice == "left_of" then
 				_PutLeftOf_(object, ref_object, -dx)

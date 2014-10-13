@@ -163,18 +163,16 @@ end
 
 --- Sets the current working name, which is used by @{Build} and @{Save} to assign levels
 -- into the database.
+-- @tparam ?|string|nil: Name to assign, or **nil** to clear the working name.
 -- @see game.Persistence, GetLevelName
-function M.SetLevelName (
-  name -- string|nil: Name to assign, or **nil** to clear the working name.
-)
+function M.SetLevelName (name)
 	LevelName = name
 end
 
 --- Sets or clears an "is temporary" flag. Any level saved by @{Build} or @{Save} while this
 -- flag is set will be ignored by @{game.Persistence.GetLevels}.
-function M.SetTemp (
-  is_temp -- bool: Is the level temporary, in the operations to follow?
-)
+-- @bool is_temp Is the level temporary, in the operations to follow?
+function M.SetTemp (is_temp)
 	IsTemp = not not is_temp
 end
 

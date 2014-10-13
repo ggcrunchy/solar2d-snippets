@@ -61,7 +61,7 @@ function M:CommonAdd (object, options, static_text)
 				text = display.newText(igroup, options.text, 0, 0, native.systemFontBold, 22)
 			else
 				if not self.m_keys then
-					self.m_keys = keyboard.Keyboard(self.parent, nil, nil, 0, 0)
+					self.m_keys = keyboard.Keyboard(self.parent)
 
 					self.m_keys:SetEditFunc(OnEdit)
 					self.m_keys:toFront()

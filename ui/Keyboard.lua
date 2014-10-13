@@ -194,15 +194,17 @@ local Options = {
 	end
 }
 
----DOCME
--- @pgroup group
--- @param skin
--- @string type
--- @number x
--- @number y
--- @bool no_drag
--- @treturn DisplayGroup G
-function M.Keyboard (group, skin, type, x, y, no_drag)
+--
+local function AuxKeyboard (group, x, y, opts)
+	--
+	local no_drag, skin, type
+
+	if opts then
+		no_drag = opts.no_drag
+		skin = opts.skin
+		type = opts.type
+	end
+
 	skin = skins.GetSkin(skin)
 
 	--
@@ -319,6 +321,24 @@ function M.Keyboard (group, skin, type, x, y, no_drag)
 	Keyboard:SetTarget(nil)
 
 	return Keyboard
+end
+
+---DOCME
+-- @pgroup group
+-- @ptable[opt] opts
+-- @treturn DisplayGroup G
+function M.Keyboard (group, opts)
+	return AuxKeyboard(group, 0, 0, opts)
+end
+
+---DOCME
+-- @pgroup group
+-- @number x
+-- @number y
+-- @ptable[opt] opts
+-- @treturn DisplayGroup G
+function M.Keyboard_XY (group, x, y, opts)
+	return AuxKeyboard(group, x, y, opts)
 end
 
 -- Main keyboard skin --

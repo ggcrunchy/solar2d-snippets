@@ -101,7 +101,7 @@ function Scene:create ()
 	self.m_rows_text.anchorX, self.m_rows_text.x = 0, 30
 
 	if not OnDevice then
-		self.m_keyboard = keyboard.Keyboard(self.view, nil, "nums", 0, 0)
+		self.m_keyboard = keyboard.Keyboard(self.view, { type = "nums" })
 	end
 end
 

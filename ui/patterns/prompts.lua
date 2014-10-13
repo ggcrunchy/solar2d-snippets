@@ -66,14 +66,15 @@ function M.WriteEntry_MightExist (name, opts, arg)
 		native.showAlert(Message("Missing %s", what), Message("Please provide a %s", what), { "OK" }, function(event)
 			if event.action == "clicked" then
 				timers.Defer(function()
-					local keys = keyboard.Keyboard(group, nil, nil, 0, 50) -- TODO: On device, use native keyboard?
+					local keys = keyboard.Keyboard_XY(group, 0, 50) -- TODO: On device, use native keyboard?
 					local str = display.newText(group, def_text, CX, CY, opts.font or native.systemFontBold, opts.size or 28)
 
 					keys:SetTarget(str)
 					str:setFillColor(1, 0, 0)
 
 					common.AddNet(group, keys)
-
+-- local e = editable.Editable_XY(group, { text = def_text, font = opts.font, size = opts.size, auto = true, pred = ... what follows vvv })
+-- e:EnterInputMode()
 					keys:SetClosePredicate(function()
 						name = str.text
 

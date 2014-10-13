@@ -273,6 +273,8 @@ local Filter = { chars = Char, nums = Num }
 --
 local function NoTouch () return true end
 
+-- ^^^ More natural to close out?
+
 -- --
 local CaretParams = { time = 650, iterations = -1, alpha = .125, transition = easing.continuousLoop }
 
@@ -282,32 +284,32 @@ local FadeInParams = { alpha = .4 }
 -- --
 local KeyFadeInParams = { alpha = 1 }
 
+-- --
 local PlaceKeys = { "below", "above", "left", "right", dx = 5, dy = 5 }
 
 --
-local function EnterInputMode (event)
-	if event.phase == "began" and not Editable then
-		Editable, OldListenFunc = event.target.parent, scenes.SetListenFunc(Listen)
+local function AuxEnterInputMode (editable)
+	if not Editable then
+		Editable, OldListenFunc = editable, scenes.SetListenFunc(Listen)
 
 		--
-		local pos, stub = FindInGroup(Editable.parent, Editable), display.newRect(0, 0, 1, 1)
+		local pos, stub = FindInGroup(editable.parent, editable), display.newRect(0, 0, 1, 1)
 
-		Editable.m_stub, stub.isVisible = stub, false
+		editable.m_stub, stub.isVisible = stub, false
 
-		Editable.parent:insert(pos, stub)
+		editable.parent:insert(pos, stub)
 
 		--
-		local net = display.newRect(Editable.parent, display.contentCenterX, display.contentCenterY, display.contentWidth, display.contentHeight)
+		local net = display.newRect(editable.parent, display.contentCenterX, display.contentCenterY, display.contentWidth, display.contentHeight)
 
-		Editable.m_net = net
+		editable.m_net = net
 
 		--
 		net:addEventListener("touch", NoTouch)
 		net:toFront()
+		editable:toFront()
 
-		Editable:toFront()
-
-		local caret, keys = Editable:GetCaret(), Editable:GetKeyboard()
+		local caret, keys = editable:GetCaret(), editable:GetKeyboard()
 
 		if keys then
 			keys:toFront()
@@ -320,12 +322,19 @@ local function EnterInputMode (event)
 		transition.to(net, FadeInParams)
 
 		if keys then
-			layout.PutAtFirstHit(keys, Editable, PlaceKeys, true)
+			layout.PutAtFirstHit(keys, editable, PlaceKeys, true)
 
 			keys.alpha, keys.isVisible = .2, true
 
 			transition.to(keys, KeyFadeInParams)
 		end
+	end
+end
+
+--
+local function EnterInputMode (event)
+	if event.phase == "began" then
+		AuxEnterInputMode(event.target.parent)
 	end
 
 	return true
@@ -368,11 +377,31 @@ local function AuxEditable (group, x, y, opts)
 	if style == "text_only" then
 		info.m_filter = Filter[opts.mode]
 	elseif style == "keys_only" or style == "keys_and_text" or system.getInfo("platformName") == "Win" then
-		keys = keyboard.Keyboard(group, nil, opts.mode, 0, 0)
+		keys = keyboard.Keyboard(group, { type = opts.mode })
 
 		info.m_filter, keys.isVisible = Filter[opts.mode], false
+
+		-- keys:SetClosePredicate()?
 	else
 		-- native textbox... not sure about filtering
+		--[[
+		-- Create text field
+			defaultField = native.newTextField( 150, 150, 180, 30 )
+
+			defaultField:addEventListener("userInput", function(event)
+				if event.phase == "ended" then
+					-- ???
+				elseif event.phase == "submitted" then
+					if pred() == true then
+						--
+					else
+						--
+					end
+				end
+			end)
+			...
+			native.setKeyboardFocus()
+		]]
 	end
 
 	--
@@ -401,8 +430,21 @@ local function AuxEditable (group, x, y, opts)
 	end
 
 	--- DOCME
+	function Editable:EnterInputMode ()
+		-- if textinput then
+			--
+		-- else
+		AuxEnterInputMode(self)
+	end
+
+	--- DOCME
 	function Editable:SetText (text)
 		SetText(str, (info.m_filter or Any)(text) or "", align, w)
+	end
+
+	--
+	if keys then -- or textinput?
+--		Editable:addEventListener("finalize", CLEANUP)
 	end
 
 	return Editable
