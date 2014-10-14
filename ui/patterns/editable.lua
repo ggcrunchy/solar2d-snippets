@@ -99,8 +99,8 @@ local function AdjustAndClamp (info, n, how)
 	end
 end
 
--- Text change event packet --
-local TCE = {}
+-- Event packet --
+local Event = {}
 
 --
 local function SetText (str, text, align, w)
@@ -116,11 +116,11 @@ local function SetText (str, text, align, w)
 
 	-- Alert listeners.
 	if old ~= text then
-		TCE.old_text, TCE.new_text, TCE.name, TCE.target = old, text, "text_change", str.parent
+		Event.old_text, Event.new_text, Event.name, Event.target = old, text, "text_change", str.parent
 
-		str.parent:dispatchEvent(TCE)
+		str.parent:dispatchEvent(Event)
 
-		TCE.target = nil
+		Event.target = nil
 	end
 end
 
@@ -205,6 +205,13 @@ end
 --
 local function CloseKeysAndText ()
 	local caret, keys = Editable:GetCaret(), Editable:GetKeyboard()
+
+	--
+	Event.name, Event.target = "closing", Editable
+
+	Editable:dispatchEvent(Event)
+
+	Event.target = nil
 
 	--
 	scenes.SetListenFunc(OldListenFunc)

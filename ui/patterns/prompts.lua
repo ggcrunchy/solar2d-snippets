@@ -27,8 +27,7 @@
 local assert = assert
 
 -- Modules --
-local common = require("editor.Common")
-local keyboard = require("ui.Keyboard")
+local editable_patterns = require("ui.patterns.editable")
 local timers = require("game.Timers")
 
 -- Corona globals --
@@ -37,9 +36,6 @@ local native = native
 
 -- Exports --
 local M = {}
-
--- --
-local CX, CY = display.contentCenterX, display.contentCenterY
 
 --
 local function Message (message, what)
@@ -61,52 +57,36 @@ function M.WriteEntry_MightExist (name, opts, arg)
 	-- Unavailable: ask the user to provide one.
 	else
 		local group, what = opts.group or display.getCurrentStage(), opts.what or "name"
-		local def_text = opts.def_text or what:upper()
+		local eopts = { text = opts.def_text or what:upper(), font = opts.font, size = opts.size }
 
 		native.showAlert(Message("Missing %s", what), Message("Please provide a %s", what), { "OK" }, function(event)
 			if event.action == "clicked" then
 				timers.Defer(function()
-					local keys = keyboard.Keyboard_XY(group, 0, 50) -- TODO: On device, use native keyboard?
-					local str = display.newText(group, def_text, CX, CY, opts.font or native.systemFontBold, opts.size or 28)
+					local editable = editable_patterns.Editable_XY(group, display.contentCenterX, display.contentCenterY, eopts)
 
-					keys:SetTarget(str)
-					str:setFillColor(1, 0, 0)
-
-					common.AddNet(group, keys)
--- local e = editable.Editable_XY(group, { text = def_text, font = opts.font, size = opts.size, auto = true, pred = ... what follows vvv })
--- e:EnterInputMode()
-					keys:SetClosePredicate(function()
-						name = str.text
-
-						local does_exist = exists(name, arg)
+					editable:addEventListener("closing", function()
+						name = editable:GetString().text
 
 						-- If the user-provided name was available, perform the write.
-						if not does_exist then
+						if not exists(name, arg) then
 							writer(name, arg)
-
-							-- Remove stuff and return true? (would obviate does_exist variable)
-						end
-
-						timers.Defer(function()
-							-- If the user-provided name already exists, request permission before overwriting.
-							if does_exist then
+						else
+							timers.DeferIf(function()
+								-- If the user-provided name already exists, request permission before overwriting.
 								native.showAlert(Message("The %s is already in use!", what), "Overwrite?", { "OK", "Cancel" }, function(event)
 									if event.action == "clicked" and event.index == 1 then
 										writer(name, arg)
 									end
 								end)
-							end
 
-							-- Clean up temporary widgets. (try to coalesce these into "editable")
-							keys:removeSelf()
-							str:removeSelf()
-						end)
+								editable:removeSelf()
+							end, editable)
+						end
 
 						-- Hide the string until the deferred cleanup.
-						str.isVisible = false
-
-						-- return true? Reasoning behind not doing so seems to be so that the keyboard stays up during next prompt...
+						editable.isVisible = false
 					end)
+					editable:EnterInputMode()
 				end)
 			end
 		end)

@@ -44,33 +44,6 @@ local display = display
 -- Exports --
 local M = {}
 
---
-local BackTouch = touch.DragParentTouch()
-
---
-local function SetRef (keys, target)
-	if keys.m_refx and target then
-		target.anchorX, target.x = 0, keys.m_refx
-	end
-end
-
--- --
-local SelectW, SelectH = 75, 45
-
---
-local function UpdateSelection (target, select)
-	local bounds = target.contentBounds
-	local x, w = (bounds.xMin + bounds.xMax) / 2, bounds.xMax - bounds.xMin
-	local y, h = (bounds.yMin + bounds.yMax) / 2, bounds.yMax - bounds.yMin
-
-	select.x, select.y = target.parent:contentToLocal(x, y)
-
-	select.xScale = w / SelectW + 1
-	select.yScale = h / SelectH + 1
-
-	target.parent:insert(select)
-end
-
 -- --
 local KeyEvent = {
 	name = "key", descriptor = "Emulated key",
@@ -93,33 +66,8 @@ local function SendKeyEvent (name, is_shift_down)
 end
 
 --
-local function ProduceKeyEvent (text)
-	if text == "<-" then
-		SendKeyEvent("deleteBack")
-	elseif text ~= "OK" then
-		if text == " " then
-			SendKeyEvent("space")
-		elseif text == "_" then
-			SendKeyEvent("-", true)
-		else
-			local lc = lower(text)
-
-			if #text == 1 and lc ~= upper(text) then
-				SendKeyEvent(lc, text ~= lc)
-			else
-				SendKeyEvent(text)
-			end
-		end
-	else
-		SendKeyEvent("enter")
-	end
-end
-
---
 local function AddText (button)
-	local kgroup = button.parent.parent
-	local target = kgroup.m_target
-	local bstr = button.parent[2]
+	local kgroup, bstr = button.parent.parent, button.parent[2]
 	local btext = bstr.text
 
 	--
@@ -137,28 +85,28 @@ local function AddText (button)
 		bstr.text = func == lower and "a>A" or "A>a"
 
 	--
-	else--if target then
-		ProduceKeyEvent(btext)
---[[
-		local ttext = target.text
+	elseif btext == "<-" then
+		SendKeyEvent("deleteBack")
 
-		if btext == "<-" then
-			target.text = ttext:sub(1, -2)
-		elseif btext ~= "OK" then
-			target.text = ttext .. btext
-		elseif not kgroup.m_close_if or kgroup:m_close_if() then
-			kgroup:SetTarget(nil)
-		end
+	--
+	elseif btext ~= "OK" then
+		if btext == " " then
+			SendKeyEvent("space")
+		elseif btext == "_" then
+			SendKeyEvent("-", true)
+		else
+			local lc = lower(btext)
 
-		if ttext ~= target.text then
-			SetRef(kgroup, target)
-			UpdateSelection(target, kgroup.m_selection)
-
-			if kgroup.m_on_edit then
-				kgroup:m_on_edit(target)
+			if #btext == 1 and lc ~= upper(btext) then
+				SendKeyEvent(lc, btext ~= lc)
+			else
+				SendKeyEvent(btext)
 			end
 		end
-]]
+
+	--
+	else
+		SendKeyEvent("enter")
 	end
 end
 
@@ -234,6 +182,9 @@ local function DoRows (group, skin, rows, x, y, w, h, xsep, ysep)
 end
 
 --
+local BackTouch = touch.DragParentTouch()
+
+--
 local function AuxKeyboard (group, x, y, opts)
 	--
 	local no_drag, skin, type
@@ -288,76 +239,6 @@ local function AuxKeyboard (group, x, y, opts)
 	backdrop:setFillColor(colors.GetColor(skin.keyboard_backdropcolor))
 	backdrop:setStrokeColor(colors.GetColor(skin.keyboard_backdropbordercolor))
 	backdrop:translate(backdrop.width / 2, backdrop.height / 2)
-
-	--- DOCME
-	-- @treturn DisplayObject X
-	function Keyboard:GetTarget ()
-		return self.m_target
-	end
-
-	--- DOCME
-	-- @callable close_if
-	function Keyboard:SetClosePredicate (close_if)
-		self.m_close_if = close_if
-	end
-
-	--- DOCME
-	-- @callable on_edit
-	function Keyboard:SetEditFunc (on_edit)
-		self.m_on_edit = on_edit
-	end
-
-	--
-	local function CheckTarget ()
-		local target = Keyboard.m_target
-
-		if not (Keyboard.parent and target and target.isVisible) then
-			Runtime:removeEventListener("enterFrame", CheckTarget)
-
-			if Keyboard.parent then
-				Keyboard:SetTarget(nil)
-			end
-		end
-	end
-
-	--- DOCME
-	-- @pobject target
-	-- @bool left_aligned
-	function Keyboard:SetTarget (target, left_aligned)
-		self.m_refx = left_aligned and target and target.x
-		self.m_target = target
-
-		SetRef(self, target)
-
-		local select = self.m_selection
-
-		if target then
-			if not select then
-				select = display.newRoundedRect(0, 0, SelectW, SelectH, 12)
-
-				self.m_selection = select
-			end
-
-			select:setFillColor(0, 0)
-			select:setStrokeColor(0, 1, 0, .75)
-
-			select.strokeWidth = 2
-
-			UpdateSelection(target, select)
-
-			Runtime:addEventListener("enterFrame", CheckTarget)
-
-		elseif select then
-			display.remove(select)
-
-			self.m_selection = nil
-		end
-
-		self.isVisible = target ~= nil
-	end
-
-	--
-	Keyboard:SetTarget(nil)
 
 	return Keyboard
 end
