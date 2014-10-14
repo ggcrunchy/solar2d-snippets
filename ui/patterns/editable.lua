@@ -99,14 +99,28 @@ local function AdjustAndClamp (info, n, how)
 	end
 end
 
+-- Text change event packet --
+local TCE = {}
+
 --
 local function SetText (str, text, align, w)
+	local old = str.text or ""
+
 	str.text = text
 
 	if align == "left" then
 		layout.LeftAlignWith(str, 2)
 	elseif align == "right" then
 		layout.RightAlignWith(str, w - 2)
+	end
+
+	-- Alert listeners.
+	if old ~= text then
+		TCE.old_text, TCE.new_text, TCE.name, TCE.target = old, text, "text_change", str.parent
+
+		str.parent:dispatchEvent(TCE)
+
+		TCE.target = nil
 	end
 end
 
@@ -200,14 +214,17 @@ local function CloseKeysAndText ()
 	caret.isVisible = false
 
 	--
-	local pos = FindInGroup(Editable.parent, Editable.m_stub)
+	local stub = Editable.m_stub
+	local pos = FindInGroup(stub.parent, stub)
 
 	if pos then
-		Editable.parent:insert(pos, Editable)
+		stub.parent:insert(pos, Editable)
+
+		Editable.x, Editable.y = stub.x, stub.y
 	end
 
 	--
-	Editable.m_stub:removeSelf()
+	stub:removeSelf()
 
 	Editable, OldListenFunc, Editable.m_net, Editable.m_stub = nil
 
@@ -271,9 +288,27 @@ end
 local Filter = { chars = Char, nums = Num }
 
 --
-local function NoTouch () return true end
+local function TouchNet (event)
+	local net = event.target
 
--- ^^^ More natural to close out?
+	if not net.m_blocking then
+		local stage, phase = display.getCurrentStage(), event.phase
+
+		if phase == "began" then
+			stage:setFocus(net, event.id)
+
+			net.m_wants_to_close = true
+		elseif phase == "cancelled" or phase == "ended" then
+			stage:setFocus(net, nil)
+
+			if net.m_wants_to_close then
+				CloseKeysAndText()
+			end
+		end
+	end
+
+	return true
+end
 
 -- --
 local CaretParams = { time = 650, iterations = -1, alpha = .125, transition = easing.continuousLoop }
@@ -295,32 +330,25 @@ local function AuxEnterInputMode (editable)
 		--
 		local pos, stub = FindInGroup(editable.parent, editable), display.newRect(0, 0, 1, 1)
 
+		stub.x, stub.y = editable.x, editable.y
+
 		editable.m_stub, stub.isVisible = stub, false
 
 		editable.parent:insert(pos, stub)
--- Need to fix to allow for being in groups, e.g. dialogs:
-
--- Before
---  Save local pos into stub
---  Put down net
---  Lift into stage (at content pos)
---  Move net up
---  Move editable up
---
--- After
---  Remove net
---	Put into local pos (in stub's parent)
-		--
-		local net = display.newRect(editable.parent, 0, 0, display.contentWidth, display.contentHeight)
-		local nx, ny = editable.parent:contentToLocal(0, 0)
-
-		net.anchorX, net.x = 0, nx
-		net.anchorY, net.y = 0, ny
-
-		editable.m_net = net
 
 		--
-		net:addEventListener("touch", NoTouch)
+		local stage, bounds = display.getCurrentStage(), editable.contentBounds
+		local net = display.newRect(stage, display.contentCenterX, display.contentCenterY, display.contentWidth, display.contentHeight)
+
+		editable.m_net, net.m_blocking = net, editable.m_blocking
+
+		--
+		stage:insert(editable)
+
+		layout.PutAtTopLeft(editable, bounds.xMin, bounds.yMin)
+
+		--
+		net:addEventListener("touch", TouchNet)
 		net:toFront()
 		editable:toFront()
 
@@ -373,6 +401,9 @@ local function AuxEditable (group, x, y, opts)
 	local w, h, align = max(str.width, opts and opts.width or 0, 80), max(str.height, opts and opts.height or 0, 25), opts and opts.align
 
 	SetText(str, str.text, align, w)
+
+	--
+	Editable.m_blocking = not not (opts and opts.blocking)
 
 	--
 	local caret = display.newRect(Editable, 0, 0, 5, str.height)
@@ -432,6 +463,11 @@ local function AuxEditable (group, x, y, opts)
 	--- DOCME
 	function Editable:GetCaret ()
 		return caret
+	end
+
+	--- DOCME
+	function Editable:GetChildOfParent ()
+		return self.m_stub or self
 	end
 
 	--- DOCME

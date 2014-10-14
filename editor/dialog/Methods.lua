@@ -23,9 +23,7 @@
 -- [ MIT license: http://www.opensource.org/licenses/mit-license.php ]
 --
 -- Modules --
-local common_ui = require("editor.CommonUI")
 local editable_patterns = require("ui.patterns.editable")
-local keyboard = require("ui.Keyboard")
 local utils = require("editor.dialog.Utils")
 
 -- Corona globals --
@@ -35,9 +33,11 @@ local native = native
 -- Exports --
 local M = {}
 
--- Edit callback for dialog keyboards
-local function OnEdit (_, str)
-	utils.UpdateObject(str, str.text)
+--
+local function OnTextChange (event)
+	local str = event.target
+
+	utils.UpdateObject(str, event.new_text, str:GetChildOfParent())
 end
 
 --- DOCMEMORE
@@ -54,30 +54,18 @@ function M:CommonAdd (object, options, static_text)
 		-- If text was updated, check if it's static. If so, just bake it in; otherwise,
 		-- make the text into editable strings. This will add one or two more objects to
 		-- the dialog, so reflow after each of these as well.
-		-- TODO: Keyboard options...
 		if options.text then
-			local igroup, button = self:ItemGroup()
+			local igroup = self:ItemGroup()
 
 			if static_text then
 				text = display.newText(igroup, options.text, 0, 0, native.systemFontBold, 22)
 			else
-				--[[
-				if not self.m_keys then
-					self.m_keys = keyboard.Keyboard(self.parent)
+				text = editable_patterns.Editable(igroup, options)
 
-					self.m_keys:SetEditFunc(OnEdit)
-					self.m_keys:toFront()
-				end
-
-				text, button = common_ui.EditableString(igroup, self.m_keys, 0, 0, { text = options.text, font = native.systemFontBold, size = 22 })]]
-				text = editable_patterns.Editable(igroup, { text = options.text })
+				text:addEventListener("text_change", OnTextChange)
 			end
 
-			self:Update(text, button and 50)
-
-			if button then
-				self:Update(button)
-			end
+			self:Update(text)
 		end
 
 		-- If no object was supplied, the text will be the object instead. Associate a

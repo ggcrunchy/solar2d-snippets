@@ -71,8 +71,8 @@ function M.GetDialog (object)
 end
 
 --- DOCME
-function M.GetValue (object)
-	local dialog, value = _GetDialog_(object)
+function M.GetValue (object, alt)
+	local dialog, value = _GetDialog_(alt or object)
 
 	if dialog then
 		local values, value_name = dialog.m_values, _GetProperty_(object, "value_name")
@@ -91,8 +91,8 @@ end
 
 --- DOCMEMORE
 -- Updates the value bound to an object (dirties the editor state)
-function M.UpdateObject (object, value)
-	local values = _GetDialog_(object).m_values
+function M.UpdateObject (object, value, alt)
+	local values = _GetDialog_(alt or object).m_values
 	local value_name = _GetProperty_(object, "value_name")
 
 	if values and value_name then
