@@ -39,11 +39,6 @@ Scene:addEventListener("create")
 --
 function Scene:show (e)
 	if e.phase == "will" then return end
-	local em=require("ui.patterns.editable")
-	local ed=em.Editable(self.view, {
-		text = "DUCK"
-	})
-	ed.x, ed.y = display.contentCenterX, display.contentCenterY
 end
 
 Scene:addEventListener("show")
@@ -107,13 +102,10 @@ scene\MapEditor.lua(58,30)
 	- Play with input devices
 
 	- Fix formatting, which is rather off on tablets and probably more high-definition phones
-	- To that end, do a REAL objects helper module, that digs in and deals with anchors and such (PROBATION)
 
 	- The Great Migration! (i.e. move much of snippets into CrownJewels and Tektite submodules) (PARTIAL)
 	- Might even be worth making the submodules even more granular
 	- Kick off a couple extra programs to stress-test submodule approach
-
-	- Deprecate DispatchList? (perhaps add some helpers to main) (PROBATION)
 
 	- Make the resource system independent of Corona, then start using it more pervasively
 

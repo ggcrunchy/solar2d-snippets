@@ -16,3 +16,15 @@
 [submodule "linear_algebra_ops"]
 	path = linear_algebra_ops
 	url = https://github.com/ggcrunchy/linear_algebra_ops.git
+[submodule "s3_utils"]
+	path = s3_utils
+	url = https://github.com/ggcrunchy/s3_utils
+[submodule "corona_utils"]
+	path = corona_utils
+	url = https://github.com/ggcrunchy/corona_utils
+[submodule "corona_ui"]
+	path = corona_ui
+	url = https://github.com/ggcrunchy/corona_ui
+[submodule "corona_mask"]
+	path = corona_mask
+	url = https://github.com/ggcrunchy/corona_mask
