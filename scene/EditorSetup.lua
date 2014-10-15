@@ -35,13 +35,13 @@ local tonumber = tonumber
 
 -- Modules --
 local args = require("iterator_ops.args")
-local button = require("ui.Button")
+local button = require("corona_ui.widgets.button")
 local common_ui = require("editor.CommonUI")
-local editable_patterns = require("ui.patterns.editable")
-local layout = require("utils.Layout")
-local persistence = require("game.Persistence")
-local scenes = require("utils.Scenes")
-local table_view_patterns = require("ui.patterns.table_view")
+local editable_patterns = require("corona_ui.patterns.editable")
+local layout = require("corona_ui.utils.layout")
+local persistence = require("corona_utils.persistence")
+local scenes = require("corona_utils.scenes")
+local table_view_patterns = require("corona_ui.patterns.table_view")
 
 -- Corona globals --
 local display = display

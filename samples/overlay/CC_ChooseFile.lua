@@ -30,9 +30,9 @@ local min = math.min
 local random = math.random
 
 -- Modules --
-local button = require("ui.Button")
-local image_patterns = require("ui.patterns.image")
-local layout = require("utils.Layout")
+local button = require("corona_ui.widgets.button")
+local image_patterns = require("corona_ui.patterns.image")
+local layout = require("corona_ui.utils.layout")
 
 -- Corona globals --
 local display = display

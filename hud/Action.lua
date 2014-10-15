@@ -32,7 +32,7 @@ local setmetatable = setmetatable
 
 -- Modules --
 local array_index = require("array_ops.index")
-local touch = require("ui.Touch")
+local touch = require("corona_ui.utils.touch")
 
 -- Corona globals --
 local display = display

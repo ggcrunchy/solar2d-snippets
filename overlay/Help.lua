@@ -27,11 +27,11 @@
 local type = type
 
 -- Modules --
-local button = require("ui.Button")
+local button = require("corona_ui.widgets.button")
 local common = require("editor.Common")
 local grid = require("editor.Grid")
 local help = require("editor.Help")
-local touch = require("ui.Touch")
+local touch = require("corona_ui.utils.touch")
 
 -- Corona globals --
 local display = display

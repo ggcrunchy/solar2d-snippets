@@ -25,7 +25,7 @@
 
 -- Modules --
 local flow = require("coroutine_ops.flow")
-local timers = require("game.Timers")
+local timers = require("corona_utils.timers")
 
 -- Corona globals --
 local display = display

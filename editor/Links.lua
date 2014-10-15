@@ -37,7 +37,7 @@ local array_funcs = require("array_ops.funcs")
 local coro = require("iterator_ops.coroutine")
 local str_utils = require("utils.String")
 local tags = require("editor.Tags")
-local timers = require("game.Timers")
+local timers = require("corona_utils.timers")
 
 -- Classes --
 local SparseArray = require("class.Container.SparseArray")

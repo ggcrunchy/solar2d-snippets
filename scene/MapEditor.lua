@@ -6,7 +6,7 @@
 -- The scene expects event.params == { main = { _cols_, _rows_ }**[**, is_loading = _name_
 -- **]** }, where _cols_ and _rows_ are the tile-wise size of the level. When loading a
 -- level, you must also provide _name_, which corresponds to the _name_ argument in the
--- level-related functions in @{game.Persistence} (_wip_ == **true**).
+-- level-related functions in @{corona_utils.persistence} (_wip_ == **true**).
 --
 -- The editor is broken up into several "views", each isolating specific features of the
 -- level. The bulk of the editor logic is implemented in these views' modules, with common
@@ -46,17 +46,17 @@ local pairs = pairs
 -- Modules --
 local require_ex = require("tektite.require_ex")
 local args = require("iterator_ops.args")
-local button = require("ui.Button")
+local button = require("corona_ui.widgets.button")
 local common = require("editor.Common")
 local common_ui = require("editor.CommonUI")
 local events = require("editor.Events")
 local grid = require("editor.Grid")
 local help = require("editor.Help")
 local ops = require("editor.Ops")
-local persistence = require("game.Persistence")
-local scenes = require("utils.Scenes")
+local persistence = require("corona_utils.persistence")
+local scenes = require("corona_utils.scenes")
 local tags = require_ex.Lazy("editor.Tags")
-local timers = require("game.Timers")
+local timers = require("corona_utils.timers")
 
 -- Corona globals --
 local display = display

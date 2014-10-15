@@ -28,10 +28,10 @@ local ipairs = ipairs
 
 -- Modules --
 local require_ex = require("tektite.require_ex")
-local button = require("ui.Button")
+local button = require("corona_ui.widgets.button")
 local common = require("editor.Common")
 local dialog_utils = require_ex.Lazy("editor.dialog.Utils")
-local touch = require("ui.Touch")
+local touch = require("corona_ui.utils.touch")
 
 -- Corona globals --
 local display = display
@@ -119,7 +119,7 @@ local ScrollValues = {
 -- of the four cardinal directions.
 -- @number x Button x-coordinate...
 -- @number y ...and y-coordinate.
--- @callable func Button function, cf. @{ui.Button.Button}.
+-- @callable func Button function, cf. @{corona_ui.widgets.button.Button}.
 function M.ScrollButton (group, name, x, y, func)
 	local button = button.Button(group, "rscroll", x, y, 32, 32, func)
 	local values = ScrollValues[name]

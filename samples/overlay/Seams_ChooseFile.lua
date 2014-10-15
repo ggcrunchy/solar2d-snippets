@@ -24,8 +24,8 @@
 --
 
 -- Modules --
-local buttons = require("ui.Button")
-local image_patterns = require("ui.patterns.image")
+local buttons = require("corona_ui.widgets.button")
+local image_patterns = require("corona_ui.patterns.image")
 
 -- Corona globals --
 local display = display

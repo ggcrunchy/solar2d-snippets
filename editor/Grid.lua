@@ -34,7 +34,7 @@ local pairs = pairs
 -- Modules --
 local common = require("editor.Common")
 local common_ui = require("editor.CommonUI")
-local grid2D = require("ui.Grid2D")
+local grid2D = require("corona_ui.widgets.grid")
 local help = require("editor.Help")
 local str_utils = require("utils.String")
 
@@ -338,7 +338,7 @@ end
 --- DOCME
 function M.NewGrid ()
 	local gx, gy, gw, gh = GridRect()
-	local grid = grid2D.Grid2D(Grid.group, nil, gx, gy, gw, gh, VCols, VRows)
+	local grid = grid2D.Grid(Grid.group, nil, gx, gy, gw, gh, VCols, VRows)
 
 	grid:ShowBack(false)
 

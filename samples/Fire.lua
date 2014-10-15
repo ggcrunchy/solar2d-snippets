@@ -34,8 +34,8 @@ local random = math.random
 local round = math.round
 
 -- Modules --
-local hsv = require("ui.HSV")
-local timers = require("game.Timers")
+local hsv = require("corona_ui.utils.hsv")
+local timers = require("corona_utils.timers")
 
 -- Corona globals --
 local display = display

@@ -28,10 +28,10 @@ local pairs = pairs
 
 -- Modules --
 local require_ex = require("tektite.require_ex")
-local audio = require("utils.Audio")
+local audio = require("corona_utils.audio")
 local bind_utils = require("utils.Bind")
 local common = require_ex.Lazy("editor.Common")
-local collision = require("game.Collision")
+local collision = require("corona_utils.collision")
 local powers_of_2 = require("bitwise_ops.powers_of_2")
 local links = require_ex.Lazy("editor.Links")
 

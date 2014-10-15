@@ -31,7 +31,7 @@ local random = math.random
 local sin = math.sin
 
 -- Modules --
-local line_ex = require("ui.LineEx")
+local line_ex = require("corona_ui.utils.line_ex")
 
 -- Corona globals --
 local display = display

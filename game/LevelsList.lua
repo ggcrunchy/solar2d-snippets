@@ -125,7 +125,7 @@ end
 -- * **start_row**: ...and the row for the same.
 -- * **ncols**: The number of columns in the tile grid.
 -- * The **array part** consists of tile names as per the _names_ parameter of
--- @{game.TileMaps.AddTiles}.
+-- @{s3_utils.tile_maps.AddTiles}.
 --
 -- Optional elements include:
 --
@@ -135,7 +135,7 @@ end
 -- where _bg_ is the display group for the background layer, _ncols_ and _nrows_
 -- are the tile grid dimensions, and _tilew_ and _tileh_ are the tile dimensions.
 --
--- * **dots**: Array of _info_ elements as per @{game.Dots.AddDot}.
+-- * **dots**: Array of _info_ elements as per @{s3_utils.dots.AddDot}.
 -- @see DefaultBackground
 function M.GetLevel (index)
 	return assert(Levels[index], "Invalid level")

@@ -34,7 +34,7 @@ local random = math.random
 local sin = math.sin
 
 -- Modules --
-local timers = require("game.Timers")
+local timers = require("corona_utils.timers")
 
 -- Corona globals --
 local display = display

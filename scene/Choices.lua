@@ -30,10 +30,10 @@ local exit = os.exit
 
 -- Modules --
 local args = require("iterator_ops.args")
-local button = require("ui.Button")
-local file_utils = require("utils.File")
-local scenes = require("utils.Scenes")
-local table_view_patterns = require("ui.patterns.table_view")
+local button = require("corona_ui.widgets.button")
+local file_utils = require("corona_utils.file")
+local scenes = require("corona_utils.scenes")
+local table_view_patterns = require("corona_ui.patterns.table_view")
 
 -- Corona globals --
 local display = display

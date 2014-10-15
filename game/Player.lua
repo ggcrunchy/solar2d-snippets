@@ -28,14 +28,14 @@ local min = math.min
 local pairs = pairs
 
 -- Modules --
-local ai = require("game.AI")
-local collision = require("game.Collision")
-local frames = require("utils.Frames")
-local pathing = require("game.Pathing")
-local path_utils = require("game.PathUtils")
-local scrolling = require("game.Scrolling")
-local tile_flags = require("game.TileFlags")
-local tile_maps = require("game.TileMaps")
+local ai = require("s3_utils.ai")
+local collision = require("corona_utils.collision")
+local frames = require("corona_utils.frames")
+local pathing = require("s3_utils.pathing")
+local path_utils = require("s3_utils.path_utils")
+local scrolling = require("s3_utils.scrolling")
+local tile_flags = require("s3_utils.tile_flags")
+local tile_maps = require("s3_utils.tile_maps")
 
 -- Corona globals --
 local display = display
@@ -169,7 +169,7 @@ local NearGoal
 
 --- Attempts to move the player in a given direction, at some average squirrel velocity.
 -- @string dir Direction in which to move.
--- @see game.Movement.NextDirection
+-- @see s3_utils.movement.NextDirection
 function M.MovePlayer (dir)
 	-- Try to walk a bit.
 	local moved, x2, y2, dir2 = ai.TryToMove(Player.m_body, Speed * frames.DiffTime(), dir, NearGoal, M, UpdateOnMove)

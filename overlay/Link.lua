@@ -29,14 +29,14 @@ local ceil = math.ceil
 local type = type
 
 -- Modules --
-local button = require("ui.Button")
+local button = require("corona_ui.widgets.button")
 local common = require("editor.Common")
 local common_ui = require("editor.CommonUI")
-local link_group = require("ui.LinkGroup")
+local link_group = require("corona_ui.widgets.link_group")
 local links = require("editor.Links")
 local table_view_patterns = require("ui.patterns.table_view")
 local tags = require("editor.Tags")
-local touch = require("ui.Touch")
+local touch = require("corona_ui.utils.touch")
 
 -- Corona globals --
 local display = display

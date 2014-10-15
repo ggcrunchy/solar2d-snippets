@@ -32,12 +32,12 @@ local random = math.random
 local sin = math.sin
 
 -- Modules --
-local checkbox = require("ui.Checkbox")
+local checkbox = require("corona_ui.widgets.checkbox")
 local common_ui = require("editor.CommonUI")
 local cubic_spline = require("spline_ops.cubic")
 local curves = require("utils.Curves")
 local hilbert = require("number_ops.hilbert")
-local line_ex = require("ui.LineEx")
+local line_ex = require("corona_ui.utils.line_ex")
 local range = require("number_ops.range")
 
 -- Corona globals --

@@ -29,7 +29,7 @@ local remove = table.remove
 
 -- Modules --
 local lazy = require("table_ops.lazy")
-local timers = require("game.Timers")
+local timers = require("corona_utils.timers")
 
 -- Corona globals --
 local display = display

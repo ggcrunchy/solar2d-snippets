@@ -24,7 +24,7 @@
 --
 
 -- Modules --
-local bitmap = require("ui.Bitmap")
+local bitmap = require("corona_ui.widgets.bitmap")
 local common_ui = require("editor.CommonUI")
 local powers_of_2 = require("bitwise_ops.powers_of_2")
 

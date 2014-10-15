@@ -469,7 +469,7 @@ function M.SaveValuesIntoEntry (level, mod, values, entry)
 end
 
 --- Setter.
--- @pobject current The "current choice" @{ui.Grid1D} widget for the current editor view.
+-- @pobject current The "current choice" @{corona_ui.widgets.grid_1D} widget for the current editor view.
 -- @array types An array of strings, corresponding to the images in _current_.
 -- @string name A name to find in _types_.
 function M.SetCurrentIndex (current, types, name)

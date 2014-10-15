@@ -24,10 +24,10 @@
 --
 
 -- Modules --
-local button = require("ui.Button")
+local button = require("corona_ui.widgets.button")
 local DEBUG = require("DEBUG")
-local persistence = require("game.Persistence")
-local scenes = require("utils.Scenes")
+local persistence = require("corona_utils.persistence")
+local scenes = require("corona_utils.scenes")
 
 -- Corona modules --
 local composer = require("composer")

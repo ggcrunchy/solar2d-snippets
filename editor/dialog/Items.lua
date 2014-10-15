@@ -30,13 +30,13 @@ local max = math.max
 local min = math.min
 
 -- Modules --
-local button = require("ui.Button")
-local checkbox = require("ui.Checkbox")
-local color_picker = require("ui.ColorPicker")
+local button = require("corona_ui.widgets.button")
+local checkbox = require("corona_ui.widgets.checkbox")
+local color_picker = require("corona_ui.widgets.color_picker")
 local common = require("editor.Common")
 local common_ui = require("editor.CommonUI")
-local layout = require("utils.Layout")
-local table_view_patterns = require("ui.patterns.table_view")
+local layout = require("corona_ui.utils.layout")
+local table_view_patterns = require("corona_ui.patterns.table_view")
 local utils = require("editor.dialog.Utils")
 
 -- Corona globals --

@@ -31,15 +31,15 @@ local type = type
 
 -- Modules --
 local require_ex = require("tektite.require_ex")
-local audio = require("utils.Audio")
+local audio = require("corona_utils.audio")
 local bind_utils = require("utils.Bind")
-local collision = require("game.Collision")
+local collision = require("corona_utils.collision")
 local common = require_ex.Lazy("editor.Common")
-local frames = require("utils.Frames")
-local fx = require("game.FX")
+local frames = require("corona_utils.frames")
+local fx = require("s3_utils.fx")
 local links = require_ex.Lazy("editor.Links")
 local markers = require("effect.Markers")
-local positions = require("game.Positions")
+local positions = require("s3_utils.positions")
 local quantize = require("geom2d_ops.quantize")
 
 -- Corona globals --

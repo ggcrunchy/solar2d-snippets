@@ -23,7 +23,7 @@
 -- [ MIT license: http://www.opensource.org/licenses/mit-license.php ]
 --
 -- Modules --
-local editable_patterns = require("ui.patterns.editable")
+local editable_patterns = require("corona_ui.patterns.editable")
 local utils = require("editor.dialog.Utils")
 
 -- Corona globals --

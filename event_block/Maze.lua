@@ -41,9 +41,9 @@ local sqrt = math.sqrt
 -- Modules --
 local array_index = require("array_ops.index")
 local circle = require("fill.Circle")
-local tile_flags = require("game.TileFlags")
-local tile_maps = require("game.TileMaps")
-local timers = require("game.Timers")
+local tile_flags = require("s3_utils.tile_flags")
+local tile_maps = require("s3_utils.tile_maps")
+local timers = require("corona_utils.timers")
 
 -- Corona globals --
 local display = display

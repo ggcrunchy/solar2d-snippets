@@ -35,7 +35,7 @@ local utils = require("editor.dialog.Utils")
 
 -- Modules --
 local common = require("editor.Common")
-local touch = require("ui.Touch")
+local touch = require("corona_ui.utils.touch")
 
 -- Corona globals --
 local display = display

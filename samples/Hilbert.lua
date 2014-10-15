@@ -31,8 +31,8 @@ local yield = coroutine.yield
 
 -- Modules --
 local hilbert = require("number_ops.hilbert")
-local line_ex = require("ui.LineEx")
-local timers = require("game.Timers")
+local line_ex = require("corona_ui.utils.line_ex")
+local timers = require("corona_utils.timers")
 
 -- Corona globals --
 local display = display

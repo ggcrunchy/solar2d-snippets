@@ -28,7 +28,7 @@ local dialog = require("editor.Dialog")
 local events = require("editor.Events")
 local grid_views = require("editor.GridViews")
 local help = require("editor.Help")
-local positions = require("game.Positions")
+local positions = require("s3_utils.positions")
 local str_utils = require("utils.String")
 
 -- Exports --

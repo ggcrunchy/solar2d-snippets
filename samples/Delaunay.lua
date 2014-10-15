@@ -33,9 +33,9 @@ local sqrt = math.sqrt
 local yield = coroutine.yield
 
 -- Modules --
-local line_ex = require("ui.LineEx")
+local line_ex = require("corona_ui.utils.line_ex")
 local mesh_ops = require("mesh_ops")
-local timers = require("game.Timers")
+local timers = require("corona_utils.timers")
 
 -- Corona globals --
 local display = display

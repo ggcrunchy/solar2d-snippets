@@ -31,13 +31,13 @@ local format = string.format
 local pairs = pairs
 
 -- Modules --
-local audio = require("utils.Audio")
+local audio = require("corona_utils.audio")
 local circle = require("fill.Circle")
 local pixels = require("utils.Pixels")
 local quantize = require("geom2d_ops.quantize")
 local sheet = require("ui.Sheet")
 local stash = require("effect.Stash")
-local timers = require("game.Timers")
+local timers = require("corona_utils.timers")
 
 -- Corona globals --
 local display = display

@@ -27,7 +27,7 @@
 local pairs = pairs
 
 -- Modules --
-local timers = require("game.Timers")
+local timers = require("corona_utils.timers")
 
 -- Corona globals --
 local display = display

@@ -29,8 +29,8 @@ local max = math.max
 local min = math.min
 
 -- Modules --
-local bitmap = require("ui.Bitmap")
-local buttons = require("ui.Button")
+local bitmap = require("corona_ui.widgets.bitmap")
+local buttons = require("corona_ui.widgets.button")
 local energy = require("image_ops.energy")
 local common_ui = require("editor.CommonUI")
 

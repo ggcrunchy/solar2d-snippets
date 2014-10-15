@@ -36,9 +36,9 @@ local sqrt = math.sqrt
 
 -- Modules --
 local array_index = require("array_ops.index")
-local hsv = require("ui.HSV")
+local hsv = require("corona_ui.utils.hsv")
 local simplex_noise = require("number_ops.simplex_noise")
-local touch = require("ui.Touch")
+local touch = require("corona_ui.utils.touch")
 
 -- Corona globals --
 local display = display

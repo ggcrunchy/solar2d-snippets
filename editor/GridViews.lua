@@ -11,7 +11,7 @@
 -- * **Load(group, prefix, title)**:
 -- * **Unload**: ...or unloaded.
 -- * **GetCurrent**: Returns the current tile @{ui.Grid1D}.
--- * **GetGrid**: @{ui.Grid2D.Grid2D}
+-- * **GetGrid**: @{corona_ui.widgets.grid.Grid}
 -- * **GetValues**: Returns the values table.
 -- * **GetTiles**: Returns the values and tiles tables.
 

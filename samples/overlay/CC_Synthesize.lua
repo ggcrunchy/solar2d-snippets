@@ -30,11 +30,11 @@ local ipairs = ipairs
 local random = math.random
 
 -- Modules --
-local bitmap = require("ui.Bitmap")
-local button = require("ui.Button")
+local bitmap = require("corona_ui.widgets.bitmap")
+local button = require("corona_ui.widgets.button")
 local colored_corners = require("image_fx.colored_corners")
 local flow = require("graph_ops.flow")
-local layout = require("utils.Layout")
+local layout = require("corona_ui.utils.layout")
 
 -- Corona globals --
 local display = display

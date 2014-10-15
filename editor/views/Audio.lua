@@ -33,12 +33,12 @@
 -- ^^ Then use in game, hook up here in editor to events
 
 -- Modules --
-local audio_patterns = require("ui.patterns.audio")
-local button = require("ui.Button")
+local audio_patterns = require("corona_ui.patterns.audio")
+local button = require("corona_ui.widgets.button")
 local common_ui = require("editor.CommonUI")
-local file_utils = require("utils.File")
+local file_utils = require("corona_utils.file")
 local help = require("editor.Help")
-local layout = require("utils.Layout")
+local layout = require("corona_ui.utils.layout")
 
 -- Corona globals --
 local audio = audio

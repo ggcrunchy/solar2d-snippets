@@ -27,8 +27,8 @@
 local sort = table.sort
  
 -- Modules --
-local lines = require("ui.Lines")
-local touch = require("ui.Touch")
+local lines = require("corona_ui.utils.lines")
+local touch = require("corona_ui.utils.touch")
  
 -- Corona globals --
 local display = display

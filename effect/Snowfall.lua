@@ -36,8 +36,8 @@ local unpack = unpack
 -- Modules --
 local array_index = require("array_ops.index")
 local curves = require("utils.Curves")
-local frames = require("utils.Frames")
-local timers = require("game.Timers")
+local frames = require("corona_utils.frames")
+local timers = require("corona_utils.timers")
 
 -- Corona globals --
 local display = display

@@ -28,7 +28,7 @@ local pairs = pairs
 
 -- Modules --
 local dialog = require("editor.Dialog")
-local dots = require("game.Dots")
+local dots = require("s3_utils.dots")
 local events = require("editor.Events")
 local grid_views = require("editor.GridViews")
 local help = require("editor.Help")

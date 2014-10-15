@@ -29,10 +29,10 @@
 --
 
 -- Modules --
-local button = require("ui.Button")
+local button = require("corona_ui.widgets.button")
 local level_map = require("game.LevelMap")
-local scenes = require("utils.Scenes")
-local timers = require("game.Timers")
+local scenes = require("corona_utils.scenes")
+local timers = require("corona_utils.timers")
 
 -- Corona globals --
 local native = native

@@ -33,9 +33,9 @@ local sin = math.sin
 
 -- Modules --
 local glow = require("effect.Glow")
-local line_ex = require("ui.LineEx")
+local line_ex = require("corona_ui.utils.line_ex")
 local quantize = require("geom2d_ops.quantize")
-local timers = require("game.Timers")
+local timers = require("corona_utils.timers")
 local vector = require("geom2d_ops.vector")
 
 -- Corona globals --

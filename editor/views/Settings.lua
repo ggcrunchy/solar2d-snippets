@@ -30,7 +30,7 @@ local pairs = pairs
 local checkbox = require("ui.Checkbox")
 local grid = require("editor.Grid")
 local help = require("editor.Help")
-local layout = require("utils.Layout")
+local layout = require("corona_ui.utils.layout")
 
 -- Corona globals --
 local display = display

@@ -35,16 +35,16 @@ local yield = coroutine.yield
 
 -- Modules --
 local bind_utils = require("utils.Bind")
-local controls = require("game.Controls")
-local dots = require("game.Dots")
-local event_blocks = require("game.EventBlocks")
-local global_events = require("game.GlobalEvents")
+local controls = require("s3_utils.controls")
+local dots = require("s3_utils.dots")
+local event_blocks = require("s3_utils.event_blocks")
+local global_events = require("s3_utils.global_events")
 local level_list = require("game.LevelsList")
-local persistence = require("game.Persistence")
+local persistence = require("corona_utils.persistence")
 local player = require("game.Player")
-local positions = require("game.Positions")
-local scenes = require("utils.Scenes")
-local tile_maps = require("game.TileMaps")
+local positions = require("s3_utils.positions")
+local scenes = require("corona_utils.scenes")
+local tile_maps = require("s3_utils.tile_maps")
 
 -- Corona globals --
 local display = display
@@ -158,7 +158,7 @@ end
 -- is dispatched, with the same argument.
 -- @pgroup view Level scene view.
 -- @param which As a **uint**, a level index as per @{game.LevelsList.GetLevel}. As a
--- **string**, a level as archived by @{game.Persistence.Encode}.
+-- **string**, a level as archived by @{corona_utils.persistence.Encode}.
 function M.LoadLevel (view, which)
 	assert(not CurrentLevel, "Level not unloaded")
 	assert(not Loading, "Load already in progress")

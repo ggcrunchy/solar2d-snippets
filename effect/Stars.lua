@@ -34,8 +34,8 @@ local sin = math.sin
 local type = type
 
 -- Modules --
-local line_ex = require("ui.LineEx")
-local timers = require("game.Timers")
+local line_ex = require("corona_ui.utils.line_ex")
+local timers = require("corona_utils.timers")
 
 -- Corona globals --
 local display = display

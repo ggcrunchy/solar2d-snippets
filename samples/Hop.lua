@@ -32,7 +32,7 @@ local random = math.random
 local yield = coroutine.yield
 
 -- Modules --
-local timers = require("game.Timers")
+local timers = require("corona_utils.timers")
 
 -- Corona modules --
 local composer = require("composer")

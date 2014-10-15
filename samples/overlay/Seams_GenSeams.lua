@@ -31,7 +31,7 @@ local sort = table.sort
 local sqrt = math.sqrt
 
 -- Modules --
-local buttons = require("ui.Button")
+local buttons = require("corona_ui.widgets.button")
 local hungarian = require("graph_ops.hungarian")
 
 -- Corona modules --

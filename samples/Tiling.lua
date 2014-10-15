@@ -37,10 +37,10 @@ local curves = require("utils.Curves")
 local divide = require("number_ops.divide")
 local flow = require("coroutine_ops.flow")
 local grid_iterators = require("iterator_ops.grid")
-local ms = require("mask.MarchingSquares")
+local ms = require("corona_mask.marching_squares")
 local sheet = require("ui.Sheet")
-local timers = require("game.Timers")
-local transitions = require("game.Transitions")
+local timers = require("corona_utils.timers")
+local transitions = require("corona_utils.transitions")
 
 -- Corona globals --
 local display = display

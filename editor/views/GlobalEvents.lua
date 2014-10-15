@@ -32,7 +32,7 @@ local common = require("editor.Common")
 local common_ui = require("editor.CommonUI")
 local config = require("config.GlobalEvents")
 local events = require("editor.Events")
-local global_events = require("game.GlobalEvents")
+local global_events = require("s3_utils.global_events")
 local help = require("editor.Help")
 local links = require("editor.Links")
 

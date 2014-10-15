@@ -31,16 +31,16 @@ local min = math.min
 -- Modules --
 local common = require("editor.Common")
 local dialog = require("editor.Dialog")
-local event_blocks = require("game.EventBlocks")
+local event_blocks = require("s3_utils.event_blocks")
 local events = require("editor.Events")
 local grid = require("editor.Grid")
 local grid1D = require("ui.Grid1D")
 local grid_views = require("editor.GridViews")
 local help = require("editor.Help")
 local links = require("editor.Links")
-local sheet = require("ui.Sheet")
+local sheet = require("corona_ui.utils.sheet")
 local str_utils = require("utils.String")
-local touch = require("ui.Touch")
+local touch = require("corona_ui.utils.touch")
 
 -- Corona globals --
 local display = display

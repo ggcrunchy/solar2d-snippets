@@ -41,7 +41,7 @@ local cubic_spline = require("spline_ops.cubic")
 local grid_iterators = require("iterator_ops.grid")
 local integrators = require("number_ops.integrators")
 local quaternion_ops = require("quaternion_ops")
-local timers = require("game.Timers")
+local timers = require("corona_utils.timers")
 
 -- Corona globals --
 local display = display

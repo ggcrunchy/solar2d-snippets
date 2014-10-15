@@ -33,9 +33,9 @@ local write = io.write
 -- Modules --
 local common = require("editor.Common")
 local events = require("editor.Events")
-local persistence = require("game.Persistence")
-local prompts = require("ui.patterns.prompts")
-local timers = require("game.Timers")
+local persistence = require("corona_utils.persistence")
+local prompts = require("corona_ui.patterns.prompts")
+local timers = require("corona_utils.timers")
 
 -- Corona globals --
 local native = native
@@ -93,7 +93,7 @@ end
 -- same table as event; listeners can then mutate the table into game-ready form.
 --
 -- This table is then added, as a string, to the level database.
--- @see editor.Common.IsVerified, game.Persistence.SaveLevel, GetLevelName, Verify
+-- @see editor.Common.IsVerified, corona_utils.persistence.SaveLevel, GetLevelName, Verify
 function M.Build ()
 	M.Verify()
 
@@ -143,7 +143,7 @@ end
 --
 -- This table is then added, as a string, to the level database (as a WIP). If possible, this
 -- string is also sent to the clipboard.
--- @see editor.Common.IsDirty, game.Persistence.SaveLevel, GetLevelName
+-- @see editor.Common.IsDirty, corona_utils.persistence.SaveLevel, GetLevelName
 function M.Save ()
 	if common.IsDirty() then
 		GetLevelName(function()
@@ -163,14 +163,14 @@ end
 
 --- Sets the current working name, which is used by @{Build} and @{Save} to assign levels
 -- into the database.
--- @tparam ?|string|nil: Name to assign, or **nil** to clear the working name.
--- @see game.Persistence, GetLevelName
+-- @tparam ?|string|nil name Name to assign, or **nil** to clear the working name.
+-- @see corona_utils.persistence, GetLevelName
 function M.SetLevelName (name)
 	LevelName = name
 end
 
 --- Sets or clears an "is temporary" flag. Any level saved by @{Build} or @{Save} while this
--- flag is set will be ignored by @{game.Persistence.GetLevels}.
+-- flag is set will be ignored by @{corona_utils.persistence.GetLevels}.
 -- @bool is_temp Is the level temporary, in the operations to follow?
 function M.SetTemp (is_temp)
 	IsTemp = not not is_temp

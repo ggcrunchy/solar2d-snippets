@@ -34,7 +34,7 @@ local sqrt = math.sqrt
 local round = math.round
 
 -- Modules --
-local timers = require("game.Timers")
+local timers = require("corona_utils.timers")
 
 -- Corona globals --
 local display = display

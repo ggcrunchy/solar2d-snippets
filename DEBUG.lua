@@ -26,12 +26,12 @@
 -- Modules --
 local args = require("iterator_ops.args")
 local array_index = require("array_ops.index")
-local button = require("ui.Button")
-local checkbox = require("ui.Checkbox")
+local button = require("corona_ui.widgets.button")
+local checkbox = require("corona_ui.widgets.checkbox")
 local level_map = require("game.LevelMap")
 local markers = require("effect.Markers")
-local movement = require("game.Movement")
-local tile_maps = require("game.TileMaps")
+local movement = require("s3_utils.movement")
+local tile_maps = require("s3_utils.tile_maps")
 
 -- Corona globals --
 local display = display

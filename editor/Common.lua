@@ -48,7 +48,7 @@ local Buttons
 
 --- Registers a button for general editor use.
 -- @string name Name used to access button.
--- @pgroup button @{ui.Button} object.
+-- @pgroup button @{corona_ui.widgets.button} object.
 function M.AddButton (name, button)
 	Buttons = Buttons or {}
 
