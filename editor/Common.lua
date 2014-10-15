@@ -33,7 +33,7 @@ local pairs = pairs
 -- Modules --
 local require_ex = require("tektite.require_ex")
 local adaptive = require("table_ops.adaptive")
-local sheet = require("ui.Sheet")
+local sheet = require("corona_ui.utils.sheet")
 local tags = require_ex.Lazy("editor.Tags")
 
 -- Corona globals --

@@ -27,7 +27,7 @@
 local pairs = pairs
 
 -- Modules --
-local checkbox = require("ui.Checkbox")
+local checkbox = require("corona_ui.widgets.checkbox")
 local grid = require("editor.Grid")
 local help = require("editor.Help")
 local layout = require("corona_ui.utils.layout")
@@ -55,6 +55,8 @@ function M.Load (view)
 	ShowLayers = checkbox.Checkbox(Group, nil, 175, 100, 40, 40, function(_, check)
 		grid.ShowMultipleLayers(check)
 	end)
+
+	ShowLayers:Check(true)
 
 	local str = display.newText(Group, "Show other layers in grid?", 0, ShowLayers.y, native.systemFontBold, 22)
 

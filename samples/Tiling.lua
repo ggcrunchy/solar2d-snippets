@@ -38,7 +38,7 @@ local divide = require("number_ops.divide")
 local flow = require("coroutine_ops.flow")
 local grid_iterators = require("iterator_ops.grid")
 local ms = require("corona_mask.marching_squares")
-local sheet = require("ui.Sheet")
+local sheet = require("corona_ui.utils.sheet")
 local timers = require("corona_utils.timers")
 local transitions = require("corona_utils.transitions")
 

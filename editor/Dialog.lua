@@ -35,19 +35,12 @@ local utils = require("editor.dialog.Utils")
 
 -- Modules --
 local common = require("editor.Common")
-local touch = require("corona_ui.utils.touch")
 
 -- Corona globals --
 local display = display
 
 -- Exports --
 local M = {}
-
--- Drag touch listener
-local DragTouch = touch.DragParentTouch_Sibling(1)
-
---
-local function NoTouch () return true end
 
 -- Import dialog methods.
 local Methods = {} 
@@ -71,17 +64,6 @@ function M.Dialog (group, options)
 
 	--
 	utils.AddBack(dgroup, 1, 1)
-
-	--
-	local node = display.newCircle(dgroup, 0, 0, 15)
-
-	node:addEventListener("touch", DragTouch)
-	node:setFillColor(1, 0, 0, .125)
-	node:setStrokeColor(1, 0, 0)
-
-	node.strokeWidth = 4
-
-	dgroup.m_node = node
 
 	--
 	local igroup = display.newGroup()

@@ -34,7 +34,7 @@ local common = require("editor.Common")
 local common_ui = require("editor.CommonUI")
 local link_group = require("corona_ui.widgets.link_group")
 local links = require("editor.Links")
-local table_view_patterns = require("ui.patterns.table_view")
+local table_view_patterns = require("corona_ui.patterns.table_view")
 local tags = require("editor.Tags")
 local touch = require("corona_ui.utils.touch")
 

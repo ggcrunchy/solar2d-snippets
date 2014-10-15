@@ -47,10 +47,10 @@ local type = type
 local common = require("editor.Common")
 local common_ui = require("editor.CommonUI")
 local grid = require("editor.Grid")
-local grid1D = require("ui.Grid1D")
+local grid1D = require("corona_ui.widgets.grid_1D")
 local help = require("editor.Help")
 local links = require("editor.Links")
-local sheet = require("ui.Sheet")
+local sheet = require("corona_ui.utils.sheet")
 local str_utils = require("utils.String")
 
 -- Corona globals --

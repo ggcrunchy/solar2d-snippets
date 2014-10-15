@@ -37,6 +37,7 @@ local common = require("editor.Common")
 local common_ui = require("editor.CommonUI")
 local layout = require("corona_ui.utils.layout")
 local table_view_patterns = require("corona_ui.patterns.table_view")
+local touch = require("corona_ui.utils.touch")
 local utils = require("editor.dialog.Utils")
 
 -- Corona globals --
@@ -164,12 +165,12 @@ end
 -- @ptable options
 function M:AddImage (options)
 	--
-	local image
+	local dim, image = options and options.dim or 32
 
 	if options and options.file then
-		image = display.newImageRect(self:ItemGroup(), options.file, 64, 64)
+		image = display.newImageRect(self:ItemGroup(), options.file, dim, dim)
 	else
-		image = display.newRoundedRect(self:ItemGroup(), 0, 0, 64, 64, 12)
+		image = display.newRoundedRect(self:ItemGroup(), 0, 0, dim, dim, 12)
 	end
 
 	self:CommonAdd(image, options)
@@ -289,18 +290,39 @@ function M:AddString (options)
 	self:CommonAdd(false, sopts, options and options.is_static)
 end
 
+-- Drag touch listener
+local DragTouch = touch.DragParentTouch_Child(1, { find = utils.GetDialog }) -- brittle, depends on back index...
+
 --- DOCME
 -- @string[opt] dir
 -- @string type
 function M:StockElements (dir, type)
-	self:CommonAdd(button.Button(self:ItemGroup(), nil, 0, 0, 25, 25, function()
+	--
+	local exit = button.Button(self:ItemGroup(), nil, 0, 0, 25, 25, function()
 		self:RemoveSelf()
-	end, "X"), { continue_line = true })
+	end, "X")
 
+	self:CommonAdd(exit, { continue_line = true })
+
+	--
+	local bar = display.newRoundedRect(self:ItemGroup(), 0, 0, 1, exit.height, 12)
+
+	bar:addEventListener("touch", DragTouch)
+	bar:setFillColor(0, 0, 1)
+	bar:setStrokeColor(0, 0, .5)
+
+	bar.strokeWidth = 2
+
+	utils.SetProperty(bar, "type", "separator")
+
+	self:CommonAdd(bar)
+
+	--
 	if dir then
-		self:AddImage{ file = format("%s_Assets/%s_Thumb.png", dir, type), continue_line = true }
+		self:AddImage{ file = format("%s_Assets/%s_Thumb.png", dir, type), dim = 48, continue_line = true }
 	end
 
+	--
 	self:AddString{ value_name = "name" }
 end
 

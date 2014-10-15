@@ -33,9 +33,9 @@ local pairs = pairs
 -- Modules --
 local audio = require("corona_utils.audio")
 local circle = require("fill.Circle")
-local pixels = require("utils.Pixels")
+local pixels = require("utils.Pixels") -- TODO: DEFUNCT!
 local quantize = require("geom2d_ops.quantize")
-local sheet = require("ui.Sheet")
+local sheet = require("corona_ui.utils.sheet")
 local stash = require("effect.Stash")
 local timers = require("corona_utils.timers")
 

@@ -315,11 +315,11 @@ local function Apply (handle, op, igroup)
 			local up_to = sub and sub.m_from - 1 or to
 
 			while index <= up_to do
-				index = index + 1, op(igroup[index])
+				index = index + 1, op(igroup[index]) -- Not right, before or after?
 			end
 
 			if sub then
-				si, index = Apply(sub, op, igroup), si + 1, sub.m_to + 1
+				si, index = Apply(sub, op, igroup), si + 1, sub.m_to + 1 -- Ditto..
 			end
 		end
 	end
@@ -465,25 +465,22 @@ local function ResizeBack (dialog)
 			parent:removeSelf()
 		end
 	end
+end
 
-	-- Center the drag node.
-	local node = dialog.m_node
-
-	node:toFront()
-
-	node.x = .5 * w
+-- Helper to resize a separator-type item
+local function Resize (item, w)
+	item.width = w + XSep - item.x
 end
 
 -- Fixes up separators to fit the dialog dimensions
 local function ResizeSeparators (dialog)
-	local igroup = dialog:ItemGroup()
+	local igroup, w = dialog:ItemGroup(), SepWidth(dialog)
 
 	for i = 1, igroup.numChildren do
-		local item, w = igroup[i], SepWidth(dialog)
+		local item = igroup[i]
 
 		if utils.GetProperty(item, "type") == "separator" then
-			item.width = w
-			item.x = XSep
+			Resize(item, w)
 		end
 	end
 end
@@ -499,6 +496,11 @@ function M:Update (object, addx)
 
 	object.anchorX, object.x = 0, self.m_penx
 	object.anchorY, object.y = 0, self.m_peny
+
+	-- If the item should be treated like a separator, adjust its width.
+	if utils.GetProperty(object, "type") == "separator" then
+		Resize(object, SepWidth(self))
+	end
 
 	-- Advance the pen a little past the object.
 	addx = object.contentWidth + XSep + (addx or 0)

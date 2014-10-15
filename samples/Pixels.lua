@@ -36,7 +36,7 @@ local sin = math.sin
 local sqrt = math.sqrt
 
 -- Modules --
-local checkbox = require("ui.Checkbox")
+local checkbox = require("corona_ui.widgets.checkbox")
 local cubic_spline = require("spline_ops.cubic")
 local grid_iterators = require("iterator_ops.grid")
 local integrators = require("number_ops.integrators")
