@@ -28,3 +28,9 @@
 [submodule "corona_mask"]
 	path = corona_mask
 	url = https://github.com/ggcrunchy/corona_mask
+[submodule "number_sequences"]
+	path = number_sequences
+	url = https://github.com/ggcrunchy/number_sequences
+[submodule "tektite_core"]
+	path = tektite_core
+	url = https://github.com/ggcrunchy/tektite_core
