@@ -30,7 +30,7 @@ local remove = table.remove
 local yield = coroutine.yield
 
 -- Modules --
-local hilbert = require("number_ops.hilbert")
+local hilbert = require("number_sequences.hilbert")
 local line_ex = require("corona_ui.utils.line_ex")
 local timers = require("corona_utils.timers")
 

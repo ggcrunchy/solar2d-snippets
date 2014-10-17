@@ -112,17 +112,25 @@ local function ScrollText ()
 end
 
 --
+local function GetDescription (db, name)
+	local desc
+
+	for _, entry in db:urows([[SELECT * FROM descriptions WHERE m_NAME = ']] .. name .. [[']]) do
+		desc = entry
+	end
+
+	return desc
+end
+
+--
 local function SetCurrent (current, index)
 	current.text = "Current: " .. Names[index]
 
 	if index ~= current.m_id and file_utils.Exists(DescriptionsDB) then
 		local db = sqlite3.open(file_utils.PathForFile(DescriptionsDB))
+		local text = GetDescription(db, "samples." .. Names[index])
 
-		MarqueeText.text = ""
-
-		for _, desc in db:urows([[SELECT * FROM descriptions WHERE m_NAME = ']] .. ("samples." .. Names[index]) .. [[']]) do
-			MarqueeText.text = desc .. " "
-		end
+		MarqueeText.text = text and text .. " " or ""
 
 		ScrollText()
 
@@ -151,12 +159,12 @@ local Params = {
 
 		if OnSimulator then
 			local db, name = sqlite3.open(file_utils.PathForFile(DescriptionsDB)), composer.getSceneName("current")
-			local scene = composer.getScene(name)
+			local scene, desc = composer.getScene(name), scene.m_description
 
-			if scene and scene.m_description then
+			if scene and desc and desc ~= GetDescription(db, name) then
 				db:exec([[
 					CREATE TABLE IF NOT EXISTS descriptions (m_NAME VARCHAR, m_DESCRIPTION VARCHAR);
-					INSERT OR REPLACE INTO descriptions VALUES(']] .. name .. [[', ']] .. scene.m_description .. [[');
+					INSERT OR REPLACE INTO descriptions VALUES(']] .. name .. [[', ']] .. desc .. [[');
 				]])
 			end
 

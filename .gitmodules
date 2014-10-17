@@ -34,3 +34,15 @@
 [submodule "tektite_core"]
 	path = tektite_core
 	url = https://github.com/ggcrunchy/tektite_core
+[submodule "array_ops"]
+	path = array_ops
+	url = https://github.com/ggcrunchy/array_ops
+[submodule "iterator_ops"]
+	path = iterator_ops
+	url = https://github.com/ggcrunchy/iterator_ops
+[submodule "coroutine_ops"]
+	path = coroutine_ops
+	url = https://github.com/ggcrunchy/coroutine_ops
+[submodule "image_fx"]
+	path = image_fx
+	url = https://github.com/ggcrunchy/image_fx
