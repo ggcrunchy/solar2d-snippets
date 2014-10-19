@@ -29,9 +29,8 @@ local pairs = pairs
 
 -- Modules --
 local args = require("iterator_ops.args")
-local cache = require("var_ops.cache")
+local cache = require("tektite_core.var.cache")
 local flow = require("coroutine_ops.flow")
-local func_ops = require("tektite.func_ops")
 
 -- Modules --
 local operators = require("bitwise_ops.operators")
@@ -48,7 +47,9 @@ local _set_name = {}
 --
 return function(ops, BoolVars)
 	-- Boolean variable helpers --
-	local Bools, Pair, PairSet = ops.MakeMeta("bools", func_ops.False, true)
+	local Bools, Pair, PairSet = ops.MakeMeta("bools", function()
+		return false
+	end, true)
 
 	--- Predicate.
 	-- @function BoolVars:AllTrue_Array
@@ -65,7 +66,9 @@ return function(ops, BoolVars)
 	Pair("AllTrue", function(bools, iter, s, v0, cleanup)
 		for _, name in iter, s, v0 do
 			if not bools[name] then
-				(cleanup or func_ops.NoOp)()
+				if cleanup then
+					cleanup()
+				end
 
 				return false
 			end
@@ -89,7 +92,9 @@ return function(ops, BoolVars)
 	Pair("AnyTrue", function(bools, iter, s, v0, cleanup)
 		for _, name in iter, s, v0 do
 			if bools[name] then
-				(cleanup or func_ops.NoOp)()
+				if cleanup then
+					cleanup()
+				end
 
 				return true
 			end
@@ -127,7 +132,11 @@ return function(ops, BoolVars)
 		"AnyFalse", "AllTrue"
 	) do
 		for _, suffix in args.Args("_Array", "_Varargs") do
-			BoolVars[name .. suffix] = func_ops.Negater_Multi(BoolVars[ref .. suffix])
+			local func = BoolVars[ref .. suffix]
+
+			BoolVars[name .. suffix] = function(...)
+				return not func(...)
+			end
 		end
 	end
 

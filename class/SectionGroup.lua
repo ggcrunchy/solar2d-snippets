@@ -37,9 +37,9 @@ local remove = table.remove
 local tostring = tostring
 
 -- Modules --
-local class = require("tektite.class")
-local table_funcs = require("table_ops.funcs")
-local var_preds = require("var_ops.predicates")
+local class = require("tektite_core.class")
+local table_funcs = require("tektite_core.table.funcs")
+local var_preds = require("tektite_core.var.predicates")
 
 -- Imports --
 local Find = table_funcs.Find

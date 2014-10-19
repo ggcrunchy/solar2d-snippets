@@ -25,11 +25,11 @@
 
 -- Modules --
 local args = require("iterator_ops.args")
-local array_index = require("array_ops.index")
+local array_index = require("tektite_core.array.index")
 local button = require("corona_ui.widgets.button")
 local checkbox = require("corona_ui.widgets.checkbox")
 local level_map = require("game.LevelMap")
-local markers = require("effect.Markers")
+local markers = require("s3_utils.effect.markers")
 local movement = require("s3_utils.movement")
 local tile_maps = require("s3_utils.tile_maps")
 

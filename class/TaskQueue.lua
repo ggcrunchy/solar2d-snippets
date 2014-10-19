@@ -37,13 +37,13 @@ local wrap = coroutine.wrap
 
 -- Modules --
 local args = require("iterator_ops.args")
-local array_funcs = require("array_ops.funcs")
-local bound_args = require("var_ops.bound_args")
-local cache = require("var_ops.cache")
-local class = require("tektite.class")
-local exception = require("tektite.exception")
-local table_funcs = require("table_ops.funcs")
-local var_preds = require("var_ops.predicates")
+local array_funcs = require("tektite_core.array.funcs")
+local bound_args = require("tektite_core.var.bound_args")
+local cache = require("tektite_core.var.cache")
+local class = require("tektite_core.class")
+local exception = require("tektite_core.exception")
+local table_funcs = require("tektite_core.table.funcs")
+local var_preds = require("tektite_core.var.predicates")
 local wrapper = require("coroutine_ops.wrapper")
 
 -- Imports --

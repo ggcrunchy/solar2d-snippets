@@ -24,13 +24,12 @@
 -- [ MIT license: http://www.opensource.org/licenses/mit-license.php ]
 --
 
--- Modules --
-local func_ops = require("tektite.func_ops")
-
 --
 return function(ops, NumVars)
 	-- Number variable helpers --
-	local Nums, Pair = ops.MakeMeta("nums", func_ops.Zero, true)
+	local Nums, Pair = ops.MakeMeta("nums", function()
+		return 0
+	end, true)
 
 	--- Getter.
 	-- @param name Number variable name.
@@ -50,7 +49,11 @@ return function(ops, NumVars)
 
 	-- Optional upper-bounding helper
 	local function UpperBounded (value, ubound)
-		return (ubound and min or func_ops.Identity)(value, ubound)
+		if ubound and value > ubound then
+			return ubound
+		else
+			return value
+		end
 	end
 
 	--- Gets a number variable and adds to it.
@@ -76,7 +79,11 @@ return function(ops, NumVars)
 
 	-- Optional lower-bounding helper
 	local function LowerBounded (value, lbound)
-		return (lbound and max or func_ops.Identity)(value, lbound)
+		if lbound and value < lbound then
+			return lbound
+		else
+			return value
+		end
 	end
 
 	--- Gets a number variable and subtracts from it.

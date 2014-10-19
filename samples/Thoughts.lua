@@ -30,7 +30,7 @@ local pairs = pairs
 local random = math.random
 
 -- Modules --
-local balloons = require("effect.Balloons")
+local balloons = require("s3_utils.effect.balloons")
 
 -- Corona globals --
 local display = display

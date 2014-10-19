@@ -34,8 +34,8 @@ local tonumber = tonumber
 local type = type
 
 -- Modules --
-local adaptive = require("table_ops.adaptive")
-local lazy = require("table_ops.lazy")
+local adaptive = require("tektite_core.table.adaptive")
+local lazy = require("tektite_core.table.lazy")
 
 -- Cached module references --
 local _AddId_

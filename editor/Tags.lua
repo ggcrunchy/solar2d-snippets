@@ -30,8 +30,8 @@ local pairs = pairs
 local type = type
 
 -- Modules --
-local adaptive = require("table_ops.adaptive")
-local array_funcs = require("array_ops.funcs")
+local adaptive = require("tektite_core.table.adaptive")
+local array_funcs = require("tektite_core.array.funcs")
 local iterator_utils = require("iterator_ops.utils")
 
 -- Cached module references --

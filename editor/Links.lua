@@ -33,7 +33,7 @@ local type = type
 local yield = coroutine.yield
 
 -- Modules --
-local array_funcs = require("array_ops.funcs")
+local array_funcs = require("tektite_core.array.funcs")
 local coro = require("iterator_ops.coroutine")
 local str_utils = require("utils.String")
 local tags = require("editor.Tags")

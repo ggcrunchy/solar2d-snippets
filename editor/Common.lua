@@ -31,8 +31,8 @@ local min = math.min
 local pairs = pairs
 
 -- Modules --
-local require_ex = require("tektite.require_ex")
-local adaptive = require("table_ops.adaptive")
+local require_ex = require("tektite_core.require_ex")
+local adaptive = require("tektite_core.table.adaptive")
 local sheet = require("corona_ui.utils.sheet")
 local tags = require_ex.Lazy("editor.Tags")
 

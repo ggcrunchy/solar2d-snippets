@@ -24,7 +24,7 @@
 --
 
 -- Modules --
-local snowfall = require("effect.Snowfall")
+local snowfall = require("s3_utils.effect.snowfall")
 
 -- Corona modules --
 local composer = require("composer")

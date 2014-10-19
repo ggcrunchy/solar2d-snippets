@@ -36,7 +36,7 @@ local sin = math.sin
 local sqrt = math.sqrt
 
 -- Modules --
-local robust = require("number_ops.robust")
+local robust = require("tektite_core.number.robust")
 
 -- Cached module references --
 local _Add_

@@ -35,12 +35,11 @@ local setmetatable = setmetatable
 
 -- Modules --
 local args = require("iterator_ops.args")
-local array_funcs = require("array_ops.funcs")
-local class = require("tektite.class")
-local func_ops = require("tektite.func_ops")
-local lazy = require("table_ops.lazy")
-local table_funcs = require("table_ops.funcs")
-local var_preds = require("var_ops.predicates")
+local array_funcs = require("tektite_core.array.funcs")
+local class = require("tektite_core.class")
+local lazy = require("tektite_core.table.lazy")
+local table_funcs = require("tektite_core.table.funcs")
+local var_preds = require("tektite_core.var.predicates")
 
 -- Unique member keys --
 local _auto_propagate = {}
@@ -123,11 +122,16 @@ return class.Define(function(VarFamily)
 		end
 	end
 
+	-- Helper to clone primitives
+	local function Identity (var)
+		return var
+	end
+
 	-- Automatic propagation helper
 	local function AutoPropagate (VF)
 		for what, list in pairs(VF[_auto_propagate]) do
 			local group = VF[_groups][what]
-			local op = Metas[what].is_prim and func_ops.Identity or class.Clone
+			local op = Metas[what].is_prim and Identity or class.Clone
 
 			for name, target in pairs(list) do
 				for i = 2, target do

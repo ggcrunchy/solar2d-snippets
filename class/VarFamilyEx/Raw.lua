@@ -25,8 +25,8 @@
 --
 
 -- Modules --
-local bound_args = require("var_ops.bound_args")
-local table_ops = require("table_ops")
+local bound_args = require("tektite_core.var.bound_args")
+local table_funcs = require("tektite_core.table.funcs")
 
 --
 return function(ops, RawVars)
@@ -81,6 +81,6 @@ return function(ops, RawVars)
 	-- @ptable t Name-value pairs, where each value is assigned to the associated
 	-- named raw variable
 	function RawVars:SetRaw_Table (t)
-		bound_args.WithBoundTable(Raw(self), table_ops.Copy, t)
+		bound_args.WithBoundTable(Raw(self), table_funcs.Copy, t)
 	end
 end

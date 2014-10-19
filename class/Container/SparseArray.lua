@@ -31,8 +31,8 @@ local getmetatable = getmetatable
 local type = type
 
 -- Modules --
-local class = require("tektite.class")
-local var_preds = require("var_ops.predicates")
+local class = require("tektite_core.class")
+local var_preds = require("tektite_core.var.predicates")
 
 -- Imports --
 local IsCallable = var_preds.IsCallable

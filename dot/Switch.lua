@@ -27,7 +27,7 @@
 local pairs = pairs
 
 -- Modules --
-local require_ex = require("tektite.require_ex")
+local require_ex = require("tektite_core.require_ex")
 local audio = require("corona_utils.audio")
 local bind_utils = require("utils.Bind")
 local common = require_ex.Lazy("editor.Common")

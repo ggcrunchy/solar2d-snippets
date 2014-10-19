@@ -35,7 +35,7 @@ local sin = math.sin
 local sqrt = math.sqrt
 
 -- Modules --
-local array_index = require("array_ops.index")
+local array_index = require("tektite_core.array.index")
 local hsv = require("corona_ui.utils.hsv")
 local simplex_noise = require("number_ops.simplex_noise")
 local touch = require("corona_ui.utils.touch")

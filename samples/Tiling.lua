@@ -30,11 +30,11 @@ local random = math.random
 local yield = coroutine.yield
 
 -- Modules --
-local array_index = require("array_ops.index")
-local ca = require("fill.CellularAutomata")
-local circle = require("fill.Circle")
+local array_index = require("tektite_core.array.index")
+local ca = require("s3_utils.fill.cellular_automata")
+local circle = require("s3_utils.fill.circle")
 local curves = require("utils.Curves")
-local divide = require("number_ops.divide")
+local divide = require("tektite_core.number.divide")
 local flow = require("coroutine_ops.flow")
 local grid_iterators = require("iterator_ops.grid")
 local ms = require("corona_mask.marching_squares")

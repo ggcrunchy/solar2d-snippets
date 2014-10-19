@@ -30,7 +30,7 @@ local sin = math.sin
 local type = type
 
 -- Modules --
-local require_ex = require("tektite.require_ex")
+local require_ex = require("tektite_core.require_ex")
 local audio = require("corona_utils.audio")
 local bind_utils = require("utils.Bind")
 local collision = require("corona_utils.collision")
@@ -38,7 +38,7 @@ local common = require_ex.Lazy("editor.Common")
 local frames = require("corona_utils.frames")
 local fx = require("s3_utils.fx")
 local links = require_ex.Lazy("editor.Links")
-local markers = require("effect.Markers")
+local markers = require("s3_utils.effect.markers")
 local positions = require("s3_utils.positions")
 local quantize = require("geom2d_ops.quantize")
 

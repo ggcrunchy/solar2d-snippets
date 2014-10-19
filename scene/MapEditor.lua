@@ -44,7 +44,7 @@ local ipairs = ipairs
 local pairs = pairs
 
 -- Modules --
-local require_ex = require("tektite.require_ex")
+local require_ex = require("tektite_core.require_ex")
 local args = require("iterator_ops.args")
 local button = require("corona_ui.widgets.button")
 local common = require("editor.Common")

@@ -41,7 +41,7 @@ local sin = math.sin
 local sqrt = math.sqrt
 
 -- Modules --
-local cache = require("var_ops.cache")
+local cache = require("tektite_core.var.cache")
 local tuple = require("number_ops.tuple")
 
 -- Exports --

@@ -27,7 +27,7 @@
 local ipairs = ipairs
 
 -- Modules --
-local require_ex = require("tektite.require_ex")
+local require_ex = require("tektite_core.require_ex")
 local button = require("corona_ui.widgets.button")
 local common = require("editor.Common")
 local dialog_utils = require_ex.Lazy("editor.dialog.Utils")
@@ -179,7 +179,7 @@ function M.TabsHack (group, tabs, n, x, y, w, h)
 
 	rect:addEventListener("touch", function(event)
 		local bounds = event.target.contentBounds
-		local index = math.min(require("array_ops.index").FitToSlot(event.x, bounds.xMin, (bounds.xMax - bounds.xMin) / n), n)
+		local index = math.min(require("tektite_core.array.index").FitToSlot(event.x, bounds.xMin, (bounds.xMax - bounds.xMin) / n), n)
 
 		if is_func then
 			local _, extra = x()

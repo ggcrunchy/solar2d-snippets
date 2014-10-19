@@ -39,8 +39,8 @@ local remove = table.remove
 local sqrt = math.sqrt
 
 -- Modules --
-local array_index = require("array_ops.index")
-local circle = require("fill.Circle")
+local array_index = require("tektite_core.array.index")
+local circle = require("s3_utils.fill.circle")
 local tile_flags = require("s3_utils.tile_flags")
 local tile_maps = require("s3_utils.tile_maps")
 local timers = require("corona_utils.timers")

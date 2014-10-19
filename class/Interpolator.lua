@@ -29,12 +29,8 @@ local assert = assert
 local type = type
 
 -- Modules --
-local class = require("tektite.class")
-local func_ops = require("tektite.func_ops")
-local table_funcs = require("table_ops.funcs")
-
--- Imports --
-local Identity = func_ops.Identity
+local class = require("tektite_core.class")
+local table_funcs = require("tektite_core.table.funcs")
 
 -- Classes --
 local TimerClass = require("class.Timer")
@@ -122,7 +118,11 @@ return class.Define(function(Interpolator)
 		I[_t] = Modes[I[_mode] or "suspended"](I, lapse, I[_timer]:Check("continue"))
 
 		-- If a mapping exists, apply it to the current time and use the new result.
-		local t = (I[_map] or Identity)(I[_t], I[_is_decreasing])
+		local map, t = I[_map], I[_t]
+
+		if map then
+			t = map(t, I[_is_decreasing])
+		end
 
 		-- Perform the interpolation.
 		I[_interp](t, I[_target1], I[_target2], I[_context])

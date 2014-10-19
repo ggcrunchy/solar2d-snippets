@@ -38,7 +38,7 @@ local cubic_spline = require("spline_ops.cubic")
 local curves = require("utils.Curves")
 local hilbert = require("number_sequences.hilbert")
 local line_ex = require("corona_ui.utils.line_ex")
-local range = require("number_ops.range")
+local range = require("tektite_core.number.range")
 
 -- Corona globals --
 local display = display
