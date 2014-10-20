@@ -310,7 +310,7 @@ function M.Sub (a, b, c, d)
 	return a - c, b - d
 end
 
---- Factory for building complex number caches, as per @{var_ops.cache.Factory}.
+--- Factory for building complex number caches, as per @{tektite_core.var.cache.Factory}.
 --
 -- Where an operation produces a new complex number, if the complex number inputs belong to
 -- different caches, the result belongs to the cache of the invoked method's **self**. In
@@ -322,7 +322,7 @@ end
 -- is true, _z_ is not placed in the cache.
 -- @function CacheFactory
 -- @string[opt] how Factory argument.
--- @treturn function Factory function, as per @{var_ops.cache.Factory}.
+-- @treturn function Factory function, as per @{tektite_core.var.cache.Factory}.
 M.CacheFactory = cache.Factory(function(ComplexMT, new)
 	local Complex, call, get2 = tuple.PairMethods_ConsGet(new, "m_r", "m_i")
 	local uf, uf_scalar = tuple.PairMethods_Unary(Complex, call)

@@ -41,7 +41,7 @@ local M = {}
 -- respectively, and the aggregate is returned.
 --
 -- In particular, this function may be used as the _make_ routine for a cache, as created by
--- @{var_ops.cache.Factory}. In this case, _new_ would be passed in as _base\_new_, and
+-- @{tektite_core.var.cache.Factory}. In this case, _new_ would be passed in as _base\_new_, and
 -- _uncached_ would end up in _arg_.
 -- @treturn function Called as `a, b = get(func, pair)`, where _get_ is defined as
 -- `return func(pair[k1], pair[k2])`.

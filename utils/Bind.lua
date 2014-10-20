@@ -62,7 +62,7 @@ end
 -- @string key Key under which the ID is stored.
 -- @int id Target's ID. The stored ID will be a composite of _id_ and _sub_.
 -- @string sub Name of target's sublink.
--- @see table_ops.adaptive.Append
+-- @see tektite_core.table.adaptive.Append
 function M.AddId (elem, key, id, sub)
 	adaptive.Append(elem, key, ComposeId(id, sub))
 end
