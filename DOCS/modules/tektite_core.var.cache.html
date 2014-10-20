@@ -1,0 +1,605 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+<head>
+    <title>Snippets documentation</title>
+    <link rel="stylesheet" href="../ldoc.css" type="text/css" />
+</head>
+<body>
+
+<div id="container">
+
+<div id="product">
+	<div id="product_logo"></div>
+	<div id="product_name"><big><b></b></big></div>
+	<div id="product_description"></div>
+</div> <!-- id="product" -->
+
+
+<div id="main">
+
+
+<!-- Menu -->
+
+<div id="navigation">
+<br/>
+<h1>Corona SDK snippets</h1>
+
+<ul>
+  <li><a href="../api.html">Index</a></li>
+</ul>
+
+<h2>Contents</h2>
+<ul>
+<li><a href="#Functions">Functions</a></li>
+</ul>
+
+
+<h2>Modules</h2>
+<ul class="$(kind=='Topics' and '' or 'nowrap'">
+  <li><a href="../modules/bitwise_ops.counts.html">counts</a></li>
+  <li><a href="../modules/bitwise_ops.log2.html">log2</a></li>
+  <li><a href="../modules/bitwise_ops.operators.html">operators</a></li>
+  <li><a href="../modules/bitwise_ops.powers_of_2.html">powers_of_2</a></li>
+  <li><a href="../modules/bitwise_ops.vector.html">vector</a></li>
+  <li><a href="../modules/SparseArray.html">SparseArray</a></li>
+  <li><a href="../modules/Interpolator.html">Interpolator</a></li>
+  <li><a href="../modules/SectionGroup.html">SectionGroup</a></li>
+  <li><a href="../modules/TaskQueue.html">TaskQueue</a></li>
+  <li><a href="../modules/Timeline.html">Timeline</a></li>
+  <li><a href="../modules/Timer.html">Timer</a></li>
+  <li><a href="../modules/VarFamily.html">VarFamily</a></li>
+  <li><a href="../modules/class.VarFamilyEx.Annex.html">VarFamilyEx.Annex</a></li>
+  <li><a href="../modules/BoolVars.html">BoolVars</a></li>
+  <li><a href="../modules/NumVars.html">NumVars</a></li>
+  <li><a href="../modules/RawVars.html">RawVars</a></li>
+  <li><a href="../modules/TimerVars.html">TimerVars</a></li>
+  <li><a href="../modules/config.Dots.html">Dots</a></li>
+  <li><a href="../modules/config.EditorViews.html">EditorViews</a></li>
+  <li><a href="../modules/config.EventBlocks.html">EventBlocks</a></li>
+  <li><a href="../modules/config.GlobalEvents.html">GlobalEvents</a></li>
+  <li><a href="../modules/config.Persistence.html">Persistence</a></li>
+  <li><a href="../modules/corona_mask.marching_squares.html">marching_squares</a></li>
+  <li><a href="../modules/corona_ui.patterns.audio.html">patterns.audio</a></li>
+  <li><a href="../modules/corona_ui.patterns.button.html">patterns.button</a></li>
+  <li><a href="../modules/corona_ui.patterns.editable.html">patterns.editable</a></li>
+  <li><a href="../modules/corona_ui.patterns.image.html">patterns.image</a></li>
+  <li><a href="../modules/corona_ui.patterns.prompts.html">patterns.prompts</a></li>
+  <li><a href="../modules/corona_ui.patterns.table_view.html">patterns.table_view</a></li>
+  <li><a href="../modules/corona_ui.patterns.tabs.html">patterns.tabs</a></li>
+  <li><a href="../modules/corona_ui.patterns.video.html">patterns.video</a></li>
+  <li><a href="../modules/corona_ui.utils.color.html">utils.color</a></li>
+  <li><a href="../modules/corona_ui.utils.hsv.html">utils.hsv</a></li>
+  <li><a href="../modules/corona_ui.utils.layout.html">utils.layout</a></li>
+  <li><a href="../modules/corona_ui.utils.lines.html">utils.lines</a></li>
+  <li><a href="../modules/corona_ui.utils.line_ex.html">utils.line_ex</a></li>
+  <li><a href="../modules/corona_ui.utils.sheet.html">utils.sheet</a></li>
+  <li><a href="../modules/corona_ui.utils.skin.html">utils.skin</a></li>
+  <li><a href="../modules/corona_ui.utils.touch.html">utils.touch</a></li>
+  <li><a href="../modules/corona_ui.widgets.bitmap.html">widgets.bitmap</a></li>
+  <li><a href="../modules/corona_ui.widgets.button.html">widgets.button</a></li>
+  <li><a href="../modules/corona_ui.widgets.checkbox.html">widgets.checkbox</a></li>
+  <li><a href="../modules/corona_ui.widgets.color_picker.html">widgets.color_picker</a></li>
+  <li><a href="../modules/corona_ui.widgets.grid.html">widgets.grid</a></li>
+  <li><a href="../modules/corona_ui.widgets.grid_1D.html">widgets.grid_1D</a></li>
+  <li><a href="../modules/corona_ui.widgets.keyboard.html">widgets.keyboard</a></li>
+  <li><a href="../modules/corona_ui.widgets.link_group.html">widgets.link_group</a></li>
+  <li><a href="../modules/corona_utils.audio.html">audio</a></li>
+  <li><a href="../modules/corona_utils.collision.html">collision</a></li>
+  <li><a href="../modules/corona_utils.device.html">device</a></li>
+  <li><a href="../modules/corona_utils.file.html">file</a></li>
+  <li><a href="../modules/corona_utils.frames.html">frames</a></li>
+  <li><a href="../modules/corona_utils.mask.html">mask</a></li>
+  <li><a href="../modules/corona_utils.persistence.html">persistence</a></li>
+  <li><a href="../modules/corona_utils.scenes.html">scenes</a></li>
+  <li><a href="../modules/corona_utils.timers.html">timers</a></li>
+  <li><a href="../modules/corona_utils.transitions.html">transitions</a></li>
+  <li><a href="../modules/coroutine_ops.flow.html">flow</a></li>
+  <li><a href="../modules/coroutine_ops.flow_bodies.html">flow_bodies</a></li>
+  <li><a href="../modules/coroutine_ops.per_coroutine.html">per_coroutine</a></li>
+  <li><a href="../modules/coroutine_ops.wrapper.html">wrapper</a></li>
+  <li><a href="../modules/DEBUG.html">DEBUG</a></li>
+  <li><a href="../modules/dft_ops.core.html">core</a></li>
+  <li><a href="../modules/dft_ops.fft.html">fft</a></li>
+  <li><a href="../modules/dft_ops.goertzel.html">goertzel</a></li>
+  <li><a href="../modules/dft_ops.real_fft.html">real_fft</a></li>
+  <li><a href="../modules/dft_ops.two_ffts.html">two_ffts</a></li>
+  <li><a href="../modules/dft_ops.utils.html">utils</a></li>
+  <li><a href="../modules/dot.Switch.html">Switch</a></li>
+  <li><a href="../modules/dot.Warp.html">Warp</a></li>
+  <li><a href="../modules/editor.Common.html">Common</a></li>
+  <li><a href="../modules/editor.CommonUI.html">CommonUI</a></li>
+  <li><a href="../modules/editor.dialog.Data.html">dialog.Data</a></li>
+  <li><a href="../modules/editor.dialog.Items.html">dialog.Items</a></li>
+  <li><a href="../modules/editor.dialog.Layout.html">dialog.Layout</a></li>
+  <li><a href="../modules/editor.dialog.Methods.html">dialog.Methods</a></li>
+  <li><a href="../modules/editor.dialog.Utils.html">dialog.Utils</a></li>
+  <li><a href="../modules/editor.Dialog.html">Dialog</a></li>
+  <li><a href="../modules/editor.Events.html">Events</a></li>
+  <li><a href="../modules/editor.Grid.html">Grid</a></li>
+  <li><a href="../modules/editor.GridViews.html">GridViews</a></li>
+  <li><a href="../modules/editor.Help.html">Help</a></li>
+  <li><a href="../modules/editor.Links.html">Links</a></li>
+  <li><a href="../modules/editor.Ops.html">Ops</a></li>
+  <li><a href="../modules/editor.Tags.html">Tags</a></li>
+  <li><a href="../modules/editor.views.Audio.html">views.Audio</a></li>
+  <li><a href="../modules/editor.views.Background.html">views.Background</a></li>
+  <li><a href="../modules/editor.views.Dots.html">views.Dots</a></li>
+  <li><a href="../modules/editor.views.EventBlocks.html">views.EventBlocks</a></li>
+  <li><a href="../modules/editor.views.GlobalEvents.html">views.GlobalEvents</a></li>
+  <li><a href="../modules/editor.views.Link.html">views.Link</a></li>
+  <li><a href="../modules/editor.views.Player.html">views.Player</a></li>
+  <li><a href="../modules/editor.views.Positions.html">views.Positions</a></li>
+  <li><a href="../modules/editor.views.Settings.html">views.Settings</a></li>
+  <li><a href="../modules/editor.views.State.html">views.State</a></li>
+  <li><a href="../modules/editor.views.Tiles.html">views.Tiles</a></li>
+  <li><a href="../modules/editor.views.Timeline.html">views.Timeline</a></li>
+  <li><a href="../modules/editor.views.Triggers.html">views.Triggers</a></li>
+  <li><a href="../modules/event_block.Maze.html">Maze</a></li>
+  <li><a href="../modules/FIXES.html">FIXES</a></li>
+  <li><a href="../modules/game.LevelMap.html">LevelMap</a></li>
+  <li><a href="../modules/game.LevelsList.html">LevelsList</a></li>
+  <li><a href="../modules/game.Player.html">Player</a></li>
+  <li><a href="../modules/geom2d_ops.predicates.html">predicates</a></li>
+  <li><a href="../modules/geom2d_ops.quantize.html">quantize</a></li>
+  <li><a href="../modules/geom2d_ops.vector.html">vector</a></li>
+  <li><a href="../modules/hash_ops.html">hash_ops</a></li>
+  <li><a href="../modules/image_fx.colored_corners.html">colored_corners</a></li>
+  <li><a href="../modules/image_fx.cubic_mvc.html">cubic_mvc</a></li>
+  <li><a href="../modules/image_fx.poisson_mvc.html">poisson_mvc</a></li>
+  <li><a href="../modules/image_ops.energy.html">energy</a></li>
+  <li><a href="../modules/image_ops.huffman.html">huffman</a></li>
+  <li><a href="../modules/image_ops.jpeg.html">jpeg</a></li>
+  <li><a href="../modules/image_ops.png.html">png</a></li>
+  <li><a href="../modules/image_ops.png_encode.html">png_encode</a></li>
+  <li><a href="../modules/image_ops.utils.html">utils</a></li>
+  <li><a href="../modules/image_ops.zlib.html">zlib</a></li>
+  <li><a href="../modules/image_ops.zlib_lut.html">zlib_lut</a></li>
+  <li><a href="../modules/iterator_ops.args.html">args</a></li>
+  <li><a href="../modules/iterator_ops.coroutine.html">coroutine</a></li>
+  <li><a href="../modules/iterator_ops.grid.html">grid</a></li>
+  <li><a href="../modules/iterator_ops.ipairs.html">ipairs</a></li>
+  <li><a href="../modules/iterator_ops.utils.html">utils</a></li>
+  <li><a href="../modules/linear_algebra_ops.base.html">base</a></li>
+  <li><a href="../modules/linear_algebra_ops.cholesky.html">cholesky</a></li>
+  <li><a href="../modules/linear_algebra_ops.conjugate_gradient.html">conjugate_gradient</a></li>
+  <li><a href="../modules/linear_algebra_ops.svd.html">svd</a></li>
+  <li><a href="../modules/main.html">main</a></li>
+  <li><a href="../modules/mesh_ops.html">mesh_ops</a></li>
+  <li><a href="../modules/number_ops.complex.html">complex</a></li>
+  <li><a href="../modules/number_ops.integrators.html">integrators</a></li>
+  <li><a href="../modules/number_ops.poisson.html">poisson</a></li>
+  <li><a href="../modules/number_ops.scalloped_sector.html">scalloped_sector</a></li>
+  <li><a href="../modules/number_ops.simplex_noise.html">simplex_noise</a></li>
+  <li><a href="../modules/number_ops.summed_area.html">summed_area</a></li>
+  <li><a href="../modules/number_ops.tuple.html">tuple</a></li>
+  <li><a href="../modules/number_sequences.gray.html">gray</a></li>
+  <li><a href="../modules/number_sequences.hilbert.html">hilbert</a></li>
+  <li><a href="../modules/number_sequences.morton.html">morton</a></li>
+  <li><a href="../modules/number_sequences.mwc_rng.html">mwc_rng</a></li>
+  <li><a href="../modules/overlay.Help.html">Help</a></li>
+  <li><a href="../modules/overlay.Link.html">Link</a></li>
+  <li><a href="../modules/quaternion_ops.html">quaternion_ops</a></li>
+  <li><a href="../modules/s3_utils.ai.html">ai</a></li>
+  <li><a href="../modules/s3_utils.controls.html">controls</a></li>
+  <li><a href="../modules/s3_utils.dots.html">dots</a></li>
+  <li><a href="../modules/s3_utils.effect.balloons.html">effect.balloons</a></li>
+  <li><a href="../modules/s3_utils.effect.fillers.html">effect.fillers</a></li>
+  <li><a href="../modules/s3_utils.effect.glow.html">effect.glow</a></li>
+  <li><a href="../modules/s3_utils.effect.markers.html">effect.markers</a></li>
+  <li><a href="../modules/s3_utils.effect.shadows.html">effect.shadows</a></li>
+  <li><a href="../modules/s3_utils.effect.snowfall.html">effect.snowfall</a></li>
+  <li><a href="../modules/s3_utils.effect.stars.html">effect.stars</a></li>
+  <li><a href="../modules/s3_utils.effect.stash.html">effect.stash</a></li>
+  <li><a href="../modules/s3_utils.event_blocks.html">event_blocks</a></li>
+  <li><a href="../modules/s3_utils.fill.cellular_automata.html">fill.cellular_automata</a></li>
+  <li><a href="../modules/s3_utils.fill.circle.html">fill.circle</a></li>
+  <li><a href="../modules/s3_utils.fx.html">fx</a></li>
+  <li><a href="../modules/s3_utils.global_events.html">global_events</a></li>
+  <li><a href="../modules/s3_utils.hud.action.html">hud.action</a></li>
+  <li><a href="../modules/s3_utils.hud.move.html">hud.move</a></li>
+  <li><a href="../modules/s3_utils.html">s3_utils</a></li>
+  <li><a href="../modules/s3_utils.movement.html">movement</a></li>
+  <li><a href="../modules/s3_utils.music.html">music</a></li>
+  <li><a href="../modules/s3_utils.pathing.html">pathing</a></li>
+  <li><a href="../modules/s3_utils.path_utils.html">path_utils</a></li>
+  <li><a href="../modules/s3_utils.positions.html">positions</a></li>
+  <li><a href="../modules/s3_utils.scrolling.html">scrolling</a></li>
+  <li><a href="../modules/s3_utils.sound.html">sound</a></li>
+  <li><a href="../modules/s3_utils.tile_flags.html">tile_flags</a></li>
+  <li><a href="../modules/s3_utils.tile_maps.html">tile_maps</a></li>
+  <li><a href="../modules/s3_utils.triggers.html">triggers</a></li>
+  <li><a href="../modules/samples.ColoredCorners.html">ColoredCorners</a></li>
+  <li><a href="../modules/samples.Delaunay.html">Delaunay</a></li>
+  <li><a href="../modules/samples.Endless.html">Endless</a></li>
+  <li><a href="../modules/samples.Fire.html">Fire</a></li>
+  <li><a href="../modules/samples.Hilbert.html">Hilbert</a></li>
+  <li><a href="../modules/samples.HilbertMixer.html">HilbertMixer</a></li>
+  <li><a href="../modules/samples.Hop.html">Hop</a></li>
+  <li><a href="../modules/samples.Nodes.html">Nodes</a></li>
+  <li><a href="../modules/samples.OrbitsAndLattices.html">OrbitsAndLattices</a></li>
+  <li><a href="../modules/samples.overlay.CC_ChooseFile.html">overlay.CC_ChooseFile</a></li>
+  <li><a href="../modules/samples.overlay.CC_GenColors.html">overlay.CC_GenColors</a></li>
+  <li><a href="../modules/samples.overlay.CC_Synthesize.html">overlay.CC_Synthesize</a></li>
+  <li><a href="../modules/samples.overlay.Seams_Carve.html">overlay.Seams_Carve</a></li>
+  <li><a href="../modules/samples.overlay.Seams_ChooseFile.html">overlay.Seams_ChooseFile</a></li>
+  <li><a href="../modules/samples.overlay.Seams_Energy.html">overlay.Seams_Energy</a></li>
+  <li><a href="../modules/samples.overlay.Seams_GenSeams.html">overlay.Seams_GenSeams</a></li>
+  <li><a href="../modules/samples.Pixels.html">Pixels</a></li>
+  <li><a href="../modules/samples.Plasma.html">Plasma</a></li>
+  <li><a href="../modules/samples.Seams.html">Seams</a></li>
+  <li><a href="../modules/samples.SlowMo.html">SlowMo</a></li>
+  <li><a href="../modules/samples.Snowfall.html">Snowfall</a></li>
+  <li><a href="../modules/samples.Superformulae.html">Superformulae</a></li>
+  <li><a href="../modules/samples.Swarm.html">Swarm</a></li>
+  <li><a href="../modules/samples.TESTING.html">TESTING</a></li>
+  <li><a href="../modules/samples.Thoughts.html">Thoughts</a></li>
+  <li><a href="../modules/samples.Ticker.html">Ticker</a></li>
+  <li><a href="../modules/samples.Tiling.html">Tiling</a></li>
+  <li><a href="../modules/samples.Timers.html">Timers</a></li>
+  <li><a href="../modules/samples.utils.LongRunning.html">utils.LongRunning</a></li>
+  <li><a href="../modules/scene.Choices.html">Choices</a></li>
+  <li><a href="../modules/scene.EditorSetup.html">EditorSetup</a></li>
+  <li><a href="../modules/scene.Intro.html">Intro</a></li>
+  <li><a href="../modules/scene.Level.html">Level</a></li>
+  <li><a href="../modules/scene.MapEditor.html">MapEditor</a></li>
+  <li><a href="../modules/scene.Options.html">Options</a></li>
+  <li><a href="../modules/signal_ops.circular_convolution.html">circular_convolution</a></li>
+  <li><a href="../modules/signal_ops.fft_convolution.html">fft_convolution</a></li>
+  <li><a href="../modules/signal_ops.linear_convolution.html">linear_convolution</a></li>
+  <li><a href="../modules/signal_ops.overlap.html">overlap</a></li>
+  <li><a href="../modules/signal_ops.separable.html">separable</a></li>
+  <li><a href="../modules/signal_ops.utils.html">utils</a></li>
+  <li><a href="../modules/spline_ops.arc_length.html">arc_length</a></li>
+  <li><a href="../modules/spline_ops.bezier.html">bezier</a></li>
+  <li><a href="../modules/spline_ops.cubic.html">cubic</a></li>
+  <li><a href="../modules/tektite_core.array.collect.html">array.collect</a></li>
+  <li><a href="../modules/tektite_core.array.embedded_free_list.html">array.embedded_free_list</a></li>
+  <li><a href="../modules/tektite_core.array.funcs.html">array.funcs</a></li>
+  <li><a href="../modules/tektite_core.array.id_occupied.html">array.id_occupied</a></li>
+  <li><a href="../modules/tektite_core.array.index.html">array.index</a></li>
+  <li><a href="../modules/tektite_core.array.predicates.html">array.predicates</a></li>
+  <li><a href="../modules/tektite_core.array.ring_buffer.html">array.ring_buffer</a></li>
+  <li><a href="../modules/tektite_core.array.wipe.html">array.wipe</a></li>
+  <li><a href="../modules/tektite_core.class.html">class</a></li>
+  <li><a href="../modules/tektite_core.errors.html">errors</a></li>
+  <li><a href="../modules/tektite_core.exception.html">exception</a></li>
+  <li><a href="../modules/tektite_core.number.divide.html">number.divide</a></li>
+  <li><a href="../modules/tektite_core.number.range.html">number.range</a></li>
+  <li><a href="../modules/tektite_core.number.robust.html">number.robust</a></li>
+  <li><a href="../modules/tektite_core.number.to_string.html">number.to_string</a></li>
+  <li><a href="../modules/tektite_core.require_ex.html">require_ex</a></li>
+  <li><a href="../modules/tektite_core.table.adaptive.html">table.adaptive</a></li>
+  <li><a href="../modules/tektite_core.table.funcs.html">table.funcs</a></li>
+  <li><a href="../modules/tektite_core.table.lazy.html">table.lazy</a></li>
+  <li><a href="../modules/tektite_core.table.predicates.html">table.predicates</a></li>
+  <li><a href="../modules/tektite_core.table.proxy.html">table.proxy</a></li>
+  <li><a href="../modules/tektite_core.var.bound_args.html">var.bound_args</a></li>
+  <li><strong>var.cache</strong></li>
+  <li><a href="../modules/tektite_core.var.dump.html">var.dump</a></li>
+  <li><a href="../modules/tektite_core.var.predicates.html">var.predicates</a></li>
+  <li><a href="../modules/tiles.TreeBG.html">TreeBG</a></li>
+  <li><a href="../modules/utils.Bind.html">Bind</a></li>
+  <li><a href="../modules/utils.Curves.html">Curves</a></li>
+  <li><a href="../modules/utils.Resource.html">Resource</a></li>
+  <li><a href="../modules/utils.String.html">String</a></li>
+</ul>
+
+</div>
+
+<div id="content">
+
+<h1>Module <code>tektite_core.var.cache</code></h1>
+<p>This module defines some common caching operations, e.g.</p>
+<p> as a means of mitigating
+ garbage collection spikes.</p>
+
+
+<h2><a href="#Functions">Functions</a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#Factory">Factory (create_mt)</a></td>
+	<td class="summary">Building block for cached types.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#SimpleCache">SimpleCache ()</a></td>
+	<td class="summary">Builds a simple cache.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#UnpackWipeAndRecache">UnpackWipeAndRecache (cache, array[, count=#array], wipe)</a></td>
+	<td class="summary">Wipes an array and puts it into a cache, returning the cleared values.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#WipeAndRecache">WipeAndRecache (cache, array[, count=#array], wipe)</a></td>
+	<td class="summary">Wipes an array and puts it into a cache.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#TableCache">TableCache ([on_restore])</a></td>
+	<td class="summary">Builds a table-based cache.</td>
+	</tr>
+</table>
+
+<br/>
+<br/>
+
+
+    <h2><a name="Functions"></a>Functions</h2>
+    <dl class="function">
+    <dt>
+    <a name = "Factory"></a>
+    <strong>Factory (create_mt)</strong>
+    </dt>
+    <dd>
+
+<p>Building block for cached types. </p>
+
+<p> The principal motivation behind this mechanism is that for certain types, some of the
+ given type's methods and metamethods will result in new instances of itself, e.g. in
+ <code>object2 = object1:Func()</code> and <code>object3 = object1 + object2</code> as return values, but also
+ frequently as intermediate values. Under heavy loads, garbage can build up very quickly.</p>
+
+<p> While operating in caching mode, these new instances will be allocated out of a pool, if
+ available. Once processing is complete, all such instances, as well as new ones, are added
+ back to the pool instead of becoming garbage.</p>
+
+<p> At first the pool will be empty, but under similar workloads it will tend toward a steady
+ state, which has the secondary effect that few (or no) new instances are generated.</p>
+
+<p> Often one will want some of these instances at the end of the computation. To this end, an
+ instance can be evicted from the cache. Alternatively, its values could be copied into a
+ second (probably uncached) instance. Relevant details <em>infra</em>.</p>
+
+<p> <strong>N.B.</strong> The factory instantiates caches, i.e. in the general case there is not one single
+ cache for any given type. A couple implications are:</p>
+
+<ul>
+    <li>Disparate code segments can be designed to work with cached operations without stomping
+    on one another's caching mode states.</li>
+    <li>Pool sizes may better reflect workloads.</li>
+</ul>
+
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">create_mt</span>
+            <span class="types"><span class="type">callable</span></span>
+         Called as <code>make = create_mt(mt, new)</code> when creating a new cache, in
+ order to populate its metatable, <em>mt</em> (in addition to metamethods, with conventional
+ methods and any other values).</p>
+
+<p> Items are constructed as <code>item = new(uncached)</code>; <em>item</em> will be table with metatable <em>mt</em>.</p>
+
+<p> When caching mode is off, or if <em>uncached</em> is true, <em>item</em> is a new empty table.</p>
+
+<p> Otherwise, <em>item</em> may be recycled from the cache. If there are slots available in the
+ cache, the table stored at one such slot is allocated (<strong>n.b.</strong> said table's contents will
+ be in whatever state the user left them in; the cache itself never touches its contents);
+ otherwise, a new empty table is appended to the cache and immediately supplied, and the
+ size updated. In either case, the allocation count is incremented.</p>
+
+<p> Both <em>mt</em> and <em>new</em> are factory-generated and unique to the new cache, whereas <em>make</em> is
+ supplied by the user.</p>
+
+<p> The latter is called as <code>instance = make(...)</code>. A conforming <em>make</em> will call <em>new</em>, do
+ any initialization on <em>item,</em> and return it as <em>instance</em>. Any logic meant to take
+ advantage of the cache will use <em>make</em> to obtain instances.
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">function</span></span>
+         Factory function, called as <code>func = factory(how)</code>.</p>
+
+<p> If <em>how</em> is <strong>"get_uncached_maker"</strong>, <em>func</em> will be <em>make</em> (this will always be the same
+ function for a given factory, corresponding to the same metatable). Each <em>instance</em>
+ produced by it will be a new empty table: this table neither comes from nor is placed
+ in a cache. (This behavior is effected via a <em>new</em> that completely ignores the cache.)</p>
+
+<p> This can be used, say, to provide users a way to make objects, with all the expected
+ behavior, even when they do not need all the caching apparatus. In particular, it can
+ be used to create objects to receive the final result of some operation.</p>
+
+<p> For any other <em>how</em>, <em>func</em> will be a new multi-purpose function (associated with its
+ own cache), called as</p>
+<pre><code>result1, result2 = func(what, arg)
+</code></pre>
+<p> where <em>what</em> is one of the following:</p>
+
+<p> <ul>
+ <li> <strong>"begin"</strong>: Begins caching mode; if already underway, this is a no-op.</p>
+
+<p> <em>result1</em> = <em>make</em>.</li>
+ <li> <strong>"end"</strong>: Ends caching mode and resets the count to 0.</p>
+
+<p> Items will be evicted from the cache until its size is no more than <em>arg</em>. If <em>arg</em> is
+ absent, this step is skipped.</li>
+ <li> <strong>"in"</strong>: Calls <code>result1[, result2] = pcall(arg, make)</code> in caching mode, cf. <a href="http://www.lua.org/manual/5.1/manual.html#pdf-pcall">pcall</a>.</p>
+
+<p> The caching mode is restored afterward to its previous state.</li>
+ <li> <strong>"has_begun"</strong>: <em>result1</em> is <strong>true</strong> if caching has begun, otherwise <strong>false</strong>.</li>
+ <li> <strong>"remove"</strong>: If present, the item at index <em>arg</em> is evicted from the cache (slots
+ are allocated in order, from 1 to the size). The count and size are updated accordingly.</p>
+
+<p> Indices &gt; <em>arg</em> must be decremented by 1 to remain valid. Apart from being removed
+ from the cache, the item itself is left intact.</li>
+ <li> <strong>"get_count"</strong>: <em>result1</em> = number of cache slots currently allocated. This may be
+ interpreted as the index of the item just allocated (<strong>N.B.</strong> the note for "<strong>remove"</strong>).</li>
+ <li> <strong>"get_size"</strong>: <em>result1</em> = number of available cache slots, &ge; the count.</p>
+
+<p> Once all cache slots are allocated, this will track the count.</li>
+ </ul>
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "SimpleCache"></a>
+    <strong>SimpleCache ()</strong>
+    </dt>
+    <dd>
+    Builds a simple cache.
+
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">function</span></span>
+         Cache function.</p>
+
+<p> If the argument is <strong>"pull"</strong>, an item in the cache is removed and returned.</p>
+
+<p> If the argument is <strong>"peek"</strong>, that item is returned, but without being removed.</p>
+
+<p> In either of these cases, if the cache is empty, <strong>nil</strong> is returned.</p>
+
+<p> Otherwise, the value passed as argument is added to the cache.
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "UnpackWipeAndRecache"></a>
+    <strong>UnpackWipeAndRecache (cache, array[, count=#array], wipe)</strong>
+    </dt>
+    <dd>
+    Wipes an array and puts it into a cache, returning the cleared values.
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">cache</span>
+            <span class="types"><a class="type" href="http://www.lua.org/manual/5.1/manual.html#5.5">table</a></span>
+         Cache of used arrays.
+        </li>
+        <li><span class="parameter">array</span>
+            <span class="types"><span class="type">array</span></span>
+         Array to clear.
+        </li>
+        <li><span class="parameter">count</span>
+            <span class="types"><span class="type">uint</span></span>
+         Size of array.
+         (<em>default</em> #array)
+        </li>
+        <li><span class="parameter">wipe</span>
+         Value used to wipe cleared entries.
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        Array values (number of return values = <em>count</em>).
+    </ol>
+
+
+    <h3>See also:</h3>
+    <ul>
+         <a href="../modules/tektite_core.array.wipe.html#UnpackAndWipe">tektite_core.array.wipe.UnpackAndWipe</a>
+    </ul>
+
+
+</dd>
+    <dt>
+    <a name = "WipeAndRecache"></a>
+    <strong>WipeAndRecache (cache, array[, count=#array], wipe)</strong>
+    </dt>
+    <dd>
+    Wipes an array and puts it into a cache.
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">cache</span>
+            <span class="types"><a class="type" href="http://www.lua.org/manual/5.1/manual.html#5.5">table</a></span>
+         Cache of used arrays.
+        </li>
+        <li><span class="parameter">array</span>
+            <span class="types"><span class="type">array</span></span>
+         Array to clear.
+        </li>
+        <li><span class="parameter">count</span>
+            <span class="types"><span class="type">uint</span></span>
+         Size of array.
+         (<em>default</em> #array)
+        </li>
+        <li><span class="parameter">wipe</span>
+         Value used to wipe cleared entries.
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+        <em>array</em>.
+    </ol>
+
+
+    <h3>See also:</h3>
+    <ul>
+         <a href="../modules/tektite_core.array.wipe.html#WipeRange">tektite_core.array.wipe.WipeRange</a>
+    </ul>
+
+
+</dd>
+    <dt>
+    <a name = "TableCache"></a>
+    <strong>TableCache ([on_restore])</strong>
+    </dt>
+    <dd>
+    Builds a table-based cache.
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">on_restore</span>
+         Logic to call on returning the table to the cache; the table is
+ its first argument, followed by any other arguments passed to the cache function. If
+ <strong>nil</strong>, this is a no-op.</p>
+
+<p> If this is <strong>"unpack_and_wipe"</strong> or <strong>"wipe_range"</strong>, then that operation from <a href="../modules/tektite_core.array.wipe.html#">tektite_core.array.wipe</a>
+ is used as the restore logic. In this case, the operation's results are returned by the
+ cache function.
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">function</span></span>
+         Cache function.</p>
+
+<p> If the first argument is <strong>"pull"</strong>, a table is created or removed from the cache, and
+ returned to the caller.</p>
+
+<p> If instead the argument is <strong>"peek"</strong>, that table is returned, but without being removed.
+ If the cache is empty, <strong>nil</strong> is returned.</p>
+
+<p> Otherwise, the first argument must be a table (though it need not have belonged to the
+ cache). Any restore logic will be called, passing this table and any additional arguments.
+ The table will then be restored to the cache.
+    </ol>
+
+
+    <h3>See also:</h3>
+    <ul>
+         <li><a href="../modules/tektite_core.array.wipe.html#UnpackAndWipe">tektite_core.array.wipe.UnpackAndWipe</a></li>
+         <li><a href="../modules/tektite_core.array.wipe.html#WipeRange">tektite_core.array.wipe.WipeRange</a></li>
+    </ul>
+
+
+</dd>
+</dl>
+
+
+</div> <!-- id="content" -->
+</div> <!-- id="main" -->
+<div id="about">
+<i>generated by <a href="http://github.com/stevedonovan/LDoc">LDoc 1.4.0</a></i>
+</div> <!-- id="about" -->
+</div> <!-- id="container" -->
+</body>
+</html>
