@@ -37,10 +37,10 @@ local collision = require("corona_utils.collision")
 local common = require_ex.Lazy("editor.Common")
 local frames = require("corona_utils.frames")
 local fx = require("s3_utils.fx")
+local length = require("tektite_core.number.length")
 local links = require_ex.Lazy("editor.Links")
 local markers = require("s3_utils.effect.markers")
 local positions = require("s3_utils.positions")
-local quantize = require("geom2d_ops.quantize")
 
 -- Corona globals --
 local display = display
@@ -141,7 +141,7 @@ local function DoWarp (warp, func)
 
 					MoveParams.x = tx
 					MoveParams.y = ty
-					MoveParams.time = quantize.ToBin(dx, dy, 200, 5) * 100
+					MoveParams.time = length.ToBin(dx, dy, 200, 5) * 100
 					MoveParams.onComplete = MoveParams_OC
 
 					func("move_began_moving", warp, target, ttype)

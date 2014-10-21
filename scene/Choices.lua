@@ -159,7 +159,8 @@ local Params = {
 
 		if OnSimulator then
 			local db, name = sqlite3.open(file_utils.PathForFile(DescriptionsDB)), composer.getSceneName("current")
-			local scene, desc = composer.getScene(name), scene.m_description
+			local scene = composer.getScene(name)
+			local desc = scene.m_description
 
 			if scene and desc and desc ~= GetDescription(db, name) then
 				db:exec([[

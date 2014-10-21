@@ -34,7 +34,7 @@ local yield = coroutine.yield
 
 -- Modules --
 local line_ex = require("corona_ui.utils.line_ex")
-local mesh_ops = require("mesh_ops")
+local mesh_ops = require("tektite_core.geom2d.mesh")
 local timers = require("corona_utils.timers")
 
 -- Corona globals --
