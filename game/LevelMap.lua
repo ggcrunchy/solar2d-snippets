@@ -34,7 +34,7 @@ local wrap = coroutine.wrap
 local yield = coroutine.yield
 
 -- Modules --
-local bind_utils = require("utils.Bind")
+local bind_utils = require("tektite_core.bind")
 local controls = require("s3_utils.controls")
 local dots = require("s3_utils.dots")
 local event_blocks = require("s3_utils.event_blocks")

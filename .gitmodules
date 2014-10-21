@@ -46,3 +46,9 @@
 [submodule "image_fx"]
 	path = image_fx
 	url = https://github.com/ggcrunchy/image_fx
+[submodule "numeric_types"]
+	path = numeric_types
+	url = https://github.com/ggcrunchy/numeric_types
+[submodule "s3_editor"]
+	path = s3_editor
+	url = https://github.com/ggcrunchy/s3_editor

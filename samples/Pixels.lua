@@ -39,8 +39,8 @@ local sqrt = math.sqrt
 local checkbox = require("corona_ui.widgets.checkbox")
 local cubic_spline = require("spline_ops.cubic")
 local grid_iterators = require("iterator_ops.grid")
-local integrators = require("number_ops.integrators")
-local quaternion_ops = require("quaternion_ops")
+local integrators = require("tektite_core.number.integrators")
+local quaternion = require("numeric_types.quaternion")
 local timers = require("corona_utils.timers")
 
 -- Corona globals --
@@ -116,7 +116,7 @@ local function NewQuat (index)
 	quat.x, quat.y, quat.z, quat.w = stheta * x, stheta * y, stheta * z, cos(theta)
 
 	if index > 1 then
-		quaternion_ops.Multiply(quat, quat, Angles[index - 1].q)
+		quaternion.Multiply(quat, quat, Angles[index - 1].q)
 	end
 end
 
@@ -287,8 +287,8 @@ function Scene:show (event)
 				if use_quats then
 					v.x, v.y, v.z, v.w = 0, 0, 1, 0
 
-					quaternion_ops.SquadQ4(rotq, Angles[1].q, Angles[2].q, Angles[3].q, Angles[4].q, dlight.t)
-					quaternion_ops.Multiply(v, quaternion_ops.Multiply(v, rotq, v), quaternion_ops.Conjugate(conj, rotq))
+					quaternion.SquadQ4(rotq, Angles[1].q, Angles[2].q, Angles[3].q, Angles[4].q, dlight.t)
+					quaternion.Multiply(v, quaternion.Multiply(v, rotq, v), quaternion.Conjugate(conj, rotq))
 
 					light_x, light_y, light_z = v.x, v.y, v.z
 

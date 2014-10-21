@@ -35,7 +35,7 @@ local pairs = pairs
 local common = require("editor.Common")
 local grid = require("editor.Grid")
 local links = require("editor.Links")
-local str_utils = require("utils.String")
+local str_utils = require("tektite_core.string")
 local tags = require("editor.Tags")
 
 -- Cached module references --

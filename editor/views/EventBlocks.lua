@@ -39,7 +39,7 @@ local grid_views = require("editor.GridViews")
 local help = require("editor.Help")
 local links = require("editor.Links")
 local sheet = require("corona_ui.utils.sheet")
-local str_utils = require("utils.String")
+local str_utils = require("tektite_core.string")
 local touch = require("corona_ui.utils.touch")
 
 -- Corona globals --

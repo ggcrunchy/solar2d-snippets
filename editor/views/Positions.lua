@@ -29,7 +29,7 @@ local events = require("editor.Events")
 local grid_views = require("editor.GridViews")
 local help = require("editor.Help")
 local positions = require("s3_utils.positions")
-local str_utils = require("utils.String")
+local str_utils = require("tektite_core.string")
 
 -- Exports --
 local M = {}
