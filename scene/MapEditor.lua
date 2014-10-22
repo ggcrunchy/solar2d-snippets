@@ -55,6 +55,7 @@ local help = require("editor.Help")
 local ops = require("editor.Ops")
 local persistence = require("corona_utils.persistence")
 local scenes = require("corona_utils.scenes")
+local tabs_patterns = require("corona_ui.patterns.tabs")
 local tags = require_ex.Lazy("editor.Tags")
 local timers = require("corona_utils.timers")
 
@@ -304,7 +305,7 @@ function Scene:show (event)
 		end
 
 		-- Load the view-switching tabs.
-		Tabs = common_ui.TabBar(self.view, TabButtons, TabOptions)
+		Tabs = tabs_patterns.TabBar(self.view, TabButtons, TabOptions)
 
 		-- If there were enough tab options, add clipping and scroll buttons.
 		if TabOptions then

@@ -33,12 +33,12 @@ local sin = math.sin
 
 -- Modules --
 local checkbox = require("corona_ui.widgets.checkbox")
-local common_ui = require("editor.CommonUI")
 local cubic_spline = require("spline_ops.cubic")
-local curves = require("tektite_core.curves")
+local curves = require("tektite_core.number.curves")
 local hilbert = require("number_sequences.hilbert")
 local line_ex = require("corona_ui.utils.line_ex")
 local range = require("tektite_core.number.range")
+local tabs_patterns = require("corona_ui.patterns.tabs")
 
 -- Corona globals --
 local display = display
@@ -409,9 +409,11 @@ function Scene:show (event)
 			}
 		}
 
-		self.tabs = common_ui.TabBar(self.view, tab_buttons, { top = display.contentHeight - 65, left = 250, width = 200 }, true)
+		self.tabs = tabs_patterns.TabBar(self.view, tab_buttons, { top = display.contentHeight - 65, left = 250, width = 200 })
 
 		self.tabs:setSelected(1, true)
+
+		self.tabs.isVisible = false
 
 		--
 		self.points = points

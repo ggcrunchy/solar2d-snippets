@@ -59,7 +59,6 @@ local Scene = composer.newScene()
 -- Samples names --
 local Names = {
 	"TESTING",
-	"ColoredCorners",
 	"Delaunay",
 	"Endless",
 	"Fire",
@@ -70,13 +69,11 @@ local Names = {
 	"OrbitsAndLattices",
 	"Pixels",
 	"Plasma",
-	"Seams",
 	"SlowMo",
 	"Snowfall",
 	"Superformulae",
 	"Swarm",
 	"Thoughts",
-	"Ticker",
 	"Tiling",
 	"Timers",
 	"Game",

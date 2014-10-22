@@ -37,6 +37,7 @@ local common = require("editor.Common")
 local common_ui = require("editor.CommonUI")
 local layout = require("corona_ui.utils.layout")
 local table_view_patterns = require("corona_ui.patterns.table_view")
+local tabs_patterns = require("corona_ui.patterns.tabs")
 local touch = require("corona_ui.utils.touch")
 local utils = require("editor.dialog.Utils")
 
@@ -364,7 +365,7 @@ function M:AddTabs (options)
 		options.width = options.width or #(options.buttons or "") * 90
 		options.buttons = TabButtonsFromLabels(options.buttons)
 
-		local tabs = common_ui.TabBar(self:ItemGroup(), options.buttons, options, false)
+		local tabs = tabs_patterns.TabBar(self:ItemGroup(), options.buttons, options)
 		local choice = self:GetValue(options.value_name)
 
 		for i = 1, #(options.buttons or "") do
@@ -380,7 +381,7 @@ function M:AddTabs (options)
 		self:CommonAdd(tabs, options)
 
 		-- TODO: Hack!
-		common_ui.TabsHack(self:ItemGroup(), tabs, #options.buttons)
+		tabs_patterns.TabsHack(self:ItemGroup(), tabs, #options.buttons)
 		-- /TODO
 	end
 end

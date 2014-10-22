@@ -45,13 +45,13 @@ local type = type
 
 -- Modules --
 local common = require("editor.Common")
-local common_ui = require("editor.CommonUI")
 local grid = require("editor.Grid")
 local grid1D = require("corona_ui.widgets.grid_1D")
 local help = require("editor.Help")
 local links = require("editor.Links")
 local sheet = require("corona_ui.utils.sheet")
 local str_utils = require("tektite_core.string")
+local tabs_patterns = require("corona_ui.patterns.tabs")
 
 -- Corona globals --
 local display = display
@@ -72,10 +72,12 @@ function M.AddTabs (group, names, func, w)
 		buttons[i] = { label = label, onPress = func(label) }
 	end
 
-	local tabs = common_ui.TabBar(group, buttons, { top = display.contentHeight - 65, left = 120, width = w }, true)
+	local tabs = tabs_patterns.TabBar(group, buttons, { top = display.contentHeight - 65, left = 120, width = w })
+
+	tabs.isVisible = false
 
 -- HACK!
-local GRIDHACK = common_ui.TabsHack(group, tabs, #buttons)
+local GRIDHACK = tabs_patterns.TabsHack(group, tabs, #buttons)
 local old = getmetatable(tabs)
 setmetatable(tabs, {
 	__index = old.__index,

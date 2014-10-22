@@ -23,9 +23,6 @@
 -- [ MIT license: http://www.opensource.org/licenses/mit-license.php ]
 --
 
--- Standard library imports --
-local ipairs = ipairs
-
 -- Modules --
 local require_ex = require("tektite_core.require_ex")
 local button = require("corona_ui.widgets.button")
@@ -33,12 +30,8 @@ local common = require("editor.Common")
 local dialog_utils = require_ex.Lazy("editor.dialog.Utils")
 local touch = require("corona_ui.utils.touch")
 
--- Corona globals --
-local display = display
-
 -- Corona modules --
 local composer = require("composer")
-local widget = require("widget")
 
 -- Exports --
 local M = {}
@@ -107,7 +100,7 @@ end
 
 -- Values used by each scroll button type --
 local ScrollValues = { 
-	dscroll = { 0, 1, 90},
+	dscroll = { 0, 1, 90 },
 	lscroll = { -1, 0, 180 },
 	rscroll = { 1, 0, 0 },
 	uscroll = { 0, -1, 270 }
@@ -129,72 +122,6 @@ function M.ScrollButton (group, name, x, y, func)
 	button[1].rotation = values[3]
 
 	return button
-end
-
---- Creates a tab bar.
--- @pgroup group Group to which tab bar will be inserted.
--- @array buttons Tab buttons, cf. `widget.newTabBar`.
--- @ptable options Argument to `widget.newTabBar` (**buttons** is overridden).
--- @bool hide If true, the tab bar starts out hidden.
--- @treturn DisplayObject Tab bar object.
-function M.TabBar (group, buttons, options, hide)
-	for _, button in ipairs(buttons) do
-		button.overFile, button.defaultFile = "UI_Assets/tabIcon-down.png", "UI_Assets/tabIcon.png"
-		button.width, button.height, button.size = 32, 32, 14
-	end
-
-	local topts = common.CopyInto({}, options)
-
-	topts.buttons = buttons
-	topts.backgroundFile = "UI_Assets/tabbar.png"
-	topts.tabSelectedLeftFile = "UI_Assets/tabBar_tabSelectedLeft.png"
-	topts.tabSelectedMiddleFile = "UI_Assets/tabBar_tabSelectedMiddle.png"
-	topts.tabSelectedRightFile = "UI_Assets/tabBar_tabSelectedRight.png"
-	topts.tabSelectedFrameWidth = 20
-	topts.tabSelectedFrameHeight = 52
-
-	local tbar = widget.newTabBar(topts)
-
-	group:insert(tbar)
-
-	tbar.isVisible = not hide
-
-	return tbar
-end
-
---- HACK!
--- TODO: Remove this if fixed
-function M.TabsHack (group, tabs, n, x, y, w, h)
-	local is_func = type(x) == "function"
-	local ex = is_func and x() or x
-	local rect = display.newRect(group, 0, 0, w or tabs.width, h or tabs.height)
-
-	if not ex then
-		rect.x, rect.y = tabs.x, tabs.y
-	else
-		rect.x, rect.y = ex, y or 0
-
-		rect:translate(rect.width / 2, rect.height / 2)
-	end
-
-	rect:addEventListener("touch", function(event)
-		local bounds = event.target.contentBounds
-		local index = math.min(require("tektite_core.array.index").FitToSlot(event.x, bounds.xMin, (bounds.xMax - bounds.xMin) / n), n)
-
-		if is_func then
-			local _, extra = x()
-
-			index = index + extra
-		end
-
-		tabs:setSelected(index, true)
-
-		return true
-	end)
-
-	rect.isHitTestable, rect.isVisible = true, false
-
-	return rect
 end
 
 -- Export the module.
