@@ -35,9 +35,9 @@
 -- Modules --
 local audio_patterns = require("corona_ui.patterns.audio")
 local button = require("corona_ui.widgets.button")
-local common_ui = require("editor.CommonUI")
+local common_ui = require("s3_editor.CommonUI")
 local file_utils = require("corona_utils.file")
-local help = require("editor.Help")
+local help = require("s3_editor.Help")
 local layout = require("corona_ui.utils.layout")
 
 -- Corona globals --

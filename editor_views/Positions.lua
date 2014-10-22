@@ -1,4 +1,4 @@
---- Dot editing components.
+--- Editing components for auxiliary positions.
 
 --
 -- Permission is hereby granted, free of charge, to any person obtaining
@@ -23,53 +23,49 @@
 -- [ MIT license: http://www.opensource.org/licenses/mit-license.php ]
 --
 
--- Standard library imports --
-local pairs = pairs
-
 -- Modules --
-local dialog = require("editor.Dialog")
-local dots = require("s3_utils.dots")
-local events = require("editor.Events")
-local grid_views = require("editor.GridViews")
-local help = require("editor.Help")
+local dialog = require("s3_editor.Dialog")
+local events = require("s3_editor.Events")
+local grid_views = require("s3_editor.GridViews")
+local help = require("s3_editor.Help")
+local positions = require("s3_utils.positions")
 local str_utils = require("tektite_core.string")
 
 -- Exports --
 local M = {}
 
 -- --
-local Dialog = dialog.DialogWrapper(dots.EditorEvent)
+local Dialog = dialog.DialogWrapper(positions.EditorEvent)
 
 -- --
-local GridView = grid_views.EditErase(Dialog, dots.GetTypes())
+local GridView = grid_views.EditErase(Dialog, "position", "circle")
 
---- DOCME
+---
 -- @pgroup view X
 function M.Load (view)
-	GridView:Load(view, "Dot", "Current dot")
+	GridView:Load(view, "Position")
 
-	help.AddHelp("Dot", {
-		current = "The current dot type. When painting, cells are populated with this dot.",
-		["tabs:1"] = "'Paint Mode' is used to add new dots to the level, by clicking a grid cell or dragging across the grid.",
-		["tabs:2"] = "'Edit Mode' lets the user edit a dot's properties. Clicking an occupied grid cell will call up a dialog.",
-		["tabs:3"] = "'Erase Mode' is used to remove dots from the level, by clicking an occupied grid cell or dragging across the grid."
+	help.AddHelp("Position", {
+		["tabs:1"] = "'Paint Mode' is used to add new positions to the level, by clicking a grid cell or dragging across the grid.",
+		["tabs:2"] = "'Edit Mode' lets the user edit a position's properties. Clicking an occupied grid cell will call up a dialog.",
+		["tabs:3"] = "'Erase Mode' is used to remove positions from the level, by clicking an occupied grid cell or dragging across the grid."
 	})
 end
 
---- DOCME
--- @pgroup view
+---
+-- @pgroup view X
 function M.Enter (view)
 	GridView:Enter(view)
 
-	help.SetContext("Dot")
+	help.SetContext("Position")
 end
 
---- DOCME
+--- DOCMAYBE
 function M.Exit ()
 	GridView:Exit()
 end
 
---- DOCME
+--- DOCMAYBE
 function M.Unload ()
 	GridView:Unload()
 end
@@ -80,32 +76,32 @@ for k, v in pairs{
 	build_level = function(level)
 		local builds
 
-		for k, dot in pairs(level.dots.entries) do
-			dot.col, dot.row = str_utils.KeyToPair(k)
+		for k, pos in pairs(level.positions.entries) do
+			pos.col, pos.row = str_utils.KeyToPair(k)
 
-			builds = events.BuildEntry(level, dots, dot, builds)
+			builds = events.BuildEntry(level, positions, pos, builds)
 		end
 
-		level.dots = builds
+		level.positions = builds
 	end,
 
 	-- Load Level WIP --
 	load_level_wip = function(level)
-		events.LoadGroupOfValues_Grid(level, "dots", dots, GridView)
+		events.LoadGroupOfValues_Grid(level, "positions", positions, GridView)
 	end,
 
 	-- Save Level WIP --
 	save_level_wip = function(level)
-		events.SaveGroupOfValues(level, "dots", dots, GridView)
+ 		events.SaveGroupOfValues(level, "positions", positions, GridView)
 	end,
 
 	-- Verify Level WIP --
 	verify_level_wip = function(verify)
 		if verify.pass == 1 then
-			events.CheckNamesInValues("dot", verify, GridView)
+			events.CheckNamesInValues("position", verify, GridView)
 		end
 
-		events.VerifyValues(verify, dots, GridView)
+		events.VerifyValues(verify, positions, GridView)
 	end
 } do
 	Runtime:addEventListener(k, v)

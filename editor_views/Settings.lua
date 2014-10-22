@@ -1,4 +1,4 @@
---- Editing components for auxiliary positions.
+--- Settings configuration for editor.
 
 --
 -- Permission is hereby granted, free of charge, to any person obtaining
@@ -23,85 +23,92 @@
 -- [ MIT license: http://www.opensource.org/licenses/mit-license.php ]
 --
 
+-- Standard libary imports --
+local pairs = pairs
+
 -- Modules --
-local dialog = require("editor.Dialog")
-local events = require("editor.Events")
-local grid_views = require("editor.GridViews")
-local help = require("editor.Help")
-local positions = require("s3_utils.positions")
-local str_utils = require("tektite_core.string")
+local checkbox = require("corona_ui.widgets.checkbox")
+local grid = require("s3_editor.Grid")
+local help = require("s3_editor.Help")
+local layout = require("corona_ui.utils.layout")
+
+-- Corona globals --
+local display = display
+local native = native
 
 -- Exports --
 local M = {}
 
--- --
-local Dialog = dialog.DialogWrapper(positions.EditorEvent)
+-- Show layers checkbox --
+local ShowLayers
 
 -- --
-local GridView = grid_views.EditErase(Dialog, "position", "circle")
+local Group
 
 ---
 -- @pgroup view X
 function M.Load (view)
-	GridView:Load(view, "Position")
+	Group = display.newGroup()
 
-	help.AddHelp("Position", {
-		["tabs:1"] = "'Paint Mode' is used to add new positions to the level, by clicking a grid cell or dragging across the grid.",
-		["tabs:2"] = "'Edit Mode' lets the user edit a position's properties. Clicking an occupied grid cell will call up a dialog.",
-		["tabs:3"] = "'Erase Mode' is used to remove positions from the level, by clicking an occupied grid cell or dragging across the grid."
-	})
+	view:insert(Group)
+
+	ShowLayers = checkbox.Checkbox(Group, nil, 175, 100, 40, 40, function(_, check)
+		grid.ShowMultipleLayers(check)
+	end)
+
+	ShowLayers:Check(true)
+
+	local str = display.newText(Group, "Show other layers in grid?", 0, ShowLayers.y, native.systemFontBold, 22)
+
+	layout.PutBelow(str, ShowLayers, 5)
+	layout.LeftAlignWith(str, ShowLayers)
+
+	Group.isVisible = false
+
+	-- Warning level?
+	-- Replicate save to clipboard, console, log file, nothing?
+	-- Other?
+	-- help.AddHelp("settings", ...)
 end
 
----
--- @pgroup view X
-function M.Enter (view)
-	GridView:Enter(view)
+--- DOCMAYBE
+function M.Enter ()
+	Group.isVisible = true
 
-	help.SetContext("Position")
+	help.SetContext("settings")
 end
 
 --- DOCMAYBE
 function M.Exit ()
-	GridView:Exit()
+	Group.isVisible = false
 end
 
 --- DOCMAYBE
 function M.Unload ()
-	GridView:Unload()
+	Group, ShowLayers = nil
 end
 
 -- Listen to events.
-for k, v in pairs{
+for k, v in pairs {
 	-- Build Level --
 	build_level = function(level)
-		local builds
-
-		for k, pos in pairs(level.positions.entries) do
-			pos.col, pos.row = str_utils.KeyToPair(k)
-
-			builds = events.BuildEntry(level, positions, pos, builds)
-		end
-
-		level.positions = builds
+		level.settings = nil
 	end,
 
 	-- Load Level WIP --
 	load_level_wip = function(level)
-		events.LoadGroupOfValues_Grid(level, "positions", positions, GridView)
+		for k, v in pairs(level.settings) do
+			if k == "show_layers" then -- TODO: good enough for now...
+				ShowLayers:Check(v)
+			end
+		end
 	end,
 
 	-- Save Level WIP --
 	save_level_wip = function(level)
- 		events.SaveGroupOfValues(level, "positions", positions, GridView)
-	end,
-
-	-- Verify Level WIP --
-	verify_level_wip = function(verify)
-		if verify.pass == 1 then
-			events.CheckNamesInValues("position", verify, GridView)
-		end
-
-		events.VerifyValues(verify, positions, GridView)
+		level.settings = {
+			show_layers = ShowLayers:IsChecked()
+		}
 	end
 } do
 	Runtime:addEventListener(k, v)

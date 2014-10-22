@@ -28,9 +28,9 @@ local type = type
 
 -- Modules --
 local button = require("corona_ui.widgets.button")
-local common = require("editor.Common")
-local grid = require("editor.Grid")
-local help = require("editor.Help")
+local common = require("s3_editor.Common")
+local grid = require("s3_editor.Grid")
+local help = require("s3_editor.Help")
 local touch = require("corona_ui.utils.touch")
 
 -- Corona globals --

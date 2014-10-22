@@ -197,7 +197,7 @@ function Scene:create ()
 			if name == "Game" then
 				composer.gotoScene("scene.Level", { params = 1 })
 			elseif name == "Editor" then
-				composer.gotoScene("scene.EditorSetup")
+				composer.gotoScene("s3_editor.scene.Setup")
 			else
 				scenes.SetListenFunc(function(what)
 					if what == "message:wants_to_go_back" then

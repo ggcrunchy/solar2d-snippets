@@ -30,12 +30,12 @@ local type = type
 
 -- Modules --
 local button = require("corona_ui.widgets.button")
-local common = require("editor.Common")
-local common_ui = require("editor.CommonUI")
+local common = require("s3_editor.Common")
+local common_ui = require("s3_editor.CommonUI")
 local link_group = require("corona_ui.widgets.link_group")
-local links = require("editor.Links")
+local links = require("s3_editor.Links")
 local table_view_patterns = require("corona_ui.patterns.table_view")
-local tags = require("editor.Tags")
+local tags = require("s3_editor.Tags")
 local touch = require("corona_ui.utils.touch")
 
 -- Corona globals --

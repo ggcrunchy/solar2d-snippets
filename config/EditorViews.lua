@@ -24,7 +24,7 @@
 --
 
 return {
-	_prefix = "editor.views",
+	_prefix = "editor_views",
 
 	"Player",
 	"Dots", "EventBlocks", "Tiles",

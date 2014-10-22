@@ -28,11 +28,11 @@ local format = string.format
 local pairs = pairs
 
 -- Modules --
-local common = require("editor.Common")
-local grid = require("editor.Grid")
+local common = require("s3_editor.Common")
+local grid = require("s3_editor.Grid")
 local grid1D = require("corona_ui.widgets.grid_1D")
-local grid_views = require("editor.GridViews")
-local help = require("editor.Help")
+local grid_views = require("s3_editor.GridViews")
+local help = require("s3_editor.Help")
 local sheet = require("corona_ui.utils.sheet")
 local str_utils = require("tektite_core.string")
 
@@ -117,7 +117,7 @@ function M.Load (view)
 	local thumbs = {}
 
 	for _, name in ipairs(TileNames) do
-		thumbs[#thumbs + 1] = format("EditorTiles/%s.png", name)
+		thumbs[#thumbs + 1] = format("s3_editor/tiles/%s.png", name)
 	end
 
 	TileImages = sheet.NewSpriteSetFromImages(thumbs)

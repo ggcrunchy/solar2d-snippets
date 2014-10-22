@@ -28,13 +28,13 @@ local ipairs = ipairs
 local max = math.max
 
 -- Modules --
-local common = require("editor.Common")
-local common_ui = require("editor.CommonUI")
+local common = require("s3_editor.Common")
+local common_ui = require("s3_editor.CommonUI")
 local config = require("config.GlobalEvents")
-local events = require("editor.Events")
+local events = require("s3_editor.Events")
 local global_events = require("s3_utils.global_events")
-local help = require("editor.Help")
-local links = require("editor.Links")
+local help = require("s3_editor.Help")
+local links = require("s3_editor.Links")
 
 -- Corona globals --
 local display = display

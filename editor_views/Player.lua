@@ -24,10 +24,10 @@
 --
 
 -- Modules --
-local common = require("editor.Common")
-local grid = require("editor.Grid")
-local grid_views = require("editor.GridViews")
-local help = require("editor.Help")
+local common = require("s3_editor.Common")
+local grid = require("s3_editor.Grid")
+local grid_views = require("s3_editor.GridViews")
+local help = require("s3_editor.Help")
 
 -- Exports --
 local M = {}

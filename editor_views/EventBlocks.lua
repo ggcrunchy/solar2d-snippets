@@ -29,15 +29,15 @@ local max = math.max
 local min = math.min
 
 -- Modules --
-local common = require("editor.Common")
-local dialog = require("editor.Dialog")
+local common = require("s3_editor.Common")
+local dialog = require("s3_editor.Dialog")
 local event_blocks = require("s3_utils.event_blocks")
-local events = require("editor.Events")
-local grid = require("editor.Grid")
+local events = require("s3_editor.Events")
+local grid = require("s3_editor.Grid")
 local grid1D = require("corona_ui.widgets.grid_1D")
-local grid_views = require("editor.GridViews")
-local help = require("editor.Help")
-local links = require("editor.Links")
+local grid_views = require("s3_editor.GridViews")
+local help = require("s3_editor.Help")
+local links = require("s3_editor.Links")
 local sheet = require("corona_ui.utils.sheet")
 local str_utils = require("tektite_core.string")
 local touch = require("corona_ui.utils.touch")

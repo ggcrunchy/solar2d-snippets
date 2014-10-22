@@ -30,10 +30,10 @@ local pairs = pairs
 local require_ex = require("tektite_core.require_ex")
 local audio = require("corona_utils.audio")
 local bind_utils = require("tektite_core.bind")
-local common = require_ex.Lazy("editor.Common")
+local common = require_ex.Lazy("s3_editor.Common")
 local collision = require("corona_utils.collision")
 local powers_of_2 = require("bitwise_ops.powers_of_2")
-local links = require_ex.Lazy("editor.Links")
+local links = require_ex.Lazy("s3_editor.Links")
 
 -- Corona globals --
 local display = display
