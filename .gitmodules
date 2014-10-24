@@ -52,3 +52,6 @@
 [submodule "s3_editor"]
 	path = s3_editor
 	url = https://github.com/ggcrunchy/s3_editor
+[submodule "tektite_base_classes"]
+	path = tektite_base_classes
+	url = https://github.com/ggcrunchy/tektite_base_classes
