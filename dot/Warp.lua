@@ -32,7 +32,7 @@ local type = type
 -- Modules --
 local require_ex = require("tektite_core.require_ex")
 local audio = require("corona_utils.audio")
-local bind_utils = require("tektite_core.bind")
+local bind = require("tektite_core.bind")
 local collision = require("corona_utils.collision")
 local common = require_ex.Lazy("s3_editor.Common")
 local frames = require("corona_utils.frames")
@@ -323,7 +323,7 @@ end
 local function LinkWarp (warp, other, sub, other_sub)
 	if sub == "to" or (sub == "from" and not warp.to) then
 		if sub == "to" and other.type ~= "warp" then
-			bind_utils.AddId(warp, "to", other.uid, other_sub)
+			bind.AddId(warp, "to", other.uid, other_sub)
 		else
 			warp.to = other.uid
 		end
@@ -451,7 +451,7 @@ return function (group, info)
 	Sounds:Load()
 
 	--
-	local _, id = bind_utils.IsCompositeId(info.to, true)
+	local _, id = bind.IsCompositeId(info.to, true)
 
 	if id then
 		warp.m_to = positions.GetPosition(id)

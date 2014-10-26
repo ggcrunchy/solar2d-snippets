@@ -39,7 +39,7 @@ local grid_views = require("s3_editor.GridViews")
 local help = require("s3_editor.Help")
 local links = require("s3_editor.Links")
 local sheet = require("corona_ui.utils.sheet")
-local str_utils = require("tektite_core.string")
+local strings = require("tektite_core.var.strings")
 local touch = require("corona_ui.utils.touch")
 
 -- Corona globals --
@@ -99,8 +99,8 @@ end
 
 --
 local function GetCorners (block)
-	local ul = Tiles[str_utils.PairToKey(block.col1, block.row1)].image
-	local lr = Tiles[str_utils.PairToKey(block.col2, block.row2)].image
+	local ul = Tiles[strings.PairToKey(block.col1, block.row1)].image
+	local lr = Tiles[strings.PairToKey(block.col2, block.row2)].image
 
 	return ul, lr
 end
@@ -166,7 +166,7 @@ end
 local function WipeBlock (block)
 	for row = block.row1, block.row2 do
 		for col = block.col1, block.col2 do
-			local key = str_utils.PairToKey(col, row)
+			local key = strings.PairToKey(col, row)
 			local tile = Tiles[key]
 
 			if tile then
@@ -282,7 +282,7 @@ local Cell
 
 --
 local function ShowHide (event)
-	local tile = Tiles[str_utils.PairToKey(event.col, event.row)]
+	local tile = Tiles[strings.PairToKey(event.col, event.row)]
 
 	if tile then
 		tile.image.isVisible = event.show and Option ~= "Stretch"
@@ -416,7 +416,7 @@ local function AddRep (block, type)
 	local tag = Dialog("get_tag", type)
 
 	if tag then
-		local tile = Tiles[str_utils.PairToKey(block.col1, block.row1)].image
+		local tile = Tiles[strings.PairToKey(block.col1, block.row1)].image
 		local rep = display.newRect(tile.parent, 0, 0, 50, 50)--, 15) -- <- should be rounded?
 
 		FitTo(rep, tile)
@@ -431,7 +431,7 @@ end
 --
 local function CheckCol (col, rfrom, rto)
 	for row = rfrom, rto do
-		local tile = Tiles[str_utils.PairToKey(col, row)]
+		local tile = Tiles[strings.PairToKey(col, row)]
 
 		if tile and tile.id ~= ID then
 			return
@@ -444,7 +444,7 @@ end
 --
 local function CheckRow (row, cfrom, cto)
 	for col = cfrom, cto do
-		local tile = Tiles[str_utils.PairToKey(col, row)]
+		local tile = Tiles[strings.PairToKey(col, row)]
 
 		if tile and tile.id ~= ID then
 			return
@@ -468,7 +468,7 @@ end
 --
 function Cell (event)
 	local col, row = event.col, event.row
-	local key = str_utils.PairToKey(col, row)
+	local key = strings.PairToKey(col, row)
 	local tile = Tiles[key]
 
 	--

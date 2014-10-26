@@ -36,7 +36,7 @@
 local audio_patterns = require("corona_ui.patterns.audio")
 local button = require("corona_ui.widgets.button")
 local common_ui = require("s3_editor.CommonUI")
-local file_utils = require("corona_utils.file")
+local file = require("corona_utils.file")
 local help = require("s3_editor.Help")
 local layout = require("corona_ui.utils.layout")
 
@@ -118,7 +118,7 @@ function M.Load (view)
 
 	--
 	if system.getInfo("environment") == "device" then
-		file_utils.AddDirectory("Music", system.DocumentsDirectory)
+		file.AddDirectory("Music", system.DocumentsDirectory)
 	end
 
 	--

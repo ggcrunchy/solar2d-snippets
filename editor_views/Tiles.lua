@@ -34,7 +34,7 @@ local grid1D = require("corona_ui.widgets.grid_1D")
 local grid_views = require("s3_editor.GridViews")
 local help = require("s3_editor.Help")
 local sheet = require("corona_ui.utils.sheet")
-local str_utils = require("tektite_core.string")
+local strings = require("tektite_core.var.strings")
 
 -- Exports --
 local M = {}
@@ -62,7 +62,7 @@ local TileNames = {	"_H", "_V", "UL", "UR", "LL", "LR", "TT", "LT", "RT", "BT", 
 
 --
 local function Cell (event)
-	local key, is_dirty = str_utils.PairToKey(event.col, event.row)
+	local key, is_dirty = strings.PairToKey(event.col, event.row)
 	local tile = Tiles[key]
 
 	--
@@ -98,7 +98,7 @@ end
 
 --
 local function ShowHide (event)
-	local tile = Tiles[str_utils.PairToKey(event.col, event.row)]
+	local tile = Tiles[strings.PairToKey(event.col, event.row)]
 
 	if tile then
 		tile.isVisible = event.show
@@ -190,7 +190,7 @@ for k, v in pairs{
 		level.tiles.version = nil
 
 		for k, v in pairs(level.tiles) do
-			local col, row = str_utils.KeyToPair(k)
+			local col, row = strings.KeyToPair(k)
 
 			tiles[(row - 1) * nrows + col] = TileNames[v]
 		end
@@ -211,7 +211,7 @@ for k, v in pairs{
 		for k, v in pairs(level.tiles) do
 			CurrentTile:SetCurrent(v)
 
-			Grid:TouchCell(str_utils.KeyToPair(k))
+			Grid:TouchCell(strings.KeyToPair(k))
 		end
 
 		CurrentTile:SetCurrent(1)

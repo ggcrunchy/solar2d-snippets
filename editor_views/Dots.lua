@@ -32,7 +32,7 @@ local dots = require("s3_utils.dots")
 local events = require("s3_editor.Events")
 local grid_views = require("s3_editor.GridViews")
 local help = require("s3_editor.Help")
-local str_utils = require("tektite_core.string")
+local strings = require("tektite_core.var.strings")
 
 -- Exports --
 local M = {}
@@ -81,7 +81,7 @@ for k, v in pairs{
 		local builds
 
 		for k, dot in pairs(level.dots.entries) do
-			dot.col, dot.row = str_utils.KeyToPair(k)
+			dot.col, dot.row = strings.KeyToPair(k)
 
 			builds = events.BuildEntry(level, dots, dot, builds)
 		end

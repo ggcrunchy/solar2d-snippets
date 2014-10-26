@@ -34,7 +34,7 @@ local wrap = coroutine.wrap
 local yield = coroutine.yield
 
 -- Modules --
-local bind_utils = require("tektite_core.bind")
+local bind = require("tektite_core.bind")
 local controls = require("s3_utils.controls")
 local dots = require("s3_utils.dots")
 local event_blocks = require("s3_utils.event_blocks")
@@ -208,7 +208,7 @@ function M.LoadLevel (view, which)
 		bg_func(CurrentLevel.bg_layer, CurrentLevel.ncols, CurrentLevel.nrows, Width, Height)
 
 		-- Dispatch to "enter level" observers, now that the basics are in place.
-		bind_utils.Reset("loading_level")
+		bind.Reset("loading_level")
 
 		CurrentLevel.name = "enter_level"
 
@@ -243,7 +243,7 @@ function M.LoadLevel (view, which)
 		global_events.AddEvents(level.global_events)
 
 		-- Patch up deferred objects.
-		bind_utils.Resolve("loading_level")
+		bind.Resolve("loading_level")
 
 		-- Some of the loading may have been expensive, which can lead to an unnatural
 		-- start, since various things will act as if that time had passed for them as

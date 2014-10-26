@@ -31,7 +31,7 @@ local exit = os.exit
 -- Modules --
 local args = require("iterator_ops.args")
 local button = require("corona_ui.widgets.button")
-local file_utils = require("corona_utils.file")
+local file = require("corona_utils.file")
 local scenes = require("corona_utils.scenes")
 local table_view_patterns = require("corona_ui.patterns.table_view")
 
@@ -123,8 +123,8 @@ end
 local function SetCurrent (current, index)
 	current.text = "Current: " .. Names[index]
 
-	if index ~= current.m_id and file_utils.Exists(DescriptionsDB) then
-		local db = sqlite3.open(file_utils.PathForFile(DescriptionsDB))
+	if index ~= current.m_id and file.Exists(DescriptionsDB) then
+		local db = sqlite3.open(file.PathForFile(DescriptionsDB))
 		local text = GetDescription(db, "samples." .. Names[index])
 
 		MarqueeText.text = text and text .. " " or ""
@@ -155,7 +155,7 @@ local Params = {
 		button.Button(view, nil, 120, 75, 200, 50, ReturnToChoices, "Go Back")
 
 		if OnSimulator then
-			local db, name = sqlite3.open(file_utils.PathForFile(DescriptionsDB)), composer.getSceneName("current")
+			local db, name = sqlite3.open(file.PathForFile(DescriptionsDB)), composer.getSceneName("current")
 			local scene = composer.getScene(name)
 			local desc = scene.m_description
 

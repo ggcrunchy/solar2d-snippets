@@ -29,7 +29,7 @@ local pairs = pairs
 -- Modules --
 local require_ex = require("tektite_core.require_ex")
 local audio = require("corona_utils.audio")
-local bind_utils = require("tektite_core.bind")
+local bind = require("tektite_core.bind")
 local common = require_ex.Lazy("s3_editor.Common")
 local collision = require("corona_utils.collision")
 local powers_of_2 = require("bitwise_ops.powers_of_2")
@@ -42,7 +42,7 @@ local display = display
 local Switch = {}
 
 -- Switch <-> events binding --
-local Events = bind_utils.BroadcastBuilder_Helper("loading_level")
+local Events = bind.BroadcastBuilder_Helper("loading_level")
 
 -- Sounds played by switch --
 local Sounds = audio.NewSoundGroup{ "Switch1.wav", "Switch2.mp3" }
@@ -170,7 +170,7 @@ end)
 --
 local function LinkSwitch (switch, other, sub, other_sub)
 	if sub == "trip" then
-		bind_utils.AddId(switch, "target", other.uid, other_sub)
+		bind.AddId(switch, "target", other.uid, other_sub)
 	end
 end
 
