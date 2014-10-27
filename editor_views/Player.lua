@@ -25,6 +25,7 @@
 
 -- Modules --
 local common = require("s3_editor.Common")
+local editor_config = require("config.Editor")
 local grid = require("s3_editor.Grid")
 local grid_views = require("s3_editor.GridViews")
 local help = require("s3_editor.Help")
@@ -46,7 +47,7 @@ local Tabs
 
 --
 local function Cell (event)
-	StartPos = grid_views.CircleUpdate(event.target, event.x, event.y, StartPos)
+	StartPos = grid_views.ImageUpdate(event.target, event.x, event.y, editor_config.player_image, StartPos)
 
 	if event.col ~= StartPos.m_col or event.row ~= StartPos.m_row then
 		StartPos.m_col = event.col
