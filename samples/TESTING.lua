@@ -55,7 +55,7 @@ Scene:addEventListener("show")
 	- Improve custom widgets (Bitmap, Grid1D, Grid2D, Keyboard, Link, LinkGroup, etc.)
 	- Make some dialogs to stress-test the section feature
 	- Decouple dialogs from the editor
-	- Decouple links / tags from editor? Instancing? (LOOKS FEASIBLE... links just need a tag association up front)
+	- Decouple links / tags from editor? Instancing? (PROBATION... classes have been defined)
 
 --[=[
 	Links:
@@ -83,7 +83,7 @@ overlay\Link.lua(36,23)
 editor\Common.lua(37,30), editor\Events.lua(39,22)
 
 -- If the rest was done, fairly easy; takes tags in constructor, then just need to
-00 deal with a couple Corona-isms: "alive" predicate, and cleanup system
+00 deal with a couple Corona-isms: "alive" predicate, and cleanup system (PROBATION)
 
 editor\Links.lua(39,22)
 
@@ -103,16 +103,11 @@ scene\MapEditor.lua(58,30)
 
 	- Fix formatting, which is rather off on tablets and probably more high-definition phones
 
-	- The Great Migration! (i.e. move much of snippets into CrownJewels and Tektite submodules) (PARTIAL)
-	- Might even be worth making the submodules even more granular
-	- Kick off a couple extra programs to stress-test submodule approach
-
 	- Make the resource system independent of Corona, then start using it more pervasively
 
 	- Figure out if quaternions ARE working, if so promote them
-	- Figure out what's wrong with some of the code in collisions module (probably only practical from game side)
 
-	- Embedded free list / ID-occupied array ops modules
+	- ID-occupied array op module
 	- Finally finish mesh ops / Delaunay
 	- Finish up the dart-throwing stuff
 	- Finish up the union-find-delete, some of those other data structures
