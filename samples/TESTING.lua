@@ -183,14 +183,11 @@ do
 	local From = #Objs
 
 	for i = 1, 20 do
-		local options = {}
 		local sub_links = {}
 
 		for j = 1, i % 3 do
 			sub_links[j] = "SL_" .. ((i + 2) % 5)
 		end
-
-	--	options.sub_links = sub_links
 
 		local can_link = true
 
@@ -220,11 +217,9 @@ do
 			links[v] = can_link
 		end
 
-		options.sub_links = links
-
 		SubLinks[i] = sub_links
 
-		tags.New("tag_" .. i, options)
+		tags.New("tag_" .. i, { sub_links = links })
 
 		C("object_" .. i, "tag_" .. i)
 	end
@@ -274,7 +269,7 @@ do
 
 	print("State of one of those...")
 
-	print1("Link ", LinkIndex(21--[[200]]), Links[LinkIndex(21--[[200]])].link:GetObjects())
+	print1("Link ", LinkIndex(200), Links[LinkIndex(200)].link:GetObjects())
 
 	print("Let's destroy some objects!")
 
@@ -304,7 +299,7 @@ do
 	end
 
 	-- Links...
-	local index = LinkIndex(14--[[173]])
+	local index = LinkIndex(173)
 	local link = Links[index].link
 	local intact, lo, _, s1 = link:GetObjects()
 
@@ -492,14 +487,11 @@ do
 	local From = #Objs
 
 	for i = 1, 20 do
-		local options = {}
 		local sub_links = {}
 
 		for j = 1, i % 3 do
 			sub_links[j] = "SL_" .. ((i + 2) % 5)
 		end
-
-	--	options.sub_links = sub_links
 
 		local can_link = true
 
@@ -529,11 +521,9 @@ do
 			links[v] = can_link
 		end
 
-		options.sub_links = links
-
 		SubLinks[i] = sub_links
 
-		TagsInstance:New("tag_" .. i, options)
+		TagsInstance:New("tag_" .. i, { sub_links = links })
 
 		C("object_" .. i, "tag_" .. i)
 	end
@@ -583,7 +573,7 @@ do
 
 	print("State of one of those...")
 
-	print1("Link ", LinkIndex(21--[[200]]), Links[LinkIndex(21--[[200]])].link:GetObjects())
+	print1("Link ", LinkIndex(200), Links[LinkIndex(200)].link:GetObjects())
 
 	print("Let's destroy some objects!")
 
@@ -613,7 +603,7 @@ do
 	end
 
 	-- Links...
-	local index = LinkIndex(14--[[173]])
+	local index = LinkIndex(173)
 	local link = Links[index].link
 	local intact, lo, _, s1 = link:GetObjects()
 
