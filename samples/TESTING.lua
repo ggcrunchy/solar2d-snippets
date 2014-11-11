@@ -313,8 +313,8 @@ do
 
 	print("Links belonging to link " .. index .. ", SELF = " .. Obj(lo, s1))
 
-	for link in links.Links(lo, s1) do
-		local _, obj1, obj2, sub1, sub2 = link:GetObjects()
+	for li in links.Links(lo, s1) do
+		local _, obj1, obj2, sub1, sub2 = li:GetObjects()
 
 		print1("LINK: ", Obj(obj1, sub1, lo) .. " <-> " .. Obj(obj2, sub2, lo))
 	end
@@ -377,7 +377,6 @@ do
 	end
 
 	LinksInstance:SetRemoveFunc(function(object)
-	print(object, debug.traceback())
 		print1("Goodbye, " .. object.m_name)
 	end)
 
@@ -617,8 +616,8 @@ do
 
 	print("Links belonging to link " .. index .. ", SELF = " .. Obj(lo, s1))
 
-	for link in LinksInstance:Links(lo, s1) do
-		local _, obj1, obj2, sub1, sub2 = link:GetObjects()
+	for li in LinksInstance:Links(lo, s1) do
+		local _, obj1, obj2, sub1, sub2 = li:GetObjects()
 
 		print1("LINK: ", Obj(obj1, sub1, lo) .. " <-> " .. Obj(obj2, sub2, lo))
 	end
