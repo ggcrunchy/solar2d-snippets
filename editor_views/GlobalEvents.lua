@@ -34,7 +34,6 @@ local config = require("config.GlobalEvents")
 local events = require("s3_editor.Events")
 local global_events = require("s3_utils.global_events")
 local help = require("s3_editor.Help")
-local links = require("s3_editor.Links")
 
 -- Corona globals --
 local display = display
@@ -92,7 +91,7 @@ function M.Load (view)
 
 	if tag then
 		common.BindRepAndValues(rep, Global)
-		links.SetTag(rep, tag)
+		common.GetLinks():SetTag(rep, tag)
 	end
 
 	--

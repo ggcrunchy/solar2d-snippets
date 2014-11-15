@@ -33,7 +33,6 @@ local bind = require("tektite_core.bind")
 local common = require_ex.Lazy("s3_editor.Common")
 local collision = require("corona_utils.collision")
 local powers_of_2 = require("bitwise_ops.powers_of_2")
-local links = require_ex.Lazy("s3_editor.Links")
 
 -- Corona globals --
 local display = display
@@ -217,7 +216,7 @@ local function OnEditorEvent (what, arg1, arg2, arg3)
 		local switch = arg2[arg3]
 		local rep = common.GetRepFromValues(switch)
 
-		if not links.HasLinks(rep, "trip") then
+		if not arg1.links:HasLinks(rep, "trip") then
 			arg1[#arg1 + 1] = "Switch `" .. switch.name .. "` has no event targets"
 		end
 	end

@@ -38,7 +38,6 @@ local common = require_ex.Lazy("s3_editor.Common")
 local frames = require("corona_utils.frames")
 local fx = require("s3_utils.fx")
 local length = require("tektite_core.number.length")
-local links = require_ex.Lazy("s3_editor.Links")
 local markers = require("s3_utils.effect.markers")
 local positions = require("s3_utils.positions")
 
@@ -360,8 +359,8 @@ local function OnEditorEvent (what, arg1, arg2, arg3)
 	-- New Tag --
 	elseif what == "new_tag" then
 		--
-		local function Pair (_, other, _, osub, link_to)
-			if links.GetTag(other) ~= "warp" then
+		local function Pair (links, _, other, _, osub, link_to)
+			if links:GetTag(other) ~= "warp" then
 				return false, "Non-warp partner", true
 			elseif osub:GetName() ~= link_to then
 				return false, "Expects `" .. link_to .. "` sublink", true
@@ -374,18 +373,18 @@ local function OnEditorEvent (what, arg1, arg2, arg3)
 		return {
 			sub_links = {
 				-- From --
-				from = function(warp, other, wsub, osub)
-					return Pair(warp, other, wsub, osub, "to")
+				from = function(warp, other, wsub, osub, links)
+					return Pair(links, warp, other, wsub, osub, "to")
 				end,
 
 				-- To --
-				to = function(warp, other, wsub, osub)
+				to = function(warp, other, wsub, osub, links)
 					-- Is another warp being validly targeted?
-					local passed, why, is_cont = Pair(warp, other, wsub, osub, "from")
+					local passed, why, is_cont = Pair(links, warp, other, wsub, osub, "from")
 
 					-- Otherwise, it may still be possible to target a position. If that is not what the
 					-- target is, then retain the previous errors; otherwise, provisionally succeed.
-					if not passed and links.GetTag(other) == "position" then
+					if not passed and links:GetTag(other) == "position" then
 						passed, why, is_cont = true
 					end
 
@@ -395,7 +394,7 @@ local function OnEditorEvent (what, arg1, arg2, arg3)
 					-- manual editing) and perhaps "graying out" certain widgets (could use some of the dialog
 					-- functionality?)--e.g. an "Allow Multiple Targets" one--when not valid (this would then
 					-- require some detection for same).
-					if passed and links.HasLinks(warp, "to") then
+					if passed and links:HasLinks(warp, "to") then
 						passed, why, is_cont = false, "Already has a target"
 					end
 
@@ -414,10 +413,10 @@ local function OnEditorEvent (what, arg1, arg2, arg3)
 	-- arg3: Key
 	elseif what == "verify" then
 		local warp = arg2[arg3]
-		local rep = common.GetRepFromValues(warp)
-		local nfrom = links.CountLinks(rep, "from")
+		local links, rep = arg1.links, common.GetRepFromValues(warp)
+		local nfrom = links:CountLinks(rep, "from")
 
-		if links.HasLinks(rep, "to") or (warp.reciprocal_link and nfrom == 1) then
+		if links:HasLinks(rep, "to") or (warp.reciprocal_link and nfrom == 1) then
 			return
 		elseif warp.reciprocal_link then
 			if nfrom == 0 then

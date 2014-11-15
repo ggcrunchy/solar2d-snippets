@@ -37,7 +37,6 @@ local grid = require("s3_editor.Grid")
 local grid1D = require("corona_ui.widgets.grid_1D")
 local grid_views = require("s3_editor.GridViews")
 local help = require("s3_editor.Help")
-local links = require("s3_editor.Links")
 local sheet = require("corona_ui.utils.sheet")
 local strings = require("tektite_core.var.strings")
 local touch = require("corona_ui.utils.touch")
@@ -422,7 +421,7 @@ local function AddRep (block, type)
 		FitTo(rep, tile)
 
 		common.BindRepAndValues(rep, block.info)
-		links.SetTag(rep, tag)
+		common.GetLinks():SetTag(rep, tag)
 
 		block.rep, rep.isVisible = rep, false
 	end
