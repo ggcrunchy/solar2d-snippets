@@ -210,14 +210,11 @@ local function OnEditorEvent (what, arg1, arg2, arg3)
 
 	-- Verify --
 	-- arg1: Verify block
-	-- arg2: Dots
-	-- arg3: Key
+	-- arg2: Switch values
+	-- arg3: Representative object
 	elseif what == "verify" then
-		local switch = arg2[arg3]
-		local rep = common.GetRepFromValues(switch)
-
-		if not arg1.links:HasLinks(rep, "trip") then
-			arg1[#arg1 + 1] = "Switch `" .. switch.name .. "` has no event targets"
+		if not arg1.links:HasLinks(arg3, "trip") then
+			arg1[#arg1 + 1] = "Switch `" .. arg2.name .. "` has no event targets"
 		end
 	end
 end

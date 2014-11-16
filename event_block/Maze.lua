@@ -81,7 +81,7 @@ local FadeInParams = { alpha = 1, time = 1100, transition = easing.inQuad }
 local function FadeIn (block)
 	-- Start all the maze off hidden. Usually this will be unnecessary, but if a fade-out
 	-- was in progress, this will account for any half-faded tiles.
-	for index, col, row in block:IterSelf() do
+	for index in block:IterSelf() do
 		local image = tile_maps.GetImage(index)
 
 		if image then
@@ -139,7 +139,7 @@ local FadeOutParams = {
 
 -- Kicks off a fade-out
 local function FadeOut (block)
-	for index, col, row in block:IterSelf() do
+	for index in block:IterSelf() do
 		local image = tile_maps.GetImage(index)
 
 		if image then
@@ -265,8 +265,8 @@ local function OnEditorEvent (what, arg1, arg2, arg3)
 
 	-- Verify --
 	-- arg1: Verify block
-	-- arg2: Event blocks
-	-- arg3: Key
+	-- arg2: Maze values
+	-- arg3: Representative object
 	elseif what == "verify" then
 		-- STUFF
 	end

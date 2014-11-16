@@ -656,7 +656,7 @@ for k, v in pairs{
 					if events.CheckForNameDups("event block", verify, names, block.info) then
 						return
 					else
-						event_blocks.EditorEvent(block.info.type, "verify", verify, Blocks, id)
+						event_blocks.EditorEvent(block.info.type, "verify", verify, block, block.rep)--Blocks, id) TODO: Is this okay?)
 					end
 				end
 			end

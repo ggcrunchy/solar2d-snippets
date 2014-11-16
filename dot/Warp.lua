@@ -30,11 +30,9 @@ local sin = math.sin
 local type = type
 
 -- Modules --
-local require_ex = require("tektite_core.require_ex")
 local audio = require("corona_utils.audio")
 local bind = require("tektite_core.bind")
 local collision = require("corona_utils.collision")
-local common = require_ex.Lazy("s3_editor.Common")
 local frames = require("corona_utils.frames")
 local fx = require("s3_utils.fx")
 local length = require("tektite_core.number.length")
@@ -409,27 +407,25 @@ local function OnEditorEvent (what, arg1, arg2, arg3)
 
 	-- Verify --
 	-- arg1: Verify block
-	-- arg2: Dots
-	-- arg3: Key
+	-- arg2: Warp values
+	-- arg3: Representative object
 	elseif what == "verify" then
-		local warp = arg2[arg3]
-		local links, rep = arg1.links, common.GetRepFromValues(warp)
-		local nfrom = links:CountLinks(rep, "from")
+		local links, problem = arg1.links
+		local nfrom = links:CountLinks(arg3, "from")
 
-		if links:HasLinks(rep, "to") or (warp.reciprocal_link and nfrom == 1) then
+		if links:HasLinks(arg3, "to") or (arg2.reciprocal_link and nfrom == 1) then
 			return
-		elseif warp.reciprocal_link then
+		elseif arg2.reciprocal_link then
 			if nfrom == 0 then
-				arg1[#arg1 + 1] = "Missing back-link"
+				problem = "Missing back-link"
 			elseif nfrom > 1 then
-				arg1[#arg1 + 1] = "Ambiguous back-link"
+				problem = "Ambiguous back-link"
 			end
 		else
-			arg1[#arg1 + 1] = "Missing target"
+			problem = "Missing target"
 		end
 
-		--
-		arg1[#arg1] = "Warp `" .. warp.name .. "`: " .. arg1[#arg1]
+		arg1[#arg1 + 1] = "Warp `" .. arg2.name .. "`: " .. problem
 	end
 end
 
