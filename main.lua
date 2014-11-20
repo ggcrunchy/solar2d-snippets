@@ -24,6 +24,7 @@
 --
 
 -- Initialization --
+require("corona_utils.FIXES")
 require("s3_utils.init")
 
 -- Modules --

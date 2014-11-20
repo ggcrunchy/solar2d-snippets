@@ -27,7 +27,7 @@
 local composer = require("composer")
 
 -- Hotfixes --
-local _ = require("FIXES")
+--local _ = require("FIXES")
 
 -- --
 local Scene = composer.newScene()
@@ -42,13 +42,6 @@ Scene:addEventListener("create")
 --
 function Scene:show (e)
 	if e.phase == "will" then return end
-
-local gg = display.newGroup()
-local hh = display.newGroup()
-
-print("?", gg.removeSelf == hh.removeSelf, gg.removeSelf, hh.removeSelf)
-
-local RemoveSelf = gg.removeSelf
 
 	local a = display.newGroup()
 	local b = display.newCircle(a, 1, 2, 3)
