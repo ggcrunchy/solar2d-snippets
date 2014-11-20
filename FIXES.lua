@@ -23,8 +23,79 @@
 -- [ MIT license: http://www.opensource.org/licenses/mit-license.php ]
 --
 
+-- Standard library imports --
+local type = type
+
 -- Exports --
 local M = {}
+
+-- Cache original functions.
+local newContainer = display.newContainer
+local newGroup = display.newGroup
+
+-- remove() function: seems to be shared among all containers and groups --
+local Remove
+
+-- Installs new remove() function
+local function SetRemoveFunc (object)
+	if not Remove then
+		local remove = object.remove
+
+		function Remove (self, child)
+			if type(child) == "number" then
+				child = self[child]
+			end
+
+			child:removeSelf()
+		end
+	end
+
+	object.remove = Remove
+end
+
+-- Creates new removeSelf() function
+local function NewRemoveSelfFunc (object)
+	local removeSelf = object.removeSelf
+
+	return function(self)
+		for i = self.numChildren, 1, -1 do
+			self[i]:removeSelf()
+		end
+
+		removeSelf(self)
+	end
+end
+
+-- removeSelf() function: seems to be shared among all containers --
+local ContRemoveSelf
+
+--- Override of `display.newContainer`, with fix for removals (namely, to ensure that
+-- **"finalize"** events get dispatched to children.
+-- @param ... Args passed along to original function.
+-- @treturn Container Container object.
+function display.newContainer (...)
+	local cont = newContainer(...)
+
+	SetRemoveFunc(cont)
+
+	ContRemoveSelf = ContRemoveSelf or NewRemoveSelfFunc(cont)
+
+	cont.removeSelf = ContRemoveSelf
+
+	return cont
+end
+
+--- Override of `display.newGroup`, with fix as per `newContainer`.
+-- @treturn Group Group object.
+function display.newGroup ()
+	local group = newGroup()
+
+	SetRemoveFunc(group)
+
+	group.removeSelf = NewRemoveSelfFunc(group)
+
+	return group
+end
 
 -- Export the module.
 return M
