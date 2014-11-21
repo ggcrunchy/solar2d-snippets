@@ -26,9 +26,6 @@
 -- Corona modules --
 local composer = require("composer")
 
--- Hotfixes --
---local _ = require("FIXES")
-
 -- --
 local Scene = composer.newScene()
 
@@ -43,25 +40,7 @@ Scene:addEventListener("create")
 function Scene:show (e)
 	if e.phase == "will" then return end
 
-	local a = display.newGroup()
-	local b = display.newCircle(a, 1, 2, 3)
-	local c = display.newCircle(a, 4, 5, 6)
-	local d = display.newContainer(2, 4)
-	local e = display.newCircle(d, 1, 2, 3)
-	local f = display.newCircle(d, 4, 5, 6)
-
-	local function Die (event)
-		print("BYE!", event.target.name)
-	end
-
-	for k, v in pairs{ a = a, b = b, c = c, d = d, e = e, f = f } do
-		v.name = k
-		v:addEventListener("finalize", Die)
-	end
-
-	b:removeSelf()
-	a:remove(c)
-	d:removeSelf()
+	--
 end
 
 Scene:addEventListener("show")
