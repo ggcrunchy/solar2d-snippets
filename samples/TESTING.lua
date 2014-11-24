@@ -68,9 +68,8 @@ Scene:addEventListener("show")
 
 	- Make the resource system independent of Corona, then start using it more pervasively
 
-	- Figure out if quaternions ARE working, if so promote them
+	- Figure out if quaternions ARE working, if so promote them (TEST, FIX)
 
-	- ID-occupied array op module
 	- Finally finish mesh ops / Delaunay
 	- Finish up the dart-throwing stuff
 	- Finish up the union-find-delete, some of those other data structures
