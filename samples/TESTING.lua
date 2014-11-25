@@ -40,7 +40,7 @@ Scene:addEventListener("create")
 function Scene:show (e)
 	if e.phase == "will" then return end
 
-	--
+	-- Add some test for tektite_core.index.interval, tektite_base_classes.Container.Sequence
 end
 
 Scene:addEventListener("show")
@@ -58,6 +58,9 @@ Scene:addEventListener("show")
 	- Make some dialogs to stress-test the section feature
 	- Decouple dialogs from the editor
 	- Decouple links / tags from editor? Instancing? (PROBATION)
+
+	- Some new submodule (s3_public?) for sharing the public objects (right now: maze, switch, warp) between original game and snippets
+	- Add variant of require_ex.DoList() to take multiple lists to support that?
 
 	- Some sort of stuff for recurring UI tasks: save / load dialogs, listbox, etc. especially ones that recur outside the editor (PARTIAL)
 	- Kill off redundant widgets (button, checkbox)
