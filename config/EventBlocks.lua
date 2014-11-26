@@ -24,7 +24,7 @@
 --
 
 return {
-	_prefix = "event_block",
+	_prefix = "s3_objects.event_block",
 
-	maze = "Maze"
+	maze = "maze"
 }

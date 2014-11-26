@@ -24,7 +24,7 @@
 --
 
 return {
-	_prefix = "dot",
+	_prefix = "s3_objects.dot",
 
-	switch = "Switch", warp = "Warp"
+	switch = "switch", warp = "warp"
 }

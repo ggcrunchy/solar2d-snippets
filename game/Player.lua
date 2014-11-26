@@ -167,7 +167,7 @@ end
 -- Near goal distance --
 local NearGoal
 
---- Attempts to move the player in a given direction, at some average squirrel velocity.
+--- Attempts to move the player in a given direction, at some reasonable speed.
 -- @string dir Direction in which to move.
 -- @see s3_utils.movement.NextDirection
 function M.MovePlayer (dir)

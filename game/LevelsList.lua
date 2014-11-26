@@ -121,7 +121,7 @@ end
 -- @uint index Level index.
 -- @treturn table Level information, which consists of at least:
 --
--- * **start_col**: Column where So So starts / respawns...
+-- * **start_col**: Column where player starts / respawns...
 -- * **start_row**: ...and the row for the same.
 -- * **ncols**: The number of columns in the tile grid.
 -- * The **array part** consists of tile names as per the _names_ parameter of

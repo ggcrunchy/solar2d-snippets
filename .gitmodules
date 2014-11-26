@@ -55,3 +55,6 @@
 [submodule "tektite_base_classes"]
 	path = tektite_base_classes
 	url = https://github.com/ggcrunchy/tektite_base_classes
+[submodule "s3_objects"]
+	path = s3_objects
+	url = https://github.com/ggcrunchy/s3_objects
