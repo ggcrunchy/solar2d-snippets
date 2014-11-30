@@ -58,3 +58,6 @@
 [submodule "s3_objects"]
 	path = s3_objects
 	url = https://github.com/ggcrunchy/s3_objects
+[submodule "corona_boilerplate"]
+	path = corona_boilerplate
+	url = https://github.com/ggcrunchy/corona_boilerplate

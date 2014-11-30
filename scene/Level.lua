@@ -30,7 +30,7 @@
 
 -- Modules --
 local button = require("corona_ui.widgets.button")
-local level_map = require("game.LevelMap")
+local game_loop = require("corona_boilerplate.game.loop")
 local scenes = require("corona_utils.scenes")
 local timers = require("corona_utils.timers")
 
@@ -60,7 +60,7 @@ local function Listen (what, arg1, arg2, arg3)
 			Alert = nil
 
 			if event.action == "clicked" and event.index == 1 then
-				level_map.UnloadLevel("quit")
+				game_loop.UnloadLevel("quit")
 			end
 		end)
 
@@ -96,7 +96,7 @@ function Scene:show (event)
 		--
 		Runtime:dispatchEvent{ name = "leave_menus" } -- OKAY??? (TODO: seems to have worked fine, but look into "will")
 
-		level_map.LoadLevel(self.view, event.params)
+		game_loop.LoadLevel(self.view, event.params)
 	end
 end
 

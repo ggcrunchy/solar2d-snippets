@@ -28,7 +28,7 @@ local args = require("iterator_ops.args")
 local array_index = require("tektite_core.array.index")
 local button = require("corona_ui.widgets.button")
 local checkbox = require("corona_ui.widgets.checkbox")
-local level_map = require("game.LevelMap")
+local game_loop = require("corona_boilerplate.game.loop")
 local markers = require("s3_utils.effect.markers")
 local movement = require("s3_utils.movement")
 local tile_maps = require("s3_utils.tile_maps")
@@ -123,7 +123,7 @@ for _, name, event in args.ArgsByN(2,
 		for _, key, func in args.ArgsByN(2,
 	--		"KillP", player.Kill,
 			"Win", function()
-				level_map.UnloadLevel("won")
+				game_loop.UnloadLevel("won")
 			end
 		) do
 			if ButtonsToAdd[key] then

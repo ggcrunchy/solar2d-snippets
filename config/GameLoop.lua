@@ -1,4 +1,4 @@
---- Entry point.
+--- Application-specific game loop configuration.
 
 --
 -- Permission is hereby granted, free of charge, to any person obtaining
@@ -23,11 +23,46 @@
 -- [ MIT license: http://www.opensource.org/licenses/mit-license.php ]
 --
 
--- Initialization --
-require("corona_boilerplate.init")
-
 -- Modules --
-local scenes = require("corona_utils.scenes")
+local game_loop = require("s3_utils.game_loop")
 
--- Kick off the app.
-scenes.GoToScene{ name = "scene.Intro" }
+return {
+	-- Add Things --
+	add_things = game_loop.AddThings,
+
+	-- Before Entering --
+	before_entering = game_loop.BeforeEntering(64, 64),
+
+	-- Coming From: Normal --
+	coming_from_normal = "scene.Choices",
+
+	-- Coming From: Testing --
+	coming_from_testing = "Editor",
+
+	-- Default Values --
+	default_values = "quick_test",
+
+	-- Leave Effect --
+	leave_effect = "crossFade",
+
+	-- Level List --
+	level_list = require("game.LevelsList"),
+
+	-- Normal Values --
+	normal_values = { return_to = "scene.Choices", wait_to_end = 3000 },
+
+	-- On Cleanup --
+	on_cleanup = game_loop.Cleanup,
+
+	-- On Decode --
+	on_decode = game_loop.DecodeTileLayout,
+
+	-- On Init --
+	on_init = game_loop.ExtendWinEvent,
+
+	-- Quick Test Values --
+	quick_test_values = { return_to = "scene.Title", wait_to_end = 500 },
+
+	-- Testing Values --
+	testing_values = { return_to = "s3_editor.scene.Map", wait_to_end = 500 },
+}
