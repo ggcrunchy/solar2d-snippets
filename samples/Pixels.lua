@@ -178,7 +178,7 @@ function Scene:show (event)
 		self.back:toBack()
 
 		--
-		self.use_quaternions = checkbox.Checkbox(self.view, nil, 40, display.contentHeight - 40, 30, 30)
+		self.use_quaternions = checkbox.Checkbox_XY(self.view, 40, "from_bottom -40", 30, 30)
 		self.str = display.newText(self.view, "Use quaternions?", 0, self.use_quaternions.y, native.systemFont, 20)
 
 		self.str.anchorX, self.str.x = 0, self.use_quaternions.x + self.use_quaternions.width + 5

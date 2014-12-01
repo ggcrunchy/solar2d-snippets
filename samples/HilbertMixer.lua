@@ -417,7 +417,7 @@ function Scene:show (event)
 
 		--
 		self.points = points
-		self.smooth = checkbox.Checkbox(self.view, nil, 40, display.contentHeight - 50, 30, 30, function(_, check)
+		self.smooth = checkbox.Checkbox_XY(self.view, 40, "from_bottom -50", 30, 30, function(_, check)
 			self.tabs.isVisible = check
 		end)
 

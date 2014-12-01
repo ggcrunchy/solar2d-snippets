@@ -186,7 +186,7 @@ return function(what, arg_)
 		) do
 			local y = 230 + i * 50
 
-			local cb = checkbox.Checkbox(arg_, nil, 40, y, 30, 30, function(_, check)
+			local cb = checkbox.Checkbox_XY(arg_, 40, y, 30, 30, function(_, check)
 				ButtonsToAdd[key] = check
 			end)
 
