@@ -132,7 +132,7 @@ for k, v in pairs{
 	things_loaded = function(level)
 		-- If coming from the map editor, this is only a test: add a quick exit button.
 		if scenes.ComingFrom() == "Editor" then
-			Scene.m_exit = button.Button(level.hud_group, nil, display.contentWidth - 110, 15, 50, 40, scenes.WantsToGoBack, "X")
+			Scene.m_exit = button.Button_XY(level.hud_group, "from_right -110", 15, 50, 40, scenes.WantsToGoBack, "X")
 		end
 	end
 } do

@@ -24,13 +24,13 @@
 --
 
 return {
-	_prefix = "editor_views",
+	_prefix = "s3_editor_views",
 
-	"Player",
-	"Dots", "EventBlocks", "Tiles",
-	"Positions", "Triggers",
-	"GlobalEvents", "State",
-	"Audio", "Background", "Timeline",
-	"Link",
-	"Settings"
+	"player",
+	"dots", "event_blocks", "tiles",
+	"positions", "triggers",
+	"global_events", "state",
+	"audio", "background", "timeline",
+	"link",
+	"settings"
 }

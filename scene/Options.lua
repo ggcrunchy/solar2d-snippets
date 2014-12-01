@@ -37,8 +37,8 @@ local Scene = composer.newScene()
 
 -- Create Scene --
 function Scene:create ()
-	button.Button(self.view, nil, 120, 70, 200, 50, scenes.WantsToGoBack, "Go Back")
-	button.Button(self.view, nil, 120, 140, 200, 50, persistence.Wipe, "Wipe data")
+	button.Button_XY(self.view, 120, 70, 200, 50, scenes.WantsToGoBack, "Go Back")
+	button.Button_XY(self.view, 120, 140, 200, 50, persistence.Wipe, "Wipe data")
 
 	-- Populate with debug options, if available.
 	if DEBUG then

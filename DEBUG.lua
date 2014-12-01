@@ -127,7 +127,7 @@ for _, name, event in args.ArgsByN(2,
 			end
 		) do
 			if ButtonsToAdd[key] then
-				button.Button(level.hud_group, nil, display.contentWidth - 220, y, 200, 50, func, key)
+				button.Button_XY(level.hud_group, "from_right -220", y, 200, 50, func, key)
 
 				y = y + 70
 			end
@@ -172,7 +172,7 @@ end
 return function(what, arg_)
 	if what == "options" then -- arg_: data group
 		local message
-		local button = button.Button(arg_, nil, 120, 210, 200, 50, function()
+		local button = button.Button_XY(arg_, 120, 210, 200, 50, function()
 			Index = array_index.RotateIndex(Index, #Options)
 
 			message.text = Options[Index]

@@ -61,3 +61,6 @@
 [submodule "corona_boilerplate"]
 	path = corona_boilerplate
 	url = https://github.com/ggcrunchy/corona_boilerplate
+[submodule "s3_editor_views"]
+	path = s3_editor_views
+	url = https://github.com/ggcrunchy/s3_editor_views

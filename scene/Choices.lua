@@ -152,7 +152,7 @@ end
 -- --
 local Params = {
 	boilerplate = function(view)
-		button.Button(view, nil, 120, 75, 200, 50, ReturnToChoices, "Go Back")
+		button.Button_XY(view, 120, 75, 200, 50, ReturnToChoices, "Go Back")
 
 		if OnSimulator then
 			local db, name = sqlite3.open(file.PathForFile(DescriptionsDB)), composer.getSceneName("current")
@@ -214,7 +214,7 @@ function Scene:create ()
 			end
 		end, "Exit"
 	) do
-		button.Button(self.view, nil, display.contentCenterX, display.contentCenterY + (i - 1) * (bh + 25), 400, bh, func, text)
+		button.Button_XY(self.view, display.contentCenterX, display.contentCenterY + (i - 1) * (bh + 25), 400, bh, func, text)
 	end
 
 	local marquee = display.newRoundedRect(self.view, 0, 0, display.contentWidth - 4, 50, 5)
