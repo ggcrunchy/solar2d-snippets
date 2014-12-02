@@ -24,5 +24,5 @@
 --
 
 return {
-	player_image = "Dot_Assets/Warp.png"
+	player_image = "s3_objects/dot/gfx/Warp.png"
 }
