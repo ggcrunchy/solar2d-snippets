@@ -174,7 +174,9 @@ local Params = {
 --
 function Scene:create ()
 	local Current = display.newText(self.view, "", 0, 50, native.systemFont, 35)
-	local Choices = table_view_patterns.Listbox(self.view, 20, 20, {
+	local Choices = table_view_patterns.Listbox(self.view, {
+		left = 20, top = 20,
+
 		press = function(event)
 			SetCurrent(Current, event.index)
 		end

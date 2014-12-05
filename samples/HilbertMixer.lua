@@ -409,7 +409,7 @@ function Scene:show (event)
 			}
 		}
 
-		self.tabs = tabs_patterns.TabBar(self.view, tab_buttons, { top = display.contentHeight - 65, left = 250, width = 200 })
+		self.tabs = tabs_patterns.TabBar(self.view, tab_buttons, { y = "from_bottom_align -20", left = 250, width = 200 })
 
 		self.tabs:setSelected(1, true)
 

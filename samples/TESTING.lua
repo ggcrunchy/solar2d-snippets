@@ -40,6 +40,8 @@ Scene:addEventListener("create")
 function Scene:show (e)
 	if e.phase == "will" then return end
 
+local ldsl = require("corona_ui.utils.layout_dsl")
+print(ldsl.EvalPos("from_right -22", 60))
 	-- Add some test for tektite_core.index.interval, tektite_base_classes.Container.Sequence
 end
 
@@ -56,7 +58,7 @@ Scene:addEventListener("show")
 	- Editor-wise, generally just make everything prettier, cleaner
 	- Improve custom widgets (Bitmap, Grid1D, Grid2D, Keyboard, Link, LinkGroup, etc.)
 	- Make some dialogs to stress-test the section feature
-	- Decouple dialogs from the editor
+	- Decouple dialogs from the editor (PROBATION)
 	- Decouple links / tags from editor? Instancing? (PROBATION)
 
 	- Some sort of stuff for recurring UI tasks: save / load dialogs, listbox, etc. especially ones that recur outside the editor (PARTIAL)
