@@ -38,6 +38,7 @@ local table_view_patterns = require("corona_ui.patterns.table_view")
 -- Corona globals --
 local display = display
 local native = native
+local Runtime = Runtime
 local system = system
 local transition = transition
 

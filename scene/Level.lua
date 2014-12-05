@@ -114,7 +114,7 @@ function Scene:hide (event)
 		display.remove(self.m_exit)
 
 		self.m_exit = nil
-
+	else
 		scenes.SetListenFunc(nil)
 	end
 end

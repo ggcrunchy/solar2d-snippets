@@ -59,7 +59,7 @@ Scene:addEventListener("show")
 
 -- Hide Scene --
 function Scene:hide (event)
-	if event.phase == "did" then
+	if event.phase == "will" then
 		scenes.SetListenFunc(nil)
 	end
 end

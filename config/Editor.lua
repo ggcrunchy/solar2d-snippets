@@ -24,5 +24,6 @@
 --
 
 return {
-	player_image = "s3_objects/dot/gfx/Warp.png"
+	player_image = "s3_objects/dot/gfx/Warp.png",
+	return_to = "scene.Choices"
 }
