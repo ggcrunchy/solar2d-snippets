@@ -31,11 +31,14 @@
 -- Modules --
 local button = require("corona_ui.widgets.button")
 local game_loop = require("corona_boilerplate.game.loop")
+local prompts = require("corona_ui.patterns.prompts")
 local scenes = require("corona_utils.scenes")
 local timers = require("corona_utils.timers")
 
 -- Corona globals --
+local display = display
 local native = native
+local Runtime = Runtime
 
 -- Corona modules --
 local composer = require("composer")
@@ -56,13 +59,10 @@ local OnDone, Arg
 local function Listen (what, arg1, arg2, arg3)
 	-- Message: Wants To Go Back
 	if what == "message:wants_to_go_back" then
-		Alert = native.showAlert("Hey!", "Do you really want to quit?", { "OK", "Cancel" }, function(event)
-			Alert = nil
-
-			if event.action == "clicked" and event.index == 1 then
-				game_loop.UnloadLevel("quit")
-			end
-		end)
+		Alert = prompts.ProceedAnyway({
+			choices = "ok_cancel", title = "Hey!", message = "Do you really want to quit?",
+			proceed = game_loop.UnloadLevel
+		}, "quit")
 
 	-- Message: Hide Overlay
 	elseif what == "message:hide_overlay" and OnDone then
@@ -105,16 +105,16 @@ Scene:addEventListener("show")
 -- Hide Scene --
 function Scene:hide (event)
 	if event.phase == "did" then
-		if Alert then -- TODO: Test this!
+		display.remove(self.m_exit)
+
+		self.m_exit = nil
+	else
+		if Alert then
 			native.cancelAlert(Alert)
 
 			Alert = nil
 		end
 
-		display.remove(self.m_exit)
-
-		self.m_exit = nil
-	else
 		scenes.SetListenFunc(nil)
 	end
 end

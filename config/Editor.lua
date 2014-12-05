@@ -25,5 +25,5 @@
 
 return {
 	player_image = "s3_objects/dot/gfx/Warp.png",
-	return_to = "scene.Choices"
+	return_to = "scene.Choices", to_level = "scene.Level"
 }
