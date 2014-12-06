@@ -338,7 +338,7 @@ function Scene:show (event)
 			self.rectangle.anchorX, self.rectangle.x = 0, minx
 			self.rectangle.anchorY, self.rectangle.y = 0, miny
 
-			Hollow(self.rectangle, 255, 0, 0)
+			Hollow(self.rectangle, 1, 0, 0)
 			FadeAndWait(self.rectangle, 400, 600)
 
 			--
@@ -346,7 +346,7 @@ function Scene:show (event)
 
 			local cx, cy, dummy = .5 * (minx + maxx), .5 * (miny + maxy), {}
 
-			Polyline("diagonal", cx, cy, { cx, cy, maxx, maxy }, 0, 255, 0, 300, 700)
+			Polyline("diagonal", cx, cy, { cx, cy, maxx, maxy }, 0, 1, 0, 300, 700)
 
 			--
 			ShowText("Adding circumcircle")
@@ -356,7 +356,7 @@ function Scene:show (event)
 
 			self.circumcircle = display.newCircle(self.view, cx, cy, radius)
 
-			Hollow(self.circumcircle, 0, 0, 255)
+			Hollow(self.circumcircle, 0, 0, 1)
 			FadeAndWait(self.circumcircle, 500, 800)
 
 			--

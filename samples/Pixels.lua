@@ -83,8 +83,13 @@ local ColorParams = {
 }
 
 --
+local function RandomComp ()
+	return random(20, 255) / 255
+end
+
+--
 local function SetColor (color)
-	color.r, color.g, color.b = random(20, 255) / 255, random(20, 255) / 255, random(20, 255) / 255
+	color.r, color.g, color.b = RandomComp (), RandomComp (), RandomComp ()
 end
 
 -- --

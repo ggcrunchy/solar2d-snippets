@@ -333,9 +333,9 @@ local function EnterFrame ()
 	local maker
 
 	if scene.smooth:IsChecked() then
-		R, G, B, maker = 0, 255, 0, MakeCurvedPolygon
+		R, G, B, maker = 0, 1, 0, MakeCurvedPolygon
 	else
-		R, G, B, maker = 255, 0, 0, MakePolygon
+		R, G, B, maker = 1, 0, 0, MakePolygon
 	end
 
 	--

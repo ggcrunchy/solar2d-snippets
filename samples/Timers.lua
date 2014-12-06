@@ -65,7 +65,7 @@ end
 -- Now endlessly adjust the object's red color every 150ms
 function B (obj)
 	Scene.timers[#Scene.timers + 1] = timers.Repeat(function()
-		local red = math.random(255)
+		local red = math.random()
 
 		obj:setFillColor(red, 0, 0)
 	end, 150)
