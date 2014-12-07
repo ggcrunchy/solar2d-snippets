@@ -33,6 +33,7 @@ local args = require("iterator_ops.args")
 local button = require("corona_ui.widgets.button")
 local file = require("corona_utils.file")
 local scenes = require("corona_utils.scenes")
+local strings = require("tektite_core.var.strings")
 local table_view_patterns = require("corona_ui.patterns.table_view")
 
 -- Corona globals --
@@ -122,7 +123,7 @@ end
 
 --
 local function SetCurrent (current, index)
-	current.text = "Current: " .. Names[index]
+	current.text = "Current: " .. strings.SplitIntoWords(Names[index], "case_switch")
 
 	if index ~= current.m_id and file.Exists(DescriptionsDB) then
 		local db = sqlite3.open(file.PathForFile(DescriptionsDB))
@@ -177,6 +178,10 @@ function Scene:create ()
 	local Current = display.newText(self.view, "", 0, 50, native.systemFont, 35)
 	local Choices = table_view_patterns.Listbox(self.view, {
 		left = 20, top = 20,
+
+		get_text = function(name)
+			return strings.SplitIntoWords(name, "case_switch")
+		end,
 
 		press = function(event)
 			SetCurrent(Current, event.index)
