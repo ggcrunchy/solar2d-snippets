@@ -1,6 +1,3 @@
-[submodule "dft_ops"]
-	path = dft_ops
-	url = https://github.com/ggcrunchy/dft_ops.git
 [submodule "image_ops"]
 	path = image_ops
 	url = https://github.com/ggcrunchy/image_ops.git
