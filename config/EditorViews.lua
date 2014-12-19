@@ -27,7 +27,7 @@ return {
 	_prefix = "s3_editor_views",
 
 	"player",
-	"dots", "event_blocks", "tiles",
+	"dots", "event_blocks", "spawn_points", "tiles",
 	"positions", "triggers",
 	"global_events", "state",
 	"audio", "background", "timeline",
