@@ -1,7 +1,7 @@
 --- Level scene.
 --
 -- This is the "in-game" scene. The scene expects event.params == _which_, corresponding
--- to the @{game.LevelMap.LoadLevel} parameter.
+-- to the @{corona_boilerplate.game.loop.LoadLevel} parameter.
 --
 -- TODO: Mention leave_menus
 
