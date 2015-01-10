@@ -1,0 +1,601 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+<head>
+    <title>Snippets documentation</title>
+    <link rel="stylesheet" href="../ldoc.css" type="text/css" />
+</head>
+<body>
+
+<div id="container">
+
+<div id="product">
+	<div id="product_logo"></div>
+	<div id="product_name"><big><b></b></big></div>
+	<div id="product_description"></div>
+</div> <!-- id="product" -->
+
+
+<div id="main">
+
+
+<!-- Menu -->
+
+<div id="navigation">
+<br/>
+<h1>Corona SDK snippets</h1>
+
+<ul>
+  <li><a href="../api.html">Index</a></li>
+</ul>
+
+<h2>Contents</h2>
+<ul>
+<li><a href="#Functions">Functions</a></li>
+</ul>
+
+
+<h2>Modules</h2>
+<ul class="$(kind=='Topics' and '' or 'nowrap'">
+  <li><a href="../modules/annex.EnemyEvents.html">EnemyEvents</a></li>
+  <li><a href="../modules/bitwise_ops.counts.html">counts</a></li>
+  <li><a href="../modules/bitwise_ops.log2.html">log2</a></li>
+  <li><a href="../modules/bitwise_ops.operators.html">operators</a></li>
+  <li><a href="../modules/bitwise_ops.powers_of_2.html">powers_of_2</a></li>
+  <li><a href="../modules/bitwise_ops.vector.html">vector</a></li>
+  <li><a href="../modules/config.Dots.html">Dots</a></li>
+  <li><a href="../modules/config.Editor.html">Editor</a></li>
+  <li><a href="../modules/config.EditorViews.html">EditorViews</a></li>
+  <li><a href="../modules/config.Enemies.html">Enemies</a></li>
+  <li><a href="../modules/config.EventBlocks.html">EventBlocks</a></li>
+  <li><a href="../modules/config.GameLoop.html">GameLoop</a></li>
+  <li><a href="../modules/config.GlobalEvents.html">GlobalEvents</a></li>
+  <li><a href="../modules/config.Persistence.html">Persistence</a></li>
+  <li><a href="../modules/corona_boilerplate.FIXES.html">FIXES</a></li>
+  <li><a href="../modules/corona_boilerplate.game.loop.html">game.loop</a></li>
+  <li><a href="../modules/corona_boilerplate.html">corona_boilerplate</a></li>
+  <li><a href="../modules/corona_mask.marching_squares.html">marching_squares</a></li>
+  <li><a href="../modules/corona_ui.dialog_impl.data.html">dialog_impl.data</a></li>
+  <li><a href="../modules/corona_ui.dialog_impl.layout.html">dialog_impl.layout</a></li>
+  <li><a href="../modules/corona_ui.dialog_impl.methods.html">dialog_impl.methods</a></li>
+  <li><a href="../modules/corona_ui.dialog_impl.sections.html">dialog_impl.sections</a></li>
+  <li><a href="../modules/corona_ui.dialog_impl.utils.html">dialog_impl.utils</a></li>
+  <li><a href="../modules/corona_ui.patterns.audio.html">patterns.audio</a></li>
+  <li><a href="../modules/corona_ui.patterns.button.html">patterns.button</a></li>
+  <li><a href="../modules/corona_ui.patterns.editable.html">patterns.editable</a></li>
+  <li><a href="../modules/corona_ui.patterns.image.html">patterns.image</a></li>
+  <li><a href="../modules/corona_ui.patterns.net.html">patterns.net</a></li>
+  <li><a href="../modules/corona_ui.patterns.prompts.html">patterns.prompts</a></li>
+  <li><a href="../modules/corona_ui.patterns.table_view.html">patterns.table_view</a></li>
+  <li><a href="../modules/corona_ui.patterns.tabs.html">patterns.tabs</a></li>
+  <li><a href="../modules/corona_ui.patterns.video.html">patterns.video</a></li>
+  <li><a href="../modules/corona_ui.utils.color.html">utils.color</a></li>
+  <li><a href="../modules/corona_ui.utils.hsv.html">utils.hsv</a></li>
+  <li><a href="../modules/corona_ui.utils.layout.html">utils.layout</a></li>
+  <li><strong>utils.layout_dsl</strong></li>
+  <li><a href="../modules/corona_ui.utils.lines.html">utils.lines</a></li>
+  <li><a href="../modules/corona_ui.utils.line_ex.html">utils.line_ex</a></li>
+  <li><a href="../modules/corona_ui.utils.sheet.html">utils.sheet</a></li>
+  <li><a href="../modules/corona_ui.utils.skin.html">utils.skin</a></li>
+  <li><a href="../modules/corona_ui.utils.touch.html">utils.touch</a></li>
+  <li><a href="../modules/corona_ui.widgets.bitmap.html">widgets.bitmap</a></li>
+  <li><a href="../modules/corona_ui.widgets.button.html">widgets.button</a></li>
+  <li><a href="../modules/corona_ui.widgets.checkbox.html">widgets.checkbox</a></li>
+  <li><a href="../modules/corona_ui.widgets.color_picker.html">widgets.color_picker</a></li>
+  <li><a href="../modules/corona_ui.widgets.dialog.html">widgets.dialog</a></li>
+  <li><a href="../modules/corona_ui.widgets.grid.html">widgets.grid</a></li>
+  <li><a href="../modules/corona_ui.widgets.grid_1D.html">widgets.grid_1D</a></li>
+  <li><a href="../modules/corona_ui.widgets.keyboard.html">widgets.keyboard</a></li>
+  <li><a href="../modules/corona_ui.widgets.link_group.html">widgets.link_group</a></li>
+  <li><a href="../modules/corona_utils.audio.html">audio</a></li>
+  <li><a href="../modules/corona_utils.collision.html">collision</a></li>
+  <li><a href="../modules/corona_utils.device.html">device</a></li>
+  <li><a href="../modules/corona_utils.file.html">file</a></li>
+  <li><a href="../modules/corona_utils.frames.html">frames</a></li>
+  <li><a href="../modules/corona_utils.mask.html">mask</a></li>
+  <li><a href="../modules/corona_utils.persistence.html">persistence</a></li>
+  <li><a href="../modules/corona_utils.scenes.html">scenes</a></li>
+  <li><a href="../modules/corona_utils.timers.html">timers</a></li>
+  <li><a href="../modules/corona_utils.transitions.html">transitions</a></li>
+  <li><a href="../modules/coroutine_ops.flow.html">flow</a></li>
+  <li><a href="../modules/coroutine_ops.flow_bodies.html">flow_bodies</a></li>
+  <li><a href="../modules/coroutine_ops.per_coroutine.html">per_coroutine</a></li>
+  <li><a href="../modules/coroutine_ops.wrapper.html">wrapper</a></li>
+  <li><a href="../modules/DEBUG.html">DEBUG</a></li>
+  <li><a href="../modules/game.LevelsList.html">LevelsList</a></li>
+  <li><a href="../modules/game.Player.html">Player</a></li>
+  <li><a href="../modules/hash_ops.html">hash_ops</a></li>
+  <li><a href="../modules/image_fx.colored_corners.html">colored_corners</a></li>
+  <li><a href="../modules/image_fx.cubic_mvc.html">cubic_mvc</a></li>
+  <li><a href="../modules/image_fx.poisson_mvc.html">poisson_mvc</a></li>
+  <li><a href="../modules/image_ops.energy.html">energy</a></li>
+  <li><a href="../modules/image_ops.huffman.html">huffman</a></li>
+  <li><a href="../modules/image_ops.jpeg.html">jpeg</a></li>
+  <li><a href="../modules/image_ops.png.html">png</a></li>
+  <li><a href="../modules/image_ops.png_encode.html">png_encode</a></li>
+  <li><a href="../modules/image_ops.utils.html">utils</a></li>
+  <li><a href="../modules/image_ops.zlib.html">zlib</a></li>
+  <li><a href="../modules/image_ops.zlib_lut.html">zlib_lut</a></li>
+  <li><a href="../modules/iterator_ops.args.html">args</a></li>
+  <li><a href="../modules/iterator_ops.coroutine.html">coroutine</a></li>
+  <li><a href="../modules/iterator_ops.grid.html">grid</a></li>
+  <li><a href="../modules/iterator_ops.ipairs.html">ipairs</a></li>
+  <li><a href="../modules/iterator_ops.utils.html">utils</a></li>
+  <li><a href="../modules/linear_algebra_ops.base.html">base</a></li>
+  <li><a href="../modules/linear_algebra_ops.cholesky.html">cholesky</a></li>
+  <li><a href="../modules/linear_algebra_ops.conjugate_gradient.html">conjugate_gradient</a></li>
+  <li><a href="../modules/linear_algebra_ops.svd.html">svd</a></li>
+  <li><a href="../modules/main.html">main</a></li>
+  <li><a href="../modules/number_ops.poisson.html">poisson</a></li>
+  <li><a href="../modules/number_ops.scalloped_sector.html">scalloped_sector</a></li>
+  <li><a href="../modules/number_ops.summed_area.html">summed_area</a></li>
+  <li><a href="../modules/number_sequences.gray.html">gray</a></li>
+  <li><a href="../modules/number_sequences.hilbert.html">hilbert</a></li>
+  <li><a href="../modules/number_sequences.morton.html">morton</a></li>
+  <li><a href="../modules/number_sequences.mwc_rng.html">mwc_rng</a></li>
+  <li><a href="../modules/numeric_types.complex.html">complex</a></li>
+  <li><a href="../modules/numeric_types.quaternion.html">quaternion</a></li>
+  <li><a href="../modules/numeric_types.tuple.html">tuple</a></li>
+  <li><a href="../modules/s3_editor.Augment.html">Augment</a></li>
+  <li><a href="../modules/s3_editor.Common.html">Common</a></li>
+  <li><a href="../modules/s3_editor.CommonUI.html">CommonUI</a></li>
+  <li><a href="../modules/s3_editor.Dialog.html">Dialog</a></li>
+  <li><a href="../modules/s3_editor.dialog_items.checkbox.html">dialog_items.checkbox</a></li>
+  <li><a href="../modules/s3_editor.dialog_items.misc.html">dialog_items.misc</a></li>
+  <li><a href="../modules/s3_editor.dialog_items.slider.html">dialog_items.slider</a></li>
+  <li><a href="../modules/s3_editor.dialog_items.spinner.html">dialog_items.spinner</a></li>
+  <li><a href="../modules/s3_editor.dialog_items.table_view.html">dialog_items.table_view</a></li>
+  <li><a href="../modules/s3_editor.dialog_items.tabs.html">dialog_items.tabs</a></li>
+  <li><a href="../modules/s3_editor.Events.html">Events</a></li>
+  <li><a href="../modules/s3_editor.Grid.html">Grid</a></li>
+  <li><a href="../modules/s3_editor.GridViews.html">GridViews</a></li>
+  <li><a href="../modules/s3_editor.Help.html">Help</a></li>
+  <li><a href="../modules/s3_editor.Ops.html">Ops</a></li>
+  <li><a href="../modules/s3_editor.overlay.Help.html">overlay.Help</a></li>
+  <li><a href="../modules/s3_editor.overlay.Link.html">overlay.Link</a></li>
+  <li><a href="../modules/s3_editor.scene.Map.html">scene.Map</a></li>
+  <li><a href="../modules/s3_editor.scene.Setup.html">scene.Setup</a></li>
+  <li><a href="../modules/s3_editor_views.audio.html">audio</a></li>
+  <li><a href="../modules/s3_editor_views.background.html">background</a></li>
+  <li><a href="../modules/s3_editor_views.dots.html">dots</a></li>
+  <li><a href="../modules/s3_editor_views.event_blocks.html">event_blocks</a></li>
+  <li><a href="../modules/s3_editor_views.global_events.html">global_events</a></li>
+  <li><a href="../modules/s3_editor_views.link.html">link</a></li>
+  <li><a href="../modules/s3_editor_views.player.html">player</a></li>
+  <li><a href="../modules/s3_editor_views.positions.html">positions</a></li>
+  <li><a href="../modules/s3_editor_views.settings.html">settings</a></li>
+  <li><a href="../modules/s3_editor_views.spawn_points.html">spawn_points</a></li>
+  <li><a href="../modules/s3_editor_views.state.html">state</a></li>
+  <li><a href="../modules/s3_editor_views.tiles.html">tiles</a></li>
+  <li><a href="../modules/s3_editor_views.timeline.html">timeline</a></li>
+  <li><a href="../modules/s3_editor_views.triggers.html">triggers</a></li>
+  <li><a href="../modules/s3_objects.dot.switch.html">dot.switch</a></li>
+  <li><a href="../modules/s3_objects.dot.warp.html">dot.warp</a></li>
+  <li><a href="../modules/s3_objects.event_block.maze.html">event_block.maze</a></li>
+  <li><a href="../modules/s3_utils.ai.html">ai</a></li>
+  <li><a href="../modules/s3_utils.controls.html">controls</a></li>
+  <li><a href="../modules/s3_utils.dots.html">dots</a></li>
+  <li><a href="../modules/s3_utils.effect.balloons.html">effect.balloons</a></li>
+  <li><a href="../modules/s3_utils.effect.fillers.html">effect.fillers</a></li>
+  <li><a href="../modules/s3_utils.effect.glow.html">effect.glow</a></li>
+  <li><a href="../modules/s3_utils.effect.markers.html">effect.markers</a></li>
+  <li><a href="../modules/s3_utils.effect.shadows.html">effect.shadows</a></li>
+  <li><a href="../modules/s3_utils.effect.snowfall.html">effect.snowfall</a></li>
+  <li><a href="../modules/s3_utils.effect.stars.html">effect.stars</a></li>
+  <li><a href="../modules/s3_utils.effect.stash.html">effect.stash</a></li>
+  <li><a href="../modules/s3_utils.enemies.html">enemies</a></li>
+  <li><a href="../modules/s3_utils.event_blocks.html">event_blocks</a></li>
+  <li><a href="../modules/s3_utils.fill.cellular_automata.html">fill.cellular_automata</a></li>
+  <li><a href="../modules/s3_utils.fill.circle.html">fill.circle</a></li>
+  <li><a href="../modules/s3_utils.fx.html">fx</a></li>
+  <li><a href="../modules/s3_utils.game_loop.html">game_loop</a></li>
+  <li><a href="../modules/s3_utils.global_events.html">global_events</a></li>
+  <li><a href="../modules/s3_utils.hud.action.html">hud.action</a></li>
+  <li><a href="../modules/s3_utils.hud.move.html">hud.move</a></li>
+  <li><a href="../modules/s3_utils.movement.html">movement</a></li>
+  <li><a href="../modules/s3_utils.music.html">music</a></li>
+  <li><a href="../modules/s3_utils.pathing.html">pathing</a></li>
+  <li><a href="../modules/s3_utils.path_utils.html">path_utils</a></li>
+  <li><a href="../modules/s3_utils.positions.html">positions</a></li>
+  <li><a href="../modules/s3_utils.scrolling.html">scrolling</a></li>
+  <li><a href="../modules/s3_utils.shapes.html">shapes</a></li>
+  <li><a href="../modules/s3_utils.sound.html">sound</a></li>
+  <li><a href="../modules/s3_utils.tile_flags.html">tile_flags</a></li>
+  <li><a href="../modules/s3_utils.tile_maps.html">tile_maps</a></li>
+  <li><a href="../modules/s3_utils.triggers.html">triggers</a></li>
+  <li><a href="../modules/samples.Delaunay.html">Delaunay</a></li>
+  <li><a href="../modules/samples.Endless.html">Endless</a></li>
+  <li><a href="../modules/samples.Fire.html">Fire</a></li>
+  <li><a href="../modules/samples.Hilbert.html">Hilbert</a></li>
+  <li><a href="../modules/samples.HilbertMixer.html">HilbertMixer</a></li>
+  <li><a href="../modules/samples.Hop.html">Hop</a></li>
+  <li><a href="../modules/samples.Nodes.html">Nodes</a></li>
+  <li><a href="../modules/samples.OrbitsAndLattices.html">OrbitsAndLattices</a></li>
+  <li><a href="../modules/samples.Pixels.html">Pixels</a></li>
+  <li><a href="../modules/samples.Plasma.html">Plasma</a></li>
+  <li><a href="../modules/samples.SlowMo.html">SlowMo</a></li>
+  <li><a href="../modules/samples.Snowfall.html">Snowfall</a></li>
+  <li><a href="../modules/samples.Superformulae.html">Superformulae</a></li>
+  <li><a href="../modules/samples.Swarm.html">Swarm</a></li>
+  <li><a href="../modules/samples.TESTING.html">TESTING</a></li>
+  <li><a href="../modules/samples.Thoughts.html">Thoughts</a></li>
+  <li><a href="../modules/samples.Tiling.html">Tiling</a></li>
+  <li><a href="../modules/samples.Timers.html">Timers</a></li>
+  <li><a href="../modules/scene.Choices.html">Choices</a></li>
+  <li><a href="../modules/scene.Intro.html">Intro</a></li>
+  <li><a href="../modules/scene.Level.html">Level</a></li>
+  <li><a href="../modules/scene.Options.html">Options</a></li>
+  <li><a href="../modules/spline_ops.arc_length.html">arc_length</a></li>
+  <li><a href="../modules/spline_ops.bezier.html">bezier</a></li>
+  <li><a href="../modules/spline_ops.cubic.html">cubic</a></li>
+  <li><a href="../modules/Sequence.html">Sequence</a></li>
+  <li><a href="../modules/StableArray.html">StableArray</a></li>
+  <li><a href="../modules/Interpolator.html">Interpolator</a></li>
+  <li><a href="../modules/Links.html">Links</a></li>
+  <li><a href="../modules/Tags.html">Tags</a></li>
+  <li><a href="../modules/SectionGroup.html">SectionGroup</a></li>
+  <li><a href="../modules/TaskQueue.html">TaskQueue</a></li>
+  <li><a href="../modules/Timeline.html">Timeline</a></li>
+  <li><a href="../modules/Timer.html">Timer</a></li>
+  <li><a href="../modules/VarFamily.html">VarFamily</a></li>
+  <li><a href="../modules/tektite_base_classes.VarFamilyEx.Annex.html">VarFamilyEx.Annex</a></li>
+  <li><a href="../modules/BoolVars.html">BoolVars</a></li>
+  <li><a href="../modules/NumVars.html">NumVars</a></li>
+  <li><a href="../modules/RawVars.html">RawVars</a></li>
+  <li><a href="../modules/TimerVars.html">TimerVars</a></li>
+  <li><a href="../modules/tektite_core.array.collect.html">array.collect</a></li>
+  <li><a href="../modules/tektite_core.array.embedded_free_list.html">array.embedded_free_list</a></li>
+  <li><a href="../modules/tektite_core.array.funcs.html">array.funcs</a></li>
+  <li><a href="../modules/tektite_core.array.index.html">array.index</a></li>
+  <li><a href="../modules/tektite_core.array.interval.html">array.interval</a></li>
+  <li><a href="../modules/tektite_core.array.match_slot_id.html">array.match_slot_id</a></li>
+  <li><a href="../modules/tektite_core.array.predicates.html">array.predicates</a></li>
+  <li><a href="../modules/tektite_core.array.ring_buffer.html">array.ring_buffer</a></li>
+  <li><a href="../modules/tektite_core.array.wipe.html">array.wipe</a></li>
+  <li><a href="../modules/tektite_core.bind.html">bind</a></li>
+  <li><a href="../modules/tektite_core.class.html">class</a></li>
+  <li><a href="../modules/tektite_core.errors.html">errors</a></li>
+  <li><a href="../modules/tektite_core.exception.html">exception</a></li>
+  <li><a href="../modules/tektite_core.geom2d.mesh.html">geom2d.mesh</a></li>
+  <li><a href="../modules/tektite_core.geom2d.predicates.html">geom2d.predicates</a></li>
+  <li><a href="../modules/tektite_core.number.curves.html">number.curves</a></li>
+  <li><a href="../modules/tektite_core.number.divide.html">number.divide</a></li>
+  <li><a href="../modules/tektite_core.number.integrators.html">number.integrators</a></li>
+  <li><a href="../modules/tektite_core.number.length.html">number.length</a></li>
+  <li><a href="../modules/tektite_core.number.range.html">number.range</a></li>
+  <li><a href="../modules/tektite_core.number.robust.html">number.robust</a></li>
+  <li><a href="../modules/tektite_core.number.simplex_noise.html">number.simplex_noise</a></li>
+  <li><a href="../modules/tektite_core.number.to_string.html">number.to_string</a></li>
+  <li><a href="../modules/tektite_core.require_ex.html">require_ex</a></li>
+  <li><a href="../modules/tektite_core.table.adaptive.html">table.adaptive</a></li>
+  <li><a href="../modules/tektite_core.table.funcs.html">table.funcs</a></li>
+  <li><a href="../modules/tektite_core.table.lazy.html">table.lazy</a></li>
+  <li><a href="../modules/tektite_core.table.predicates.html">table.predicates</a></li>
+  <li><a href="../modules/tektite_core.table.proxy.html">table.proxy</a></li>
+  <li><a href="../modules/tektite_core.var.bound_args.html">var.bound_args</a></li>
+  <li><a href="../modules/tektite_core.var.cache.html">var.cache</a></li>
+  <li><a href="../modules/tektite_core.var.dump.html">var.dump</a></li>
+  <li><a href="../modules/tektite_core.var.predicates.html">var.predicates</a></li>
+  <li><a href="../modules/tektite_core.var.strings.html">var.strings</a></li>
+  <li><a href="../modules/tiles.TreeBG.html">TreeBG</a></li>
+  <li><a href="../modules/utils.Resource.html">Resource</a></li>
+</ul>
+
+</div>
+
+<div id="content">
+
+<h1>Module <code>corona_ui.utils.layout_dsl</code></h1>
+<p>Implements a small domain-specific language on top of the layout system, in order to
+ make positions and dimensions more expressive.</p>
+<p>
+
+
+<p> With respect to this module, a <strong>DSL_Number</strong> may be either of the following:</p>
+
+<ul>
+    <li>A number, or a string that <a href="http://www.lua.org/manual/5.1/manual.html#pdf-tonumber">tonumber</a> is able to convert. These values are used as is.</li>
+    <li>A string of the form <strong>"AMOUNT%"</strong>, e.g. <code>"20%"</code> or <code>"-4.2%"</code>, which resolves to the
+    indicated percent of the content width or height.</li>
+</ul>
+</p>
+
+
+<h2><a href="#Functions">Functions</a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#AddProperties">AddProperties (object)</a></td>
+	<td class="summary">Augments a display object's metatable, so that its objects can also query <strong>left</strong>,
+ <strong>center_x</strong>, <strong>right</strong>, <strong>bottom</strong>, <strong>center_y</strong>, and <strong>top</strong> properties, with semantics
+ as in <a href="../modules/corona_ui.utils.layout.html#">corona_ui.utils.layout</a>.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#AddProperties_Metatable">AddProperties_Metatable (mt)</a></td>
+	<td class="summary">Variant of <a href="../modules/corona_ui.utils.layout_dsl.html#AddProperties">AddProperties</a> that populates the metatable, e.g.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#EvalDims">EvalDims ([w[, h]])</a></td>
+	<td class="summary">Normalizes width and height values.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#EvalPos">EvalPos ([x[, y]])</a></td>
+	<td class="summary">Normalizes position values.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#ProcessWidgetParams">ProcessWidgetParams ([params[, t]])</a></td>
+	<td class="summary">Convenience utility for doing DSL evaluation of position- or dimension-type fields in
+ Corona-style widget constructors.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#ProcessWidgetParams_InPlace">ProcessWidgetParams_InPlace ([params])</a></td>
+	<td class="summary">Variant of <a href="../modules/corona_ui.utils.layout_dsl.html#ProcessWidgetParams">ProcessWidgetParams</a> where <em>params</em> does double duty as <em>t</em>.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#PutObjectAt">PutObjectAt (object, x, y)</a></td>
+	<td class="summary">Puts an object at a given normalized position.</td>
+	</tr>
+</table>
+
+<br/>
+<br/>
+
+
+    <h2><a name="Functions"></a>Functions</h2>
+    <dl class="function">
+    <dt>
+    <a name = "AddProperties"></a>
+    <strong>AddProperties (object)</strong>
+    </dt>
+    <dd>
+    Augments a display object's metatable, so that its objects can also query <strong>left</strong>,
+ <strong>center_x</strong>, <strong>right</strong>, <strong>bottom</strong>, <strong>center_y</strong>, and <strong>top</strong> properties, with semantics
+ as in <a href="../modules/corona_ui.utils.layout.html#">corona_ui.utils.layout</a>.  Additionally, any of these (and also <strong>x</strong> and <strong>y</strong>)
+ may be assigned, accepting the same inputs as <a href="../modules/corona_ui.utils.layout_dsl.html#PutObjectAt">PutObjectAt</a>.
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">object</span>
+            <span class="types"><span class="type">DisplayObject</span></span>
+         Object which will have its metatable modified.
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "AddProperties_Metatable"></a>
+    <strong>AddProperties_Metatable (mt)</strong>
+    </dt>
+    <dd>
+    Variant of <a href="../modules/corona_ui.utils.layout_dsl.html#AddProperties">AddProperties</a> that populates the metatable, e.g.  for multiple uses.
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">mt</span>
+            <span class="types"><a class="type" href="http://www.lua.org/manual/5.1/manual.html#5.5">table</a></span>
+         Metatable (assumed to originate from a display object).
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "EvalDims"></a>
+    <strong>EvalDims ([w[, h]])</strong>
+    </dt>
+    <dd>
+    Normalizes width and height values.
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">w</span>
+            <span class="types"><span class="type">DSL_Number</span></span>
+         If present, the width (e.g. 20, "10%") to normalize...
+        </li>
+        <li><span class="parameter">h</span>
+            <span class="types"><span class="type">DSL_Number</span></span>
+         ...and likewise, the height.
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+        <li>
+           <span class="types"><span class="type">number</span> or <span class="type">nil</span></span>
+        If <em>w</em> is absent, <strong>nil</strong>. Otherwise, the evaluated width.</li>
+        <li>
+           <span class="types"><span class="type">number</span> or <span class="type">nil</span></span>
+        As per <em>w</em>, for the height.</li>
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "EvalPos"></a>
+    <strong>EvalPos ([x[, y]])</strong>
+    </dt>
+    <dd>
+    Normalizes position values.
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">x</span>
+            <span class="types"><span class="type">DSL_Number</span> or <a class="type" href="http://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
+         If <em>x</em> is a <strong>DSL_Number</strong>, it evaluates as described
+ in the summary. Otherwise, if it is a string, the following commands are available:</p>
+
+<ul>
+    <li><strong>"at xpos dx"</strong>: Evaluates both <em>xpos</em> and <em>dx</em> and returns their sum.</li>
+    <li><strong>"center dx"</strong>: Evaluates <em>dx</em> and adds it to the content center.</li>
+    <li><strong>"from_right dx"</strong>: Evaluates <em>dx</em> and adds it to the right side of the content.</li>
+</ul>
+
+<p> In the above, <em>xpos</em> and <em>dx</em> are of type <strong>DSL_Number</strong>, and resolve to 0 when absent.</p>
+
+<p> Example commands: <code>"at 20 5%"</code>, <code>"center 10%"</code>, <code>"from_right -20"</code>, <code>"from_right -3.5%"</code>.
+        </li>
+        <li><span class="parameter">y</span>
+            <span class="types"><span class="type">DSL_Number</span> or <a class="type" href="http://www.lua.org/manual/5.1/manual.html#5.4">string</a></span>
+         As per <em>x</em>. The corresponding choices are <strong>"at"</strong>,
+ <strong>"center"</strong>, and <strong>"from_bottom"</strong>, with the obvious changes.
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+        <li>
+           <span class="types"><span class="type">number</span> or <span class="type">nil</span></span>
+        If <em>x</em> is absent, <strong>nil</strong>. Otherwise, the evaluated x-coordinate.</li>
+        <li>
+           <span class="types"><span class="type">number</span> or <span class="type">nil</span></span>
+        As per <em>x</em>.</li>
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "ProcessWidgetParams"></a>
+    <strong>ProcessWidgetParams ([params[, t]])</strong>
+    </dt>
+    <dd>
+    Convenience utility for doing DSL evaluation of position- or dimension-type fields in
+ Corona-style widget constructors.
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">params</span>
+            <span class="types"><a class="type" href="http://www.lua.org/manual/5.1/manual.html#5.5">table</a></span>
+         If absent, this is a no-op. Otherwise, its <strong>left</strong>, <strong>top</strong>, <strong>x</strong>,
+ <strong>y</strong>, <strong>width</strong>, and <strong>height</strong> fields will be processed.
+        </li>
+        <li><span class="parameter">t</span>
+            <span class="types"><a class="type" href="http://www.lua.org/manual/5.1/manual.html#5.5">table</a></span>
+         Receives the evaluated params. If absent, a table is supplied (if <em>params</em>
+ also exists).</p>
+
+<p> Any <strong>x</strong> or <strong>y</strong> field in <em>t</em> is removed; the same fields in <em>params</em> are returned,
+ instead. This separation is motivated by consistency with other DSL-using code, where
+ assignment to <strong>x</strong> and <strong>y</strong> fields support commands such as <strong>"from_right -20"</strong>; these
+ assume that the correct dimensions are available, yet this is not so before construction.</p>
+
+<p> Any <strong>width</strong> or <strong>height</strong> field in <em>params</em> is evaluated, cf. <a href="../modules/corona_ui.utils.layout_dsl.html#EvalDims">EvalDims</a>, the result
+ being placed into <em>t</em>. If a field is absent, it is also left untouched in <em>t</em>.</p>
+
+<p> If <strong>x</strong> (or <strong>y</strong>) is present, any <strong>left</strong> (or <strong>top</strong>) field is removed from <em>t</em>.
+ Otherwise, that field is evaluated, cf. <a href="../modules/corona_ui.utils.layout_dsl.html#EvalPos">EvalPos</a>, and added to <em>t</em>.
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+        <li>
+           <span class="types"><a class="type" href="http://www.lua.org/manual/5.1/manual.html#5.5">table</a> or <span class="type">nil</span></span>
+        <em>t</em>.</li>
+        <li>
+           <span class="types"><span class="type">DSL_number</span>, <a class="type" href="http://www.lua.org/manual/5.1/manual.html#5.4">string</a> or <span class="type">nil</span></span>
+        If <em>params</em> is present, the original value of <code>params.x</code>...</li>
+        <li>
+           <span class="types"><span class="type">DSL_number</span>, <a class="type" href="http://www.lua.org/manual/5.1/manual.html#5.4">string</a> or <span class="type">nil</span></span>
+        ...and <code>params.y</code>.</li>
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "ProcessWidgetParams_InPlace"></a>
+    <strong>ProcessWidgetParams_InPlace ([params])</strong>
+    </dt>
+    <dd>
+    Variant of <a href="../modules/corona_ui.utils.layout_dsl.html#ProcessWidgetParams">ProcessWidgetParams</a> where <em>params</em> does double duty as <em>t</em>.
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">params</span>
+            <span class="types"><a class="type" href="http://www.lua.org/manual/5.1/manual.html#5.5">table</a></span>
+         If absent, this is a no-op. Otherwise, as per <a href="../modules/corona_ui.utils.layout_dsl.html#ProcessWidgetParams">ProcessWidgetParams</a>.
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+        <li>
+           <span class="types"><a class="type" href="http://www.lua.org/manual/5.1/manual.html#5.5">table</a> or <span class="type">nil</span></span>
+        <em>params</em>.</li>
+        <li>
+           <span class="types"><span class="type">DSL_number</span>, <a class="type" href="http://www.lua.org/manual/5.1/manual.html#5.4">string</a> or <span class="type">nil</span></span>
+        If <em>params</em> is present, the original value of <code>params.x</code>...</li>
+        <li>
+           <span class="types"><span class="type">DSL_number</span>, <a class="type" href="http://www.lua.org/manual/5.1/manual.html#5.4">string</a> or <span class="type">nil</span></span>
+        ...and <code>params.y</code>.</li>
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "PutObjectAt"></a>
+    <strong>PutObjectAt (object, x, y)</strong>
+    </dt>
+    <dd>
+    Puts an object at a given normalized position.
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">object</span>
+            <span class="types"><span class="type">DisplayObject</span></span>
+         Object to position.
+        </li>
+        <li><span class="parameter">x</span>
+            <span class="types"><span class="type">DSL_Number</span>, <a class="type" href="http://www.lua.org/manual/5.1/manual.html#5.4">string</a> or <span class="type">nil</span></span>
+         If absent, the x-coordinate is untouched. Otherwise,
+ the number is evaluated as in <a href="../modules/corona_ui.utils.layout_dsl.html#EvalPos">EvalPos</a> and assigned to the x-coordinate. Available
+ commands, and the corresponding x-coordinate, are:</p>
+
+<ul>
+    <li><strong>"center dx"</strong>: The content center's x-coordinate.</li>
+    <li><strong>"from_right dx"</strong>: The right side of the content.</li>
+    <li><strong>"from_right_align dx"</strong>: The value that aligns the right side of <em>object</em> to the right
+    side of the content.</li>
+    <li><strong>"left_of xpos dx"</strong>: The value that puts the right side of <em>object</em> at <em>xpos</em>.</li>
+    <li><strong>"right_of xpos dx"</strong>: The value that puts the left side of <em>object</em> at <em>xpos</em>.</li>
+</ul>
+
+<p> In each case, <em>dx</em> is evaluated and added to the coordinate; the sum is the final result.
+        </li>
+        <li><span class="parameter">y</span>
+            <span class="types"><span class="type">DSL_Number</span>, <a class="type" href="http://www.lua.org/manual/5.1/manual.html#5.4">string</a> or <span class="type">nil</span></span>
+         As per <em>x</em>. The corresponding choices are <strong>"center"</strong>,
+ <strong>"from_bottom"</strong>, <strong>"from_bottom_align"</strong>, <strong>"above"</strong>, and <strong>"below"</strong>, with the obvious changes.
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+</dl>
+
+
+</div> <!-- id="content" -->
+</div> <!-- id="main" -->
+<div id="about">
+<i>generated by <a href="http://github.com/stevedonovan/LDoc">LDoc 1.4.0</a></i>
+</div> <!-- id="about" -->
+</div> <!-- id="container" -->
+</body>
+</html>
