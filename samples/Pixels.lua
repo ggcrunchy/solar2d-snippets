@@ -37,11 +37,12 @@ local sqrt = math.sqrt
 
 -- Modules --
 local checkbox = require("corona_ui.widgets.checkbox")
+local circle = require("iterator_ops.grid.circle")
 local cubic_spline = require("spline_ops.cubic")
-local grid_iterators = require("iterator_ops.grid")
 local integrators = require("tektite_core.number.integrators")
 local quaternion = require("numeric_types.quaternion")
 local timers = require("corona_utils.timers")
+local triangle = require("iterator_ops.grid.triangle")
 
 -- Corona globals --
 local display = display
@@ -230,7 +231,7 @@ function Scene:show (event)
 			-- Lay out pixels until we run out or fill the (in bounds) triangle.
 			nused = 0
 
-			for row, left, right in grid_iterators.TriangleIter(x1, y1, x2, y2, x3, y3) do
+			for row, left, right in triangle.TriangleIter(x1, y1, x2, y2, x3, y3) do
 				left = row <= NRows and max(left, 1) or right + 1
 
 				local x = (left - 1) * PixelWidth
@@ -320,13 +321,13 @@ function Scene:show (event)
 				local y, uy, uyr, zpart = CenterY - Radius * PixelHeight, 1, Radius, 0
 				local yy = light_y - Radius -- ??
 
-				for iy, w in grid_iterators.CircleSpans(Radius, PixelWidth) do
-					local ux, ydot, y2 = -w * dx, uy * yy, yy * yy
+				for _, w in circle.CircleSpans(Radius, PixelWidth) do
+					local ux, ydot, y2 = -w * dx, uy * yy, yy^2
 					local xx = light_x - ux * Radius
 
-					for x = -w, w, PixelWidth do
+					for offset = -w, w do
 						if GetPixel() then
-							pixel.x, pixel.y = CenterX + x, y
+							pixel.x, pixel.y = CenterX + offset * PixelWidth, y
 
 							local uz = sqrt(max(zpart - ux^2, 0))
 							local zz = light_z - Radius * uz
@@ -340,7 +341,7 @@ function Scene:show (event)
 					end
 
 					y, uy, yy = y + PixelHeight, uy - dy, yy + 1 -- ??
-					zpart = 1 - uy * uy
+					zpart = 1 - uy^2
 				end
 			end
 
