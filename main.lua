@@ -25,9 +25,17 @@
 
 -- Initialization --
 require("corona_boilerplate.init")
-
+---[[
 -- Modules --
 local scenes = require("corona_utils.scenes")
 
 -- Kick off the app.
 scenes.GoToScene{ name = "scene.Intro" }
+--]]
+--[[
+local editable_patterns = require("corona_ui.patterns.editable")
+
+local aa = editable_patterns.Editable(display.getCurrentStage(), { text = "BLARGH222" })
+
+aa.x, aa.y = display.contentCenterX, display.contentCenterY
+--]]

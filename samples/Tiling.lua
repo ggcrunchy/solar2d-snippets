@@ -31,14 +31,14 @@ local yield = coroutine.yield
 
 -- Modules --
 local array_index = require("tektite_core.array.index")
+local bresenham = require("iterator_ops.grid")
 local ca = require("s3_utils.fill.cellular_automata")
 local circle = require("s3_utils.fill.circle")
 local curves = require("tektite_core.number.curves")
 local divide = require("tektite_core.number.divide")
 local flow = require("coroutine_ops.flow")
-local grid_iterators = require("iterator_ops.grid")
 local ms = require("corona_mask.marching_squares")
-local sheet = require("corona_ui.utils.sheet")
+local sheet = require("corona_utils.sheet")
 local timers = require("corona_utils.timers")
 local transitions = require("corona_utils.transitions")
 
@@ -252,7 +252,7 @@ function A (tiles, op)
 				local c1, r1 = TileCoords(x + x1 * rx, y + y1 * ry)
 				local c2, r2 = TileCoords(x + x2 * rx, y + y2 * ry)
 
-				for col, row in grid_iterators.LineIter(c1, r1, c2, r2) do
+				for col, row in bresenham.LineIter(c1, r1, c2, r2) do
 					Mark_Add(tiles, col, row, op)
 				end
 			end
