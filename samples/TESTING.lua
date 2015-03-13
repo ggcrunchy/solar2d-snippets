@@ -43,6 +43,13 @@ function Scene:show (e)
 local ldsl = require("corona_ui.utils.layout_dsl")
 print(ldsl.EvalPos("from_right -22", 60))
 	-- Add some test for tektite_core.index.interval, tektite_base_classes.Container.Sequence
+--[[
+local editable_patterns = require("corona_ui.patterns.editable")
+
+local aa = editable_patterns.Editable(display.getCurrentStage(), { text = "BLARGH222" })
+
+aa.x, aa.y = display.contentCenterX, display.contentCenterY
+--]]
 end
 
 Scene:addEventListener("show")
