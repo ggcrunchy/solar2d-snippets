@@ -85,12 +85,12 @@ local ColorParams = {
 
 --
 local function RandomComp ()
-	return random(20, 255) / 255
+	return .08 + random() * .92
 end
 
 --
 local function SetColor (color)
-	color.r, color.g, color.b = RandomComp (), RandomComp (), RandomComp ()
+	color.r, color.g, color.b = RandomComp(), RandomComp(), RandomComp()
 end
 
 -- --
@@ -104,7 +104,13 @@ local function NewAngle (index)
 		local prev = Angles[index - 1]
 		local kp, kt = .1 + random() * .15, .2 + (random() - .5) * .1
 
-		phi, theta = (prev.x + kp * phi) % (2 * pi), prev.y + kt * theta
+		phi, theta = prev.x + kp * phi, (prev.y + kt * theta) % (2 * pi)
+
+		if theta > pi then
+			phi, theta = phi + pi, 2 * pi - theta
+		end
+
+		phi = phi % (2 * pi)
 	end
 
 	return phi, theta
@@ -130,7 +136,7 @@ end
 local LightParams = {
 	t = 1,
 
-	onComplete = function(light)
+	onComplete = function()
 		local prev, cur = Angles[1]
 		local q1 = prev.q
 
@@ -236,7 +242,7 @@ function Scene:show (event)
 
 				local x = (left - 1) * PixelWidth
 
-				for col = left, min(right, NCols) do
+				for _ = left, min(right, NCols) do
 					if GetPixel() then
 						pixel.x, pixel.y = x, y
 
