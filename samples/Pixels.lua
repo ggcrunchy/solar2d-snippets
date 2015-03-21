@@ -40,6 +40,7 @@ local checkbox = require("corona_ui.widgets.checkbox")
 local circle = require("iterator_ops.grid.circle")
 local cubic_spline = require("spline_ops.cubic")
 local integrators = require("tektite_core.number.integrators")
+local ipairs_iters = require("iterator_ops.ipairs")
 local quaternion = require("numeric_types.quaternion")
 local timers = require("corona_utils.timers")
 local triangle = require("iterator_ops.grid.triangle")
@@ -122,10 +123,9 @@ local function NewQuat (index)
 	local x = 2 * (random() - .5)
 	local y = 2 * (random() - .5) * sqrt(max(0, 1 - x^2))
 	local z = (random() < .5 and -1 or 1) * sqrt(max(0, 1 - x^2 - y^2))
-	local theta = (pi / 6 + random() * pi / 3) * (random() < .5 and -1 or 1)
-	local stheta = sin(theta)
+	local theta = (pi / 6 + random() * pi / 6) * (random() < .5 and -1 or 1)
 
-	quat.x, quat.y, quat.z, quat.w = stheta * x, stheta * y, stheta * z, cos(theta)
+	quaternion.FromAxisAngle(quat, theta, x, y, z)
 
 	if index > 1 then
 		quaternion.Multiply(quat, quat, Angles[index - 1].q)
@@ -158,6 +158,9 @@ local LightParams = {
 
 -- --
 local Length, Poly = cubic_spline.LineIntegrand()
+
+-- --
+local TrailCount = 8
 
 --
 function Scene:show (event)
@@ -263,13 +266,21 @@ function Scene:show (event)
 				local dlight = self.light
 
 				if not dlight then
-					dlight = display.newCircle(0, 0, 15)
+					self.trail = {}
 
-					dlight:setStrokeColor(1, 1, 1, .25)
+					for i = 0, TrailCount do
+						local circle = display.newCircle(0, 0, 15)
 
-					dlight.strokeWidth, dlight.t = 3, 1
+						circle:setStrokeColor(1, 1, 1, .25)
 
-					self.light = dlight
+						circle.strokeWidth = 3
+
+						if i > 0 then
+							self.trail[i], circle.alpha = circle, (TrailCount - i + 1) / (TrailCount + 1)
+						else
+							self.light, dlight, circle.t = circle, circle, 1
+						end
+					end
 
 					for i, angle in ipairs(Angles) do
 						angle.x, angle.y = NewAngle(i)
@@ -294,31 +305,40 @@ function Scene:show (event)
 				end
 
 				--
-				local light_x, light_y, light_z
+				local t = dlight.t
 
 				if use_quats then
-					v.x, v.y, v.z, v.w = 0, 0, 1, 0
+					for in_trail, circle in ipairs_iters.IpairsThenItem(self.trail, dlight) do
+						v.x, v.y, v.z, v.w = 0, 0, 1, 0
 
-					quaternion.SquadQ4(rotq, Angles[1].q, Angles[2].q, Angles[3].q, Angles[4].q, dlight.t)
-					quaternion.Multiply(v, quaternion.Multiply(v, rotq, v), quaternion.Conjugate(conj, rotq))
+						quaternion.SquadQ4(rotq, Angles[1].q, Angles[2].q, Angles[3].q, Angles[4].q, in_trail and circle.alpha * t or t)
+						quaternion.Multiply(v, quaternion.Multiply(v, rotq, v), quaternion.Conjugate(conj, rotq))
 
-					light_x, light_y, light_z = v.x, v.y, v.z
+						circle.m_x, circle.m_y, circle.m_z = v.x, v.y, v.z
+					end
 
 				--
 				else
-					local phi, theta = cubic_spline.GetPosition_Array("catmull_rom", Angles, dlight.t)
-					local cphi, sphi = cos(phi), sin(phi)
-					local ctheta, stheta = cos(theta), sin(theta)
+					for in_trail, circle in ipairs_iters.IpairsThenItem(self.trail, dlight) do
+						local phi, theta = cubic_spline.GetPosition_Array("catmull_rom", Angles, in_trail and circle.alpha * t or t)
+						local cphi, sphi = cos(phi), sin(phi)
+						local ctheta, stheta = cos(theta), sin(theta)
 
-					light_x, light_y, light_z = stheta * cphi, stheta * sphi, ctheta
+						circle.m_x, circle.m_y, circle.m_z = stheta * cphi, stheta * sphi, ctheta
+					end
 				end
 
-				light_x, light_y, light_z = light_x * 35, light_y * 35, light_z * 35
-
 				--
-				self[light_z < 0 and "back" or "front"]:insert(dlight)
+				local light_x, light_y, light_z
 
-				dlight.x, dlight.y = CenterX + 1.1 * PixelWidth * light_x, CenterY - 1.1 * PixelHeight * light_y
+				for _, circle in ipairs_iters.IpairsThenItem(self.trail, dlight) do
+					light_x, light_y, light_z = circle.m_x * 35, circle.m_y * 35, circle.m_z * 35
+
+					--
+					self[light_z < 0 and "back" or "front"]:insert(circle)
+
+					circle.x, circle.y = CenterX + 1.1 * PixelWidth * light_x, CenterY - 1.1 * PixelHeight * light_y
+				end
 
 				--
 				-- TODO: LOTS can be forward differenced still...
@@ -371,7 +391,7 @@ function Scene:show (event)
 		-- TODO: Do something else, e.g. with fatter pixels, for a while until this is complete in the background?
 		-- Maybe have this take a break when not taxed?
 		-- Another idea is to gauge the time taken by this and try to adapt, then loop inside the callback
-		local area_sum = NCols * NRows + ceil(3.5 * Radius * Radius + 1)
+		local area_sum = NCols * NRows + ceil(3.5 * Radius^2 + 1)
 
 		self.allocate_pixels = timers.RepeatEx(function()
 			--
@@ -406,6 +426,10 @@ function Scene:hide (event)
 
 		display.remove(self.light)
 
+		for i = 1, #(self.trail or "") do
+			self.trail[i]:removeSelf()
+		end
+
 		self.groups:removeSelf()
 		self.text:removeSelf()
 		self.use_quaternions:removeSelf()
@@ -416,6 +440,7 @@ function Scene:hide (event)
 		self.light = nil
 		self.igroup = nil
 		self.render = nil
+		self.trail = nil
 		self.allocate_pixels = nil
 	end
 end
