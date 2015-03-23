@@ -82,8 +82,6 @@ local Names = {
 	"Editor"
 }
 
--- TODO: Show descriptions in a marquee...
-
 -- --
 local DescriptionsDB = "Descriptions.sqlite3"
 
@@ -111,23 +109,12 @@ local function ScrollText ()
 end
 
 --
-local function GetDescription (db, name)
-	local desc
-
-	for _, entry in db:urows([[SELECT * FROM descriptions WHERE m_NAME = ']] .. name .. [[']]) do
-		desc = entry
-	end
-
-	return desc
-end
-
---
 local function SetCurrent (current, index)
 	current.text = "Current: " .. strings.SplitIntoWords(Names[index], "case_switch")
 
 	if index ~= current.m_id and file.Exists(DescriptionsDB) then
 		local db = sqlite3.open(file.PathForFile(DescriptionsDB))
-		local text = GetDescription(db, "samples." .. Names[index])
+		local text = scenes.GetDescription(db, "samples." .. Names[index])
 
 		MarqueeText.text = text and text .. " " or ""
 
@@ -157,16 +144,9 @@ local Params = {
 		button.Button_XY(view, 120, 75, 200, 50, ReturnToChoices, "Go Back")
 
 		if OnSimulator then
-			local db, name = sqlite3.open(file.PathForFile(DescriptionsDB)), composer.getSceneName("current")
-			local scene = composer.getScene(name)
-			local desc = scene.m_description
+			local db = sqlite3.open(file.PathForFile(DescriptionsDB))
 
-			if scene and desc and desc ~= GetDescription(db, name) then
-				db:exec([[
-					CREATE TABLE IF NOT EXISTS descriptions (m_NAME VARCHAR, m_DESCRIPTION VARCHAR);
-					INSERT OR REPLACE INTO descriptions VALUES(']] .. name .. [[', ']] .. desc .. [[');
-				]])
-			end
+			scenes.UpdateDescription(db, "m_description")
 
 			db:close()
 		end

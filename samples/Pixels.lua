@@ -308,10 +308,10 @@ function Scene:show (event)
 				local t = dlight.t
 
 				if use_quats then
-					for in_trail, circle in ipairs_iters.IpairsThenItem(self.trail, dlight) do
+					for _, circle in ipairs_iters.IpairsThenItem(self.trail, dlight) do
 						v.x, v.y, v.z, v.w = 0, 0, 1, 0
 
-						quaternion.SquadQ4(rotq, Angles[1].q, Angles[2].q, Angles[3].q, Angles[4].q, in_trail and circle.alpha * t or t)
+						quaternion.SquadQ4(rotq, Angles[1].q, Angles[2].q, Angles[3].q, Angles[4].q, circle.alpha * t)
 						quaternion.Multiply(v, quaternion.Multiply(v, rotq, v), quaternion.Conjugate(conj, rotq))
 
 						circle.m_x, circle.m_y, circle.m_z = v.x, v.y, v.z
@@ -319,8 +319,8 @@ function Scene:show (event)
 
 				--
 				else
-					for in_trail, circle in ipairs_iters.IpairsThenItem(self.trail, dlight) do
-						local phi, theta = cubic_spline.GetPosition_Array("catmull_rom", Angles, in_trail and circle.alpha * t or t)
+					for _, circle in ipairs_iters.IpairsThenItem(self.trail, dlight) do
+						local phi, theta = cubic_spline.GetPosition_Array("catmull_rom", Angles, circle.alpha * t)
 						local cphi, sphi = cos(phi), sin(phi)
 						local ctheta, stheta = cos(theta), sin(theta)
 
