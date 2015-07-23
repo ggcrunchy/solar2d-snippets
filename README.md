@@ -3,33 +3,40 @@ corona-sdk-snippets
 
 Installation: git clone --recursive https://github.com/ggcrunchy/corona-sdk-snippets.git
 
-Various bits and pieces, written either as components of a game or out of mere curiosity.
+Various bits and pieces. Some of these are components of a separately-developed game (often the same code, courtesy of submodules). Other things were tests that took on a life of their own. Still others were mere curiosity.
 
-After the intro, select a sample from the listbox in the upper left corner and hit "Launch".
+Some snippets have since graduated into programs of their own.
 
-Many samples have a short explanation, shown in the marquee at the bottom. I'll try to improve these
-as time goes on.
+**HOW-TO**
+
+After the intro, choose a sample from the listbox in the upper left corner. Many samples have a short explanation, shown in the marquee at the bottom, which I'll try to improve upon as time goes on. Hit "Launch" to start the sample.
+You can leave a sample and return to the choices menu with the "Go Back" button or, depending upon the platform, the appropriate "Back" key or button.
+
+**ABOUT**
 
 Most of the demos right now are just automatic. In "Nodes", the boxes may be dragged around, lines may be
 dragged between the nodes, and the links that result may then be broken. A few samples provide widgets that
 allow for changing some setting or other. In "Timers", much of the output goes to the console, and what's
-happening is probably less than obvious to someone not actually reading the code itself to see the flow.
-"ColoredCorners" and "Seams" are legitimate tools and could probably constitute an app or two on their own.
+happening is probably less than obvious to someone not actually reading the code itself to see the flow (I
+might just evict this one).
 
-"Game" compromises some bits excerpted from a game in progress (well, at some point it was, anyhow :( ). The
-"player" is the white dot, who can be controlled in several ways: with the buttons in the bottom left, by
-double-tapping a spot on the map, or using the cursor keys (in the simulator)... and some input devices, at
-least on Android. A button also appears when you're over a warp or switch, in order to use those. Currently,
-I've only added a maze generator to go with the switch.
+"Game" comprises some bits excerpted from a game in progress (well, more or less!). The "player" is the white
+dot, who can be controlled in several ways: with the buttons in the bottom left; by double-tapping a spot on
+the map; using the cursor keys (in the simulator or desktop builds); through your favorite input device. A
+button also appears when you're over a warp or switch, in order to use those; this can be done by clicking it
+or pressing the space key (other devices pending). At the moment, I've only added a maze generator to go with
+the switch.
 
 Also, you can set some debug stuff in the Options screen, from the main menu, as well as wipe any persisent
 state, namely any levels you've saved in the editor.
 
-"Editor" is likewise part of an editor for the same game. There is a lot going on, and I haven't documented
-much. Maybe later I'll describe how to use it. :P (It is not pretty; I'm attempting at least somewhat of a
-redesign, at present.) If by some chance you puzzle it out, you can hit "Test" to try the level out (at a
-minimum, a starting cell must be assigned in the "Player" view). Erroneous levels will be reported before
-you launch, via the console / message box. (Well, one hopes; the machinery is all there for it, anyhow.)
+"Editor" is likewise part of an editor for the same game. There is a lot going on, very little of it documented
+(an unwelcome task, to say the least). Maybe later I'll describe how to use it. :P (It is not pretty; there is
+much I would like to redesign.) If by some chance you puzzle it out, you can hit "Test" to try the level out; at
+a bare minimum, a starting cell must have been assigned in the "Player" view. Erroneous levels will be reported
+before you launch, via the console / message box. (Well, one hopes! The machinery is all there for it, anyhow.)
+
+Apologies for any broken samples. Lately I've only been able to attend to this sporadically. The submodule-heavy approach also obviously introduces its own maintenance problems.
 
 Fonts are from [DaFont](http://www.DaFont.com)
 
