@@ -39,8 +39,8 @@ return {
 	-- Coming From: Testing --
 	coming_from_testing = "Editor",
 
-	-- Default Values --
-	default_values = "quick_test",
+	-- Default: Return-To --
+	default_return_to = "quick_test",
 
 	-- Leave Effect --
 	leave_effect = "crossFade",
@@ -48,8 +48,8 @@ return {
 	-- Level List --
 	level_list = require("game.LevelsList"),
 
-	-- Normal Values --
-	normal_values = { return_to = "scene.Choices", wait_to_end = 3000 },
+	-- Normal: Return-To --
+	normal_return_to = "scene.Choices",
 
 	-- On Cleanup --
 	on_cleanup = game_loop.Cleanup,
@@ -60,9 +60,12 @@ return {
 	-- On Init --
 	on_init = game_loop.ExtendWinEvent,
 
-	-- Quick Test Values --
-	quick_test_values = { return_to = "scene.Title", wait_to_end = 500 },
+	-- Quick Test: Return-To --
+	quick_test_return_to = "scene.Title",
 
-	-- Testing Values --
-	testing_values = { return_to = "s3_editor.scene.Map", wait_to_end = 500 },
+	-- Testing: Return-To --
+	testing_return_to = "s3_editor.scene.Map",
+
+	-- Wait To End --
+	wait_to_end = 1000,
 }

@@ -31,7 +31,7 @@ local random = math.random
 -- Modules --
 local colored_corners = require("image_fx.colored_corners")
 local hash_ops = require("hash_ops")
-local ms = require("corona_mask.marching_squares")
+--local ms = require("corona_mask.marching_squares")
 
 -- Corona globals --
 local display = display

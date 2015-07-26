@@ -7,7 +7,6 @@ settings =
 
 	androidPermissions =
 	{
-		"android.permission.INTERNET"
 	},
 
 	orientation =

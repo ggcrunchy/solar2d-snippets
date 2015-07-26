@@ -31,7 +31,7 @@ local yield = coroutine.yield
 
 -- Modules --
 local array_index = require("tektite_core.array.index")
-local bresenham = require("iterator_ops.grid")
+local bresenham = require("iterator_ops.grid.bresenham")
 local ca = require("s3_utils.fill.cellular_automata")
 local circle = require("s3_utils.fill.circle")
 local curves = require("tektite_core.number.curves")

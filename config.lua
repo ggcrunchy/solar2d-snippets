@@ -1,3 +1,5 @@
+--- Project configuration.
+
 --
 -- Permission is hereby granted, free of charge, to any person obtaining
 -- a copy of this software and associated documentation files (the
@@ -20,3 +22,13 @@
 --
 -- [ MIT license: http://www.opensource.org/licenses/mit-license.php ]
 --
+
+application =
+{
+	content =
+	{
+		width = 480,
+		height = 800,
+		scale = "letterbox", -- zoom to fill screen, possibly cropping edges
+	},
+}

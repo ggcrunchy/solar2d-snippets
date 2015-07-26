@@ -229,7 +229,7 @@ end
 local DragTouch = touch.DragParentTouch()
  
 -- Builds a new state
-local function NewState (group, text)
+local function NewState (group, str)
 	local state = display.newRoundedRect(group, 0, 0, 100, 70, 12)
 
 	state:addEventListener("touch", DragTouch)
@@ -239,7 +239,7 @@ local function NewState (group, text)
 	state.anchorX, state.anchorY = 0, 0
 	state.strokeWidth = 2
 
-	local text = display.newText(group, text, 0,0, native.systemFont, 20)
+	local text = display.newText(group, str, 0,0, native.systemFont, 20)
 
 	text.anchorX, text.x = 0, 20
 	text.anchorY, text.y = 0, 10

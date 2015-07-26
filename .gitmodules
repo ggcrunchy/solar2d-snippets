@@ -61,3 +61,9 @@
 [submodule "s3_editor_views"]
 	path = s3_editor_views
 	url = https://github.com/ggcrunchy/s3_editor_views
+[submodule "corona_shader"]
+	path = corona_shader
+	url = https://github.com/ggcrunchy/corona_shader
+[submodule "corona_shader_glsl"]
+	path = corona_shader_glsl
+	url = https://github.com/ggcrunchy/corona_shader_glsl

@@ -55,6 +55,9 @@ if system.getInfo("platformName") == "Android" then
 	exit = native.requestExit
 end
 
+-- Install the shader building blocks.
+require("corona_shader_glsl.core").Register()
+
 -- Title scene --
 local Scene = composer.newScene()
 
@@ -76,7 +79,7 @@ local Names = {
 	"Superformulae",
 	"Swarm",
 	"Thoughts",
-	"Tiling",
+--	"Tiling", -- requires some maintenance :(
 	"Timers",
 	"Game",
 	"Editor"

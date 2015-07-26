@@ -37,7 +37,7 @@ local sqrt = math.sqrt
 -- Modules --
 local array_index = require("tektite_core.array.index")
 local hsv = require("corona_ui.utils.hsv")
-local simplex_noise = require("number_ops.simplex_noise")
+local simplex_noise = require("tektite_core.number.simplex_noise")
 local touch = require("corona_ui.utils.touch")
 
 -- Corona globals --
