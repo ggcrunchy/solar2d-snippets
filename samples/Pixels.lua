@@ -97,21 +97,19 @@ end
 -- --
 local Angles = { { q = {} }, { q = {} }, { q = {} }, { q = {} } }
 
+-- Frequently used angle --
+local TwoPi = 2 * pi
+
 --
 local function NewAngle (index)
-	local phi, theta = random() * 2 * pi, random() * pi
+	local phi, theta = random() * TwoPi, random() * pi
 
 	if index > 1 then
 		local prev = Angles[index - 1]
 		local kp, kt = .1 + random() * .15, .2 + (random() - .5) * .1
 
-		phi, theta = prev.x + kp * phi, (prev.y + kt * theta) % (2 * pi)
-
-		if theta > pi then
-			phi, theta = phi + pi, 2 * pi - theta
-		end
-
-		phi = phi % (2 * pi)
+		-- Angles may exceed 2 * pi, which allows for a natural interpolation.
+		phi, theta = prev.x + kp * phi, prev.y + kt * theta
 	end
 
 	return phi, theta
@@ -137,6 +135,7 @@ local LightParams = {
 	t = 1,
 
 	onComplete = function()
+		-- Evict the first (phi, theta) pair and quaternion. Move the remaining elements down.
 		local prev, cur = Angles[1]
 		local q1 = prev.q
 
@@ -146,6 +145,20 @@ local LightParams = {
 			prev.q, prev.x, prev.y, prev = cur.q, cur.x, cur.y, cur
 		end
 
+		-- Apply some correction to the three (phi, theta) pairs being kept, so that at least
+		-- the first (pre-interpolated) pair has values within [0, 2 * pi). N.B. In practice
+		-- this is unnecessary, but does keep some options open, e.g. the angles remain well
+		-- within the acceptable range for shader inputs.
+		local extra_phi, extra_theta = Angles[1].x > TwoPi and TwoPi or 0, Angles[1].y > TwoPi and TwoPi or 0
+
+		if extra_phi > 0 or extra_theta > 0 then
+			for i = 1, 3 do
+				Angles[i].x = Angles[i].x - extra_phi
+				Angles[i].y = Angles[i].y - extra_theta
+			end
+		end
+
+		-- Select a new angle and quaternion to replace the vacated final position.
 		cur.q, cur.x, cur.y = q1, NewAngle(4)
 
 		NewQuat(4)
@@ -200,7 +213,7 @@ function Scene:show (event)
 
 		-- Rotate three ellipse points and iterate the triangle formed by them, lighting up its
 		-- pixels. Ignore out-of-bounds columns and rows.
-		local pix, color, two_pi, rotq, conj, v = {}, { waiting = true }, 2 * pi, {}, {}, {}
+		local pix, color, rotq, conj, v = {}, { waiting = true }, {}, {}, {}
 		local nloaded, nused, nturns, pixel = 0, 0, 0
 
 		SetColor(color)
@@ -229,8 +242,8 @@ function Scene:show (event)
 			local r, g, b = color.r, color.g, color.b
 
 			--
-			local angle = event.time * two_pi / 3000
-			local a1, a2, a3 = angle + two_pi / 3, angle + 2 * two_pi / 3, angle + 2 * two_pi
+			local angle = event.time * TwoPi / 3000
+			local a1, a2, a3 = angle + TwoPi / 3, angle + 2 * TwoPi / 3, angle + 2 * TwoPi
 			local mx, my = NCols / 2, NRows / 2
 			local x1, y1 = mx + floor(cos(a1) * 20), my + floor(sin(a1) * 40)
 			local x2, y2 = mx + floor(cos(a2) * 25), my + floor(sin(a2) * 50)
@@ -260,9 +273,10 @@ function Scene:show (event)
 				y = y + PixelHeight
 			end
 
-			--
+			-- If there are still spare pixels, try to lay some out for the sphere, too.
 			if nused < nloaded then
-				--
+				-- On the first frame, create the trail and light, plus a first set of angles
+				-- and quaternions. The light begins in the "path completed" state.
 				local dlight = self.light
 
 				if not dlight then
@@ -289,7 +303,8 @@ function Scene:show (event)
 					end
 				end
 
-				--
+				-- Whenever the light finishes a path, calculate the time needed to complete
+				-- a new one, update any necessary state, then send it off again.
 				local use_quats = self.use_quaternions:IsChecked()
 
 				if dlight.t == 1 then
@@ -304,7 +319,8 @@ function Scene:show (event)
 					transition.to(dlight, LightParams)
 				end
 
-				--
+				-- When using quaternions, perform a squad interpolation and use the result
+				-- to orient an axis. Use this to place the light and trail on the sphere.
 				local t = dlight.t
 
 				if use_quats then
@@ -317,10 +333,21 @@ function Scene:show (event)
 						circle.m_x, circle.m_y, circle.m_z = v.x, v.y, v.z
 					end
 
-				--
+				-- Otherwise, interpolate the (phi, theta) pairs. The resulting phi and theta
+				-- may exceed the 2 * pi and pi ranges, respectively. The "corrected" values
+				-- are used to place the trail and light on the sphere.
 				else
 					for _, circle in ipairs_iters.IpairsThenItem(self.trail, dlight) do
 						local phi, theta = cubic_spline.GetPosition_Array("catmull_rom", Angles, circle.alpha * t)
+
+						theta = theta % TwoPi
+
+						if theta > pi then
+							phi, theta = phi + pi, TwoPi - theta
+						end
+
+						phi = phi % TwoPi
+
 						local cphi, sphi = cos(phi), sin(phi)
 						local ctheta, stheta = cos(theta), sin(theta)
 
@@ -328,23 +355,24 @@ function Scene:show (event)
 					end
 				end
 
-				--
+				-- Put the trail and light display objects in their positions, including
+				-- behind or in front of the sphere. The light is handled last so that its
+				-- values carry over into the next step.
 				local light_x, light_y, light_z
 
 				for _, circle in ipairs_iters.IpairsThenItem(self.trail, dlight) do
 					light_x, light_y, light_z = circle.m_x * 35, circle.m_y * 35, circle.m_z * 35
 
-					--
 					self[light_z < 0 and "back" or "front"]:insert(circle)
 
 					circle.x, circle.y = CenterX + 1.1 * PixelWidth * light_x, CenterY - 1.1 * PixelHeight * light_y
 				end
 
-				--
+				-- Apply lighting to the sphere.
 				-- TODO: LOTS can be forward differenced still...
 				-- Move ambient, diffuse into vars, add sliders... (fix equation too)
 				local dx, dy, dxr = 1 / (PixelWidth * Radius), 1 / Radius, 1 / PixelWidth
-				local y, uy, uyr, zpart = CenterY - Radius * PixelHeight, 1, Radius, 0
+				local y, uy, zpart = CenterY - Radius * PixelHeight, 1, 0
 				local yy = light_y - Radius -- ??
 
 				for _, w in circle.CircleSpans(Radius, PixelWidth) do
@@ -371,7 +399,7 @@ function Scene:show (event)
 				end
 			end
 
-			--
+			-- Stagger pixel allocations.
 			if nused < nloaded then
 				nturns = min(nturns + 1, 5)
 			else
