@@ -200,7 +200,7 @@ function Scene:show (event)
 
 		-- Rotate three ellipse points and iterate the triangle formed by them, lighting up its
 		-- pixels. Ignore out-of-bounds columns and rows.
-		local pix, color, two_pi, rotq, conj, v = {}, { waiting = true }, 2 * math.pi, {}, {}, {}
+		local pix, color, two_pi, rotq, conj, v = {}, { waiting = true }, 2 * pi, {}, {}, {}
 		local nloaded, nused, nturns, pixel = 0, 0, 0
 
 		SetColor(color)
