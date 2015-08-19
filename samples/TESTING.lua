@@ -190,6 +190,55 @@ if true then
 	Compare(matrix_mn.Mul(Q, R), M, "QR", "A")
 	Compare(Q, QQ, "Q", "QQ")
 	Compare(R, RR, "R", "RR")
+
+
+	-- x' = fx(x, y) = a0 + a1 * x + a2 * y + Sum(1, n)[alpha_i * phi(|| <x, y> - <x_i, y_i> ||)]
+	-- y' = fy(x, y) = b0 + b1 * x + b2 * y + Sum(1, n)[beta_i * ...]
+	-- phi(r) = r^2 * log(r)
+
+	-- Constraints
+	-- Sum(i, n)[alpha_i * x_i] = 0, ditto for y_i and 1 in lieu of x_i
+	-- Variants for beta_i
+
+	-- Px * a = X', Py * b = Y'
+
+
+	-- phi_ij = phi(r_ij), with r_ij = || <x_i, y_i> - <x_j, y_j> ||
+	-- [phi_11, phi_12, ..., phi_1n, 1, x_1, y_1][alpha_1] = [x_1']
+	-- [phi_21, phi_22, ..., phi_2n, 1, x_2, y_2][alpha_2] = [x_2']
+	-- [ ...									][  ...  ] = [ .. ]
+	-- [phi_n1, phi_n2, ..., phi_nm, 1, x_n, y_n][alpha_n] = [x_n']
+	-- [1,      1,      ..., 1,      0, 0,   0  ][  a0   ] = [ 0  ]
+	-- [x_1,    x_2,    ..., x_n,    0, 0,   0  ][  a1   ] = [ 0  ]
+	-- [y_1,    y_2,    ..., y_n,    0, 0,   0  ][  a2   ] = [ 0  ]
+	-- Likewise for y_i'
+
+	--[[
+		Accumulate:
+		#define ANCHOR_NUM
+		vec4 coeffs[ANCHOR_NUM]
+		vec2 accum_pos = tex2D(AccumSampler, uv)
+		float r
+		for i = 1, ANCHOR_NUM do
+			r = distance(uv - .5, coeff[i].xy) -- xy: anchor point pos
+			accum_pos += coeff[i].zw * r * r * log(r + 1e-10) -- zw: alpha, beta
+		end
+		return vec4(accum_pos, 0, 0)
+	]]
+
+	--[[
+		Warp:
+		vec4 aff_coeff_x, aff_coeff_y
+		vec2 accum_pos = tex2D(AccumSampler, uv)
+		vec2 cur_pos
+		cur_pos.x = accum_pos.x + aff_coeff_x.x * (aff_coeff_x.yzw * vec3(1, uv))
+		cur_pos.y = accum_pos.y + aff_coeff_y.x * (aff_coeff_y.yzw * vec3(1, uv))
+		return tex2D(Image, cur_pos)
+	]]
+
+	-- ^^^ x parameters = time, same?
+	-- Two images: Do one (1 - t), other at t, blend accordingly
+
 else
 	local ldsl = require("corona_ui.utils.layout_dsl")
 	print(ldsl.EvalPos("from_right -22", 60))
