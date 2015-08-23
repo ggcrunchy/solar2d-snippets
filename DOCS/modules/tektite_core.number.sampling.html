@@ -1,0 +1,721 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+<head>
+    <title>Snippets documentation</title>
+    <link rel="stylesheet" href="../ldoc.css" type="text/css" />
+</head>
+<body>
+
+<div id="container">
+
+<div id="product">
+	<div id="product_logo"></div>
+	<div id="product_name"><big><b></b></big></div>
+	<div id="product_description"></div>
+</div> <!-- id="product" -->
+
+
+<div id="main">
+
+
+<!-- Menu -->
+
+<div id="navigation">
+<br/>
+<h1>Corona SDK snippets</h1>
+
+<ul>
+  <li><a href="../api.html">Index</a></li>
+</ul>
+
+<h2>Contents</h2>
+<ul>
+<li><a href="#Functions">Functions</a></li>
+</ul>
+
+
+<h2>Modules</h2>
+<ul class="$(kind=='Topics' and '' or 'nowrap'">
+  <li><a href="../modules/annex.EnemyEvents.html">EnemyEvents</a></li>
+  <li><a href="../modules/bitwise_ops.bits.html">bits</a></li>
+  <li><a href="../modules/bitwise_ops.counts.html">counts</a></li>
+  <li><a href="../modules/bitwise_ops.log2.html">log2</a></li>
+  <li><a href="../modules/bitwise_ops.operators.html">operators</a></li>
+  <li><a href="../modules/bitwise_ops.powers_of_2.html">powers_of_2</a></li>
+  <li><a href="../modules/bitwise_ops.vector.html">vector</a></li>
+  <li><a href="../modules/config.Dots.html">Dots</a></li>
+  <li><a href="../modules/config.Editor.html">Editor</a></li>
+  <li><a href="../modules/config.EditorViews.html">EditorViews</a></li>
+  <li><a href="../modules/config.Enemies.html">Enemies</a></li>
+  <li><a href="../modules/config.EventBlocks.html">EventBlocks</a></li>
+  <li><a href="../modules/config.GameLoop.html">GameLoop</a></li>
+  <li><a href="../modules/config.GlobalEvents.html">GlobalEvents</a></li>
+  <li><a href="../modules/config.Persistence.html">Persistence</a></li>
+  <li><a href="../modules/config.html">config</a></li>
+  <li><a href="../modules/corona_boilerplate.FIXES.html">FIXES</a></li>
+  <li><a href="../modules/corona_boilerplate.game.loop.html">game.loop</a></li>
+  <li><a href="../modules/corona_boilerplate.html">corona_boilerplate</a></li>
+  <li><a href="../modules/corona_mask.marching_squares.html">marching_squares</a></li>
+  <li><a href="../modules/corona_mask.misc.html">misc</a></li>
+  <li><a href="../modules/corona_mask.partially_filled_rect.html">partially_filled_rect</a></li>
+  <li><a href="../modules/corona_mask.sheet.html">sheet</a></li>
+  <li><a href="../modules/corona_mask.utils.html">utils</a></li>
+  <li><a href="../modules/corona_shader.effect_props.html">effect_props</a></li>
+  <li><a href="../modules/corona_shader.encode.utils.html">encode.utils</a></li>
+  <li><a href="../modules/corona_shader.encode.vars.lattice10_open.html">encode.vars.lattice10_open</a></li>
+  <li><a href="../modules/corona_shader.encode.vars.lattice10_unit.html">encode.vars.lattice10_unit</a></li>
+  <li><a href="../modules/corona_shader.encode.vars.sint10_open.html">encode.vars.sint10_open</a></li>
+  <li><a href="../modules/corona_shader.encode.vars.uint10_open.html">encode.vars.uint10_open</a></li>
+  <li><a href="../modules/corona_shader.encode.vars.uint10_unit.html">encode.vars.uint10_unit</a></li>
+  <li><a href="../modules/corona_shader.encode.vars.uint5_pair_open.html">encode.vars.uint5_pair_open</a></li>
+  <li><a href="../modules/corona_shader.encode.vars.uint5_pair_unit.html">encode.vars.uint5_pair_unit</a></li>
+  <li><a href="../modules/corona_shader.encode.vars.uint5_quad.html">encode.vars.uint5_quad</a></li>
+  <li><a href="../modules/corona_shader.encode.vars.unit_open.html">encode.vars.unit_open</a></li>
+  <li><a href="../modules/corona_shader.encode.vars.unit_pair.html">encode.vars.unit_pair</a></li>
+  <li><a href="../modules/corona_shader.impl.ignore_list.html">impl.ignore_list</a></li>
+  <li><a href="../modules/corona_shader.impl.parser.html">impl.parser</a></li>
+  <li><a href="../modules/corona_shader.impl.patterns.html">impl.patterns</a></li>
+  <li><a href="../modules/corona_shader.loader.html">loader</a></li>
+  <li><a href="../modules/corona_shader.number.html">number</a></li>
+  <li><a href="../modules/corona_shader_glsl.constants.pi.html">constants.pi</a></li>
+  <li><a href="../modules/corona_shader_glsl.core.html">core</a></li>
+  <li><a href="../modules/corona_shader_glsl.functions.bump.html">functions.bump</a></li>
+  <li><a href="../modules/corona_shader_glsl.functions.decode_vars.html">functions.decode_vars</a></li>
+  <li><a href="../modules/corona_shader_glsl.functions.encode_colors.html">functions.encode_colors</a></li>
+  <li><a href="../modules/corona_shader_glsl.functions.neighbors.html">functions.neighbors</a></li>
+  <li><a href="../modules/corona_shader_glsl.functions.noise.iq.html">functions.noise.iq</a></li>
+  <li><a href="../modules/corona_shader_glsl.functions.noise.simplex.html">functions.noise.simplex</a></li>
+  <li><a href="../modules/corona_shader_glsl.functions.noise.worley.html">functions.noise.worley</a></li>
+  <li><a href="../modules/corona_shader_glsl.functions.sphere.html">functions.sphere</a></li>
+  <li><a href="../modules/corona_shader_glsl.functions.texels.html">functions.texels</a></li>
+  <li><a href="../modules/corona_ui.dialog_impl.data.html">dialog_impl.data</a></li>
+  <li><a href="../modules/corona_ui.dialog_impl.layout.html">dialog_impl.layout</a></li>
+  <li><a href="../modules/corona_ui.dialog_impl.methods.html">dialog_impl.methods</a></li>
+  <li><a href="../modules/corona_ui.dialog_impl.sections.html">dialog_impl.sections</a></li>
+  <li><a href="../modules/corona_ui.dialog_impl.utils.html">dialog_impl.utils</a></li>
+  <li><a href="../modules/corona_ui.patterns.audio.html">patterns.audio</a></li>
+  <li><a href="../modules/corona_ui.patterns.button.html">patterns.button</a></li>
+  <li><a href="../modules/corona_ui.patterns.editable.html">patterns.editable</a></li>
+  <li><a href="../modules/corona_ui.patterns.image.html">patterns.image</a></li>
+  <li><a href="../modules/corona_ui.patterns.net.html">patterns.net</a></li>
+  <li><a href="../modules/corona_ui.patterns.prompts.html">patterns.prompts</a></li>
+  <li><a href="../modules/corona_ui.patterns.table_view.html">patterns.table_view</a></li>
+  <li><a href="../modules/corona_ui.patterns.tabs.html">patterns.tabs</a></li>
+  <li><a href="../modules/corona_ui.patterns.video.html">patterns.video</a></li>
+  <li><a href="../modules/corona_ui.utils.color.html">utils.color</a></li>
+  <li><a href="../modules/corona_ui.utils.cursor.html">utils.cursor</a></li>
+  <li><a href="../modules/corona_ui.utils.hsv.html">utils.hsv</a></li>
+  <li><a href="../modules/corona_ui.utils.layout.html">utils.layout</a></li>
+  <li><a href="../modules/corona_ui.utils.layout_dsl.html">utils.layout_dsl</a></li>
+  <li><a href="../modules/corona_ui.utils.layout_strategies.html">utils.layout_strategies</a></li>
+  <li><a href="../modules/corona_ui.utils.lines.html">utils.lines</a></li>
+  <li><a href="../modules/corona_ui.utils.line_ex.html">utils.line_ex</a></li>
+  <li><a href="../modules/corona_ui.utils.skin.html">utils.skin</a></li>
+  <li><a href="../modules/corona_ui.utils.touch.html">utils.touch</a></li>
+  <li><a href="../modules/corona_ui.widgets.bitmap.html">widgets.bitmap</a></li>
+  <li><a href="../modules/corona_ui.widgets.button.html">widgets.button</a></li>
+  <li><a href="../modules/corona_ui.widgets.checkbox.html">widgets.checkbox</a></li>
+  <li><a href="../modules/corona_ui.widgets.color_picker.html">widgets.color_picker</a></li>
+  <li><a href="../modules/corona_ui.widgets.dialog.html">widgets.dialog</a></li>
+  <li><a href="../modules/corona_ui.widgets.grid.html">widgets.grid</a></li>
+  <li><a href="../modules/corona_ui.widgets.grid_1D.html">widgets.grid_1D</a></li>
+  <li><a href="../modules/corona_ui.widgets.keyboard.html">widgets.keyboard</a></li>
+  <li><a href="../modules/corona_ui.widgets.link_group.html">widgets.link_group</a></li>
+  <li><a href="../modules/corona_ui.widgets.marquee.html">widgets.marquee</a></li>
+  <li><a href="../modules/corona_utils.audio.html">audio</a></li>
+  <li><a href="../modules/corona_utils.capture.html">capture</a></li>
+  <li><a href="../modules/corona_utils.collision.html">collision</a></li>
+  <li><a href="../modules/corona_utils.data.html">data</a></li>
+  <li><a href="../modules/corona_utils.device.html">device</a></li>
+  <li><a href="../modules/corona_utils.file.html">file</a></li>
+  <li><a href="../modules/corona_utils.frames.html">frames</a></li>
+  <li><a href="../modules/corona_utils.persistence.html">persistence</a></li>
+  <li><a href="../modules/corona_utils.scenes.html">scenes</a></li>
+  <li><a href="../modules/corona_utils.sheet.html">sheet</a></li>
+  <li><a href="../modules/corona_utils.timers.html">timers</a></li>
+  <li><a href="../modules/corona_utils.transitions.html">transitions</a></li>
+  <li><a href="../modules/coroutine_ops.flow.html">flow</a></li>
+  <li><a href="../modules/coroutine_ops.flow_bodies.html">flow_bodies</a></li>
+  <li><a href="../modules/coroutine_ops.per_coroutine.html">per_coroutine</a></li>
+  <li><a href="../modules/coroutine_ops.wrapper.html">wrapper</a></li>
+  <li><a href="../modules/DEBUG.html">DEBUG</a></li>
+  <li><a href="../modules/game.LevelsList.html">LevelsList</a></li>
+  <li><a href="../modules/game.Player.html">Player</a></li>
+  <li><a href="../modules/hash_ops.html">hash_ops</a></li>
+  <li><a href="../modules/image_fx.colored_corners.html">colored_corners</a></li>
+  <li><a href="../modules/image_fx.cubic_mvc.html">cubic_mvc</a></li>
+  <li><a href="../modules/image_fx.poisson_mvc.html">poisson_mvc</a></li>
+  <li><a href="../modules/image_ops.energy.html">energy</a></li>
+  <li><a href="../modules/image_ops.huffman.html">huffman</a></li>
+  <li><a href="../modules/image_ops.jpeg.html">jpeg</a></li>
+  <li><a href="../modules/image_ops.png.html">png</a></li>
+  <li><a href="../modules/image_ops.png_encode.html">png_encode</a></li>
+  <li><a href="../modules/image_ops.utils.html">utils</a></li>
+  <li><a href="../modules/image_ops.zlib.html">zlib</a></li>
+  <li><a href="../modules/image_ops.zlib_lut.html">zlib_lut</a></li>
+  <li><a href="../modules/iterator_ops.args.html">args</a></li>
+  <li><a href="../modules/iterator_ops.coroutine.html">coroutine</a></li>
+  <li><a href="../modules/iterator_ops.grid.bresenham.html">grid.bresenham</a></li>
+  <li><a href="../modules/iterator_ops.grid.circle.html">grid.circle</a></li>
+  <li><a href="../modules/iterator_ops.grid.ellipse.html">grid.ellipse</a></li>
+  <li><a href="../modules/iterator_ops.grid.rect.html">grid.rect</a></li>
+  <li><a href="../modules/iterator_ops.grid.stencil.html">grid.stencil</a></li>
+  <li><a href="../modules/iterator_ops.grid.triangle.html">grid.triangle</a></li>
+  <li><a href="../modules/iterator_ops.ipairs.html">ipairs</a></li>
+  <li><a href="../modules/iterator_ops.utils.html">utils</a></li>
+  <li><a href="../modules/linear_algebra_ops.base.html">base</a></li>
+  <li><a href="../modules/linear_algebra_ops.cholesky.html">cholesky</a></li>
+  <li><a href="../modules/linear_algebra_ops.conjugate_gradient.html">conjugate_gradient</a></li>
+  <li><a href="../modules/linear_algebra_ops.qr.html">qr</a></li>
+  <li><a href="../modules/linear_algebra_ops.svd.html">svd</a></li>
+  <li><a href="../modules/main.html">main</a></li>
+  <li><a href="../modules/number_ops.poisson.html">poisson</a></li>
+  <li><a href="../modules/number_ops.scalloped_sector.html">scalloped_sector</a></li>
+  <li><a href="../modules/number_ops.summed_area.html">summed_area</a></li>
+  <li><a href="../modules/number_sequences.gray.html">gray</a></li>
+  <li><a href="../modules/number_sequences.hilbert.html">hilbert</a></li>
+  <li><a href="../modules/number_sequences.morton.html">morton</a></li>
+  <li><a href="../modules/number_sequences.mwc_rng.html">mwc_rng</a></li>
+  <li><a href="../modules/numeric_types.complex.html">complex</a></li>
+  <li><a href="../modules/numeric_types.matrix_mn.html">matrix_mn</a></li>
+  <li><a href="../modules/numeric_types.quaternion.html">quaternion</a></li>
+  <li><a href="../modules/numeric_types.tuple.html">tuple</a></li>
+  <li><a href="../modules/s3_editor.Augment.html">Augment</a></li>
+  <li><a href="../modules/s3_editor.Common.html">Common</a></li>
+  <li><a href="../modules/s3_editor.CommonUI.html">CommonUI</a></li>
+  <li><a href="../modules/s3_editor.Dialog.html">Dialog</a></li>
+  <li><a href="../modules/s3_editor.dialog_items.checkbox.html">dialog_items.checkbox</a></li>
+  <li><a href="../modules/s3_editor.dialog_items.misc.html">dialog_items.misc</a></li>
+  <li><a href="../modules/s3_editor.dialog_items.overlay.html">dialog_items.overlay</a></li>
+  <li><a href="../modules/s3_editor.dialog_items.slider.html">dialog_items.slider</a></li>
+  <li><a href="../modules/s3_editor.dialog_items.spinner.html">dialog_items.spinner</a></li>
+  <li><a href="../modules/s3_editor.dialog_items.table_view.html">dialog_items.table_view</a></li>
+  <li><a href="../modules/s3_editor.dialog_items.tabs.html">dialog_items.tabs</a></li>
+  <li><a href="../modules/s3_editor.Events.html">Events</a></li>
+  <li><a href="../modules/s3_editor.Grid.html">Grid</a></li>
+  <li><a href="../modules/s3_editor.GridViews.html">GridViews</a></li>
+  <li><a href="../modules/s3_editor.Help.html">Help</a></li>
+  <li><a href="../modules/s3_editor.ListViews.html">ListViews</a></li>
+  <li><a href="../modules/s3_editor.Ops.html">Ops</a></li>
+  <li><a href="../modules/s3_editor.overlay.ChooseAudio.html">overlay.ChooseAudio</a></li>
+  <li><a href="../modules/s3_editor.overlay.Help.html">overlay.Help</a></li>
+  <li><a href="../modules/s3_editor.overlay.Link.html">overlay.Link</a></li>
+  <li><a href="../modules/s3_editor.scene.Map.html">scene.Map</a></li>
+  <li><a href="../modules/s3_editor.scene.Setup.html">scene.Setup</a></li>
+  <li><a href="../modules/s3_editor_views.audio.html">audio</a></li>
+  <li><a href="../modules/s3_editor_views.background.html">background</a></li>
+  <li><a href="../modules/s3_editor_views.dots.html">dots</a></li>
+  <li><a href="../modules/s3_editor_views.event_blocks.html">event_blocks</a></li>
+  <li><a href="../modules/s3_editor_views.global_events.html">global_events</a></li>
+  <li><a href="../modules/s3_editor_views.link.html">link</a></li>
+  <li><a href="../modules/s3_editor_views.player.html">player</a></li>
+  <li><a href="../modules/s3_editor_views.positions.html">positions</a></li>
+  <li><a href="../modules/s3_editor_views.settings.html">settings</a></li>
+  <li><a href="../modules/s3_editor_views.spawn_points.html">spawn_points</a></li>
+  <li><a href="../modules/s3_editor_views.state.html">state</a></li>
+  <li><a href="../modules/s3_editor_views.tiles.html">tiles</a></li>
+  <li><a href="../modules/s3_editor_views.timeline.html">timeline</a></li>
+  <li><a href="../modules/s3_editor_views.triggers.html">triggers</a></li>
+  <li><a href="../modules/s3_objects.dot.switch.html">dot.switch</a></li>
+  <li><a href="../modules/s3_objects.dot.warp.html">dot.warp</a></li>
+  <li><a href="../modules/s3_objects.event_block.kernel.stipple.html">event_block.kernel.stipple</a></li>
+  <li><a href="../modules/s3_objects.event_block.kernel.unfurl.html">event_block.kernel.unfurl</a></li>
+  <li><a href="../modules/s3_objects.event_block.maze.html">event_block.maze</a></li>
+  <li><a href="../modules/s3_utils.ai.html">ai</a></li>
+  <li><a href="../modules/s3_utils.controls.html">controls</a></li>
+  <li><a href="../modules/s3_utils.dots.html">dots</a></li>
+  <li><a href="../modules/s3_utils.effect.balloons.html">effect.balloons</a></li>
+  <li><a href="../modules/s3_utils.effect.fillers.html">effect.fillers</a></li>
+  <li><a href="../modules/s3_utils.effect.glow.html">effect.glow</a></li>
+  <li><a href="../modules/s3_utils.effect.markers.html">effect.markers</a></li>
+  <li><a href="../modules/s3_utils.effect.shadows.html">effect.shadows</a></li>
+  <li><a href="../modules/s3_utils.effect.snowfall.html">effect.snowfall</a></li>
+  <li><a href="../modules/s3_utils.effect.stars.html">effect.stars</a></li>
+  <li><a href="../modules/s3_utils.effect.stash.html">effect.stash</a></li>
+  <li><a href="../modules/s3_utils.enemies.html">enemies</a></li>
+  <li><a href="../modules/s3_utils.event_blocks.html">event_blocks</a></li>
+  <li><a href="../modules/s3_utils.fill.cellular_automata.html">fill.cellular_automata</a></li>
+  <li><a href="../modules/s3_utils.fill.circle.html">fill.circle</a></li>
+  <li><a href="../modules/s3_utils.fill.flood.html">fill.flood</a></li>
+  <li><a href="../modules/s3_utils.fx.html">fx</a></li>
+  <li><a href="../modules/s3_utils.game_loop.html">game_loop</a></li>
+  <li><a href="../modules/s3_utils.global_events.html">global_events</a></li>
+  <li><a href="../modules/s3_utils.hud.action.html">hud.action</a></li>
+  <li><a href="../modules/s3_utils.hud.move.html">hud.move</a></li>
+  <li><a href="../modules/s3_utils.kernel.grid4x4.html">kernel.grid4x4</a></li>
+  <li><a href="../modules/s3_utils.movement.html">movement</a></li>
+  <li><a href="../modules/s3_utils.music.html">music</a></li>
+  <li><a href="../modules/s3_utils.pathing.html">pathing</a></li>
+  <li><a href="../modules/s3_utils.path_utils.html">path_utils</a></li>
+  <li><a href="../modules/s3_utils.positions.html">positions</a></li>
+  <li><a href="../modules/s3_utils.scrolling.html">scrolling</a></li>
+  <li><a href="../modules/s3_utils.shapes.html">shapes</a></li>
+  <li><a href="../modules/s3_utils.sound.html">sound</a></li>
+  <li><a href="../modules/s3_utils.tile_flags.html">tile_flags</a></li>
+  <li><a href="../modules/s3_utils.tile_maps.html">tile_maps</a></li>
+  <li><a href="../modules/s3_utils.triggers.html">triggers</a></li>
+  <li><a href="../modules/samples.Delaunay.html">Delaunay</a></li>
+  <li><a href="../modules/samples.Endless.html">Endless</a></li>
+  <li><a href="../modules/samples.Fire.html">Fire</a></li>
+  <li><a href="../modules/samples.Hilbert.html">Hilbert</a></li>
+  <li><a href="../modules/samples.HilbertMixer.html">HilbertMixer</a></li>
+  <li><a href="../modules/samples.Hop.html">Hop</a></li>
+  <li><a href="../modules/samples.Nodes.html">Nodes</a></li>
+  <li><a href="../modules/samples.OrbitsAndLattices.html">OrbitsAndLattices</a></li>
+  <li><a href="../modules/samples.Pixels.html">Pixels</a></li>
+  <li><a href="../modules/samples.Plasma.html">Plasma</a></li>
+  <li><a href="../modules/samples.SlowMo.html">SlowMo</a></li>
+  <li><a href="../modules/samples.Snowfall.html">Snowfall</a></li>
+  <li><a href="../modules/samples.Superformulae.html">Superformulae</a></li>
+  <li><a href="../modules/samples.Swarm.html">Swarm</a></li>
+  <li><a href="../modules/samples.TESTING.html">TESTING</a></li>
+  <li><a href="../modules/samples.Thoughts.html">Thoughts</a></li>
+  <li><a href="../modules/samples.Tiling.html">Tiling</a></li>
+  <li><a href="../modules/samples.Timers.html">Timers</a></li>
+  <li><a href="../modules/scene.Choices.html">Choices</a></li>
+  <li><a href="../modules/scene.Intro.html">Intro</a></li>
+  <li><a href="../modules/scene.Level.html">Level</a></li>
+  <li><a href="../modules/scene.Options.html">Options</a></li>
+  <li><a href="../modules/spline_ops.arc_length.html">arc_length</a></li>
+  <li><a href="../modules/spline_ops.bezier.html">bezier</a></li>
+  <li><a href="../modules/spline_ops.cubic.html">cubic</a></li>
+  <li><a href="../modules/Sequence.html">Sequence</a></li>
+  <li><a href="../modules/StableArray.html">StableArray</a></li>
+  <li><a href="../modules/Interpolator.html">Interpolator</a></li>
+  <li><a href="../modules/Links.html">Links</a></li>
+  <li><a href="../modules/Tags.html">Tags</a></li>
+  <li><a href="../modules/SectionGroup.html">SectionGroup</a></li>
+  <li><a href="../modules/TaskQueue.html">TaskQueue</a></li>
+  <li><a href="../modules/Timeline.html">Timeline</a></li>
+  <li><a href="../modules/Timer.html">Timer</a></li>
+  <li><a href="../modules/VarFamily.html">VarFamily</a></li>
+  <li><a href="../modules/tektite_base_classes.VarFamilyEx.Annex.html">VarFamilyEx.Annex</a></li>
+  <li><a href="../modules/BoolVars.html">BoolVars</a></li>
+  <li><a href="../modules/NumVars.html">NumVars</a></li>
+  <li><a href="../modules/RawVars.html">RawVars</a></li>
+  <li><a href="../modules/TimerVars.html">TimerVars</a></li>
+  <li><a href="../modules/tektite_core.array.collect.html">array.collect</a></li>
+  <li><a href="../modules/tektite_core.array.embedded_free_list.html">array.embedded_free_list</a></li>
+  <li><a href="../modules/tektite_core.array.funcs.html">array.funcs</a></li>
+  <li><a href="../modules/tektite_core.array.grid.html">array.grid</a></li>
+  <li><a href="../modules/tektite_core.array.index.html">array.index</a></li>
+  <li><a href="../modules/tektite_core.array.interval.html">array.interval</a></li>
+  <li><a href="../modules/tektite_core.array.match_slot_id.html">array.match_slot_id</a></li>
+  <li><a href="../modules/tektite_core.array.predicates.html">array.predicates</a></li>
+  <li><a href="../modules/tektite_core.array.ring_buffer.html">array.ring_buffer</a></li>
+  <li><a href="../modules/tektite_core.array.wipe.html">array.wipe</a></li>
+  <li><a href="../modules/tektite_core.bind.html">bind</a></li>
+  <li><a href="../modules/tektite_core.class.html">class</a></li>
+  <li><a href="../modules/tektite_core.errors.html">errors</a></li>
+  <li><a href="../modules/tektite_core.exception.html">exception</a></li>
+  <li><a href="../modules/tektite_core.geom2d.mesh.html">geom2d.mesh</a></li>
+  <li><a href="../modules/tektite_core.geom2d.predicates.html">geom2d.predicates</a></li>
+  <li><a href="../modules/tektite_core.number.curves.html">number.curves</a></li>
+  <li><a href="../modules/tektite_core.number.divide.html">number.divide</a></li>
+  <li><a href="../modules/tektite_core.number.integrators.html">number.integrators</a></li>
+  <li><a href="../modules/tektite_core.number.length.html">number.length</a></li>
+  <li><a href="../modules/tektite_core.number.range.html">number.range</a></li>
+  <li><a href="../modules/tektite_core.number.robust.html">number.robust</a></li>
+  <li><strong>number.sampling</strong></li>
+  <li><a href="../modules/tektite_core.number.simplex_noise.html">number.simplex_noise</a></li>
+  <li><a href="../modules/tektite_core.number.to_string.html">number.to_string</a></li>
+  <li><a href="../modules/tektite_core.require_ex.html">require_ex</a></li>
+  <li><a href="../modules/tektite_core.sqlite_db.html">sqlite_db</a></li>
+  <li><a href="../modules/tektite_core.table.adaptive.html">table.adaptive</a></li>
+  <li><a href="../modules/tektite_core.table.funcs.html">table.funcs</a></li>
+  <li><a href="../modules/tektite_core.table.lazy.html">table.lazy</a></li>
+  <li><a href="../modules/tektite_core.table.predicates.html">table.predicates</a></li>
+  <li><a href="../modules/tektite_core.table.proxy.html">table.proxy</a></li>
+  <li><a href="../modules/tektite_core.table.schema.html">table.schema</a></li>
+  <li><a href="../modules/tektite_core.var.bound_args.html">var.bound_args</a></li>
+  <li><a href="../modules/tektite_core.var.cache.html">var.cache</a></li>
+  <li><a href="../modules/tektite_core.var.dump.html">var.dump</a></li>
+  <li><a href="../modules/tektite_core.var.predicates.html">var.predicates</a></li>
+  <li><a href="../modules/tektite_core.var.strings.html">var.strings</a></li>
+  <li><a href="../modules/tiles.TreeBG.html">TreeBG</a></li>
+  <li><a href="../modules/utils.Resource.html">Resource</a></li>
+</ul>
+
+</div>
+
+<div id="content">
+
+<h1>Module <code>tektite_core.number.sampling</code></h1>
+<p>Some utilities for dealing with sampled functions.</p>
+<p> Any such function is stored as a discrete set of samples, termed <strong>SampleSet</strong> in this
+ module. Each sample has <strong>x</strong> and <strong>y</strong> fields, with <strong>x</strong> being the parameter at which
+ the function was sampled and <strong>y</strong> its result.</p>
+
+<p> Samples are ordered by increasing <strong>x</strong>. Any parameters not of <strong>number</strong> type must
+ therefore define <strong>__lt</strong> (and possibly <strong>__le</strong>) metamethods. Sample lookup similarly
+ introduces the need for arithmetic metamethods, q.v. <a href="../modules/tektite_core.number.sampling.html#Lookup">Lookup</a> and <a href="../modules/tektite_core.number.sampling.html#Lookup_01">Lookup_01</a>.</p>
+
+<p> Apart from storing and retrieving them, the module ignores the <strong>y</strong> values.</p>
+
+
+<h2><a href="#Functions">Functions</a></h2>
+<table class="function_list">
+	<tr>
+	<td class="name" nowrap><a href="#AddSample">AddSample (samples, x, y[, start])</a></td>
+	<td class="summary">Adds a new sample to the set, if <em>x</em> is new; otherwise, updates its corresponding sample.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#GetCount">GetCount (samples)</a></td>
+	<td class="summary">Accessor.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Init">Init ([samples])</a></td>
+	<td class="summary">Prepares a table for use by the rest of the routines in this module, i.e.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Lookup">Lookup (samples, result, x[, start])</a></td>
+	<td class="summary">Resolves a parameter to a pair of samples.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Lookup_01">Lookup_01 (samples, result, x[, start])</a></td>
+	<td class="summary">Variant of <a href="../modules/tektite_core.number.sampling.html#Lookup">Lookup</a> parametrized over a unit interval.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#ToBin">ToBin (samples, x[, start])</a></td>
+	<td class="summary">Finds the samples parametrized by <em>x</em>, failing if <em>x</em> is out-of-bounds.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#ToBin_Clamped">ToBin_Clamped (samples, x[, start])</a></td>
+	<td class="summary">Variant of <a href="../modules/tektite_core.number.sampling.html#ToBin">ToBin</a> that clamps out-of-bounds parameters.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#UpdateSample">UpdateSample (samples, index, x, y)</a></td>
+	<td class="summary">Updates the <strong>x</strong> and <strong>y</strong> values of an existing sample.</td>
+	</tr>
+</table>
+
+<br/>
+<br/>
+
+
+    <h2><a name="Functions"></a>Functions</h2>
+    <dl class="function">
+    <dt>
+    <a name = "AddSample"></a>
+    <strong>AddSample (samples, x, y[, start])</strong>
+    </dt>
+    <dd>
+    Adds a new sample to the set, if <em>x</em> is new; otherwise, updates its corresponding sample.
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">samples</span>
+            <span class="types"><span class="type">SampleSet</span></span>
+
+
+
+        </li>
+        <li><span class="parameter">x</span>
+            <span class="types"><span class="type">Param</span></span>
+         Parameter to assign.</p>
+
+<p> If this is not of type <strong>number</strong>, note that an <strong>__eq</strong> metamethod is not necessary to
+ establish <em>x</em>'s uniqueness.
+        </li>
+        <li><span class="parameter">y</span>
+         Value to assign.
+        </li>
+        <li><span class="parameter">start</span>
+            <span class="types"><span class="type">int</span></span>
+         As per <a href="../modules/tektite_core.number.sampling.html#Lookup">Lookup</a>.
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "GetCount"></a>
+    <strong>GetCount (samples)</strong>
+    </dt>
+    <dd>
+    Accessor.
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">samples</span>
+            <span class="types"><span class="type">SampleSet</span></span>
+
+
+
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">uint</span></span>
+        Sample count.
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Init"></a>
+    <strong>Init ([samples])</strong>
+    </dt>
+    <dd>
+    Prepares a table for use by the rest of the routines in this module, i.e.  afterward
+ <em>samples</em> will be a valid <strong>SampleSet</strong>.</p>
+
+<p> If <em>samples</em> is already a <strong>SampleSet</strong>, it will be reset.
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">samples</span>
+            <span class="types"><a class="type" href="http://www.lua.org/manual/5.1/manual.html#5.5">table</a> or <span class="type">SampleSet</span></span>
+         Set to prepare. If absent, a table is created.
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">SampleSet</span></span>
+        <em>samples</em>.
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Lookup"></a>
+    <strong>Lookup (samples, result, x[, start])</strong>
+    </dt>
+    <dd>
+    Resolves a parameter to a pair of samples.
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">samples</span>
+            <span class="types"><span class="type">SampleSet</span></span>
+         Sample set to search.
+        </li>
+        <li><span class="parameter">result</span>
+            <span class="types"><a class="type" href="http://www.lua.org/manual/5.1/manual.html#5.5">table</a></span>
+         A parameter is resolved to two consecutive samples <em>s1</em> and <em>s2</em> (when only
+ one sample is available, it is duplicated). These are used to populate the table.</p>
+
+<p> Fields <strong>x</strong> and <strong>y</strong> from <em>s1</em> are assigned to <em>result</em>'s <strong>x1</strong> and <strong>y1</strong> fields;
+ <strong>x2</strong> and <strong>y2</strong> are similarly populated from <em>s2</em>.</p>
+
+<p> The <strong>bin</strong> field is set to the sample pair's index. For instance, bin #<em>i</em> corresponds
+ to samples #<em>i</em> and #<em>i</em> + 1; a set with <em>n</em> samples has <em>n</em> - 1 bins. The <strong>frac</strong> field,
+ meanwhile, is a number &isin; [0, 1], describing <em>x</em>'s relative position in the bin.
+ It is computed as <code>(x - s1.x) / (s2.x - s1.x)</code>.</p>
+
+<p> If <em>x</em> is less than the first sample's <strong>x</strong>, <strong>bin</strong> and <strong>frac</strong> are clamped to 1 and 0,
+ respectively. If <em>x</em> is greater than the last sample's <strong>x</strong>, they are clamped to <em>n</em> - 1
+ and 1, respectively. In the first case, the <strong>out_of_bounds</strong> field is set to <strong>"&lt;"</strong>,
+ in the second to **">"<strong>, and otherwise **false</strong>.
+        </li>
+        <li><span class="parameter">x</span>
+            <span class="types"><span class="type">Param</span></span>
+         Parameter to resolve.
+        </li>
+        <li><span class="parameter">start</span>
+            <span class="types"><span class="type">int</span></span>
+         If provided, the index of a sample / bin. If possible, search begins at
+ this position. This might improve search speed if the correct bin is nearby.
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Lookup_01"></a>
+    <strong>Lookup_01 (samples, result, x[, start])</strong>
+    </dt>
+    <dd>
+    Variant of <a href="../modules/tektite_core.number.sampling.html#Lookup">Lookup</a> parametrized over a unit interval.
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">samples</span>
+            <span class="types"><span class="type">SampleSet</span></span>
+         Sample set to search.
+        </li>
+        <li><span class="parameter">result</span>
+            <span class="types"><a class="type" href="http://www.lua.org/manual/5.1/manual.html#5.5">table</a></span>
+         As per <a href="../modules/tektite_core.number.sampling.html#Lookup">Lookup</a>.
+        </li>
+        <li><span class="parameter">x</span>
+            <span class="types"><span class="type">Param</span></span>
+         As per <a href="../modules/tektite_core.number.sampling.html#Lookup">Lookup</a>, but the parameter space is remapped to [0, 1]. In
+ particular, an <em>x</em> of 0 or 1 corresponds to the first or last sample, respectively.</p>
+
+<p> The <strong>x1</strong> and <strong>x2</strong> in <em>result</em> will have their regular values.</p>
+
+<p> Values are remapped as <code>x = first + (last - first) * x</code>, where <em>first</em> and <em>last</em> are the
+ <strong>x</strong> values in the first and last sample.
+        </li>
+        <li><span class="parameter">start</span>
+            <span class="types"><span class="type">int</span></span>
+         As per <a href="../modules/tektite_core.number.sampling.html#Lookup">Lookup</a>.
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "ToBin"></a>
+    <strong>ToBin (samples, x[, start])</strong>
+    </dt>
+    <dd>
+    Finds the samples parametrized by <em>x</em>, failing if <em>x</em> is out-of-bounds.
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">samples</span>
+            <span class="types"><span class="type">SampleSet</span></span>
+         Sample set to search.
+        </li>
+        <li><span class="parameter">x</span>
+            <span class="types"><span class="type">Param</span></span>
+         Parameter to resolve.
+        </li>
+        <li><span class="parameter">start</span>
+            <span class="types"><span class="type">int</span></span>
+         As per <a href="../modules/tektite_core.number.sampling.html#Lookup">Lookup</a>.
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+        <li>
+           <span class="types"><span class="type">uint</span> or <span class="type">boolean</span></span>
+        If <em>x</em> was out-of-bounds, <strong>false</strong>. Otherwise, the index <em>i</em> of
+ the bin belonging to samples #<em>i</em> and #<em>i</em> + 1.</li>
+        <li>
+           <span class="types">optional <span class="type">number</span></span>
+        If <em>x</em> was within bounds, its relative position in its bin, as per
+ <em>result</em>'s <strong>frac</strong> field in <a href="../modules/tektite_core.number.sampling.html#Lookup">Lookup</a>.</li>
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "ToBin_Clamped"></a>
+    <strong>ToBin_Clamped (samples, x[, start])</strong>
+    </dt>
+    <dd>
+    Variant of <a href="../modules/tektite_core.number.sampling.html#ToBin">ToBin</a> that clamps out-of-bounds parameters. </p>
+
+<p> In effect, this is a more minimalist version of <a href="../modules/tektite_core.number.sampling.html#Lookup">Lookup</a>.
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">samples</span>
+            <span class="types"><span class="type">SampleSet</span></span>
+         Sample set to search.
+        </li>
+        <li><span class="parameter">x</span>
+            <span class="types"><span class="type">Param</span></span>
+         Parameter to resolve.
+        </li>
+        <li><span class="parameter">start</span>
+            <span class="types"><span class="type">int</span></span>
+         As per <a href="../modules/tektite_core.number.sampling.html#Lookup">Lookup</a>.
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+        <li>
+           <span class="types"><span class="type">uint</span></span>
+        As per <em>result</em>'s <strong>bin</strong> field, in <a href="../modules/tektite_core.number.sampling.html#Lookup">Lookup</a>...</li>
+        <li>
+           <span class="types"><span class="type">number</span></span>
+        ...and <strong>frac</strong>...</li>
+        <li>
+           <span class="types"><a class="type" href="http://www.lua.org/manual/5.1/manual.html#5.4">string</a> or <span class="type">boolean</span></span>
+        ...and <strong>out_of_bounds</strong>.</li>
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "UpdateSample"></a>
+    <strong>UpdateSample (samples, index, x, y)</strong>
+    </dt>
+    <dd>
+    Updates the <strong>x</strong> and <strong>y</strong> values of an existing sample.
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">samples</span>
+            <span class="types"><span class="type">SampleSet</span></span>
+
+
+
+        </li>
+        <li><span class="parameter">index</span>
+            <span class="types"><span class="type">uint</span></span>
+         Sample index, &isin; [1, <em>n</em>], where <em>n</em> is the sample count, cf. <a href="../modules/tektite_core.number.sampling.html#GetCount">GetCount</a>.
+        </li>
+        <li><span class="parameter">x</span>
+            <span class="types"><span class="type">Param</span></span>
+         Parameter to assign.</p>
+
+<p> A sample can be updated if <code>samples[index - 1].x &lt; x and x &lt; samples[index + 1].x</code> is
+ true. In this context, <em>samples</em>[0] and _samples<em>[</em>n_ + 1] can be interpreted to have
+ values -&inf; and +&inf;, respectively.
+        </li>
+        <li><span class="parameter">y</span>
+         Value to assign.
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+        <li>
+           <span class="types"><span class="type">boolean</span></span>
+        Could the sample be updated?</li>
+        <li>
+           <span class="types">optional <span class="type">Param</span></span>
+        If the sample was updated, its previous <strong>x</strong> value...</li>
+        <li>
+        ...and <strong>y</strong> value.</li>
+    </ol>
+
+
+    <h3>See also:</h3>
+    <ul>
+         <a href="../modules/tektite_core.number.sampling.html#AddSample">AddSample</a>
+    </ul>
+
+
+</dd>
+</dl>
+
+
+</div> <!-- id="content" -->
+</div> <!-- id="main" -->
+<div id="about">
+<i>generated by <a href="http://github.com/stevedonovan/LDoc">LDoc 1.4.0</a></i>
+</div> <!-- id="about" -->
+</div> <!-- id="container" -->
+</body>
+</html>

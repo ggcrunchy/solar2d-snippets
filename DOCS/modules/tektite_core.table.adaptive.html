@@ -39,6 +39,7 @@
 <h2>Modules</h2>
 <ul class="$(kind=='Topics' and '' or 'nowrap'">
   <li><a href="../modules/annex.EnemyEvents.html">EnemyEvents</a></li>
+  <li><a href="../modules/bitwise_ops.bits.html">bits</a></li>
   <li><a href="../modules/bitwise_ops.counts.html">counts</a></li>
   <li><a href="../modules/bitwise_ops.log2.html">log2</a></li>
   <li><a href="../modules/bitwise_ops.operators.html">operators</a></li>
@@ -52,10 +53,43 @@
   <li><a href="../modules/config.GameLoop.html">GameLoop</a></li>
   <li><a href="../modules/config.GlobalEvents.html">GlobalEvents</a></li>
   <li><a href="../modules/config.Persistence.html">Persistence</a></li>
+  <li><a href="../modules/config.html">config</a></li>
   <li><a href="../modules/corona_boilerplate.FIXES.html">FIXES</a></li>
   <li><a href="../modules/corona_boilerplate.game.loop.html">game.loop</a></li>
   <li><a href="../modules/corona_boilerplate.html">corona_boilerplate</a></li>
   <li><a href="../modules/corona_mask.marching_squares.html">marching_squares</a></li>
+  <li><a href="../modules/corona_mask.misc.html">misc</a></li>
+  <li><a href="../modules/corona_mask.partially_filled_rect.html">partially_filled_rect</a></li>
+  <li><a href="../modules/corona_mask.sheet.html">sheet</a></li>
+  <li><a href="../modules/corona_mask.utils.html">utils</a></li>
+  <li><a href="../modules/corona_shader.effect_props.html">effect_props</a></li>
+  <li><a href="../modules/corona_shader.encode.utils.html">encode.utils</a></li>
+  <li><a href="../modules/corona_shader.encode.vars.lattice10_open.html">encode.vars.lattice10_open</a></li>
+  <li><a href="../modules/corona_shader.encode.vars.lattice10_unit.html">encode.vars.lattice10_unit</a></li>
+  <li><a href="../modules/corona_shader.encode.vars.sint10_open.html">encode.vars.sint10_open</a></li>
+  <li><a href="../modules/corona_shader.encode.vars.uint10_open.html">encode.vars.uint10_open</a></li>
+  <li><a href="../modules/corona_shader.encode.vars.uint10_unit.html">encode.vars.uint10_unit</a></li>
+  <li><a href="../modules/corona_shader.encode.vars.uint5_pair_open.html">encode.vars.uint5_pair_open</a></li>
+  <li><a href="../modules/corona_shader.encode.vars.uint5_pair_unit.html">encode.vars.uint5_pair_unit</a></li>
+  <li><a href="../modules/corona_shader.encode.vars.uint5_quad.html">encode.vars.uint5_quad</a></li>
+  <li><a href="../modules/corona_shader.encode.vars.unit_open.html">encode.vars.unit_open</a></li>
+  <li><a href="../modules/corona_shader.encode.vars.unit_pair.html">encode.vars.unit_pair</a></li>
+  <li><a href="../modules/corona_shader.impl.ignore_list.html">impl.ignore_list</a></li>
+  <li><a href="../modules/corona_shader.impl.parser.html">impl.parser</a></li>
+  <li><a href="../modules/corona_shader.impl.patterns.html">impl.patterns</a></li>
+  <li><a href="../modules/corona_shader.loader.html">loader</a></li>
+  <li><a href="../modules/corona_shader.number.html">number</a></li>
+  <li><a href="../modules/corona_shader_glsl.constants.pi.html">constants.pi</a></li>
+  <li><a href="../modules/corona_shader_glsl.core.html">core</a></li>
+  <li><a href="../modules/corona_shader_glsl.functions.bump.html">functions.bump</a></li>
+  <li><a href="../modules/corona_shader_glsl.functions.decode_vars.html">functions.decode_vars</a></li>
+  <li><a href="../modules/corona_shader_glsl.functions.encode_colors.html">functions.encode_colors</a></li>
+  <li><a href="../modules/corona_shader_glsl.functions.neighbors.html">functions.neighbors</a></li>
+  <li><a href="../modules/corona_shader_glsl.functions.noise.iq.html">functions.noise.iq</a></li>
+  <li><a href="../modules/corona_shader_glsl.functions.noise.simplex.html">functions.noise.simplex</a></li>
+  <li><a href="../modules/corona_shader_glsl.functions.noise.worley.html">functions.noise.worley</a></li>
+  <li><a href="../modules/corona_shader_glsl.functions.sphere.html">functions.sphere</a></li>
+  <li><a href="../modules/corona_shader_glsl.functions.texels.html">functions.texels</a></li>
   <li><a href="../modules/corona_ui.dialog_impl.data.html">dialog_impl.data</a></li>
   <li><a href="../modules/corona_ui.dialog_impl.layout.html">dialog_impl.layout</a></li>
   <li><a href="../modules/corona_ui.dialog_impl.methods.html">dialog_impl.methods</a></li>
@@ -71,12 +105,13 @@
   <li><a href="../modules/corona_ui.patterns.tabs.html">patterns.tabs</a></li>
   <li><a href="../modules/corona_ui.patterns.video.html">patterns.video</a></li>
   <li><a href="../modules/corona_ui.utils.color.html">utils.color</a></li>
+  <li><a href="../modules/corona_ui.utils.cursor.html">utils.cursor</a></li>
   <li><a href="../modules/corona_ui.utils.hsv.html">utils.hsv</a></li>
   <li><a href="../modules/corona_ui.utils.layout.html">utils.layout</a></li>
   <li><a href="../modules/corona_ui.utils.layout_dsl.html">utils.layout_dsl</a></li>
+  <li><a href="../modules/corona_ui.utils.layout_strategies.html">utils.layout_strategies</a></li>
   <li><a href="../modules/corona_ui.utils.lines.html">utils.lines</a></li>
   <li><a href="../modules/corona_ui.utils.line_ex.html">utils.line_ex</a></li>
-  <li><a href="../modules/corona_ui.utils.sheet.html">utils.sheet</a></li>
   <li><a href="../modules/corona_ui.utils.skin.html">utils.skin</a></li>
   <li><a href="../modules/corona_ui.utils.touch.html">utils.touch</a></li>
   <li><a href="../modules/corona_ui.widgets.bitmap.html">widgets.bitmap</a></li>
@@ -88,14 +123,17 @@
   <li><a href="../modules/corona_ui.widgets.grid_1D.html">widgets.grid_1D</a></li>
   <li><a href="../modules/corona_ui.widgets.keyboard.html">widgets.keyboard</a></li>
   <li><a href="../modules/corona_ui.widgets.link_group.html">widgets.link_group</a></li>
+  <li><a href="../modules/corona_ui.widgets.marquee.html">widgets.marquee</a></li>
   <li><a href="../modules/corona_utils.audio.html">audio</a></li>
+  <li><a href="../modules/corona_utils.capture.html">capture</a></li>
   <li><a href="../modules/corona_utils.collision.html">collision</a></li>
+  <li><a href="../modules/corona_utils.data.html">data</a></li>
   <li><a href="../modules/corona_utils.device.html">device</a></li>
   <li><a href="../modules/corona_utils.file.html">file</a></li>
   <li><a href="../modules/corona_utils.frames.html">frames</a></li>
-  <li><a href="../modules/corona_utils.mask.html">mask</a></li>
   <li><a href="../modules/corona_utils.persistence.html">persistence</a></li>
   <li><a href="../modules/corona_utils.scenes.html">scenes</a></li>
+  <li><a href="../modules/corona_utils.sheet.html">sheet</a></li>
   <li><a href="../modules/corona_utils.timers.html">timers</a></li>
   <li><a href="../modules/corona_utils.transitions.html">transitions</a></li>
   <li><a href="../modules/coroutine_ops.flow.html">flow</a></li>
@@ -119,12 +157,18 @@
   <li><a href="../modules/image_ops.zlib_lut.html">zlib_lut</a></li>
   <li><a href="../modules/iterator_ops.args.html">args</a></li>
   <li><a href="../modules/iterator_ops.coroutine.html">coroutine</a></li>
-  <li><a href="../modules/iterator_ops.grid.html">grid</a></li>
+  <li><a href="../modules/iterator_ops.grid.bresenham.html">grid.bresenham</a></li>
+  <li><a href="../modules/iterator_ops.grid.circle.html">grid.circle</a></li>
+  <li><a href="../modules/iterator_ops.grid.ellipse.html">grid.ellipse</a></li>
+  <li><a href="../modules/iterator_ops.grid.rect.html">grid.rect</a></li>
+  <li><a href="../modules/iterator_ops.grid.stencil.html">grid.stencil</a></li>
+  <li><a href="../modules/iterator_ops.grid.triangle.html">grid.triangle</a></li>
   <li><a href="../modules/iterator_ops.ipairs.html">ipairs</a></li>
   <li><a href="../modules/iterator_ops.utils.html">utils</a></li>
   <li><a href="../modules/linear_algebra_ops.base.html">base</a></li>
   <li><a href="../modules/linear_algebra_ops.cholesky.html">cholesky</a></li>
   <li><a href="../modules/linear_algebra_ops.conjugate_gradient.html">conjugate_gradient</a></li>
+  <li><a href="../modules/linear_algebra_ops.qr.html">qr</a></li>
   <li><a href="../modules/linear_algebra_ops.svd.html">svd</a></li>
   <li><a href="../modules/main.html">main</a></li>
   <li><a href="../modules/number_ops.poisson.html">poisson</a></li>
@@ -135,6 +179,7 @@
   <li><a href="../modules/number_sequences.morton.html">morton</a></li>
   <li><a href="../modules/number_sequences.mwc_rng.html">mwc_rng</a></li>
   <li><a href="../modules/numeric_types.complex.html">complex</a></li>
+  <li><a href="../modules/numeric_types.matrix_mn.html">matrix_mn</a></li>
   <li><a href="../modules/numeric_types.quaternion.html">quaternion</a></li>
   <li><a href="../modules/numeric_types.tuple.html">tuple</a></li>
   <li><a href="../modules/s3_editor.Augment.html">Augment</a></li>
@@ -143,6 +188,7 @@
   <li><a href="../modules/s3_editor.Dialog.html">Dialog</a></li>
   <li><a href="../modules/s3_editor.dialog_items.checkbox.html">dialog_items.checkbox</a></li>
   <li><a href="../modules/s3_editor.dialog_items.misc.html">dialog_items.misc</a></li>
+  <li><a href="../modules/s3_editor.dialog_items.overlay.html">dialog_items.overlay</a></li>
   <li><a href="../modules/s3_editor.dialog_items.slider.html">dialog_items.slider</a></li>
   <li><a href="../modules/s3_editor.dialog_items.spinner.html">dialog_items.spinner</a></li>
   <li><a href="../modules/s3_editor.dialog_items.table_view.html">dialog_items.table_view</a></li>
@@ -151,7 +197,9 @@
   <li><a href="../modules/s3_editor.Grid.html">Grid</a></li>
   <li><a href="../modules/s3_editor.GridViews.html">GridViews</a></li>
   <li><a href="../modules/s3_editor.Help.html">Help</a></li>
+  <li><a href="../modules/s3_editor.ListViews.html">ListViews</a></li>
   <li><a href="../modules/s3_editor.Ops.html">Ops</a></li>
+  <li><a href="../modules/s3_editor.overlay.ChooseAudio.html">overlay.ChooseAudio</a></li>
   <li><a href="../modules/s3_editor.overlay.Help.html">overlay.Help</a></li>
   <li><a href="../modules/s3_editor.overlay.Link.html">overlay.Link</a></li>
   <li><a href="../modules/s3_editor.scene.Map.html">scene.Map</a></li>
@@ -172,6 +220,8 @@
   <li><a href="../modules/s3_editor_views.triggers.html">triggers</a></li>
   <li><a href="../modules/s3_objects.dot.switch.html">dot.switch</a></li>
   <li><a href="../modules/s3_objects.dot.warp.html">dot.warp</a></li>
+  <li><a href="../modules/s3_objects.event_block.kernel.stipple.html">event_block.kernel.stipple</a></li>
+  <li><a href="../modules/s3_objects.event_block.kernel.unfurl.html">event_block.kernel.unfurl</a></li>
   <li><a href="../modules/s3_objects.event_block.maze.html">event_block.maze</a></li>
   <li><a href="../modules/s3_utils.ai.html">ai</a></li>
   <li><a href="../modules/s3_utils.controls.html">controls</a></li>
@@ -188,11 +238,13 @@
   <li><a href="../modules/s3_utils.event_blocks.html">event_blocks</a></li>
   <li><a href="../modules/s3_utils.fill.cellular_automata.html">fill.cellular_automata</a></li>
   <li><a href="../modules/s3_utils.fill.circle.html">fill.circle</a></li>
+  <li><a href="../modules/s3_utils.fill.flood.html">fill.flood</a></li>
   <li><a href="../modules/s3_utils.fx.html">fx</a></li>
   <li><a href="../modules/s3_utils.game_loop.html">game_loop</a></li>
   <li><a href="../modules/s3_utils.global_events.html">global_events</a></li>
   <li><a href="../modules/s3_utils.hud.action.html">hud.action</a></li>
   <li><a href="../modules/s3_utils.hud.move.html">hud.move</a></li>
+  <li><a href="../modules/s3_utils.kernel.grid4x4.html">kernel.grid4x4</a></li>
   <li><a href="../modules/s3_utils.movement.html">movement</a></li>
   <li><a href="../modules/s3_utils.music.html">music</a></li>
   <li><a href="../modules/s3_utils.pathing.html">pathing</a></li>
@@ -247,6 +299,7 @@
   <li><a href="../modules/tektite_core.array.collect.html">array.collect</a></li>
   <li><a href="../modules/tektite_core.array.embedded_free_list.html">array.embedded_free_list</a></li>
   <li><a href="../modules/tektite_core.array.funcs.html">array.funcs</a></li>
+  <li><a href="../modules/tektite_core.array.grid.html">array.grid</a></li>
   <li><a href="../modules/tektite_core.array.index.html">array.index</a></li>
   <li><a href="../modules/tektite_core.array.interval.html">array.interval</a></li>
   <li><a href="../modules/tektite_core.array.match_slot_id.html">array.match_slot_id</a></li>
@@ -265,14 +318,17 @@
   <li><a href="../modules/tektite_core.number.length.html">number.length</a></li>
   <li><a href="../modules/tektite_core.number.range.html">number.range</a></li>
   <li><a href="../modules/tektite_core.number.robust.html">number.robust</a></li>
+  <li><a href="../modules/tektite_core.number.sampling.html">number.sampling</a></li>
   <li><a href="../modules/tektite_core.number.simplex_noise.html">number.simplex_noise</a></li>
   <li><a href="../modules/tektite_core.number.to_string.html">number.to_string</a></li>
   <li><a href="../modules/tektite_core.require_ex.html">require_ex</a></li>
+  <li><a href="../modules/tektite_core.sqlite_db.html">sqlite_db</a></li>
   <li><strong>table.adaptive</strong></li>
   <li><a href="../modules/tektite_core.table.funcs.html">table.funcs</a></li>
   <li><a href="../modules/tektite_core.table.lazy.html">table.lazy</a></li>
   <li><a href="../modules/tektite_core.table.predicates.html">table.predicates</a></li>
   <li><a href="../modules/tektite_core.table.proxy.html">table.proxy</a></li>
+  <li><a href="../modules/tektite_core.table.schema.html">table.schema</a></li>
   <li><a href="../modules/tektite_core.var.bound_args.html">var.bound_args</a></li>
   <li><a href="../modules/tektite_core.var.cache.html">var.cache</a></li>
   <li><a href="../modules/tektite_core.var.dump.html">var.dump</a></li>
@@ -287,30 +343,39 @@
 <div id="content">
 
 <h1>Module <code>tektite_core.table.adaptive</code></h1>
-<p>Functionality for table members which may adapt among three forms:</p>
+<p>Functionality for containers which may adapt among three forms:</p>
 
 <p> <ul>
  <li> <strong>nil</strong>.</p>
 <p> (0 elements)</li>
  <li> A non-table value. (1 element)</li>
- <li> A table of non-table elements. (0 or more elements)</li>
+ <li> A table of arbitrary values. (0 or more elements)</li>
  </ul></p>
 
-<p> Members are assumed to be either an array or set (potential or actual), but not both.</p>
+<p> Containers are assumed to be either an array or set (potential or actual), but not both.
+ These fall under the types <strong>AdaptiveArray</strong> and <strong>AdaptiveSet</strong>, respectively.</p>
 
 <p> The operations in the module are intended to smooth away these details, allowing callers
- to pretend the member in question is in table form.</p>
+ to pretend the container in question is in table form.</p>
 
 
 <h2><a href="#Functions">Functions</a></h2>
 <table class="function_list">
 	<tr>
-	<td class="name" nowrap><a href="#AddToSet">AddToSet (t, k, v)</a></td>
-	<td class="summary">Adds an element to <em>t</em>&#91;<em>k</em>&#93; (treated as a set).</td>
+	<td class="name" nowrap><a href="#AddToSet">AddToSet (set, v)</a></td>
+	<td class="summary">Adds an element to an adaptive set.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#Append">Append (t, k, v)</a></td>
-	<td class="summary">Appends an element to <em>t</em>&#91;<em>k</em>&#93; (treated as an array).</td>
+	<td class="name" nowrap><a href="#AddToSet_Member">AddToSet_Member (t, k, v)</a></td>
+	<td class="summary">Variant of <a href="../modules/tektite_core.table.adaptive.html#AddToSet">AddToSet</a>, with <code>set = t[k]</code>.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Append">Append (arr, v)</a></td>
+	<td class="summary">Appends an element to an adaptive array.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#Append_Member">Append_Member (t, k, v)</a></td>
+	<td class="summary">Variant of <a href="../modules/tektite_core.table.adaptive.html#Append">Append</a>, with <code>arr = t[k]</code>.</td>
 	</tr>
 	<tr>
 	<td class="name" nowrap><a href="#InSet">InSet (set, v)</a></td>
@@ -325,12 +390,36 @@
 	<td class="summary">Iterates over the (0 or more) elements in the set.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#RemoveFromArray">RemoveFromArray (t, k, v)</a></td>
-	<td class="summary">Removes an element from <em>t</em>&#91;<em>k</em>&#93; (treated as an array).</td>
+	<td class="name" nowrap><a href="#RemoveFromArray">RemoveFromArray (arr, v)</a></td>
+	<td class="summary">Removes an element from an adaptive array.</td>
 	</tr>
 	<tr>
-	<td class="name" nowrap><a href="#RemoveFromSet">RemoveFromSet (t, k, v)</a></td>
-	<td class="summary">Removes an element from <em>t</em>&#91;<em>k</em>&#93; (treated as a set).</td>
+	<td class="name" nowrap><a href="#RemoveFromArray_Member">RemoveFromArray_Member (t, k, v)</a></td>
+	<td class="summary">Variant of <a href="../modules/tektite_core.table.adaptive.html#RemoveFromArray">RemoveFromArray</a>, with <code>arr = t[k]</code>.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#RemoveFromSet">RemoveFromSet (set, v)</a></td>
+	<td class="summary">Removes an element from an adaptive set.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#RemoveFromSet_Member">RemoveFromSet_Member (t, k, v)</a></td>
+	<td class="summary">Variant of <a href="../modules/tektite_core.table.adaptive.html#RemoveFromSet">RemoveFromSet</a>, with <code>set = t[k]</code>.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#SimplifyArray">SimplifyArray (arr)</a></td>
+	<td class="summary">If <em>arr</em> is not a table, this is a no-op.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#SimplifyArray_Member">SimplifyArray_Member (t, k)</a></td>
+	<td class="summary">Variant of <a href="../modules/tektite_core.table.adaptive.html#SimplifyArray">SimplifyArray</a>, with <code>arr = t[k]</code>.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#SimplifySet">SimplifySet (set)</a></td>
+	<td class="summary">If <em>set</em> is not a table, this is a no-op.</td>
+	</tr>
+	<tr>
+	<td class="name" nowrap><a href="#SimplifySet_Member">SimplifySet_Member (t, k)</a></td>
+	<td class="summary">Variant of <a href="../modules/tektite_core.table.adaptive.html#SimplifySet">SimplifySet</a>, with <code>set = t[k]</code>.</td>
 	</tr>
 </table>
 
@@ -342,22 +431,49 @@
     <dl class="function">
     <dt>
     <a name = "AddToSet"></a>
-    <strong>AddToSet (t, k, v)</strong>
+    <strong>AddToSet (set, v)</strong>
     </dt>
     <dd>
-    Adds an element to <em>t</em>&#91;<em>k</em>&#93; (treated as a set).
+    Adds an element to an adaptive set.
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">set</span>
+            <span class="types"><span class="type">AdaptiveSet</span></span>
+
+
+
+        </li>
+        <li><span class="parameter">v</span>
+         Value to add; <strong>nil</strong> is ignored.
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "AddToSet_Member"></a>
+    <strong>AddToSet_Member (t, k, v)</strong>
+    </dt>
+    <dd>
+    Variant of <a href="../modules/tektite_core.table.adaptive.html#AddToSet">AddToSet</a>, with <code>set = t[k]</code>. </p>
+
+<p> The updated set is stored in <em>t</em>&#91;<em>k</em>&#93;.
 
     <h3>Parameters:</h3>
     <ul>
         <li><span class="parameter">t</span>
             <span class="types"><a class="type" href="http://www.lua.org/manual/5.1/manual.html#5.5">table</a></span>
-         Target table.
+         Table to update.
         </li>
         <li><span class="parameter">k</span>
          Member key.
         </li>
         <li><span class="parameter">v</span>
-         Non-<strong>nil</strong> element to add.
+         Value to add; <strong>nil</strong> is ignored.
         </li>
     </ul>
 
@@ -368,10 +484,43 @@
 </dd>
     <dt>
     <a name = "Append"></a>
-    <strong>Append (t, k, v)</strong>
+    <strong>Append (arr, v)</strong>
     </dt>
     <dd>
-    Appends an element to <em>t</em>&#91;<em>k</em>&#93; (treated as an array).
+    Appends an element to an adaptive array.
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">arr</span>
+            <span class="types"><span class="type">AdaptiveArray</span></span>
+
+
+
+        </li>
+        <li><span class="parameter">v</span>
+         Value to append; <strong>nil</strong> is ignored.
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">AdapativeArray</span></span>
+        Updated array.
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "Append_Member"></a>
+    <strong>Append_Member (t, k, v)</strong>
+    </dt>
+    <dd>
+    Variant of <a href="../modules/tektite_core.table.adaptive.html#Append">Append</a>, with <code>arr = t[k]</code>. </p>
+
+<p> The updated array is stored in <em>t</em>&#91;<em>k</em>&#93;.
 
     <h3>Parameters:</h3>
     <ul>
@@ -383,7 +532,7 @@
          Member key.
         </li>
         <li><span class="parameter">v</span>
-         Non-<strong>nil</strong> element to add.
+         Value to append; <strong>nil</strong> is ignored.
         </li>
     </ul>
 
@@ -402,8 +551,8 @@
     <h3>Parameters:</h3>
     <ul>
         <li><span class="parameter">set</span>
-         Set-mode table member, i.e. <em>t</em>&#91;<em>k</em>&#93; after some combination of <a href="../modules/tektite_core.table.adaptive.html#AddToSet">AddToSet</a>
- and <a href="../modules/tektite_core.table.adaptive.html#RemoveFromSet">RemoveFromSet</a>.
+            <span class="types"><span class="type">AdaptiveSet</span></span>
+         Set to search.
         </li>
         <li><span class="parameter">v</span>
          Value to find.
@@ -431,8 +580,8 @@
     <h3>Parameters:</h3>
     <ul>
         <li><span class="parameter">arr</span>
-         Array-mode table member, i.e. <em>t</em>&#91;<em>k</em>&#93; after some combination of <a href="../modules/tektite_core.table.adaptive.html#Append">Append</a>
- and <a href="../modules/tektite_core.table.adaptive.html#RemoveFromArray">RemoveFromArray</a> operations.
+            <span class="types"><span class="type">AdaptiveArray</span></span>
+         Array to iterate.
         </li>
     </ul>
 
@@ -458,8 +607,8 @@
     <h3>Parameters:</h3>
     <ul>
         <li><span class="parameter">set</span>
-         Set-mode table member, i.e. <em>t</em>&#91;<em>k</em>&#93; after some combination of <a href="../modules/tektite_core.table.adaptive.html#AddToSet">AddToSet</a>
- and <a href="../modules/tektite_core.table.adaptive.html#RemoveFromSet">RemoveFromSet</a> operations.
+            <span class="types"><span class="type">AdaptiveSet</span></span>
+         Set to iterate.
         </li>
     </ul>
 
@@ -477,24 +626,59 @@
 </dd>
     <dt>
     <a name = "RemoveFromArray"></a>
-    <strong>RemoveFromArray (t, k, v)</strong>
+    <strong>RemoveFromArray (arr, v)</strong>
     </dt>
     <dd>
-    Removes an element from <em>t</em>&#91;<em>k</em>&#93; (treated as an array). </p>
+    Removes an element from an adaptive array. </p>
 
-<p> If either the element or array does not exist, this is a no-op.
+<p> If <em>arr</em> is <strong>nil</strong> or <em>v</em> is absent, this is a no-op.
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">arr</span>
+            <span class="types"><span class="type">AdaptiveArray</span></span>
+
+
+
+        </li>
+        <li><span class="parameter">v</span>
+         Value to remove.
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">AdaptiveArray</span></span>
+        Updated array.
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "RemoveFromArray_Member"></a>
+    <strong>RemoveFromArray_Member (t, k, v)</strong>
+    </dt>
+    <dd>
+    Variant of <a href="../modules/tektite_core.table.adaptive.html#RemoveFromArray">RemoveFromArray</a>, with <code>arr = t[k]</code>. </p>
+
+<p> If <em>arr</em> is <strong>nil</strong> or <em>v</em> is absent, this is a no-op.</p>
+
+<p> The updated array is stored in <em>t</em>&#91;<em>k</em>&#93;.
 
     <h3>Parameters:</h3>
     <ul>
         <li><span class="parameter">t</span>
             <span class="types"><a class="type" href="http://www.lua.org/manual/5.1/manual.html#5.5">table</a></span>
-         Source table.
+         Table to update.
         </li>
         <li><span class="parameter">k</span>
          Member key.
         </li>
         <li><span class="parameter">v</span>
-         Non-<strong>nil</strong> value to remove.
+         Value to remove.
         </li>
     </ul>
 
@@ -505,24 +689,166 @@
 </dd>
     <dt>
     <a name = "RemoveFromSet"></a>
-    <strong>RemoveFromSet (t, k, v)</strong>
+    <strong>RemoveFromSet (set, v)</strong>
     </dt>
     <dd>
-    Removes an element from <em>t</em>&#91;<em>k</em>&#93; (treated as a set). </p>
+    Removes an element from an adaptive set. </p>
 
-<p> If either the element or set does not exist, this is a no-op.
+<p> If <em>set</em> is <strong>nil</strong> or <em>v</em> is absent, this is a no-op.
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">set</span>
+            <span class="types"><span class="type">AdaptiveSet</span></span>
+
+
+
+        </li>
+        <li><span class="parameter">v</span>
+         Value to remove.
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">AdaptiveSet</span></span>
+        Updated set.
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "RemoveFromSet_Member"></a>
+    <strong>RemoveFromSet_Member (t, k, v)</strong>
+    </dt>
+    <dd>
+    Variant of <a href="../modules/tektite_core.table.adaptive.html#RemoveFromSet">RemoveFromSet</a>, with <code>set = t[k]</code>. </p>
+
+<p> If <em>set</em> is <strong>nil</strong> or <em>v</em> is absent, this is a no-op.</p>
+
+<p> The updated set is stored in <em>t</em>&#91;<em>k</em>&#93;.
 
     <h3>Parameters:</h3>
     <ul>
         <li><span class="parameter">t</span>
             <span class="types"><a class="type" href="http://www.lua.org/manual/5.1/manual.html#5.5">table</a></span>
-         Source table.
+         Table to update.
         </li>
         <li><span class="parameter">k</span>
          Member key.
         </li>
         <li><span class="parameter">v</span>
-         Non-<strong>nil</strong> value to remove.
+         Value to remove.
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "SimplifyArray"></a>
+    <strong>SimplifyArray (arr)</strong>
+    </dt>
+    <dd>
+    If <em>arr</em> is not a table, this is a no-op. </p>
+
+<p> Otherwise, it decays back to a singleton or <strong>nil</strong>, if possible.
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">arr</span>
+            <span class="types"><span class="type">AdaptiveArray</span></span>
+
+
+
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">AdaptiveArray</span></span>
+        Updated array.
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "SimplifyArray_Member"></a>
+    <strong>SimplifyArray_Member (t, k)</strong>
+    </dt>
+    <dd>
+    Variant of <a href="../modules/tektite_core.table.adaptive.html#SimplifyArray">SimplifyArray</a>, with <code>arr = t[k]</code>. </p>
+
+<p> The updated array is stored in <em>t</em>&#91;<em>k</em>&#93;.
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">t</span>
+            <span class="types"><a class="type" href="http://www.lua.org/manual/5.1/manual.html#5.5">table</a></span>
+         Table to update.
+        </li>
+        <li><span class="parameter">k</span>
+         Member key.
+        </li>
+    </ul>
+
+
+
+
+
+</dd>
+    <dt>
+    <a name = "SimplifySet"></a>
+    <strong>SimplifySet (set)</strong>
+    </dt>
+    <dd>
+    If <em>set</em> is not a table, this is a no-op. </p>
+
+<p> Otherwise, it decays back to a singleton or <strong>nil</strong>, if possible.
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">set</span>
+         Adaptive set to simplify.
+        </li>
+    </ul>
+
+    <h3>Returns:</h3>
+    <ol>
+
+           <span class="types"><span class="type">AdaptiveSet</span></span>
+        Updated set.
+    </ol>
+
+
+
+
+</dd>
+    <dt>
+    <a name = "SimplifySet_Member"></a>
+    <strong>SimplifySet_Member (t, k)</strong>
+    </dt>
+    <dd>
+    Variant of <a href="../modules/tektite_core.table.adaptive.html#SimplifySet">SimplifySet</a>, with <code>set = t[k]</code>. </p>
+
+<p> The updated set is stored in <em>t</em>&#91;<em>k</em>&#93;.
+
+    <h3>Parameters:</h3>
+    <ul>
+        <li><span class="parameter">t</span>
+            <span class="types"><a class="type" href="http://www.lua.org/manual/5.1/manual.html#5.5">table</a></span>
+         Table to update.
+        </li>
+        <li><span class="parameter">k</span>
+         Member key.
         </li>
     </ul>
 

@@ -46,10 +46,12 @@ abbr,acronym {
     font-variant: normal;
 }
 sup {
-    vertical-align: baseline;
+    vertical-align: super;
+	font-size: smaller;
 }
 sub {
-    vertical-align: baseline;
+    vertical-align: sub;
+	font-size: smaller;
 }
 legend {
     color: #000;

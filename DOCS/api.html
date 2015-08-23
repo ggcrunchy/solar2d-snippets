@@ -32,6 +32,7 @@
 <h2>Modules</h2>
 <ul class="$(kind=='Topics' and '' or 'nowrap'">
   <li><a href="modules/annex.EnemyEvents.html">EnemyEvents</a></li>
+  <li><a href="modules/bitwise_ops.bits.html">bits</a></li>
   <li><a href="modules/bitwise_ops.counts.html">counts</a></li>
   <li><a href="modules/bitwise_ops.log2.html">log2</a></li>
   <li><a href="modules/bitwise_ops.operators.html">operators</a></li>
@@ -45,10 +46,43 @@
   <li><a href="modules/config.GameLoop.html">GameLoop</a></li>
   <li><a href="modules/config.GlobalEvents.html">GlobalEvents</a></li>
   <li><a href="modules/config.Persistence.html">Persistence</a></li>
+  <li><a href="modules/config.html">config</a></li>
   <li><a href="modules/corona_boilerplate.FIXES.html">FIXES</a></li>
   <li><a href="modules/corona_boilerplate.game.loop.html">game.loop</a></li>
   <li><a href="modules/corona_boilerplate.html">corona_boilerplate</a></li>
   <li><a href="modules/corona_mask.marching_squares.html">marching_squares</a></li>
+  <li><a href="modules/corona_mask.misc.html">misc</a></li>
+  <li><a href="modules/corona_mask.partially_filled_rect.html">partially_filled_rect</a></li>
+  <li><a href="modules/corona_mask.sheet.html">sheet</a></li>
+  <li><a href="modules/corona_mask.utils.html">utils</a></li>
+  <li><a href="modules/corona_shader.effect_props.html">effect_props</a></li>
+  <li><a href="modules/corona_shader.encode.utils.html">encode.utils</a></li>
+  <li><a href="modules/corona_shader.encode.vars.lattice10_open.html">encode.vars.lattice10_open</a></li>
+  <li><a href="modules/corona_shader.encode.vars.lattice10_unit.html">encode.vars.lattice10_unit</a></li>
+  <li><a href="modules/corona_shader.encode.vars.sint10_open.html">encode.vars.sint10_open</a></li>
+  <li><a href="modules/corona_shader.encode.vars.uint10_open.html">encode.vars.uint10_open</a></li>
+  <li><a href="modules/corona_shader.encode.vars.uint10_unit.html">encode.vars.uint10_unit</a></li>
+  <li><a href="modules/corona_shader.encode.vars.uint5_pair_open.html">encode.vars.uint5_pair_open</a></li>
+  <li><a href="modules/corona_shader.encode.vars.uint5_pair_unit.html">encode.vars.uint5_pair_unit</a></li>
+  <li><a href="modules/corona_shader.encode.vars.uint5_quad.html">encode.vars.uint5_quad</a></li>
+  <li><a href="modules/corona_shader.encode.vars.unit_open.html">encode.vars.unit_open</a></li>
+  <li><a href="modules/corona_shader.encode.vars.unit_pair.html">encode.vars.unit_pair</a></li>
+  <li><a href="modules/corona_shader.impl.ignore_list.html">impl.ignore_list</a></li>
+  <li><a href="modules/corona_shader.impl.parser.html">impl.parser</a></li>
+  <li><a href="modules/corona_shader.impl.patterns.html">impl.patterns</a></li>
+  <li><a href="modules/corona_shader.loader.html">loader</a></li>
+  <li><a href="modules/corona_shader.number.html">number</a></li>
+  <li><a href="modules/corona_shader_glsl.constants.pi.html">constants.pi</a></li>
+  <li><a href="modules/corona_shader_glsl.core.html">core</a></li>
+  <li><a href="modules/corona_shader_glsl.functions.bump.html">functions.bump</a></li>
+  <li><a href="modules/corona_shader_glsl.functions.decode_vars.html">functions.decode_vars</a></li>
+  <li><a href="modules/corona_shader_glsl.functions.encode_colors.html">functions.encode_colors</a></li>
+  <li><a href="modules/corona_shader_glsl.functions.neighbors.html">functions.neighbors</a></li>
+  <li><a href="modules/corona_shader_glsl.functions.noise.iq.html">functions.noise.iq</a></li>
+  <li><a href="modules/corona_shader_glsl.functions.noise.simplex.html">functions.noise.simplex</a></li>
+  <li><a href="modules/corona_shader_glsl.functions.noise.worley.html">functions.noise.worley</a></li>
+  <li><a href="modules/corona_shader_glsl.functions.sphere.html">functions.sphere</a></li>
+  <li><a href="modules/corona_shader_glsl.functions.texels.html">functions.texels</a></li>
   <li><a href="modules/corona_ui.dialog_impl.data.html">dialog_impl.data</a></li>
   <li><a href="modules/corona_ui.dialog_impl.layout.html">dialog_impl.layout</a></li>
   <li><a href="modules/corona_ui.dialog_impl.methods.html">dialog_impl.methods</a></li>
@@ -64,12 +98,13 @@
   <li><a href="modules/corona_ui.patterns.tabs.html">patterns.tabs</a></li>
   <li><a href="modules/corona_ui.patterns.video.html">patterns.video</a></li>
   <li><a href="modules/corona_ui.utils.color.html">utils.color</a></li>
+  <li><a href="modules/corona_ui.utils.cursor.html">utils.cursor</a></li>
   <li><a href="modules/corona_ui.utils.hsv.html">utils.hsv</a></li>
   <li><a href="modules/corona_ui.utils.layout.html">utils.layout</a></li>
   <li><a href="modules/corona_ui.utils.layout_dsl.html">utils.layout_dsl</a></li>
+  <li><a href="modules/corona_ui.utils.layout_strategies.html">utils.layout_strategies</a></li>
   <li><a href="modules/corona_ui.utils.lines.html">utils.lines</a></li>
   <li><a href="modules/corona_ui.utils.line_ex.html">utils.line_ex</a></li>
-  <li><a href="modules/corona_ui.utils.sheet.html">utils.sheet</a></li>
   <li><a href="modules/corona_ui.utils.skin.html">utils.skin</a></li>
   <li><a href="modules/corona_ui.utils.touch.html">utils.touch</a></li>
   <li><a href="modules/corona_ui.widgets.bitmap.html">widgets.bitmap</a></li>
@@ -81,14 +116,17 @@
   <li><a href="modules/corona_ui.widgets.grid_1D.html">widgets.grid_1D</a></li>
   <li><a href="modules/corona_ui.widgets.keyboard.html">widgets.keyboard</a></li>
   <li><a href="modules/corona_ui.widgets.link_group.html">widgets.link_group</a></li>
+  <li><a href="modules/corona_ui.widgets.marquee.html">widgets.marquee</a></li>
   <li><a href="modules/corona_utils.audio.html">audio</a></li>
+  <li><a href="modules/corona_utils.capture.html">capture</a></li>
   <li><a href="modules/corona_utils.collision.html">collision</a></li>
+  <li><a href="modules/corona_utils.data.html">data</a></li>
   <li><a href="modules/corona_utils.device.html">device</a></li>
   <li><a href="modules/corona_utils.file.html">file</a></li>
   <li><a href="modules/corona_utils.frames.html">frames</a></li>
-  <li><a href="modules/corona_utils.mask.html">mask</a></li>
   <li><a href="modules/corona_utils.persistence.html">persistence</a></li>
   <li><a href="modules/corona_utils.scenes.html">scenes</a></li>
+  <li><a href="modules/corona_utils.sheet.html">sheet</a></li>
   <li><a href="modules/corona_utils.timers.html">timers</a></li>
   <li><a href="modules/corona_utils.transitions.html">transitions</a></li>
   <li><a href="modules/coroutine_ops.flow.html">flow</a></li>
@@ -112,12 +150,18 @@
   <li><a href="modules/image_ops.zlib_lut.html">zlib_lut</a></li>
   <li><a href="modules/iterator_ops.args.html">args</a></li>
   <li><a href="modules/iterator_ops.coroutine.html">coroutine</a></li>
-  <li><a href="modules/iterator_ops.grid.html">grid</a></li>
+  <li><a href="modules/iterator_ops.grid.bresenham.html">grid.bresenham</a></li>
+  <li><a href="modules/iterator_ops.grid.circle.html">grid.circle</a></li>
+  <li><a href="modules/iterator_ops.grid.ellipse.html">grid.ellipse</a></li>
+  <li><a href="modules/iterator_ops.grid.rect.html">grid.rect</a></li>
+  <li><a href="modules/iterator_ops.grid.stencil.html">grid.stencil</a></li>
+  <li><a href="modules/iterator_ops.grid.triangle.html">grid.triangle</a></li>
   <li><a href="modules/iterator_ops.ipairs.html">ipairs</a></li>
   <li><a href="modules/iterator_ops.utils.html">utils</a></li>
   <li><a href="modules/linear_algebra_ops.base.html">base</a></li>
   <li><a href="modules/linear_algebra_ops.cholesky.html">cholesky</a></li>
   <li><a href="modules/linear_algebra_ops.conjugate_gradient.html">conjugate_gradient</a></li>
+  <li><a href="modules/linear_algebra_ops.qr.html">qr</a></li>
   <li><a href="modules/linear_algebra_ops.svd.html">svd</a></li>
   <li><a href="modules/main.html">main</a></li>
   <li><a href="modules/number_ops.poisson.html">poisson</a></li>
@@ -128,6 +172,7 @@
   <li><a href="modules/number_sequences.morton.html">morton</a></li>
   <li><a href="modules/number_sequences.mwc_rng.html">mwc_rng</a></li>
   <li><a href="modules/numeric_types.complex.html">complex</a></li>
+  <li><a href="modules/numeric_types.matrix_mn.html">matrix_mn</a></li>
   <li><a href="modules/numeric_types.quaternion.html">quaternion</a></li>
   <li><a href="modules/numeric_types.tuple.html">tuple</a></li>
   <li><a href="modules/s3_editor.Augment.html">Augment</a></li>
@@ -136,6 +181,7 @@
   <li><a href="modules/s3_editor.Dialog.html">Dialog</a></li>
   <li><a href="modules/s3_editor.dialog_items.checkbox.html">dialog_items.checkbox</a></li>
   <li><a href="modules/s3_editor.dialog_items.misc.html">dialog_items.misc</a></li>
+  <li><a href="modules/s3_editor.dialog_items.overlay.html">dialog_items.overlay</a></li>
   <li><a href="modules/s3_editor.dialog_items.slider.html">dialog_items.slider</a></li>
   <li><a href="modules/s3_editor.dialog_items.spinner.html">dialog_items.spinner</a></li>
   <li><a href="modules/s3_editor.dialog_items.table_view.html">dialog_items.table_view</a></li>
@@ -144,7 +190,9 @@
   <li><a href="modules/s3_editor.Grid.html">Grid</a></li>
   <li><a href="modules/s3_editor.GridViews.html">GridViews</a></li>
   <li><a href="modules/s3_editor.Help.html">Help</a></li>
+  <li><a href="modules/s3_editor.ListViews.html">ListViews</a></li>
   <li><a href="modules/s3_editor.Ops.html">Ops</a></li>
+  <li><a href="modules/s3_editor.overlay.ChooseAudio.html">overlay.ChooseAudio</a></li>
   <li><a href="modules/s3_editor.overlay.Help.html">overlay.Help</a></li>
   <li><a href="modules/s3_editor.overlay.Link.html">overlay.Link</a></li>
   <li><a href="modules/s3_editor.scene.Map.html">scene.Map</a></li>
@@ -165,6 +213,8 @@
   <li><a href="modules/s3_editor_views.triggers.html">triggers</a></li>
   <li><a href="modules/s3_objects.dot.switch.html">dot.switch</a></li>
   <li><a href="modules/s3_objects.dot.warp.html">dot.warp</a></li>
+  <li><a href="modules/s3_objects.event_block.kernel.stipple.html">event_block.kernel.stipple</a></li>
+  <li><a href="modules/s3_objects.event_block.kernel.unfurl.html">event_block.kernel.unfurl</a></li>
   <li><a href="modules/s3_objects.event_block.maze.html">event_block.maze</a></li>
   <li><a href="modules/s3_utils.ai.html">ai</a></li>
   <li><a href="modules/s3_utils.controls.html">controls</a></li>
@@ -181,11 +231,13 @@
   <li><a href="modules/s3_utils.event_blocks.html">event_blocks</a></li>
   <li><a href="modules/s3_utils.fill.cellular_automata.html">fill.cellular_automata</a></li>
   <li><a href="modules/s3_utils.fill.circle.html">fill.circle</a></li>
+  <li><a href="modules/s3_utils.fill.flood.html">fill.flood</a></li>
   <li><a href="modules/s3_utils.fx.html">fx</a></li>
   <li><a href="modules/s3_utils.game_loop.html">game_loop</a></li>
   <li><a href="modules/s3_utils.global_events.html">global_events</a></li>
   <li><a href="modules/s3_utils.hud.action.html">hud.action</a></li>
   <li><a href="modules/s3_utils.hud.move.html">hud.move</a></li>
+  <li><a href="modules/s3_utils.kernel.grid4x4.html">kernel.grid4x4</a></li>
   <li><a href="modules/s3_utils.movement.html">movement</a></li>
   <li><a href="modules/s3_utils.music.html">music</a></li>
   <li><a href="modules/s3_utils.pathing.html">pathing</a></li>
@@ -240,6 +292,7 @@
   <li><a href="modules/tektite_core.array.collect.html">array.collect</a></li>
   <li><a href="modules/tektite_core.array.embedded_free_list.html">array.embedded_free_list</a></li>
   <li><a href="modules/tektite_core.array.funcs.html">array.funcs</a></li>
+  <li><a href="modules/tektite_core.array.grid.html">array.grid</a></li>
   <li><a href="modules/tektite_core.array.index.html">array.index</a></li>
   <li><a href="modules/tektite_core.array.interval.html">array.interval</a></li>
   <li><a href="modules/tektite_core.array.match_slot_id.html">array.match_slot_id</a></li>
@@ -258,14 +311,17 @@
   <li><a href="modules/tektite_core.number.length.html">number.length</a></li>
   <li><a href="modules/tektite_core.number.range.html">number.range</a></li>
   <li><a href="modules/tektite_core.number.robust.html">number.robust</a></li>
+  <li><a href="modules/tektite_core.number.sampling.html">number.sampling</a></li>
   <li><a href="modules/tektite_core.number.simplex_noise.html">number.simplex_noise</a></li>
   <li><a href="modules/tektite_core.number.to_string.html">number.to_string</a></li>
   <li><a href="modules/tektite_core.require_ex.html">require_ex</a></li>
+  <li><a href="modules/tektite_core.sqlite_db.html">sqlite_db</a></li>
   <li><a href="modules/tektite_core.table.adaptive.html">table.adaptive</a></li>
   <li><a href="modules/tektite_core.table.funcs.html">table.funcs</a></li>
   <li><a href="modules/tektite_core.table.lazy.html">table.lazy</a></li>
   <li><a href="modules/tektite_core.table.predicates.html">table.predicates</a></li>
   <li><a href="modules/tektite_core.table.proxy.html">table.proxy</a></li>
+  <li><a href="modules/tektite_core.table.schema.html">table.schema</a></li>
   <li><a href="modules/tektite_core.var.bound_args.html">var.bound_args</a></li>
   <li><a href="modules/tektite_core.var.cache.html">var.cache</a></li>
   <li><a href="modules/tektite_core.var.dump.html">var.dump</a></li>
@@ -287,6 +343,10 @@
 	<tr>
 		<td class="name"  nowrap><a href="modules/annex.EnemyEvents.html">annex.EnemyEvents</a></td>
 		<td class="summary">Events specific to this game's enemies.</td>
+	</tr>
+	<tr>
+		<td class="name"  nowrap><a href="modules/bitwise_ops.bits.html">bitwise_ops.bits</a></td>
+		<td class="summary">Various operations on bit sequences.</td>
 	</tr>
 	<tr>
 		<td class="name"  nowrap><a href="modules/bitwise_ops.counts.html">bitwise_ops.counts</a></td>
@@ -341,6 +401,10 @@
 		<td class="summary">Application-specific persistence state.</td>
 	</tr>
 	<tr>
+		<td class="name"  nowrap><a href="modules/config.html">config</a></td>
+		<td class="summary">Project configuration.</td>
+	</tr>
+	<tr>
 		<td class="name"  nowrap><a href="modules/corona_boilerplate.FIXES.html">corona_boilerplate.FIXES</a></td>
 		<td class="summary">Various workarounds.</td>
 	</tr>
@@ -355,6 +419,139 @@
 	<tr>
 		<td class="name"  nowrap><a href="modules/corona_mask.marching_squares.html">corona_mask.marching_squares</a></td>
 		<td class="summary">Generators for masks based on marching squares.</td>
+	</tr>
+	<tr>
+		<td class="name"  nowrap><a href="modules/corona_mask.misc.html">corona_mask.misc</a></td>
+		<td class="summary">Miscellaneous mask utilities.</td>
+	</tr>
+	<tr>
+		<td class="name"  nowrap><a href="modules/corona_mask.partially_filled_rect.html">corona_mask.partially_filled_rect</a></td>
+		<td class="summary">This module provides operations to generate and use rectangular, sheet-style masks, where
+ individual frames</td>
+	</tr>
+	<tr>
+		<td class="name"  nowrap><a href="modules/corona_mask.sheet.html">corona_mask.sheet</a></td>
+		<td class="summary">Functionality for mask sheets.</td>
+	</tr>
+	<tr>
+		<td class="name"  nowrap><a href="modules/corona_mask.utils.html">corona_mask.utils</a></td>
+		<td class="summary">Mask-building utilities.</td>
+	</tr>
+	<tr>
+		<td class="name"  nowrap><a href="modules/corona_shader.effect_props.html">corona_shader.effect_props</a></td>
+		<td class="summary">Helpers for getting and setting effect properties.</td>
+	</tr>
+	<tr>
+		<td class="name"  nowrap><a href="modules/corona_shader.encode.utils.html">corona_shader.encode.utils</a></td>
+		<td class="summary">Data-encoding utilities.</td>
+	</tr>
+	<tr>
+		<td class="name"  nowrap><a href="modules/corona_shader.encode.vars.lattice10_open.html">corona_shader.encode.vars.lattice10_open</a></td>
+		<td class="summary">Data-encoding routines for [0, 1023] x [0, 1) pairs, where the integer part describes a
+ quantized lattice of dimension 2^m x 2^n, s.t.</td>
+	</tr>
+	<tr>
+		<td class="name"  nowrap><a href="modules/corona_shader.encode.vars.lattice10_unit.html">corona_shader.encode.vars.lattice10_unit</a></td>
+		<td class="summary">Data-encoding routines for [0, 1023] x [0, 1] pairs, where the integer part describes a
+ quantized lattice of dimension 2^m x 2^n, s.t.</td>
+	</tr>
+	<tr>
+		<td class="name"  nowrap><a href="modules/corona_shader.encode.vars.sint10_open.html">corona_shader.encode.vars.sint10_open</a></td>
+		<td class="summary">Data-encoding routines for &lt;+,->[0, 1022] x [0, 1) pairs, where the sign is understood to
+ be a separate piece of information.</td>
+	</tr>
+	<tr>
+		<td class="name"  nowrap><a href="modules/corona_shader.encode.vars.uint10_open.html">corona_shader.encode.vars.uint10_open</a></td>
+		<td class="summary">Data-encoding routines for [0, 1023] x [0, 1) pairs.</td>
+	</tr>
+	<tr>
+		<td class="name"  nowrap><a href="modules/corona_shader.encode.vars.uint10_unit.html">corona_shader.encode.vars.uint10_unit</a></td>
+		<td class="summary">Data-encoding routines for [0, 1023] x [0, 1] pairs.</td>
+	</tr>
+	<tr>
+		<td class="name"  nowrap><a href="modules/corona_shader.encode.vars.uint5_pair_open.html">corona_shader.encode.vars.uint5_pair_open</a></td>
+		<td class="summary">Data-encoding routines for [0, 31] x [0, 31] x [0, 1) triples.</td>
+	</tr>
+	<tr>
+		<td class="name"  nowrap><a href="modules/corona_shader.encode.vars.uint5_pair_unit.html">corona_shader.encode.vars.uint5_pair_unit</a></td>
+		<td class="summary">Data-encoding routines for [0, 31] x [0, 31] x [0, 1] triples.</td>
+	</tr>
+	<tr>
+		<td class="name"  nowrap><a href="modules/corona_shader.encode.vars.uint5_quad.html">corona_shader.encode.vars.uint5_quad</a></td>
+		<td class="summary">Data-packing routines for [0, 31] x [0, 31] x [0, 31] x [0, 31] quads.</td>
+	</tr>
+	<tr>
+		<td class="name"  nowrap><a href="modules/corona_shader.encode.vars.unit_open.html">corona_shader.encode.vars.unit_open</a></td>
+		<td class="summary">Data-encoding routines for [0, 1] x [0, 1) pairs.</td>
+	</tr>
+	<tr>
+		<td class="name"  nowrap><a href="modules/corona_shader.encode.vars.unit_pair.html">corona_shader.encode.vars.unit_pair</a></td>
+		<td class="summary">Data-encoding routines for [0, 1] x [0, 1] pairs.</td>
+	</tr>
+	<tr>
+		<td class="name"  nowrap><a href="modules/corona_shader.impl.ignore_list.html">corona_shader.impl.ignore_list</a></td>
+		<td class="summary">Utilities for ignoring things in the loader.</td>
+	</tr>
+	<tr>
+		<td class="name"  nowrap><a href="modules/corona_shader.impl.parser.html">corona_shader.impl.parser</a></td>
+		<td class="summary">Utilities for parsing GLSL code.</td>
+	</tr>
+	<tr>
+		<td class="name"  nowrap><a href="modules/corona_shader.impl.patterns.html">corona_shader.impl.patterns</a></td>
+		<td class="summary">String patterns for use in the loader.</td>
+	</tr>
+	<tr>
+		<td class="name"  nowrap><a href="modules/corona_shader.loader.html">corona_shader.loader</a></td>
+		<td class="summary">This module extends vertex and fragment shader loaders to infer and automatically
+ incorporate dependencies.</td>
+	</tr>
+	<tr>
+		<td class="name"  nowrap><a href="modules/corona_shader.number.html">corona_shader.number</a></td>
+		<td class="summary">Number utilities for shaders.</td>
+	</tr>
+	<tr>
+		<td class="name"  nowrap><a href="modules/corona_shader_glsl.constants.pi.html">corona_shader_glsl.constants.pi</a></td>
+		<td class="summary">Various useful constants.</td>
+	</tr>
+	<tr>
+		<td class="name"  nowrap><a href="modules/corona_shader_glsl.core.html">corona_shader_glsl.core</a></td>
+		<td class="summary">Front end for shader library.</td>
+	</tr>
+	<tr>
+		<td class="name"  nowrap><a href="modules/corona_shader_glsl.functions.bump.html">corona_shader_glsl.functions.bump</a></td>
+		<td class="summary">Bump mapping mixins.</td>
+	</tr>
+	<tr>
+		<td class="name"  nowrap><a href="modules/corona_shader_glsl.functions.decode_vars.html">corona_shader_glsl.functions.decode_vars</a></td>
+		<td class="summary">Mixins to acquire data sent by <strong>corona_shader.encode.vars</strong> routines.</td>
+	</tr>
+	<tr>
+		<td class="name"  nowrap><a href="modules/corona_shader_glsl.functions.encode_colors.html">corona_shader_glsl.functions.encode_colors</a></td>
+		<td class="summary">Mixins to send data through textures, e.g.</td>
+	</tr>
+	<tr>
+		<td class="name"  nowrap><a href="modules/corona_shader_glsl.functions.neighbors.html">corona_shader_glsl.functions.neighbors</a></td>
+		<td class="summary">Neighboring pixel mixins.</td>
+	</tr>
+	<tr>
+		<td class="name"  nowrap><a href="modules/corona_shader_glsl.functions.noise.iq.html">corona_shader_glsl.functions.noise.iq</a></td>
+		<td class="summary">Mixins for "iq" noise.</td>
+	</tr>
+	<tr>
+		<td class="name"  nowrap><a href="modules/corona_shader_glsl.functions.noise.simplex.html">corona_shader_glsl.functions.noise.simplex</a></td>
+		<td class="summary">Simplex noise mixins.</td>
+	</tr>
+	<tr>
+		<td class="name"  nowrap><a href="modules/corona_shader_glsl.functions.noise.worley.html">corona_shader_glsl.functions.noise.worley</a></td>
+		<td class="summary">Worley noise mixins.</td>
+	</tr>
+	<tr>
+		<td class="name"  nowrap><a href="modules/corona_shader_glsl.functions.sphere.html">corona_shader_glsl.functions.sphere</a></td>
+		<td class="summary">Sphere mixins.</td>
+	</tr>
+	<tr>
+		<td class="name"  nowrap><a href="modules/corona_shader_glsl.functions.texels.html">corona_shader_glsl.functions.texels</a></td>
+		<td class="summary">Mixins for texels.</td>
 	</tr>
 	<tr>
 		<td class="name"  nowrap><a href="modules/corona_ui.dialog_impl.data.html">corona_ui.dialog_impl.data</a></td>
@@ -417,6 +614,10 @@
 		<td class="summary">UI color functionality.</td>
 	</tr>
 	<tr>
+		<td class="name"  nowrap><a href="modules/corona_ui.utils.cursor.html">corona_ui.utils.cursor</a></td>
+		<td class="summary">UI cursor functionality.</td>
+	</tr>
+	<tr>
 		<td class="name"  nowrap><a href="modules/corona_ui.utils.hsv.html">corona_ui.utils.hsv</a></td>
 		<td class="summary">Functionality for HSV colors.</td>
 	</tr>
@@ -430,16 +631,16 @@
  make positions and dimensions more expressive.</td>
 	</tr>
 	<tr>
+		<td class="name"  nowrap><a href="modules/corona_ui.utils.layout_strategies.html">corona_ui.utils.layout_strategies</a></td>
+		<td class="summary">Some strategies built on top of the layout utilities.</td>
+	</tr>
+	<tr>
 		<td class="name"  nowrap><a href="modules/corona_ui.utils.lines.html">corona_ui.utils.lines</a></td>
 		<td class="summary">Line utilities.</td>
 	</tr>
 	<tr>
 		<td class="name"  nowrap><a href="modules/corona_ui.utils.line_ex.html">corona_ui.utils.line_ex</a></td>
 		<td class="summary">Augmented version of Corona's line object.</td>
-	</tr>
-	<tr>
-		<td class="name"  nowrap><a href="modules/corona_ui.utils.sheet.html">corona_ui.utils.sheet</a></td>
-		<td class="summary">Image sheet UI utilities.</td>
 	</tr>
 	<tr>
 		<td class="name"  nowrap><a href="modules/corona_ui.utils.skin.html">corona_ui.utils.skin</a></td>
@@ -486,12 +687,24 @@
 		<td class="summary">Nodes for building links.</td>
 	</tr>
 	<tr>
+		<td class="name"  nowrap><a href="modules/corona_ui.widgets.marquee.html">corona_ui.widgets.marquee</a></td>
+		<td class="summary">Marquee widget for scrolling text.</td>
+	</tr>
+	<tr>
 		<td class="name"  nowrap><a href="modules/corona_utils.audio.html">corona_utils.audio</a></td>
 		<td class="summary">Various audio-related operations.</td>
 	</tr>
 	<tr>
+		<td class="name"  nowrap><a href="modules/corona_utils.capture.html">corona_utils.capture</a></td>
+		<td class="summary">This module helps capture or save portions of the content area.</td>
+	</tr>
+	<tr>
 		<td class="name"  nowrap><a href="modules/corona_utils.collision.html">corona_utils.collision</a></td>
 		<td class="summary">This module wraps up some useful collision functionality.</td>
+	</tr>
+	<tr>
+		<td class="name"  nowrap><a href="modules/corona_utils.data.html">corona_utils.data</a></td>
+		<td class="summary">Utilities for reading and writing data, with various storage methods.</td>
 	</tr>
 	<tr>
 		<td class="name"  nowrap><a href="modules/corona_utils.device.html">corona_utils.device</a></td>
@@ -506,16 +719,16 @@
 		<td class="summary">This module provides some per-frame logic.</td>
 	</tr>
 	<tr>
-		<td class="name"  nowrap><a href="modules/corona_utils.mask.html">corona_utils.mask</a></td>
-		<td class="summary">This module supports dynamic mask generation.</td>
-	</tr>
-	<tr>
 		<td class="name"  nowrap><a href="modules/corona_utils.persistence.html">corona_utils.persistence</a></td>
 		<td class="summary">Various game state that should persist across sessions, maintained in a central database.</td>
 	</tr>
 	<tr>
 		<td class="name"  nowrap><a href="modules/corona_utils.scenes.html">corona_utils.scenes</a></td>
 		<td class="summary">Helper for scene transitions.</td>
+	</tr>
+	<tr>
+		<td class="name"  nowrap><a href="modules/corona_utils.sheet.html">corona_utils.sheet</a></td>
+		<td class="summary">Image sheet UI utilities.</td>
 	</tr>
 	<tr>
 		<td class="name"  nowrap><a href="modules/corona_utils.timers.html">corona_utils.timers</a></td>
@@ -611,8 +824,28 @@
 		<td class="summary">Utilities for coroutine iterators.</td>
 	</tr>
 	<tr>
-		<td class="name"  nowrap><a href="modules/iterator_ops.grid.html">iterator_ops.grid</a></td>
-		<td class="summary">Some iterators for grids.</td>
+		<td class="name"  nowrap><a href="modules/iterator_ops.grid.bresenham.html">iterator_ops.grid.bresenham</a></td>
+		<td class="summary">Some line-based iterators over grid regions.</td>
+	</tr>
+	<tr>
+		<td class="name"  nowrap><a href="modules/iterator_ops.grid.circle.html">iterator_ops.grid.circle</a></td>
+		<td class="summary">Some circle-based iterators over grid regions.</td>
+	</tr>
+	<tr>
+		<td class="name"  nowrap><a href="modules/iterator_ops.grid.ellipse.html">iterator_ops.grid.ellipse</a></td>
+		<td class="summary">Some ellipse-based iterators over grid regions.</td>
+	</tr>
+	<tr>
+		<td class="name"  nowrap><a href="modules/iterator_ops.grid.rect.html">iterator_ops.grid.rect</a></td>
+		<td class="summary">Some iterators over rectangular grid regions.</td>
+	</tr>
+	<tr>
+		<td class="name"  nowrap><a href="modules/iterator_ops.grid.stencil.html">iterator_ops.grid.stencil</a></td>
+		<td class="summary">Some functionality for grid-based stencils.</td>
+	</tr>
+	<tr>
+		<td class="name"  nowrap><a href="modules/iterator_ops.grid.triangle.html">iterator_ops.grid.triangle</a></td>
+		<td class="summary">Some triangle-based iterators over grid regions.</td>
 	</tr>
 	<tr>
 		<td class="name"  nowrap><a href="modules/iterator_ops.ipairs.html">iterator_ops.ipairs</a></td>
@@ -633,6 +866,10 @@
 	<tr>
 		<td class="name"  nowrap><a href="modules/linear_algebra_ops.conjugate_gradient.html">linear_algebra_ops.conjugate_gradient</a></td>
 		<td class="summary">Implementation of <a href="http://en.wikipedia.org/wiki/Conjugate_gradient_method">conjugate gradient method</a>.</td>
+	</tr>
+	<tr>
+		<td class="name"  nowrap><a href="modules/linear_algebra_ops.qr.html">linear_algebra_ops.qr</a></td>
+		<td class="summary">QR factorization and related operations.</td>
 	</tr>
 	<tr>
 		<td class="name"  nowrap><a href="modules/linear_algebra_ops.svd.html">linear_algebra_ops.svd</a></td>
@@ -656,7 +893,7 @@
 	</tr>
 	<tr>
 		<td class="name"  nowrap><a href="modules/number_sequences.gray.html">number_sequences.gray</a></td>
-		<td class="summary">Some Gray code utilities.</td>
+		<td class="summary">Some <a href="http://en.wikipedia.org/wiki/Gray_code">Gray code</a> utilities.</td>
 	</tr>
 	<tr>
 		<td class="name"  nowrap><a href="modules/number_sequences.hilbert.html">number_sequences.hilbert</a></td>
@@ -675,8 +912,12 @@
 		<td class="summary">Some operations on complex numbers.</td>
 	</tr>
 	<tr>
+		<td class="name"  nowrap><a href="modules/numeric_types.matrix_mn.html">numeric_types.matrix_mn</a></td>
+		<td class="summary">General-purpose m-by-n matrices.</td>
+	</tr>
+	<tr>
 		<td class="name"  nowrap><a href="modules/numeric_types.quaternion.html">numeric_types.quaternion</a></td>
-		<td class="summary">Quaternion utilities.</td>
+		<td class="summary">Some operations on quaternions.</td>
 	</tr>
 	<tr>
 		<td class="name"  nowrap><a href="modules/numeric_types.tuple.html">numeric_types.tuple</a></td>
@@ -706,6 +947,10 @@
 		<td class="name"  nowrap><a href="modules/s3_editor.dialog_items.misc.html">s3_editor.dialog_items.misc</a></td>
 		<td class="summary">Miscellaneous helpers to populate a dialog with UI elements (primarily, where a method
  either is hard to group, or there is only one method).</td>
+	</tr>
+	<tr>
+		<td class="name"  nowrap><a href="modules/s3_editor.dialog_items.overlay.html">s3_editor.dialog_items.overlay</a></td>
+		<td class="summary">Helpers to populate a dialog with overlay-launching UI elements.</td>
 	</tr>
 	<tr>
 		<td class="name"  nowrap><a href="modules/s3_editor.dialog_items.slider.html">s3_editor.dialog_items.slider</a></td>
@@ -740,8 +985,16 @@
 		<td class="summary">Help system components.</td>
 	</tr>
 	<tr>
+		<td class="name"  nowrap><a href="modules/s3_editor.ListViews.html">s3_editor.ListViews</a></td>
+		<td class="summary">Logic associated with listbox-based views.</td>
+	</tr>
+	<tr>
 		<td class="name"  nowrap><a href="modules/s3_editor.Ops.html">s3_editor.Ops</a></td>
 		<td class="summary">Editor operations.</td>
+	</tr>
+	<tr>
+		<td class="name"  nowrap><a href="modules/s3_editor.overlay.ChooseAudio.html">s3_editor.overlay.ChooseAudio</a></td>
+		<td class="summary">Overlay used to choose audio files in the editor.</td>
 	</tr>
 	<tr>
 		<td class="name"  nowrap><a href="modules/s3_editor.overlay.Help.html">s3_editor.overlay.Help</a></td>
@@ -824,6 +1077,14 @@
 		<td class="summary">Warp-type dot.</td>
 	</tr>
 	<tr>
+		<td class="name"  nowrap><a href="modules/s3_objects.event_block.kernel.stipple.html">s3_objects.event_block.kernel.stipple</a></td>
+		<td class="summary">A shader used to reduce an image as a series of points.</td>
+	</tr>
+	<tr>
+		<td class="name"  nowrap><a href="modules/s3_objects.event_block.kernel.unfurl.html">s3_objects.event_block.kernel.unfurl</a></td>
+		<td class="summary">A shader used to unfurl a maze.</td>
+	</tr>
+	<tr>
 		<td class="name"  nowrap><a href="modules/s3_objects.event_block.maze.html">s3_objects.event_block.maze</a></td>
 		<td class="summary">Maze-type event block.</td>
 	</tr>
@@ -885,7 +1146,11 @@
 	</tr>
 	<tr>
 		<td class="name"  nowrap><a href="modules/s3_utils.fill.circle.html">s3_utils.fill.circle</a></td>
-		<td class="summary">Circle-type space filling operations.</td>
+		<td class="summary">Circle-type space-filling operations.</td>
+	</tr>
+	<tr>
+		<td class="name"  nowrap><a href="modules/s3_utils.fill.flood.html">s3_utils.fill.flood</a></td>
+		<td class="summary">Flood-type space-filling operations.</td>
 	</tr>
 	<tr>
 		<td class="name"  nowrap><a href="modules/s3_utils.fx.html">s3_utils.fx</a></td>
@@ -906,6 +1171,10 @@
 	<tr>
 		<td class="name"  nowrap><a href="modules/s3_utils.hud.move.html">s3_utils.hud.move</a></td>
 		<td class="summary">Move elements of the HUD.</td>
+	</tr>
+	<tr>
+		<td class="name"  nowrap><a href="modules/s3_utils.kernel.grid4x4.html">s3_utils.kernel.grid4x4</a></td>
+		<td class="summary">Shaders used to render parts of a 4x4 grid according to bit flags.</td>
 	</tr>
 	<tr>
 		<td class="name"  nowrap><a href="modules/s3_utils.movement.html">s3_utils.movement</a></td>
@@ -1043,7 +1312,7 @@
 	</tr>
 	<tr>
 		<td class="name"  nowrap><a href="modules/spline_ops.arc_length.html">spline_ops.arc_length</a></td>
-		<td class="summary">Some utilities for calculating arc lengths.</td>
+		<td class="summary">Some utilities for building arc-length lookup tables, built atop <a href="modules/tektite_core.number.sampling.html#">tektite_core.number.sampling</a>.</td>
 	</tr>
 	<tr>
 		<td class="name"  nowrap><a href="modules/spline_ops.bezier.html">spline_ops.bezier</a></td>
@@ -1136,8 +1405,12 @@
 		<td class="summary">This module provides various utilities that make or operate on arrays.</td>
 	</tr>
 	<tr>
+		<td class="name"  nowrap><a href="modules/tektite_core.array.grid.html">tektite_core.array.grid</a></td>
+		<td class="summary">An assortment of useful grid operations.</td>
+	</tr>
+	<tr>
 		<td class="name"  nowrap><a href="modules/tektite_core.array.index.html">tektite_core.array.index</a></td>
-		<td class="summary">An assortment of useful index and interval operations.</td>
+		<td class="summary">An assortment of useful index and range operations.</td>
 	</tr>
 	<tr>
 		<td class="name"  nowrap><a href="modules/tektite_core.array.interval.html">tektite_core.array.interval</a></td>
@@ -1210,6 +1483,10 @@
 		<td class="summary">Numerical options that require special care, e.g.</td>
 	</tr>
 	<tr>
+		<td class="name"  nowrap><a href="modules/tektite_core.number.sampling.html">tektite_core.number.sampling</a></td>
+		<td class="summary">Some utilities for dealing with sampled functions.</td>
+	</tr>
+	<tr>
 		<td class="name"  nowrap><a href="modules/tektite_core.number.simplex_noise.html">tektite_core.number.simplex_noise</a></td>
 		<td class="summary">An implementation of Ken Perlin's simplex noise.</td>
 	</tr>
@@ -1222,8 +1499,12 @@
 		<td class="summary">Some extended <a href="http://www.lua.org/manual/5.1/manual.html#pdf-require">require</a> functionality.</td>
 	</tr>
 	<tr>
+		<td class="name"  nowrap><a href="modules/tektite_core.sqlite_db.html">tektite_core.sqlite_db</a></td>
+		<td class="summary">This module provides some functionality for Sqlite3 databases.</td>
+	</tr>
+	<tr>
 		<td class="name"  nowrap><a href="modules/tektite_core.table.adaptive.html">tektite_core.table.adaptive</a></td>
-		<td class="summary">Functionality for table members which may adapt among three forms:</p>
+		<td class="summary">Functionality for containers which may adapt among three forms:</p>
 
 <p> <ul>
  <li> <strong>nil</strong>.</td>
@@ -1243,6 +1524,10 @@
 	<tr>
 		<td class="name"  nowrap><a href="modules/tektite_core.table.proxy.html">tektite_core.table.proxy</a></td>
 		<td class="summary">Utilities for proxy tables.</td>
+	</tr>
+	<tr>
+		<td class="name"  nowrap><a href="modules/tektite_core.table.schema.html">tektite_core.table.schema</a></td>
+		<td class="summary">This module provides some functionality for reading tables, e.g.</td>
 	</tr>
 	<tr>
 		<td class="name"  nowrap><a href="modules/tektite_core.var.bound_args.html">tektite_core.var.bound_args</a></td>
