@@ -79,10 +79,37 @@ if true then
 
 	local Right = matrix_mn.Columns(M, 5, 8)
 	local R12 = matrix_mn.Mul(matrix_mn.Transpose(Q1), Right)
+local R12C = matrix_mn.Columns(Right, 1, 4)
+local function QtC (Q, C)
+	local nrows, ncols = C:GetDims()
 
+	for j = 1, ncols do
+		local col = Q:GetColumn(j, j + 1)
+table.insert(col, 1, 1)
+		local n, sum = #col, 0
+		local V = matrix_mn.New(1, n)
+
+		for i = 1, n do
+			V[i], sum = col[i], sum + col[i]^2
+		end
+
+		local beta = 2 / sum
+
+		for i = 1, n do
+			col[i] = col[i] * beta
+		end
+
+		local old_corner = matrix_mn.Corner(C, j, 1)
+
+		matrix_mn.PutBlock(C, j, 1, matrix_mn.Sub(old_corner, matrix_mn.OuterProduct(col, matrix_mn.Mul(V, old_corner))))
+	end
+end
+QtC(aa, R12C)
+P(R12C, "QtC?!")
+--[[
 	P(matrix_mn.Transpose(Q1),"Q1??")
 	P(R12, "R12???")
-
+]]
 	local AAA = matrix_mn.Sub(Right, matrix_mn.Mul(Q1, R12))
 
 	local bb = matrix_mn.Columns(AAA, 1, 4)
@@ -109,12 +136,12 @@ if true then
 	local QQ, RR = Zero(8, 8), Zero(8, 8)
 
 	qr.Find_MGS(matrix_mn.Columns(M, 1, 8), QQ, RR, 8)
-
+--[[
 	P(QQ, "QQQ")
 	P(RR, "RRR")
 	P(matrix_mn.Mul(QQ, matrix_mn.Transpose(QQ)), "PRODDDDD")
 	P(matrix_mn.Mul(matrix_mn.Transpose(QQ), QQ), "DDDDDORP")
-
+]]
 	local function TestQ (Q, name)
 		print("TESTING", name)
 
@@ -143,11 +170,11 @@ if true then
 		end
 		print("")
 	end
-
+--[[
 	TestQ(Q1, "Q1")
 	TestQ(Q2, "Q2")
 	TestQ(qq2, "qq2")
-
+]]
 	local function Compare (q1, q2, name1, name2)
 		print("COMPARING", name1, name2)
 
@@ -165,20 +192,20 @@ if true then
 			print("")
 		end
 	end
-
+--[[
 	Compare(Q1, qq, "Q1", "qq")
 	Compare(Q2, qq2, "Q2", "qq2")
-
+]]
 	local Q = Matrix(8, 8)
 
 	matrix_mn.PutBlock(Q, 1, 1, Q1)
 	matrix_mn.PutBlock(Q, 1, 5, Q2)
-
+--[[
 	P(Q, "Q")
 	P(matrix_mn.Transpose(Q), "Qt")
 	P(matrix_mn.Mul(matrix_mn.Transpose(Q), Q), "Product")
 	P(matrix_mn.Mul(Q, matrix_mn.Transpose(Q)), "Product 2")
-
+]]
 	local R = Zero(8, 8)
 
 	matrix_mn.PutBlock(R, 1, 1, R1)
@@ -190,6 +217,58 @@ if true then
 	Compare(matrix_mn.Mul(Q, R), M, "QR", "A")
 	Compare(Q, QQ, "Q", "QQ")
 	Compare(R, RR, "R", "RR")
+
+
+local N = 5
+
+local MM = matrix_mn.New(N + 3, N + 3)
+local X = matrix_mn.New(N, 1)
+local Y = matrix_mn.New(N, 1)
+
+for i = 1, N do
+	X[i] = math.random()
+	Y[i] = math.random()
+end
+
+for row = 1, N do
+	local xr, yr = X[row], Y[row]
+
+	for col = 1, N do
+		if row ~= col then
+			local xc, yc = X[col], Y[col]
+			local r = (xr - xc)^2 + (yr - yc)^2
+
+			MM:Set(row, col, .5 * r^2 * math.log(r + 1e-100))
+		else
+			MM:Set(row, col, 0)
+		end
+	end
+
+	MM:Set(row, N + 1, 1)
+	MM:Set(row, N + 2, X[row])
+	MM:Set(row, N + 3, Y[row])
+end
+
+for i = 1, 3 do
+	for col = 1, N do
+		if i == 1 then
+			MM:Set(N + i, col, 1)
+		elseif i == 2 then
+			MM:Set(N + i, col, X[col])
+		else
+			MM:Set(N + i, col, Y[col])
+		end
+	end
+
+	MM:Set(N + i, N + 1, 0)
+	MM:Set(N + i, N + 2, 0)
+	MM:Set(N + i, N + 3, 0)
+end
+
+P(MM, "MM")
+P(X, "XX")
+P(Y, "YY")
+
 
 
 	-- x' = fx(x, y) = a0 + a1 * x + a2 * y + Sum(1, n)[alpha_i * phi(|| <x, y> - <x_i, y_i> ||)]
