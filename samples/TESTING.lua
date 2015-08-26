@@ -80,31 +80,7 @@ if true then
 	local Right = matrix_mn.Columns(M, 5, 8)
 	local R12 = matrix_mn.Mul(matrix_mn.Transpose(Q1), Right)
 local R12C = matrix_mn.Columns(Right, 1, 4)
-local function QtC (Q, C)
-	local nrows, ncols = C:GetDims()
-
-	for j = 1, ncols do
-		local col = Q:GetColumn(j, j + 1)
-table.insert(col, 1, 1)
-		local n, sum = #col, 0
-		local V = matrix_mn.New(1, n)
-
-		for i = 1, n do
-			V[i], sum = col[i], sum + col[i]^2
-		end
-
-		local beta = 2 / sum
-
-		for i = 1, n do
-			col[i] = col[i] * beta
-		end
-
-		local old_corner = matrix_mn.Corner(C, j, 1)
-
-		matrix_mn.PutBlock(C, j, 1, matrix_mn.Sub(old_corner, matrix_mn.OuterProduct(col, matrix_mn.Mul(V, old_corner))))
-	end
-end
-QtC(aa, R12C)
+qr.Multiply_TranposeHouseholder(aa, R12C)
 P(R12C, "QtC?!")
 --[[
 	P(matrix_mn.Transpose(Q1),"Q1??")
