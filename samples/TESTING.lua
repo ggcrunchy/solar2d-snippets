@@ -85,7 +85,7 @@ P(R12C, "QtC?!")
 --[[
 	P(matrix_mn.Transpose(Q1),"Q1??")
 	P(R12, "R12???")
-]]
+--]]
 	local AAA = matrix_mn.Sub(Right, matrix_mn.Mul(Q1, R12))
 
 	local bb = matrix_mn.Columns(AAA, 1, 4)
@@ -98,16 +98,16 @@ P(R12C, "QtC?!")
 
 	P(M, "M")
 	P(Q1, "Q1")
+	P(qq, "qq")
 	P(R1, "R1")
 	P(Q2, "Q2")
-	P(R2, "R2")
-
-	P(aa, "aa")
-	P(qq, "qq")
-	P(R12, "R12")
-	P(AAA, "AAA")
-	P(bb, "bb")
 	P(qq2, "qq2")
+	P(R2, "R2")
+	P(R12, "R12")
+
+	P(AAA, "AAA")
+	P(aa, "aa")
+	P(bb, "bb")
 
 	local QQ, RR = Zero(8, 8), Zero(8, 8)
 
@@ -117,7 +117,7 @@ P(R12C, "QtC?!")
 	P(RR, "RRR")
 	P(matrix_mn.Mul(QQ, matrix_mn.Transpose(QQ)), "PRODDDDD")
 	P(matrix_mn.Mul(matrix_mn.Transpose(QQ), QQ), "DDDDDORP")
-]]
+--]]
 	local function TestQ (Q, name)
 		print("TESTING", name)
 
@@ -181,7 +181,7 @@ P(R12C, "QtC?!")
 	P(matrix_mn.Transpose(Q), "Qt")
 	P(matrix_mn.Mul(matrix_mn.Transpose(Q), Q), "Product")
 	P(matrix_mn.Mul(Q, matrix_mn.Transpose(Q)), "Product 2")
-]]
+--]]
 	local R = Zero(8, 8)
 
 	matrix_mn.PutBlock(R, 1, 1, R1)
@@ -198,9 +198,8 @@ P(R12C, "QtC?!")
 local N = 5
 
 local MM = matrix_mn.New(N + 3, N + 3)
-local X = matrix_mn.New(N, 1)
-local Y = matrix_mn.New(N, 1)
-
+local X = matrix_mn.Zero(N + 3, 1)
+local Y = matrix_mn.Zero(N + 3, 1)
 for i = 1, N do
 	X[i] = math.random()
 	Y[i] = math.random()
@@ -241,12 +240,28 @@ for i = 1, 3 do
 	MM:Set(N + i, N + 3, 0)
 end
 
-P(MM, "MM")
-P(X, "XX")
-P(Y, "YY")
+for i = 1, N do
+	X[i] = math.random()
+	Y[i] = math.random()
+end
 
+--P(MM, "MM")
+local XX2=matrix_mn.New(1,1)
+local YY2=matrix_mn.New(1,1)
 
+local mmm=matrix_mn.Columns(MM, 1, 8)
+local nnn=matrix_mn.Columns(MM, 1, 8)
+qr.Solve_Householder(MM, XX2, X, 4, nil)
+qr.Solve_Householder(nnn, YY2, Y, 4, nil)
 
+local AA = matrix_mn.Mul(mmm, XX2)
+local BB = matrix_mn.Mul(mmm, YY2)
+P(X, "X'")
+P(XX2, "X (resolved)")
+P(AA, "Recovered X'?")
+P(Y, "Y'")
+P(YY2, "Y (resolved)")
+P(BB, "Recovered Y'?")
 	-- x' = fx(x, y) = a0 + a1 * x + a2 * y + Sum(1, n)[alpha_i * phi(|| <x, y> - <x_i, y_i> ||)]
 	-- y' = fy(x, y) = b0 + b1 * x + b2 * y + Sum(1, n)[beta_i * ...]
 	-- phi(r) = r^2 * log(r)
