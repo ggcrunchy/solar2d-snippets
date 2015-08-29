@@ -240,26 +240,49 @@ for i = 1, 3 do
 	MM:Set(N + i, N + 3, 0)
 end
 
+local Xp = matrix_mn.Zero(N + 3, 1)
+local Yp = matrix_mn.Zero(N + 3, 1)
+
 for i = 1, N do
-	X[i] = math.random()
-	Y[i] = math.random()
+	Xp[i] = math.random()
+	Yp[i] = math.random()
 end
 
---P(MM, "MM")
+P(MM, "MM")
 local XX2=matrix_mn.New(1,1)
 local YY2=matrix_mn.New(1,1)
 
 local mmm=matrix_mn.Columns(MM, 1, 8)
 local nnn=matrix_mn.Columns(MM, 1, 8)
-qr.Solve_Householder(MM, XX2, X, 4, nil)
-qr.Solve_Householder(nnn, YY2, Y, 4, nil)
+
+local asum, bsum, ax, ay, bx, by = 0, 0, 0, 0, 0, 0
+
+qr.Solve_Householder(MM, XX2, Xp, 4, nil)
+
+for i = 1, N do
+	ax = ax + XX2[i] * X[i]
+	ay = ay + XX2[i] * Y[i]
+	asum = asum + XX2[i]
+end
+
+print("Alpha, Alpha * X, Alpha * Y", asum, ax, ay)
+
+qr.Solve_Householder(nnn, YY2, Yp, 4, nil)
+
+for i = 1, N do
+	bx = bx + YY2[i] * X[i]
+	by = by + YY2[i] * Y[i]
+	bsum = bsum + YY2[i]
+end
+
+print("Beta, Beta * X, Beta * Y", bsum, bx, by)
 
 local AA = matrix_mn.Mul(mmm, XX2)
 local BB = matrix_mn.Mul(mmm, YY2)
-P(X, "X'")
+P(Xp, "X'")
 P(XX2, "X (resolved)")
 P(AA, "Recovered X'?")
-P(Y, "Y'")
+P(Yp, "Y'")
 P(YY2, "Y (resolved)")
 P(BB, "Recovered Y'?")
 	-- x' = fx(x, y) = a0 + a1 * x + a2 * y + Sum(1, n)[alpha_i * phi(|| <x, y> - <x_i, y_i> ||)]
