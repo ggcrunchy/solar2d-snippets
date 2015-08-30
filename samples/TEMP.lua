@@ -24,6 +24,7 @@
 --
 
 -- Modules --
+local loader = require("corona_shader.loader")
 local matrix_mn = require("numeric_types.matrix_mn")
 local qr = require("linear_algebra_ops.qr")
 
@@ -35,7 +36,8 @@ local Scene = composer.newScene()
 
 --
 function Scene:create ()
-	local image = display.newImageRect(self.view, "FILE.png", 512, 256)
+	local File = "Turtle3.jpg"
+	local image = display.newImageRect(self.view, File, 512, 256)
 
 	image.x, image.y = display.contentCenterX, display.contentCenterY
 
@@ -141,9 +143,9 @@ end
 					for col = 1, N do
 						if row ~= col then
 							local xc, yc = X[col], Y[col]
-							local r = (xr - xc)^2 + (yr - yc)^2
+							local r2 = (xr - xc)^2 + (yr - yc)^2
 
-							MM:Set(row, col, .5 * r^2 * math.log(r + 1e-100))
+							MM:Set(row, col, .5 * r2 * math.log(r2 + 1e-100))
 						else
 							MM:Set(row, col, 0)
 						end
@@ -174,8 +176,10 @@ end
 				local Yp = matrix_mn.Zero(N + 3, 1)
 
 				for i = 1, N do
-					Xp[i] = math.random()
-					Yp[i] = math.random()
+					local rect = group1[i]
+
+					Xp[i] = (rect.x - bounds.xMin) / image.width
+					Yp[i] = (rect.y - bounds.yMin) / image.height
 				end
 
 				P(MM, "MM")
@@ -217,6 +221,166 @@ end
 				P(Yp, "Y'")
 				P(YY2, "Y (resolved)")
 				P(BB, "Recovered Y'?")
+
+local Prelude = [[
+	%s#define ANCHOR_NUM %i
+]]
+
+local Skeleton = [[
+	P_UV vec2 GetContribution (P_UV vec2 uv, P_UV vec4 coeffs)
+	{
+		P_UV float r = distance(uv, coeffs.xy); // xy: anchor point
+
+		return coeffs.zw * r * r * log(r + 1. / 1024.); // zw: alpha, beta
+	}
+
+	P_COLOR vec4 FragmentKernel (P_UV vec2 uv)
+	{
+	#ifndef FIRST_PASS
+		P_COLOR vec4 rgba = texture2D(CoronaSampler0, uv);
+		P_UV vec2 accum_pos = (2. * DecodeTwoFloatsRGBA(rgba) - 1.) * %i.;
+	#else
+		P_UV vec2 accum_pos = vec2(0.);
+	#endif
+
+		accum_pos += GetContribution(uv, vec4(%f, %f, %f, %f));
+
+		#if defined(ANCHOR_NUM) && ANCHOR_NUM >= 2
+			accum_pos += GetContribution(uv, vec4(%f, %f, %f, %f));
+		#endif
+
+		#if defined(ANCHOR_NUM) && ANCHOR_NUM >= 3
+			accum_pos += GetContribution(uv, vec4(%f, %f, %f, %f));
+		#endif
+
+		#if defined(ANCHOR_NUM) && ANCHOR_NUM == 4
+			accum_pos += GetContribution(uv, vec4(%f, %f, %f, %f));
+		#endif
+
+		return EncodeTwoFloatsRGBA((accum_pos / %i.) * .5 + .5);
+	}
+]]
+
+local Next = 1
+
+while Next <= N do
+	Next = 2 * Next
+end
+-- (N / Next) * .5 - .5
+-- (N * 2 - 1) * Next
+				local nodes, stage, prev = {}, 1
+				local MP_kernel = { category = "filter", group = "morph", name = "build_principal_warp", graph = { nodes = nodes } }
+				local Args = { Next, [18] = Next }
+
+				for i = 1, N, 4 do
+					local up_to = math.min(i + 3, N)
+					local num_anchors = up_to - i + 1
+
+					local index = 2
+
+					for j = i, up_to do
+						Args[index], Args[index + 1], Args[index + 2], Args[index + 3], index = Xp[j], Yp[j], XX2[j], YY2[j], index + 4
+					end
+
+					for j = index, 17 do
+						Args[j] = 0
+					end
+
+					local name = ("warp_stage_%i"):format(stage)
+					local kernel = { category = "filter", group = "morph", name = name }
+
+					kernel.fragment = loader.FragmentShader{
+						prelude = Prelude:format(i == 1 and "#define FIRST_PASS\n\t" or "", num_anchors),
+						main = Skeleton:format(unpack(Args))
+					}
+
+					graphics.defineEffect(kernel)
+
+					nodes[name], stage, prev = {
+						input1 = prev or "paint1", effect = "filter.morph." .. name
+					}, stage + 1, name
+				end
+
+				MP_kernel.graph.output = prev
+
+				graphics.defineEffect(MP_kernel)
+
+				os.remove(system.pathForFile("Output.png", system.DocumentsDirectory))
+
+				image.fill.effect = "filter.morph.build_principal_warp"
+
+				display.save(image, { filename = "Output.png", isFullResolution = true })
+
+				do
+					local kernel = { category = "composite", group = "morph", name = "warp" }
+
+					kernel.vertexData = {
+						{
+							name = "t",
+							default = 0, min = 0, max = 1,
+							index = 0
+						}
+					}
+
+local frag = ([[
+	P_COLOR vec4 FragmentKernel (P_UV vec2 uv)
+	{
+		P_COLOR vec4 rgba = texture2D(CoronaSampler0, uv);
+		P_UV vec2 pos = (2. * DecodeTwoFloatsRGBA(rgba) - 1.) * %i.;
+		P_UV vec3 scaled = vec3(1, uv) * CoronaVertexUserData.x;
+
+		pos.x += dot(scaled, vec3(%f, %f, %f));
+		pos.y += dot(scaled, vec3(%f, %f, %f));	
+
+		return CoronaColorScale(texture2D(CoronaSampler0, pos));
+	}
+]]):format(Next, XX2[N + 1], XX2[N + 2], XX2[N + 3], YY2[N + 1], YY2[N + 2], YY2[N + 3])
+
+					kernel.fragment = loader.FragmentShader(frag)
+print(kernel.fragment)
+					graphics.defineEffect(kernel)
+				end
+
+				timer.performWithDelay(5000, function()
+					local widget = require("widget")
+					local final_rect = display.newRect(self.view, image.x, image.y, image.width, image.height)
+
+					widget.newSlider{
+						top = 20,
+						left = 20,
+						width = 150,
+						value = 0,
+						listener = function(event)
+							final_rect.fill.effect.warp.t = event.value / 100
+						end
+					}
+--[[
+					final_rect.fill = {
+						type = "composite",
+						paint1 = { type = "image", filename = "Output.png", baseDir = system.DocumentsDirectory },
+						paint2 = { type = "image", filename = File }
+					}]]
+					final_rect.fill = {
+						type = "composite",
+						paint1 = { type = "image", filename = File },
+						paint2 = { type = "image", filename = File }
+					}
+image.isVisible=false
+do
+	local kernel = { category = "composite", group = "morph", name = "final_warp" }
+
+	kernel.graph = {
+		nodes = {
+			prep = { effect = "filter.morph.build_principal_warp", input1 = "paint1" },
+			warp = { effect = "composite.morph.warp", input1 = "prep", input2 = "paint2" }
+		}, output = "warp"
+	}
+
+	graphics.defineEffect(kernel)
+end
+
+					final_rect.fill.effect = "composite.morph.final_warp"
+				end)
 
 				button.isVisible = false
 			end
@@ -265,14 +429,14 @@ function Scene:show (event)
 --[=[
 	local kernel = {}
 
-	P_UV vec2 GetContribution (P_UV vec2 uv, P_UV vec4 coeffs)
-	{
-		P_UV float r = distance(uv, coeffs.xy); -- xy: anchor point
-
-		return coeffs.zw * r * r * log(r + 1e-10); -- zw: alpha, beta
-	}
-
 	kernel.fragment = loader.FragmentShader[[
+		P_UV vec2 GetContribution (P_UV vec2 uv, P_UV vec4 coeffs)
+		{
+			P_UV float r = distance(uv, coeffs.xy); -- xy: anchor point
+
+			return coeffs.zw * r * r * log(r + 1e-10); -- zw: alpha, beta
+		}
+
 		P_COLOR vec4 FragmentKernel (P_UV vec2 uv)
 		{
 			P_UV vec2 accum_pos = vec4(0.);
