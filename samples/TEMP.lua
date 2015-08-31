@@ -137,6 +137,18 @@ end
 					Y[i] = (circle.y - bounds.yMin) / image.height
 				end
 
+				local Xp = matrix_mn.Zero(N + 3, 1)
+				local Yp = matrix_mn.Zero(N + 3, 1)
+
+				for i = 1, N do
+					local rect = group1[i]
+
+					Xp[i] = (rect.x - bounds.xMin) / image.width
+					Yp[i] = (rect.y - bounds.yMin) / image.height
+				end
+				X,Xp=Xp,X
+				Y,Yp=Yp,Y
+
 				for row = 1, N do
 					local xr, yr = X[row], Y[row]
 
@@ -170,16 +182,6 @@ end
 					MM:Set(N + i, N + 1, 0)
 					MM:Set(N + i, N + 2, 0)
 					MM:Set(N + i, N + 3, 0)
-				end
-
-				local Xp = matrix_mn.Zero(N + 3, 1)
-				local Yp = matrix_mn.Zero(N + 3, 1)
-
-				for i = 1, N do
-					local rect = group1[i]
-
-					Xp[i] = (rect.x - bounds.xMin) / image.width
-					Yp[i] = (rect.y - bounds.yMin) / image.height
 				end
 
 				P(MM, "MM")
@@ -221,7 +223,6 @@ end
 				P(Yp, "Y'")
 				P(YY2, "Y (resolved)")
 				P(BB, "Recovered Y'?")
-
 local Prelude = [[
 	%s#define ANCHOR_NUM %i
 ]]
@@ -279,7 +280,7 @@ end
 					local index = 2
 
 					for j = i, up_to do
-						Args[index], Args[index + 1], Args[index + 2], Args[index + 3], index = Xp[j], Yp[j], XX2[j], YY2[j], index + 4
+						Args[index], Args[index + 1], Args[index + 2], Args[index + 3], index = X[j], Y[j], XX2[j], YY2[j], index + 4
 					end
 
 					for j = index, 17 do
@@ -300,7 +301,8 @@ end
 						input1 = prev or "paint1", effect = "filter.morph." .. name
 					}, stage + 1, name
 				end
-
+X,Xp=Xp,X
+Y,Yp=Yp,Y
 				MP_kernel.graph.output = prev
 
 				graphics.defineEffect(MP_kernel)
@@ -327,12 +329,12 @@ local frag = ([[
 	{
 		P_COLOR vec4 rgba = texture2D(CoronaSampler0, uv);
 		P_UV vec2 pos = (2. * DecodeTwoFloatsRGBA(rgba) - 1.) * %i.;
-		P_UV vec3 scaled = vec3(1, uv) * CoronaVertexUserData.x;
+		P_UV vec3 scaled = vec3(1, uv);
 
 		pos.x += dot(scaled, vec3(%f, %f, %f));
 		pos.y += dot(scaled, vec3(%f, %f, %f));	
 
-		return CoronaColorScale(texture2D(CoronaSampler0, pos));
+		return CoronaColorScale(texture2D(CoronaSampler1, uv - pos * CoronaVertexUserData.x));
 	}
 ]]):format(Next, XX2[N + 1], XX2[N + 2], XX2[N + 3], YY2[N + 1], YY2[N + 2], YY2[N + 3])
 
@@ -343,7 +345,6 @@ print(kernel.fragment)
 
 				timer.performWithDelay(5000, function()
 					local widget = require("widget")
-					local final_rect = display.newRect(self.view, image.x, image.y, image.width, image.height)
 
 					widget.newSlider{
 						top = 20,
@@ -351,35 +352,24 @@ print(kernel.fragment)
 						width = 150,
 						value = 0,
 						listener = function(event)
-							final_rect.fill.effect.warp.t = event.value / 100
+							image.fill.effect.warp.t = event.value / 100
 						end
 					}
---[[
-					final_rect.fill = {
-						type = "composite",
-						paint1 = { type = "image", filename = "Output.png", baseDir = system.DocumentsDirectory },
-						paint2 = { type = "image", filename = File }
-					}]]
-					final_rect.fill = {
-						type = "composite",
-						paint1 = { type = "image", filename = File },
-						paint2 = { type = "image", filename = File }
-					}
-image.isVisible=false
+
 do
-	local kernel = { category = "composite", group = "morph", name = "final_warp" }
+	local kernel = { category = "filter", group = "morph", name = "final_warp" }
 
 	kernel.graph = {
 		nodes = {
 			prep = { effect = "filter.morph.build_principal_warp", input1 = "paint1" },
-			warp = { effect = "composite.morph.warp", input1 = "prep", input2 = "paint2" }
+			warp = { effect = "composite.morph.warp", input1 = "prep", input2 = "paint1" }
 		}, output = "warp"
 	}
 
 	graphics.defineEffect(kernel)
 end
 
-					final_rect.fill.effect = "composite.morph.final_warp"
+					image.fill.effect = "filter.morph.final_warp"
 				end)
 
 				button.isVisible = false
