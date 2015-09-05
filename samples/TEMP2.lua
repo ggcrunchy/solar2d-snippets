@@ -36,7 +36,7 @@ local Scene = composer.newScene()
 
 --
 function Scene:create ()
-	local File = "Batman-Returns-1-icon.png"--"Turtle3.jpg"
+	local File = "Turtle3.jpg"
 	local image = display.newImageRect(self.view, File, 512, 256)
 
 	image.x, image.y = display.contentCenterX, display.contentCenterY
@@ -71,7 +71,7 @@ function Scene:create ()
 			return true
 		end
 
-		local N = 5
+		local N = 15
 
 		local group1 = display.newGroup()
 		local group2 = display.newGroup()
@@ -189,8 +189,8 @@ end
 				local XX2 = matrix_mn.New(1,1)
 				local YY2 = matrix_mn.New(1,1)
 
-				local mmm = matrix_mn.Columns(MM, 1, 8)
-				local nnn = matrix_mn.Columns(MM, 1, 8)
+				local mmm = matrix_mn.Columns(MM, 1, N + 3)
+				local nnn = matrix_mn.Columns(MM, 1, N + 3)
 
 				local asum, bsum, ax, ay, bx, by = 0, 0, 0, 0, 0, 0
 
@@ -332,9 +332,13 @@ local frag = ([[
 		P_UV vec3 scaled = vec3(1, uv);
 
 		pos.x += dot(scaled, vec3(%f, %f, %f));
-		pos.y += dot(scaled, vec3(%f, %f, %f));	
+		pos.y += dot(scaled, vec3(%f, %f, %f));
 
-		return CoronaColorScale(texture2D(CoronaSampler1, uv + pos * CoronaVertexUserData.x));
+		pos = mix(uv, pos, CoronaVertexUserData.x);
+
+		if (any(greaterThan(abs(pos - .5), vec2(.5)))) return vec4(0.);
+
+		return CoronaColorScale(texture2D(CoronaSampler1, pos));
 	}
 ]]):format(Next, XX2[N + 1], XX2[N + 2], XX2[N + 3], YY2[N + 1], YY2[N + 2], YY2[N + 3])
 

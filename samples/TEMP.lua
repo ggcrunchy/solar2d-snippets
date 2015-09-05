@@ -133,8 +133,8 @@ end
 				for i = 1, N do
 					local circle = group2[i]
 
-					X[i] = (circle.x - bounds.xMin) / image.width
-					Y[i] = (circle.y - bounds.yMin) / image.height
+					X[i] = (circle.x - bounds.xMin)-- / image.width
+					Y[i] = (circle.y - bounds.yMin)-- / image.height
 				end
 
 				local Xp = matrix_mn.Zero(N + 3, 1)
@@ -143,8 +143,8 @@ end
 				for i = 1, N do
 					local rect = group1[i]
 
-					Xp[i] = (rect.x - bounds.xMin) / image.width
-					Yp[i] = (rect.y - bounds.yMin) / image.height
+					Xp[i] = (rect.x - bounds.xMin)-- / image.width
+					Yp[i] = (rect.y - bounds.yMin)-- / image.height
 				end
 				X,Xp=Xp,X
 				Y,Yp=Yp,Y
@@ -230,7 +230,7 @@ local Prelude = [[
 local Skeleton = [[
 	P_UV vec2 GetContribution (P_UV vec2 uv, P_UV vec4 coeffs)
 	{
-		P_UV float r = distance(uv, coeffs.xy); // xy: anchor point
+		P_UV float r = distance(uv * vec2(512., 256.), coeffs.xy); // xy: anchor point
 
 		return coeffs.zw * r * r * log(r + 1. / 1024.); // zw: alpha, beta
 	}
@@ -272,7 +272,7 @@ end
 				local nodes, stage, prev = {}, 1
 				local MP_kernel = { category = "filter", group = "morph", name = "build_principal_warp", graph = { nodes = nodes } }
 				local Args = { Next, [18] = Next }
-
+local ARGGHS={}
 				for i = 1, N, 4 do
 					local up_to = math.min(i + 3, N)
 					local num_anchors = up_to - i + 1
@@ -281,6 +281,9 @@ end
 
 					for j = i, up_to do
 						Args[index], Args[index + 1], Args[index + 2], Args[index + 3], index = X[j], Y[j], XX2[j], YY2[j], index + 4
+						for i = index - 4, index - 1 do
+							ARGGHS[#ARGGHS + 1] = Args[i]
+						end
 					end
 
 					for j = index, 17 do
@@ -294,7 +297,7 @@ end
 						prelude = Prelude:format(i == 1 and "#define FIRST_PASS\n\t" or "", num_anchors),
 						main = Skeleton:format(unpack(Args))
 					}
-
+print(kernel.fragment)
 					graphics.defineEffect(kernel)
 
 					nodes[name], stage, prev = {
@@ -311,7 +314,7 @@ Y,Yp=Yp,Y
 
 				image.fill.effect = "filter.morph.build_principal_warp"
 
-				display.save(image, { filename = "Output.png", isFullResolution = true })
+				display.save(image, { filename = "Output.png", isFullResolution = false })
 
 				do
 					local kernel = { category = "composite", group = "morph", name = "warp" }
@@ -352,7 +355,7 @@ print(kernel.fragment)
 						width = 150,
 						value = 0,
 						listener = function(event)
-							image.fill.effect.warp.t = event.value / 100
+							image.fill.effect--[[.warp]].t = event.value / 100
 						end
 					}
 
@@ -369,7 +372,57 @@ do
 	graphics.defineEffect(kernel)
 end
 
-					image.fill.effect = "filter.morph.final_warp"
+do
+	local kernel = { category = "filter", group = "morph", name = "warp_WWW" }
+
+	kernel.vertexData = {
+		{
+			name = "t",
+			default = 0, min = 0, max = 1,
+			index = 0
+		}
+	}
+for i = 1, 3 do
+	ARGGHS[#ARGGHS + 1] = XX2[N + i]
+end
+for i = 1, 3 do
+	ARGGHS[#ARGGHS + 1] = YY2[N + i]
+end
+	kernel.fragment = ([[
+		P_DEFAULT vec2 GetContribution (P_DEFAULT vec2 uv, P_DEFAULT vec4 coeffs)
+		{
+			P_DEFAULT float r = distance(uv - .5, coeffs.xy); // xy: anchor point
+
+			return coeffs.zw * r * r * log(r + 1. / 1024.); // zw: alpha, beta
+		}
+
+		P_COLOR vec4 FragmentKernel (P_UV vec2 uv)
+		{
+			P_DEFAULT vec2 pos = uv * vec2(512., 256.);
+			P_DEFAULT vec2 accum_pos = GetContribution(pos, vec4(%f, %f, %f, %f));
+
+			accum_pos += GetContribution(pos, vec4(%f, %f, %f, %f));
+			accum_pos += GetContribution(pos, vec4(%f, %f, %f, %f));
+			accum_pos += GetContribution(pos, vec4(%f, %f, %f, %f));
+			accum_pos += GetContribution(pos, vec4(%f, %f, %f, %f));
+
+			P_DEFAULT vec3 scaled = vec3(1., pos);
+
+			accum_pos.x += dot(scaled, vec3(%f, %f, %f));
+			accum_pos.y += dot(scaled, vec3(%f, %f, %f));	
+
+			pos = mix(uv, (accum_pos) / vec2(512., 256.), CoronaVertexUserData.x);
+
+			if (any(greaterThan(abs(pos - .5), vec2(.5)))) return vec4(0.);
+
+			return CoronaColorScale(texture2D(CoronaSampler0, pos));
+		}
+	]]):format(unpack(ARGGHS))
+print(kernel.fragment)
+	graphics.defineEffect(kernel)
+end
+
+					image.fill.effect = "filter.morph.warp_WWW"--final_warp"
 				end)
 
 				button.isVisible = false
