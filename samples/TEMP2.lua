@@ -336,9 +336,9 @@ local frag = ([[
 
 		pos = mix(uv, pos, CoronaVertexUserData.x);
 
-		if (any(greaterThan(abs(pos - .5), vec2(.5)))) return vec4(0.);
+		P_UV vec2 diff = abs(pos - .5);
 
-		return CoronaColorScale(texture2D(CoronaSampler1, pos));
+		return CoronaColorScale(texture2D(CoronaSampler1, pos) * step(max(diff.x, diff.y), .5));
 	}
 ]]):format(Next, XX2[N + 1], XX2[N + 2], XX2[N + 3], YY2[N + 1], YY2[N + 2], YY2[N + 3])
 

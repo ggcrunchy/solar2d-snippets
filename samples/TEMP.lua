@@ -355,7 +355,7 @@ print(kernel.fragment)
 						width = 150,
 						value = 0,
 						listener = function(event)
-							image.fill.effect--[[.warp]].t = event.value / 100
+							image.fill.effect.warp.t = event.value / 100
 						end
 					}
 
@@ -418,11 +418,98 @@ end
 			return CoronaColorScale(texture2D(CoronaSampler0, pos));
 		}
 	]]):format(unpack(ARGGHS))
+--print(kernel.fragment)
+	graphics.defineEffect(kernel)
+end
+
+do
+	local kernel = { category = "filter", group = "morph", name = "build2" }
+
+	local frag = ([[
+		P_DEFAULT vec2 GetContribution (P_DEFAULT vec2 uv, P_DEFAULT vec4 coeffs)
+		{
+			P_DEFAULT float r = distance(uv - .5, coeffs.xy); // xy: anchor point
+
+			return coeffs.zw * r * r * log(r + 1. / 1024.); // zw: alpha, beta
+		}
+
+		P_COLOR vec4 FragmentKernel (P_UV vec2 uv)
+		{
+			P_DEFAULT vec2 pos = uv * vec2(512., 256.);
+			P_DEFAULT vec2 accum_pos = GetContribution(pos, vec4(%f, %f, %f, %f));
+
+			accum_pos += GetContribution(pos, vec4(%f, %f, %f, %f));
+			accum_pos += GetContribution(pos, vec4(%f, %f, %f, %f));
+			accum_pos += GetContribution(pos, vec4(%f, %f, %f, %f));
+			accum_pos += GetContribution(pos, vec4(%f, %f, %f, %f));
+
+			P_DEFAULT vec3 scaled = vec3(1., pos);
+
+			accum_pos.x += dot(scaled, vec3(%f, %f, %f));
+			accum_pos.y += dot(scaled, vec3(%f, %f, %f));
+
+			return EncodeTwoFloatsRGBA((vec2(64., 32.) + accum_pos / vec2(512., 256.)) / 128.);
+		}
+	]]):format(unpack(ARGGHS))--, 1, #ARGGHS - 6))
+
+	kernel.fragment = loader.FragmentShader(frag)
+
 print(kernel.fragment)
 	graphics.defineEffect(kernel)
 end
 
-					image.fill.effect = "filter.morph.warp_WWW"--final_warp"
+do
+	local kernel = { category = "composite", group = "morph", name = "warp2" }
+
+	kernel.vertexData = {
+		{
+			name = "t",
+			default = 0, min = 0, max = 1,
+			index = 0
+		}
+	}
+
+	local frag = ([[
+		P_COLOR vec4 FragmentKernel (P_UV vec2 uv)
+		{
+			P_COLOR vec4 rgba = texture2D(CoronaSampler0, uv);
+			P_DEFAULT vec2 uv2 = DecodeTwoFloatsRGBA(rgba) * 128. - vec2(64., 32.);
+
+			uv = mix(uv, uv2, CoronaVertexUserData.x);
+
+			P_DEFAULT vec2 diff = abs(uv - .5);
+
+			return CoronaColorScale(texture2D(CoronaSampler1, uv) * step(max(diff.x, diff.y), .5));
+		}
+	]]):format(unpack(ARGGHS, #ARGGHS - 5, #ARGGHS))
+
+	kernel.fragment = loader.FragmentShader(frag)
+
+print(kernel.fragment)
+	graphics.defineEffect(kernel)
+end
+
+do
+	local kernel = { category = "filter", group = "morph", name = "warp_XXX" }
+
+	kernel.graph = {
+		nodes = {
+			prep = { effect = "filter.morph.build2", input1 = "paint1" },
+			warp = { effect = "composite.morph.warp2", input1 = "prep", input2 = "paint1" }
+		}, output = "warp"
+	}
+
+	graphics.defineEffect(kernel)
+end
+
+				os.remove(system.pathForFile("O222utput.png", system.DocumentsDirectory))
+
+				image.fill.effect = "filter.morph.build2"--build_principal_warp"
+
+				display.save(image, { filename = "O222utput.png", isFullResolution = false })
+				timer.performWithDelay(2000, function()
+					image.fill.effect = "filter.morph.warp_XXX"--WWW"--final_warp"
+				end)
 				end)
 
 				button.isVisible = false
