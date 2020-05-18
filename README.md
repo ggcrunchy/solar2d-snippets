@@ -1,7 +1,7 @@
-corona-sdk-snippets
-===================
+solar2d-snippets
+================
 
-Installation: git clone --recursive https://github.com/ggcrunchy/corona-sdk-snippets.git
+Installation: git clone --recursive https://github.com/ggcrunchy/solar2d-snippets.git
 
 Various bits and pieces. Some of these are components of a separately-developed game (often the same code, courtesy of submodules). Other things were tests that took on a life of their own. Still others were mere curiosity.
 
